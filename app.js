@@ -1,3 +1,26 @@
+// v15.98.67 — Home Market Matrix: live 1M/5M/10M/1H/1D/1W direction consensus.
+// v15.98.63 — Global Market Motion: Command Center-style realtime INJ price interpolation across Home, Dashboard, Live View and Pulse View.
+// Price-derived values follow the same visual price without forcing full-page redraws.
+// v15.98.62 — Command Center: isolated large-screen wall display with portfolio, staking, Pulse and five live charts.
+// v15.98.43 — Live Charts isolated page: Home only navigates; chart rendering can no longer block the main app.
+// v15.98.41 — Live Charts Safe Engine: no permanent RAF loop, lazy history and isolated lightweight updates.
+// v15.98.40 — Live Charts Stability Fix: deferred opening, split lightweight/full rendering and reduced mobile chart workload.
+// v15.98.39 — Dedicated Live Charts: continuous 5m/10m/1h realtime stack with readable adaptive right-side price scales.
+// v15.98.37 — Live View 1M fluid engine: interpolated endpoint, right-edge live dot and stable momentum colour.
+// v15.98.36 — Live View 1M bottom signal ribbon: smoothed realtime curve in the empty lower band, with restrained live pulse.
+// v15.98.35 — Live View 1M realtime adaptive overlay: trade-sensitive line, live pulse and breakout compression.
+// v15.98.34 — Interface Styles: Elegant, Futuristic and Ultra Premium, persistent and theme-independent.
+// v15.98.33 — Clean UI: removed selectable/global card elements while preserving the Home chart drag-lock and mobile fixes.
+// v15.98.33 — Home PRICE drag lock: sticky inspector + pointer capture for reliable iOS traversal.
+// v15.98.29 — Mobile Fluid: iOS no-zoom wallet search, reliable vertical scrolling, swipeable active-wallet card, ghost-tap-safe themes and lower-power mobile runtime.
+// v15.98.23 — Mobile Fast Tap: touch controls fire on pointer release, with duplicate native-click suppression and larger coarse-pointer hit areas.
+// Keeps the v15.98.22 clean Dashboard exit unchanged.
+// v15.98.21 — Fixed immersive exit: Home remains stationary underneath; only Live/Pulse fade out.
+// v15.98.20 — Stable Home return: no re-triggered Home entrance animations and extra compositor handoff buffer.
+// v15.98.19 — Premium adaptive Reward runway + static Dashboard performance/P&L percentages.
+// v15.98.18 — Adaptive thin Reward USD gauge + no-black-frame Home-over-immersive return.
+// v15.98.15 — Fixed-size selective odometer: Home rolls only account countervalue + side INJ/USDT price.
+// Dashboard rolls only LIVE price + countervalue; Live View rolls only price + countervalue; Pulse View remains blink-only.
 'use strict';
 
 const $ = (id) => document.getElementById(id);
@@ -6,6 +29,17 @@ const INJ_DECIMALS = 1e18;
 const BOOT_SPLASH_DURATION = 2800;
 const BOOT_PROGRESS_DELAY = 280;
 const BOOT_PROGRESS_DURATION = 2180;
+
+// v15.98.28 — Keep mobile/PWA rendering smooth without holding the GPU and
+// network stack at desktop intensity. This only changes scheduling/effects, not
+// portfolio math or the data shown to the user.
+const MOBILE_EFFICIENCY = Boolean(
+  window.matchMedia?.('(hover: none) and (pointer: coarse)')?.matches || window.innerWidth <= 820
+);
+document.documentElement.classList.toggle('mobile-efficient', MOBILE_EFFICIENCY);
+
+
+// v15.98.7 — Direct launch + large-monitor responsive scaling.
 
 function formatBootPercent(value) {
   return `${Math.max(0, Math.min(100, Math.round(value))).toString().padStart(3, '0')}%`;
@@ -34,33 +68,18 @@ function animateBootPercent(reducedMotion = false) {
 }
 
 function scheduleBootSplashExit() {
+  // v15.99.1 — standalone Dashboard entry: do not show a second splash/Home gate.
   const splash = $('bootSplash');
-  if (!splash) {
-    // La schermata di accesso prende il controllo PRIMA di scoprire la dashboard.
-    showEntryGate();
-    requestAnimationFrame(() => document.body.classList.remove('boot-loading'));
-    return;
+  if (splash) splash.remove();
+  const gate = $('entryGate');
+  if (gate) {
+    gate.classList.remove('visible', 'leaving', 'mode-return', 'immersive-underlay');
+    gate.setAttribute('aria-hidden', 'true');
+    gate.remove();
   }
-
-  const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
-  const wait = reducedMotion ? 650 : BOOT_SPLASH_DURATION;
-  animateBootPercent(Boolean(reducedMotion));
-
-  window.setTimeout(() => {
-    const percent = $('bootPercent');
-    if (percent) percent.textContent = '100%';
-
-    // Prima rendiamo visibile l'Entry Gate sotto la splash; solo nel frame
-    // successivo iniziamo il fade della splash. In questo modo non esiste
-    // alcun frame in cui la dashboard possa comparire tra le due viste.
-    showEntryGate();
-    requestAnimationFrame(() => {
-      splash.classList.add('leaving');
-      document.body.classList.remove('boot-loading');
-    });
-
-    window.setTimeout(() => splash.remove(), reducedMotion ? 300 : 560);
-  }, wait);
+  document.body.classList.remove('boot-loading', 'entry-gate-open', 'entry-live-launch', 'mode-returning');
+  document.body.classList.add('dashboard-standalone');
+  if (typeof state !== 'undefined') state.currentView = 'dashboard';
 }
 
 
@@ -224,12 +243,20 @@ function fillEntryOverviewClone(clone, address) {
   const worth = total * state.price;
   const q = (id) => clone.querySelector(`#${id}`);
   if (q('entryOverviewWallet')) q('entryOverviewWallet').textContent = wallet.label;
-  if (q('entryWalletWorth')) q('entryWalletWorth').textContent = total > 0 && state.price > 0 ? compactMoney(worth) : '—';
+  if (q('entryWalletWorth')) {
+    const worthNode = q('entryWalletWorth');
+    worthNode.classList.add('number-roll-host');
+    renderStableNumberText(worthNode, total > 0 && state.price > 0 ? compactMoney(worth) : '—');
+  }
   if (q('entryWalletTotal')) q('entryWalletTotal').textContent = row ? formatInj(total, 4) : 'Sincronizzazione…';
   if (q('entryWalletStaked')) q('entryWalletStaked').textContent = row ? formatInj(number(row.staked), 4) : '—';
   if (q('entryWalletRewards')) q('entryWalletRewards').textContent = row ? formatInj(number(row.rewards), 4) : '—';
   if (q('entryWalletFreshness')) q('entryWalletFreshness').textContent = row?.updated ? formatFreshAge(row.updated) : '—';
-  if (q('entryMarketPrice')) q('entryMarketPrice').textContent = state.price > 0 ? money(state.price, state.price < 10 ? 4 : 3) : '—';
+  if (q('entryMarketPrice')) {
+    const priceNode = q('entryMarketPrice');
+    priceNode.classList.add('number-roll-host');
+    renderStableNumberText(priceNode, state.price > 0 ? money(state.price, state.price < 10 ? 4 : 3) : '—');
+  }
   const change = q('entryMarketChange');
   if (change) {
     const value = Number(state.change);
@@ -627,6 +654,138 @@ function bindEntryWalletRailGestures(host) {
   });
 }
 
+
+// v15.98.28 — The large active-wallet card is itself a wallet carousel surface.
+// Horizontal intent changes account; vertical intent is deliberately left to the
+// browser so page scrolling remains native and reliable on iOS.
+const entryOverviewSwipe = {
+  pointerId: null,
+  baseIndex: -1,
+  startX: 0,
+  startY: 0,
+  lastX: 0,
+  lastAt: 0,
+  velocityX: 0,
+  horizontal: false
+};
+
+function resetEntryOverviewSwipe(removeStage = true) {
+  const overview = $('entryOverview');
+  overview?.classList.remove('entry-overview-swipe-active');
+  entryOverviewSwipe.pointerId = null;
+  entryOverviewSwipe.baseIndex = -1;
+  entryOverviewSwipe.horizontal = false;
+  entryOverviewSwipe.velocityX = 0;
+  if (removeStage) removeEntryWalletCarouselStage();
+}
+
+function bindEntryOverviewWalletGestures() {
+  const overview = $('entryOverview');
+  if (!overview || overview.dataset.walletSwipeBound === '1') return;
+  overview.dataset.walletSwipeBound = '1';
+
+  overview.addEventListener('pointerdown', (event) => {
+    if (state.currentView !== 'home' || state.wallets.length < 2) return;
+    if (event.target?.closest?.('button, a, input, select, textarea, [role="button"]')) return;
+    if (entryWalletGesture.programmatic || entryWalletGesture.settling) return;
+
+    entryOverviewSwipe.pointerId = event.pointerId;
+    entryOverviewSwipe.baseIndex = entryWalletCurrentBaseIndex();
+    entryOverviewSwipe.startX = event.clientX;
+    entryOverviewSwipe.startY = event.clientY;
+    entryOverviewSwipe.lastX = event.clientX;
+    entryOverviewSwipe.lastAt = performance.now();
+    entryOverviewSwipe.velocityX = 0;
+    entryOverviewSwipe.horizontal = false;
+  }, { passive: true });
+
+  overview.addEventListener('pointermove', (event) => {
+    if (event.pointerId !== entryOverviewSwipe.pointerId || entryOverviewSwipe.baseIndex < 0) return;
+    const dx = event.clientX - entryOverviewSwipe.startX;
+    const dy = event.clientY - entryOverviewSwipe.startY;
+    const ax = Math.abs(dx);
+    const ay = Math.abs(dy);
+
+    if (!entryOverviewSwipe.horizontal) {
+      if (Math.max(ax, ay) < 8) return;
+      // Vertical/diagonal scrolling always wins unless horizontal intent is clear.
+      if (ay > ax * 1.08) {
+        resetEntryOverviewSwipe(false);
+        return;
+      }
+      if (ax <= ay * 1.08) return;
+      entryOverviewSwipe.horizontal = true;
+      overview.classList.add('entry-overview-swipe-active');
+      ensureEntryWalletCarouselStage(entryOverviewSwipe.baseIndex);
+      try { overview.setPointerCapture?.(event.pointerId); } catch (_) {}
+    }
+
+    if (event.cancelable) event.preventDefault();
+    const now = performance.now();
+    const dt = Math.max(1, now - entryOverviewSwipe.lastAt);
+    const instant = (event.clientX - entryOverviewSwipe.lastX) / dt;
+    entryOverviewSwipe.velocityX = entryOverviewSwipe.velocityX * .42 + instant * .58;
+    entryOverviewSwipe.lastX = event.clientX;
+    entryOverviewSwipe.lastAt = now;
+
+    const width = Math.max(1, overview.getBoundingClientRect().width);
+    let progress = -dx / width;
+    if ((entryOverviewSwipe.baseIndex === 0 && progress < 0) ||
+        (entryOverviewSwipe.baseIndex === state.wallets.length - 1 && progress > 0)) {
+      progress *= .22; // soft edge resistance
+    }
+    setEntryWalletTrackProgress(Math.max(-1, Math.min(1, progress)), false);
+
+    const preview = Math.max(0, Math.min(state.wallets.length - 1,
+      entryOverviewSwipe.baseIndex + (progress > .18 ? 1 : progress < -.18 ? -1 : 0)));
+    updateEntryWalletPagination(preview);
+  }, { passive: false });
+
+  const finish = (event, cancelled = false) => {
+    if (event?.pointerId !== undefined && event.pointerId !== entryOverviewSwipe.pointerId) return;
+    const overview = $('entryOverview');
+    const base = entryOverviewSwipe.baseIndex;
+    // Clear first so releasePointerCapture cannot re-enter through lostpointercapture.
+    entryOverviewSwipe.pointerId = null;
+    const wasHorizontal = entryOverviewSwipe.horizontal;
+    const dx = Number(event?.clientX) - entryOverviewSwipe.startX;
+    const safeDx = Number.isFinite(dx) ? dx : (entryOverviewSwipe.lastX - entryOverviewSwipe.startX);
+    const velocity = entryOverviewSwipe.velocityX;
+
+    try {
+      if (event && overview?.hasPointerCapture?.(event.pointerId)) overview.releasePointerCapture?.(event.pointerId);
+    } catch (_) {}
+
+    if (!wasHorizontal || base < 0 || cancelled) {
+      resetEntryOverviewSwipe(true);
+      updateEntryWalletPagination(entryWalletCurrentBaseIndex());
+      return;
+    }
+
+    const width = Math.max(1, overview?.getBoundingClientRect().width || 1);
+    const fastFlick = Math.abs(velocity) >= .42 || Math.abs(safeDx) >= Math.min(58, width * .18);
+    const crossed = Math.abs(safeDx) >= width * .24;
+    const direction = safeDx < 0 ? 1 : -1;
+    let target = base;
+    if (fastFlick || crossed) target = Math.max(0, Math.min(state.wallets.length - 1, base + direction));
+
+    entryWalletGesture.suppressClickUntil = performance.now() + 520;
+    updateEntryWalletPagination(target);
+    setEntryWalletTrackProgress(target === base ? 0 : (target > base ? 1 : -1), true);
+    overview?.classList.remove('entry-overview-swipe-active');
+    entryOverviewSwipe.horizontal = false;
+    entryOverviewSwipe.baseIndex = -1;
+
+    window.setTimeout(() => commitEntryWalletCarousel(target), 325);
+  };
+
+  overview.addEventListener('pointerup', (event) => finish(event, false));
+  overview.addEventListener('pointercancel', (event) => finish(event, true));
+  overview.addEventListener('lostpointercapture', (event) => {
+    if (entryOverviewSwipe.pointerId !== null && event.pointerId === entryOverviewSwipe.pointerId) finish(event, true);
+  });
+}
+
 function setEntryWalletSelection(address, { scroll = false } = {}) {
   if (!address || !state.wallets.some((wallet) => wallet.address === address)) return;
   const nextIndex = state.wallets.findIndex((wallet) => wallet.address === address);
@@ -662,7 +821,10 @@ function renderEntryGate() {
   const hint = $('entryWalletHint');
   const liveButton = $('entryLiveButton');
   const pulseButton = $('entryPulseButton');
-  if (!shell || !host || !hint || !liveButton || !pulseButton) return;
+  const liveChartsButton = $('entryLiveChartsButton');
+  const orderBookButton = $('entryOrderBookButton');
+  const commandCenterButton = $('entryCommandCenterButton');
+  if (!shell || !host || !hint || !liveButton || !pulseButton || !liveChartsButton || !orderBookButton || !commandCenterButton) return;
 
   const firstAccess = state.wallets.length === 0;
   shell.classList.toggle('first-access', firstAccess);
@@ -673,6 +835,9 @@ function renderEntryGate() {
     updateEntryWalletPagination(0);
     liveButton.disabled = true;
     pulseButton.disabled = true;
+    liveChartsButton.disabled = true;
+    orderBookButton.disabled = true;
+    commandCenterButton.disabled = true;
     const input = $('entryWalletInput');
     const nameInput = $('entryWalletName');
     if (input && document.activeElement !== input) input.value = '';
@@ -692,6 +857,9 @@ function renderEntryGate() {
   $('entryNote').textContent = 'Wallet e preferenze restano solo su questo dispositivo.';
   liveButton.disabled = false;
   pulseButton.disabled = false;
+  liveChartsButton.disabled = false;
+  orderBookButton.disabled = false;
+  commandCenterButton.disabled = false;
 
   state.wallets.forEach((wallet) => {
     const selected = wallet.address === state.entrySelectedAddress;
@@ -805,7 +973,7 @@ function systemCopy(mode) {
   return mode === 'online' ? 'SYSTEM · OK' : mode === 'warn' ? 'SYSTEM · ATTENZIONE' : 'SYSTEM · OFFLINE';
 }
 
-function setEntryAnimatedValue(id, text, numericValue, { directional = false } = {}) {
+function setEntryAnimatedValue(id, text, numericValue, { directional = false, roll = false, stableDigits = false } = {}) {
   const element = $(id);
   if (!element) return;
 
@@ -817,18 +985,34 @@ function setEntryAnimatedValue(id, text, numericValue, { directional = false } =
   const numericChange = Number.isFinite(previous) && Number.isFinite(next) &&
     Math.abs(next - previous) > Math.max(1e-12, Math.abs(previous) * 1e-10);
 
-  element.textContent = nextText;
+  // v15.98.17 — Home wallet switches keep the exact odometer geometry but do
+  // not animate from the previous wallet's worth. Live market changes on the
+  // same wallet still use the per-digit roll.
+  if (roll && state.marketMotionRendering) {
+    clearTimeout(element._verticalRollTimer);
+    element._verticalRollTimer = null;
+    element.classList.add('number-roll-host');
+    renderStableNumberText(element, nextText);
+  } else if (roll) animateVerticalNumberRoll(element, previousText, nextText, previous, next);
+  else if (stableDigits) {
+    clearTimeout(element._verticalRollTimer);
+    element._verticalRollTimer = null;
+    element.classList.add('number-roll-host');
+    renderStableNumberText(element, nextText);
+  } else {
+    clearTimeout(element._verticalRollTimer);
+    element._verticalRollTimer = null;
+    element.textContent = nextText;
+  }
 
-  if (!state.suppressEffects && visibleChange) {
+  if (!state.suppressEffects && !state.marketMotionRendering && visibleChange && directional && numericChange) {
     clearTimeout(element._entryValueTimer);
-    element.classList.remove('entry-value-update', 'entry-value-up', 'entry-value-down');
-    if (directional && numericChange) element.classList.add(next > previous ? 'entry-value-up' : 'entry-value-down');
-    requestAnimationFrame(() => {
-      element.classList.add('entry-value-update');
-      element._entryValueTimer = window.setTimeout(() => {
-        element.classList.remove('entry-value-update', 'entry-value-up', 'entry-value-down');
-      }, 420);
-    });
+    element.classList.remove('entry-value-up', 'entry-value-down');
+    void element.offsetWidth;
+    element.classList.add(next > previous ? 'entry-value-up' : 'entry-value-down');
+    element._entryValueTimer = window.setTimeout(() => {
+      element.classList.remove('entry-value-up', 'entry-value-down');
+    }, 520);
   }
 
   element.dataset.entryRenderedValue = nextText;
@@ -844,17 +1028,25 @@ function renderEntryOverview() {
   const total = number(row?.total);
   const worth = total * state.price;
   $('entryOverviewWallet').textContent = wallet.label;
-  setEntryAnimatedValue('entryWalletWorth', total > 0 && state.price > 0 ? compactMoney(worth) : '—', worth);
+  const entryWorth = $('entryWalletWorth');
+  const sameWorthWallet = entryWorth?.dataset.walletAddress === wallet.address;
+  setEntryAnimatedValue(
+    'entryWalletWorth',
+    total > 0 && state.price > 0 ? compactMoney(worth) : '—',
+    worth,
+    { roll: Boolean(sameWorthWallet), stableDigits: true }
+  );
+  if (entryWorth) entryWorth.dataset.walletAddress = wallet.address;
   setEntryAnimatedValue('entryWalletTotal', row ? formatInj(total, 4) : 'Sincronizzazione…', total);
   setEntryAnimatedValue('entryWalletStaked', row ? formatInj(number(row.staked), 4) : '—', number(row?.staked));
   setEntryAnimatedValue('entryWalletRewards', row ? formatInj(number(row.rewards), 4) : '—', number(row?.rewards), { directional: true });
   $('entryWalletFreshness').textContent = row?.updated ? formatFreshAge(row.updated) : '—';
-  setEntryAnimatedValue('entryMarketPrice', state.price > 0 ? money(state.price, state.price < 10 ? 4 : 3) : '—', state.price, { directional: true });
+  setEntryAnimatedValue('entryMarketPrice', state.price > 0 ? money(state.price, state.price < 10 ? 4 : 3) : '—', state.price, { directional: true, roll: true });
   const change = $('entryMarketChange');
   const changeValue = Number(state.change);
   if (change) {
-    change.textContent = state.price > 0 ? `${changeValue > 0 ? '+' : ''}${changeValue.toFixed(2)}% · 24H` : '— · 24H';
     change.className = changeValue > 0 ? 'positive' : changeValue < 0 ? 'negative' : 'neutral';
+    setEntryAnimatedValue('entryMarketChange', state.price > 0 ? `${changeValue > 0 ? '+' : ''}${changeValue.toFixed(2)}% · 24H` : '— · 24H', state.price > 0 ? changeValue : NaN, { directional: true });
   }
   const snapshot = overallSystemSnapshot();
   const gate = $('entryGate');
@@ -868,6 +1060,7 @@ function renderEntryOverview() {
   if ($('entrySystemStatusText')) $('entrySystemStatusText').textContent = systemCopy(snapshot.overall);
   renderEntryAtGlance();
   renderEntryDesktopMetrics();
+  renderEntryMarketMatrix();
 }
 
 function renderEntryDesktopMetrics() {
@@ -884,12 +1077,12 @@ function renderEntryDesktopMetrics() {
   const stakingRatio = total > 0 ? (staked / total) * 100 : 0;
   const dailyReward = staked > 0 && apr > 0 ? staked * (apr / 100) / 365 : 0;
 
-  if ($('entryDesktopAvailable')) $('entryDesktopAvailable').textContent = row ? formatInj(available, 4) : '—';
-  if ($('entryDesktopStakeRatio')) $('entryDesktopStakeRatio').textContent = total > 0 ? `${stakingRatio.toFixed(1)}%` : '—';
-  if ($('entryDesktopStakeMeta')) $('entryDesktopStakeMeta').textContent = row ? `${formatInj(staked, 4)} delegati` : '—';
-  if ($('entryDesktopDailyReward')) $('entryDesktopDailyReward').textContent = dailyReward > 0 ? `${dailyReward.toFixed(4)} INJ` : '—';
-  if ($('entryDesktopDailyRewardValue')) $('entryDesktopDailyRewardValue').textContent = dailyReward > 0 && state.price > 0 ? `${money(dailyReward * state.price, 2)} / giorno` : 'Stima netta';
-  if ($('entryDesktopApr')) $('entryDesktopApr').textContent = apr > 0 ? `${apr.toFixed(3)}%` : '—';
+  setEntryAnimatedValue('entryDesktopAvailable', row ? formatInj(available, 4) : '—', row ? available : NaN);
+  setEntryAnimatedValue('entryDesktopStakeRatio', total > 0 ? `${stakingRatio.toFixed(1)}%` : '—', total > 0 ? stakingRatio : NaN);
+  setEntryAnimatedValue('entryDesktopStakeMeta', row ? `${formatInj(staked, 4)} delegati` : '—', row ? staked : NaN);
+  setEntryAnimatedValue('entryDesktopDailyReward', dailyReward > 0 ? `${dailyReward.toFixed(4)} INJ` : '—', dailyReward > 0 ? dailyReward : NaN);
+  setEntryAnimatedValue('entryDesktopDailyRewardValue', dailyReward > 0 && state.price > 0 ? `${money(dailyReward * state.price, 2)} / giorno` : 'Stima netta', dailyReward > 0 && state.price > 0 ? dailyReward * state.price : NaN);
+  setEntryAnimatedValue('entryDesktopApr', apr > 0 ? `${apr.toFixed(3)}%` : '—', apr > 0 ? apr : NaN);
 }
 
 
@@ -1035,39 +1228,127 @@ function inspectEntrySparkAt(event) {
 
 function bindEntrySparkInteraction() {
   const stage = $('entrySparkStage');
-  if (!stage) return;
+  if (!stage || stage.dataset.sparkBound === '1') return;
+  stage.dataset.sparkBound = '1';
+
+  // v15.98.33 — Sticky Home PRICE inspector.
+  // Touch starts as a normal pan-y candidate; once horizontal intent is clear,
+  // the chart captures that pointer and owns it until release. This prevents
+  // WebKit from dropping the drag when the finger leaves the plot by a few px.
+  const touch = {
+    pointerId: null,
+    startX: 0,
+    startY: 0,
+    horizontal: false,
+    moved: false
+  };
+
+  const resetTouch = () => {
+    touch.pointerId = null;
+    touch.horizontal = false;
+    touch.moved = false;
+    stage.classList.remove('dragging');
+  };
+
+  const releaseCapture = (pointerId) => {
+    try {
+      if (stage.hasPointerCapture?.(pointerId)) stage.releasePointerCapture?.(pointerId);
+    } catch (_) {}
+  };
+
   stage.addEventListener('pointerdown', (event) => {
     if (!state.entrySpark.plot?.samples?.length) return;
-    event.preventDefault();
-    stage.setPointerCapture?.(event.pointerId);
-    inspectEntrySparkAt(event);
-  });
-  stage.addEventListener('pointermove', (event) => {
-    if (!stage.classList.contains('inspecting') && event.pointerType !== 'mouse') return;
-    if (event.pointerType === 'mouse' || stage.hasPointerCapture?.(event.pointerId)) inspectEntrySparkAt(event);
-  });
-  stage.addEventListener('pointerleave', (event) => {
-    if (!stage.hasPointerCapture?.(event.pointerId)) hideEntrySparkInspector();
-  });
-  stage.addEventListener('pointerup', (event) => {
-    try { if (stage.hasPointerCapture?.(event.pointerId)) stage.releasePointerCapture?.(event.pointerId); } catch (_) {}
-    // Touch probe is transient: as soon as the finger/mouse is released,
-    // return to the clean LIVE chart and leave only the permanent live price.
-    hideEntrySparkInspector();
-  });
-  stage.addEventListener('pointercancel', hideEntrySparkInspector);
-  stage.addEventListener('lostpointercapture', hideEntrySparkInspector);
 
-  // v15.85 — Safari/iOS safety net: a touch can finish outside the SVG/stage
-  // after scrolling or pointer-capture changes. Always clear the temporary
-  // probe when the interaction ends anywhere in the document.
-  const endEntrySparkInteraction = () => {
-    if (stage.classList.contains('inspecting')) hideEntrySparkInspector();
-  };
-  document.addEventListener('pointerup', endEntrySparkInteraction, true);
-  document.addEventListener('pointercancel', endEntrySparkInteraction, true);
-  document.addEventListener('touchend', endEntrySparkInteraction, { capture: true, passive: true });
-  document.addEventListener('touchcancel', endEntrySparkInteraction, { capture: true, passive: true });
+    // Immediate feedback on tap/press. If the gesture later resolves to a
+    // vertical page scroll, pointermove removes it again.
+    inspectEntrySparkAt(event);
+
+    if (event.pointerType === 'mouse') {
+      event.preventDefault();
+      try { stage.setPointerCapture?.(event.pointerId); } catch (_) {}
+      stage.classList.add('dragging');
+      return;
+    }
+
+    touch.pointerId = event.pointerId;
+    touch.startX = event.clientX;
+    touch.startY = event.clientY;
+    touch.horizontal = false;
+    touch.moved = false;
+  }, { passive: false });
+
+  stage.addEventListener('pointermove', (event) => {
+    if (event.pointerType === 'mouse') {
+      if (stage.classList.contains('inspecting') || stage.hasPointerCapture?.(event.pointerId)) inspectEntrySparkAt(event);
+      return;
+    }
+    if (event.pointerId !== touch.pointerId) return;
+
+    const dx = event.clientX - touch.startX;
+    const dy = event.clientY - touch.startY;
+    const ax = Math.abs(dx);
+    const ay = Math.abs(dy);
+
+    if (!touch.horizontal) {
+      // Smaller activation threshold than before: the graph feels immediate.
+      if (Math.max(ax, ay) < 4) return;
+      touch.moved = true;
+
+      // Clear vertical intent: hand the gesture back to native page scrolling.
+      if (ay > ax * 1.35) {
+        hideEntrySparkInspector();
+        resetTouch();
+        return;
+      }
+
+      // Horizontal or mildly diagonal movement locks onto the graph. A small
+      // diagonal tolerance makes one-handed iPhone dragging much more reliable.
+      if (ax < 4 || ax < ay * 0.72) return;
+      touch.horizontal = true;
+      stage.classList.add('dragging');
+      try { stage.setPointerCapture?.(event.pointerId); } catch (_) {}
+    }
+
+    if (event.cancelable) event.preventDefault();
+    inspectEntrySparkAt(event);
+  }, { passive: false });
+
+  stage.addEventListener('pointerleave', (event) => {
+    if (event.pointerType === 'mouse' && !stage.hasPointerCapture?.(event.pointerId)) hideEntrySparkInspector();
+  });
+
+  stage.addEventListener('pointerup', (event) => {
+    const wasTouch = event.pointerType !== 'mouse';
+    const wasHorizontal = touch.horizontal;
+
+    // Keep the final sampled value visible after release. It disappears on the
+    // next tap outside the graph or when the user begins a vertical scroll.
+    if (wasHorizontal || !wasTouch || event.pointerId === touch.pointerId) inspectEntrySparkAt(event);
+
+    releaseCapture(event.pointerId);
+    resetTouch();
+  });
+
+  stage.addEventListener('pointercancel', (event) => {
+    const keepLastSample = touch.horizontal;
+    releaseCapture(event.pointerId);
+    resetTouch();
+    if (!keepLastSample) hideEntrySparkInspector();
+  });
+
+  // Releasing capture is expected at the end of a successful drag; never use
+  // lostpointercapture as a reason to erase the selected value.
+  stage.addEventListener('lostpointercapture', () => {
+    stage.classList.remove('dragging');
+  });
+
+  // Sticky inspector: close only when a new interaction starts elsewhere.
+  document.addEventListener('pointerdown', (event) => {
+    if (!stage.classList.contains('inspecting')) return;
+    if (stage.contains(event.target)) return;
+    hideEntrySparkInspector();
+    resetTouch();
+  }, true);
 
   stage.addEventListener('keydown', (event) => {
     const samples = state.entrySpark.plot?.samples || [];
@@ -1082,7 +1363,6 @@ function bindEntrySparkInteraction() {
     showEntrySparkSample(index);
   });
 }
-
 function renderEntryAtGlance() {
   const section = $('entryInsights');
   if (!section) return;
@@ -1094,8 +1374,8 @@ function renderEntryAtGlance() {
   const pnlToday = total > 0 && openPrice > 0 && state.price > 0 ? total * (state.price - openPrice) : 0;
   const pnl = $('entryInsightPnl');
   if (pnl) {
-    pnl.textContent = total > 0 && openPrice > 0 && state.price > 0 ? `${pnlToday > 0 ? '+' : ''}${money(pnlToday, 2)}` : '—';
     pnl.className = pnlToday > 0 ? 'positive' : pnlToday < 0 ? 'negative' : 'neutral';
+    setEntryAnimatedValue('entryInsightPnl', total > 0 && openPrice > 0 && state.price > 0 ? `${pnlToday > 0 ? '+' : ''}${money(pnlToday, 2)}` : '—', total > 0 && openPrice > 0 && state.price > 0 ? pnlToday : NaN, { directional: true });
   }
 
   const spark = entrySparkPath(state.entrySpark.points);
@@ -1119,7 +1399,7 @@ function renderEntryAtGlance() {
         const latestPrice = number(spark.samples?.at(-1)?.price) || number(state.price);
         liveLabel.style.left = `${xPct}%`;
         liveLabel.style.top = `${Math.max(12, Math.min(88, yPct))}%`;
-        liveLabel.textContent = latestPrice > 0 ? `$${latestPrice.toFixed(4)}` : '—';
+        setEntryAnimatedValue('entrySparkLiveLabel', latestPrice > 0 ? `$${latestPrice.toFixed(4)}` : '—', latestPrice > 0 ? latestPrice : NaN);
         liveLabel.classList.toggle('flip', xPct > 68);
         liveLabel.hidden = latestPrice <= 0;
       }
@@ -1273,7 +1553,7 @@ function closeEntryGate({ revealDashboard = true } = {}) {
     gate.setAttribute('aria-hidden', 'true');
     document.body.classList.remove('entry-gate-open');
 
-    if (revealDashboard || !$('focusDisplayDialog')?.hidden || !$('pulseViewDialog')?.hidden) {
+    if (revealDashboard || !$('focusDisplayDialog')?.hidden || !$('pulseViewDialog')?.hidden || !$('liveChartsDialog')?.hidden) {
       requestAnimationFrame(() => document.body.classList.remove('entry-live-launch'));
     }
   }, 380);
@@ -1293,11 +1573,11 @@ function activateEntrySelection() {
 
 function enterDashboardFromGate() {
   if (state.currentView !== 'home' || !modeLaunchAllowed()) return;
-  const wallet = activateEntrySelection();
-  if (!wallet) return;
-  // v15.99.1 — Dashboard replaced with the selected standalone Dashboard build.
-  // Home, Live View, Pulse View and Market Tools remain on this official build.
-  window.location.assign('./dashboard/index.html?v=15.99.1');
+  activateEntrySelection();
+  state.currentView = 'dashboard';
+  pulseDashboardReveal();
+  closeEntryGate({ revealDashboard: true });
+  requestAnimationFrame(() => updateDashboardSectionNavigator(true));
 }
 
 function parkEntryGateUnderImmersive() {
@@ -1315,10 +1595,13 @@ function restoreEntryGateFromImmersive() {
   const gate = $('entryGate');
   if (!gate) return;
   state.currentView = 'home';
-  renderEntryGate();
+  // Home has remained painted and live underneath the immersive mode. Do not
+  // rebuild its DOM at the exact handoff frame: that repaint was visible as a
+  // tiny snap/black flash on WebKit. Refresh only the live overview in place.
+  renderEntryOverview();
   loadEntrySparkline(false);
   gate.classList.remove('immersive-underlay', 'mode-return');
-  gate.classList.add('visible');
+  gate.classList.add('visible', 'home-return-stable');
   gate.setAttribute('aria-hidden', 'false');
   document.body.classList.add('entry-gate-open');
   document.body.classList.remove('entry-live-launch', 'mode-returning');
@@ -1341,14 +1624,15 @@ function modeLaunchAllowed() {
   if (Date.now() < Number(state.modeExitLockUntil || 0)) return false;
   if (document.body.classList.contains('mode-returning')) return false;
   if (!gate?.classList.contains('visible') || gate.classList.contains('immersive-underlay')) return false;
-  if ($('focusDisplayDialog')?.classList.contains('is-closing') || $('pulseViewDialog')?.classList.contains('is-closing')) return false;
-  return !isFocusDisplayActive() && !isPulseViewActive();
+  if ($('focusDisplayDialog')?.classList.contains('is-closing') || $('pulseViewDialog')?.classList.contains('is-closing') || $('liveChartsDialog')?.classList.contains('is-closing')) return false;
+  return !isFocusDisplayActive() && !isPulseViewActive() && !isLiveChartsActive();
 }
 
 function immersiveModeTransitioning() {
   return Boolean(
     $('focusDisplayDialog')?.classList.contains('is-closing') ||
-    $('pulseViewDialog')?.classList.contains('is-closing')
+    $('pulseViewDialog')?.classList.contains('is-closing') ||
+    $('liveChartsDialog')?.classList.contains('is-closing')
   );
 }
 
@@ -1372,20 +1656,30 @@ function enterPulseViewFromGate() {
 
 function enterLiveChartsFromGate() {
   if (!modeLaunchAllowed()) return;
-  activateEntrySelection();
-  openLiveChartsDialog();
+  // v15.98.43: Live Charts is deliberately isolated in its own lightweight page.
+  // Do not park Home or start the in-app chart engine before navigation: this
+  // guarantees that a chart failure can never freeze the main application UI.
+  setHeaderMenuOpen(false);
+  setSearchOpen(false);
+  try { sessionStorage.setItem('inj_node_livecharts_from_home', '1'); } catch (_) {}
+  window.location.assign('./live-charts.html?v=15.98.79');
 }
 
 function enterOrderBookFromGate() {
   if (!modeLaunchAllowed()) return;
-  activateEntrySelection();
-  openOrderBookDialog();
+  setHeaderMenuOpen(false);
+  setSearchOpen(false);
+  try { sessionStorage.setItem('inj_node_orderbook_from_home', '1'); } catch (_) {}
+  window.location.assign('./order-book.html?v=15.98.79');
 }
 
-function enterTerminalFromGate() {
+function enterCommandCenterFromGate() {
   if (!modeLaunchAllowed()) return;
-  activateEntrySelection();
-  openTerminalDialog();
+  const wallet = activateEntrySelection();
+  if (!wallet) return;
+  setHeaderMenuOpen(false);
+  setSearchOpen(false);
+  window.location.assign('./command-center.html?v=15.98.62');
 }
 
 // v15.70 — Home launchers require a fresh gesture that actually began on the
@@ -1445,14 +1739,16 @@ function consumeDashboardHomeIntent(event) {
 function bindDashboardHomeLauncher() {
   const button = $('dashboardHomeButton');
   if (!button) return;
-  button.addEventListener('pointerdown', markDashboardHomeIntent, { passive: true });
-  button.addEventListener('touchstart', markDashboardHomeIntent, { passive: true });
-  button.addEventListener('mousedown', markDashboardHomeIntent, { passive: true });
+
+  // v15.98.79: Home is an explicit navigation control. On iOS/PWA a
+  // pointer-intent gate can drop a legitimate tap when the system converts
+  // the gesture between touch/pointer/click events. A normal trusted click is
+  // enough here; goHome() already rejects every non-Home Dashboard source.
   button.addEventListener('click', (event) => {
     event.preventDefault();
     event.stopPropagation();
-    if (!consumeDashboardHomeIntent(event)) return;
-    goHome('dashboard-home-button');
+    // Return to the official Home build; do not expose the Dashboard source Home gate.
+    window.location.replace('../index.html?v=15.99.1');
   });
 }
 
@@ -1466,6 +1762,16 @@ const LCD_ENDPOINTS = [
 const state = {
   address: '',
   price: 0,
+  marketRawPrice: 0,
+  marketTargetPrice: 0,
+  marketRawChange: 0,
+  marketRawChangeAmount: 0,
+  marketOpen24: 0,
+  marketMotionFrame: 0,
+  marketMotionLastFrame: 0,
+  marketMotionLastRender: 0,
+  marketMotionUntil: 0,
+  marketMotionRendering: false,
   change: 0,
   changeAmount: 0,
   low: 0,
@@ -1478,6 +1784,12 @@ const state = {
   },
   marketFramesUpdated: 0,
   marketFramesLoading: false,
+  marketMatrix: {
+    opens: { h1: 0, w1: 0 },
+    bucketStarts: { h1: 0, w1: 0 },
+    loadedAt: 0,
+    loading: false
+  },
   marketExtremeFlashTimers: {},
   available: 0,
   staked: 0,
@@ -1508,6 +1820,7 @@ const state = {
   lastMarketUpdate: 0,
   lastWalletUpdate: 0,
   focusControlsTimer: 0,
+  liveCharts: { samples: [], lastSampleAt: 0, lastTradeAt: 0, renderFrame: 0, lastRenderAt: 0, lastPathRenderAt: 0, visualPrice: 0, targetPrice: 0, visualFrameAt: 0, historyLoadedAt: 0, persistAt: 0, openToken: 0, scales: { m5: { min: 0, max: 0 }, m10: { min: 0, max: 0 }, h1: { min: 0, max: 0 } }, renderCache: { m5: null, m10: null, h1: null } },
   pulseControlsTimer: 0,
   modeExitLockUntil: 0,
   modeExitLockTimer: 0,
@@ -1525,27 +1838,7 @@ const state = {
   nativeChart: { points: [], liveSamples: [], live: null, open: 0, min: 0, max: 0, start: 0, end: 0, loading: false, requestId: 0, renderPoints: [] },
   nativeChartResizeObserver: null,
   nativeChartRenderFrame: 0,
-  nativeChartHover: { active: false, t: 0 },
-  marketTools: {
-    orderSocket: null,
-    orderReconnectTimer: 0,
-    orderWatchTimer: 0,
-    orderLastUpdateId: 0,
-    bids: [],
-    asks: [],
-    orderUpdatedAt: 0,
-    terminalClockTimer: 0,
-    terminalMatrixTimer: 0,
-    terminalMatrix: {}
-  },
-  liveCharts: {
-    range: 'h1',
-    candles: [],
-    loading: false,
-    requestId: 0,
-    loadedAt: 0,
-    priceTickDirection: 0
-  }
+  nativeChartHover: { active: false, t: 0 }
 };
 
 function number(value) {
@@ -1755,7 +2048,10 @@ function setSearchOpen(open) {
   if (open) {
     $('addressInput').value = '';
     if ($('walletNameInput')) $('walletNameInput').value = '';
-    requestAnimationFrame(() => $('addressInput')?.focus());
+    requestAnimationFrame(() => $('addressInput')?.focus({ preventScroll: true }));
+  } else {
+    const active = document.activeElement;
+    if (active && $('headerSearch')?.contains(active) && typeof active.blur === 'function') active.blur();
   }
 }
 
@@ -2001,31 +2297,294 @@ function signalChange(element, previous, next) {
   }
 }
 
-function setValue(id, text, numericValue, { flash = true } = {}) {
-  const element = $(id);
+function numberRollGroups(text) {
+  const value = String(text ?? '');
+  const groups = [];
+  const regex = /\d[\d.,]*/g;
+  let match;
+  while ((match = regex.exec(value))) {
+    groups.push({ text: match[0], start: match.index, end: match.index + match[0].length });
+  }
+  return groups;
+}
+
+function appendRollingDigit(parent, oldDigit, newDigit, direction) {
+  if (oldDigit === newDigit) {
+    const stable = document.createElement('span');
+    stable.className = 'number-roll-static-digit';
+    stable.textContent = newDigit;
+    parent.append(stable);
+    return;
+  }
+
+  const slot = document.createElement('span');
+  slot.className = `number-roll-digit number-roll-${direction}`;
+  slot.setAttribute('aria-hidden', 'true');
+
+  const oldLayer = document.createElement('span');
+  oldLayer.className = 'number-roll-digit-layer number-roll-old';
+  oldLayer.textContent = oldDigit || '\u00a0';
+
+  const newLayer = document.createElement('span');
+  newLayer.className = 'number-roll-digit-layer number-roll-new';
+  newLayer.textContent = newDigit;
+
+  slot.append(oldLayer, newLayer);
+  parent.append(slot);
+}
+
+function appendRollingNumberGroup(parent, oldGroup, newGroup, direction) {
+  const oldDigits = Array.from(String(oldGroup || '')).filter((char) => /\d/.test(char));
+  const newChars = Array.from(String(newGroup || ''));
+  const newDigitCount = newChars.reduce((count, char) => count + (/\d/.test(char) ? 1 : 0), 0);
+  const digitOffset = oldDigits.length - newDigitCount;
+  let newDigitIndex = 0;
+
+  for (const char of newChars) {
+    if (!/\d/.test(char)) {
+      parent.append(document.createTextNode(char));
+      continue;
+    }
+
+    const oldIndex = newDigitIndex + digitOffset;
+    const oldDigit = oldIndex >= 0 && oldIndex < oldDigits.length ? oldDigits[oldIndex] : '';
+    appendRollingDigit(parent, oldDigit, char, direction);
+    newDigitIndex += 1;
+  }
+}
+
+function appendStableNumberGroup(parent, group) {
+  for (const char of Array.from(String(group || ''))) {
+    if (/\d/.test(char)) {
+      const digit = document.createElement('span');
+      digit.className = 'number-roll-static-digit';
+      digit.textContent = char;
+      parent.append(digit);
+    } else {
+      parent.append(document.createTextNode(char));
+    }
+  }
+}
+
+function renderStableNumberText(element, text) {
   if (!element) return;
+  const value = String(text ?? '');
+  const groups = numberRollGroups(value);
+  if (!groups.length) {
+    element.textContent = value;
+    return;
+  }
 
+  const shell = document.createElement('span');
+  shell.className = 'number-roll-text number-roll-stable';
+  shell.setAttribute('aria-label', value);
+  let cursor = 0;
+  for (const group of groups) {
+    if (group.start > cursor) shell.append(document.createTextNode(value.slice(cursor, group.start)));
+    appendStableNumberGroup(shell, group.text);
+    cursor = group.end;
+  }
+  if (cursor < value.length) shell.append(document.createTextNode(value.slice(cursor)));
+  element.textContent = '';
+  element.append(shell);
+}
+
+function animateVerticalNumberRoll(element, previousText, nextText, previousNumeric, nextNumeric) {
+  if (!element) return;
+  // Keep the host in tabular-number mode even after the temporary animation
+  // markup is removed. This makes the animated and final text occupy the same
+  // width and prevents the tiny horizontal/baseline jumps seen on live updates.
+  element.classList.add('number-roll-host');
+  const oldText = previousText === undefined ? undefined : String(previousText);
+  const newText = String(nextText);
+  const previous = Number(previousNumeric);
+  const next = Number(nextNumeric);
+  const visibleChange = oldText !== undefined && oldText !== newText;
+  const numericChange = Number.isFinite(previous) && Number.isFinite(next) &&
+    Math.abs(next - previous) > Math.max(1e-12, Math.abs(previous) * 1e-10);
+  const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
+  // Identical rounded values can be rendered several times per second. Do not
+  // interrupt a roll that is already in flight just because another renderer ran.
+  if (!visibleChange || !numericChange || state.suppressEffects || reduceMotion) {
+    if (element._verticalRollTimer && oldText === newText) return;
+    clearTimeout(element._verticalRollTimer);
+    element._verticalRollTimer = null;
+    renderStableNumberText(element, newText);
+    return;
+  }
+
+  clearTimeout(element._verticalRollTimer);
+  const direction = next > previous ? 'up' : 'down';
+  const shell = document.createElement('span');
+  shell.className = 'number-roll-text';
+  shell.setAttribute('aria-label', newText);
+
+  const oldGroups = numberRollGroups(oldText);
+  const newGroups = numberRollGroups(newText);
+  let cursor = 0;
+
+  newGroups.forEach((group, index) => {
+    if (group.start > cursor) shell.append(document.createTextNode(newText.slice(cursor, group.start)));
+    appendRollingNumberGroup(shell, oldGroups[index]?.text || '', group.text, direction);
+    cursor = group.end;
+  });
+  if (cursor < newText.length) shell.append(document.createTextNode(newText.slice(cursor)));
+
+  // If a value contains no digits (for example an em dash), use the plain text.
+  element.textContent = '';
+  if (newGroups.length) element.append(shell);
+  else element.textContent = newText;
+
+  element._verticalRollTimer = window.setTimeout(() => {
+    element._verticalRollTimer = null;
+    // Keep the exact same per-digit geometry after the animation. Reverting to
+    // a plain text node changed the glyph metrics by a fraction of a pixel on
+    // Safari/iOS and created the visible grow/shrink "jump" at the end.
+    renderStableNumberText(element, newText);
+  }, 500);
+}
+
+function setRollingNumberValue(element, text, numericValue) {
+  if (!element) return { visibleChange: false, numericChange: false, previous: NaN, next: NaN };
   const nextText = String(text);
-  const previousText = element.dataset.renderedValue;
+  const previousText = element.dataset.rollRenderedValue;
   const next = Number(numericValue);
-  const previous = element.dataset.numericValue === undefined ? NaN : Number(element.dataset.numericValue);
-
-  // Un dato e' considerato cambiato solo quando cambia anche cio' che l'utente vede.
-  // Questo elimina i flash causati da refresh identici o da micro-variazioni nascoste
-  // dall'arrotondamento del valore mostrato.
+  const previous = element.dataset.rollNumericValue === undefined ? NaN : Number(element.dataset.rollNumericValue);
   const visibleChange = previousText !== undefined && previousText !== nextText;
   const numericChange = Number.isFinite(previous) && Number.isFinite(next) &&
     Math.abs(next - previous) > Math.max(1e-12, Math.abs(previous) * 1e-10);
 
-  element.textContent = nextText;
+  animateVerticalNumberRoll(element, previousText, nextText, previous, next);
 
-  if (flash && !state.suppressEffects && visibleChange && numericChange) {
-    signalChange(element, previous, next);
+  element.dataset.rollRenderedValue = nextText;
+  if (Number.isFinite(next)) element.dataset.rollNumericValue = String(next);
+  else delete element.dataset.rollNumericValue;
+  return { visibleChange, numericChange, previous, next, previousText, nextText };
+}
+
+function setPlainNumberValue(element, text, numericValue) {
+  if (!element) return { visibleChange: false, numericChange: false, previous: NaN, next: NaN };
+  const nextText = String(text);
+  const previousText = element.dataset.plainRenderedValue;
+  const next = Number(numericValue);
+  const previous = element.dataset.plainNumericValue === undefined ? NaN : Number(element.dataset.plainNumericValue);
+  const visibleChange = previousText !== undefined && previousText !== nextText;
+  const numericChange = Number.isFinite(previous) && Number.isFinite(next) &&
+    Math.abs(next - previous) > Math.max(1e-12, Math.abs(previous) * 1e-10);
+
+  clearTimeout(element._verticalRollTimer);
+  element._verticalRollTimer = null;
+  element.textContent = nextText;
+  element.dataset.plainRenderedValue = nextText;
+  if (Number.isFinite(next)) element.dataset.plainNumericValue = String(next);
+  else delete element.dataset.plainNumericValue;
+  return { visibleChange, numericChange, previous, next, previousText, nextText };
+}
+
+function setStableLiveNumberValue(element, text, numericValue) {
+  if (!element) return { visibleChange: false, numericChange: false, previous: NaN, next: NaN };
+  const result = setPlainNumberValue(element, text, numericValue);
+  element.classList.add('number-roll-host');
+  renderStableNumberText(element, String(text));
+  return result;
+}
+
+function setPulseOnlyValue(id, text, numericValue, { flash = true } = {}) {
+  const element = $(id);
+  if (!element) return;
+  const result = setPlainNumberValue(element, text, numericValue);
+  if (flash && !state.suppressEffects && result.visibleChange && result.numericChange) {
+    signalChange(element, result.previous, result.next);
+  }
+}
+
+function setRewardEstimateValue(id, value, active, digits = 4) {
+  const element = $(id);
+  if (!element) return;
+  if (!active || !Number.isFinite(number(value))) {
+    setPlainNumberValue(element, '—', NaN);
+    element.classList.remove('reward-estimate-value');
+    return;
+  }
+  const rendered = formatInj(value, digits);
+  setPlainNumberValue(element, rendered, value);
+  const formattedNumber = number(value).toLocaleString('it-IT', {
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits
+  });
+  element.classList.add('reward-estimate-value');
+  element.innerHTML = `<span class="reward-estimate-number">${formattedNumber}</span><span class="reward-estimate-unit">INJ</span>`;
+}
+
+// Pulse View intentionally has no numeric odometer in v15.98.13.
+
+function setValue(id, text, numericValue, { flash = true, roll = false } = {}) {
+  const element = $(id);
+  if (!element) return;
+
+  // v15.98.13: Dashboard is intentionally selective. Only callers that pass
+  // roll:true get the per-digit odometer; every other value stays geometrically
+  // fixed and can use the existing directional color blink.
+  const result = roll
+    ? (state.marketMotionRendering
+        ? setStableLiveNumberValue(element, text, numericValue)
+        : setRollingNumberValue(element, text, numericValue))
+    : setPlainNumberValue(element, text, numericValue);
+  if (flash && !state.suppressEffects && !state.marketMotionRendering && result.visibleChange && result.numericChange) {
+    signalChange(element, result.previous, result.next);
   }
 
-  element.dataset.renderedValue = nextText;
-  if (Number.isFinite(next)) element.dataset.numericValue = String(next);
+  // Keep the legacy datasets because a few older dashboard effects read them.
+  element.dataset.renderedValue = result.nextText;
+  if (Number.isFinite(result.next)) element.dataset.numericValue = String(result.next);
   else delete element.dataset.numericValue;
+}
+
+function setAccruedRewardValue(text, numericValue) {
+  const element = $('rewardsInj');
+  if (!element) return;
+
+  const result = setPlainNumberValue(element, text, numericValue);
+  const card = $('rewardsCard');
+
+  // Reward maturate are an accumulation signal: highlight only real increases
+  // in INJ. Price-only changes in the USD countervalue must not trigger it.
+  if (
+    card &&
+    !state.suppressEffects &&
+    !state.marketMotionRendering &&
+    result.visibleChange &&
+    result.numericChange &&
+    Number.isFinite(result.previous) &&
+    Number.isFinite(result.next) &&
+    result.next > result.previous
+  ) {
+    element.classList.remove('reward-accrual-value-flash');
+    card.classList.remove('reward-accrual-flash');
+    void card.offsetWidth;
+    element.classList.add('reward-accrual-value-flash');
+    card.classList.add('reward-accrual-flash');
+
+    clearTimeout(card._rewardAccrualFlashTimer);
+    card._rewardAccrualFlashTimer = window.setTimeout(() => {
+      element.classList.remove('reward-accrual-value-flash');
+      card.classList.remove('reward-accrual-flash');
+    }, 900);
+  }
+
+  element.dataset.renderedValue = result.nextText;
+  if (Number.isFinite(result.next)) element.dataset.numericValue = String(result.next);
+  else delete element.dataset.numericValue;
+}
+
+function setBlinkOnlyElement(element, text, numericValue, { flash = true } = {}) {
+  if (!element) return { visibleChange: false, numericChange: false, previous: NaN, next: NaN };
+  const result = setPlainNumberValue(element, text, numericValue);
+  if (flash && !state.suppressEffects && !state.marketMotionRendering && result.visibleChange && result.numericChange) {
+    signalChange(element, result.previous, result.next);
+  }
+  return result;
 }
 
 async function fetchJson(url, timeout = 9000) {
@@ -2087,14 +2646,19 @@ async function loadWalletSummary(address) {
 
 async function refreshWalletSummaries(force = false) {
   if (state.summariesLoading || !state.wallets.length) return;
-  if (!force && Date.now() - state.summariesLastRefresh < 25_000) return;
+  const summaryCooldown = MOBILE_EFFICIENCY ? 55_000 : 25_000;
+  const walletStaleAfter = MOBILE_EFFICIENCY ? 50_000 : 20_000;
+  if (!force && Date.now() - state.summariesLastRefresh < summaryCooldown) return;
   state.summariesLoading = true;
   state.summariesLastRefresh = Date.now();
   renderAggregate();
   let cursor = 0;
   const addresses = state.wallets.map((item) => item.address).filter((address) => {
     const row = state.walletSummaries[address];
-    return force || address !== state.address || !row || Date.now() - number(row.updated) > 20_000;
+    if (force || !row) return true;
+    const isPriority = address === state.address || address === state.entrySelectedAddress;
+    const staleAfter = MOBILE_EFFICIENCY && !isPriority ? 120_000 : walletStaleAfter;
+    return Date.now() - number(row.updated) > staleAfter;
   });
   if (!addresses.length) {
     state.summariesLoading = false;
@@ -2108,12 +2672,15 @@ async function refreshWalletSummaries(force = false) {
       try {
         state.walletSummaries[address] = await loadWalletSummary(address);
         saveWalletSummaries();
-        renderAggregate();
-        renderWalletCards();
+        if (!MOBILE_EFFICIENCY) {
+          renderAggregate();
+          renderWalletCards();
+        }
       } catch (_) {}
     }
   };
-  await Promise.all(Array.from({ length: Math.min(3, addresses.length) }, worker));
+  const concurrency = MOBILE_EFFICIENCY ? 1 : Math.min(3, addresses.length);
+  await Promise.all(Array.from({ length: concurrency }, worker));
   state.summariesLoading = false;
   renderAggregate();
   renderWalletCards();
@@ -2257,8 +2824,10 @@ async function loadMarketTimeframes(force = false) {
       saveMarketFrameCache();
     }
     renderMarketTimeframes();
+    renderEntryMarketMatrix();
   } catch (_) {
     renderMarketTimeframes();
+    renderEntryMarketMatrix();
   } finally {
     state.marketFramesLoading = false;
   }
@@ -2350,7 +2919,7 @@ function renderMarketFrame(key, prefix) {
 
   if (!(open > 0) || !(current > 0) || !(min > 0) || !(max > 0)) {
     minEl.textContent = '—';
-    openEl.textContent = open > 0 ? money(open, open < 1 ? 4 : 3) : '—';
+    setBlinkOnlyElement(openEl, open > 0 ? money(open, open < 1 ? 4 : 3) : '—', open > 0 ? open : NaN);
     maxEl.textContent = '—';
     changeEl.textContent = '—';
     row.className = 'market-tf neutral';
@@ -2370,10 +2939,10 @@ function renderMarketFrame(key, prefix) {
   const changePercent = ((current / open) - 1) * 100;
   const digits = (value) => value < 1 ? 4 : value >= 100 ? 2 : 3;
 
-  minEl.textContent = money(min, digits(min));
-  openEl.textContent = money(open, digits(open));
-  maxEl.textContent = money(max, digits(max));
-  changeEl.textContent = `${changePercent > 0 ? '+' : ''}${changePercent.toFixed(Math.abs(changePercent) >= 100 ? 1 : 2)}%`;
+  setBlinkOnlyElement(minEl, money(min, digits(min)), min);
+  setBlinkOnlyElement(openEl, money(open, digits(open)), open);
+  setBlinkOnlyElement(maxEl, money(max, digits(max)), max);
+  setBlinkOnlyElement(changeEl, `${changePercent > 0 ? '+' : ''}${changePercent.toFixed(Math.abs(changePercent) >= 100 ? 1 : 2)}%`, changePercent, { flash: false });
   row.className = `market-tf ${changePercent > 0 ? 'positive' : changePercent < 0 ? 'negative' : 'neutral'}`;
   track.style.setProperty('--tf-pos', `${currentPosition.toFixed(3)}%`);
   track.style.setProperty('--tf-open-pos', '50%');
@@ -2429,13 +2998,17 @@ function setTrackerCollapsed(kind, collapsed, persist = true) {
   const toggle = reward ? $('rewardTrackerToggle') : $('targetTrackerToggle');
   if (!card || !panel || !toggle) return;
 
-  const next = Boolean(collapsed);
-  card.classList.toggle('tracker-collapsed', next);
-  panel.hidden = next;
-  toggle.setAttribute('aria-expanded', next ? 'false' : 'true');
-  toggle.title = next ? `Mostra i dati ${reward ? 'Reward Tracker' : 'Target Tracker'}` : `Nascondi i dati ${reward ? 'Reward Tracker' : 'Target Tracker'}`;
+  // v15.98.99: Reward + Target are one continuous page inside Reward & Obiettivi.
+  // The two legacy tracker containers stay in the DOM for existing live logic,
+  // but are always open and no longer behave as nested collapsible pages.
+  const next = false;
+  card.classList.remove('tracker-collapsed');
+  panel.hidden = false;
+  toggle.setAttribute('aria-expanded', 'true');
+  toggle.setAttribute('aria-disabled', 'true');
+  toggle.title = '';
   if (persist) {
-    try { localStorage.setItem(`inj_monitor_${kind}_tracker_collapsed_v1`, next ? '1' : '0'); } catch (_) {}
+    try { localStorage.removeItem(`inj_monitor_${kind}_tracker_collapsed_v1`); } catch (_) {}
   }
 }
 
@@ -2443,6 +3016,46 @@ function toggleTracker(kind) {
   const card = kind === 'reward' ? $('yieldCard') : $('targetCard');
   if (!card) return;
   setTrackerCollapsed(kind, !card.classList.contains('tracker-collapsed'));
+}
+
+function dashboardCollapseConfig(kind) {
+  const configs = {
+    wallet: { card: 'dashboardWalletSection', panel: 'walletSectionPanel', toggle: 'walletSectionToggle', label: 'Posizione' },
+    staking: { card: 'dashboardStakingSection', panel: 'stakingSectionPanel', toggle: 'stakingSectionToggle', label: 'Reward & Obiettivi' },
+    validators: { card: 'validatorCard', panel: 'validatorPanel', toggle: 'validatorToggle', label: 'Delegazioni attive' },
+    matrix: { card: 'marketMatrixSection', panel: 'marketMatrixPanel', toggle: 'marketMatrixToggle', label: 'Market Matrix' }
+  };
+  return configs[kind] || null;
+}
+
+function dashboardCollapsedPreference(kind) {
+  try { return localStorage.getItem(`inj_node_dashboard_${kind}_collapsed_v1`) === '1'; }
+  catch (_) { return false; }
+}
+
+function setDashboardCollapsed(kind, collapsed, persist = true) {
+  const config = dashboardCollapseConfig(kind);
+  if (!config) return;
+  const card = $(config.card);
+  const panel = $(config.panel);
+  const toggle = $(config.toggle);
+  if (!card || !panel || !toggle) return;
+
+  const next = Boolean(collapsed);
+  card.classList.toggle('dashboard-collapsed', next);
+  panel.hidden = next;
+  toggle.setAttribute('aria-expanded', next ? 'false' : 'true');
+  toggle.title = next ? `Apri ${config.label}` : `Chiudi ${config.label}`;
+  if (persist) {
+    try { localStorage.setItem(`inj_node_dashboard_${kind}_collapsed_v1`, next ? '1' : '0'); } catch (_) {}
+  }
+}
+
+function toggleDashboardSection(kind) {
+  const config = dashboardCollapseConfig(kind);
+  const card = config ? $(config.card) : null;
+  if (!card) return;
+  setDashboardCollapsed(kind, !card.classList.contains('dashboard-collapsed'));
 }
 
 async function loadEurRate() {
@@ -2459,20 +3072,362 @@ async function loadEurRate() {
   } catch (_) {}
 }
 
+// v15.98.62 — one visual market clock shared by every main-app surface.
+function syncVisualMarketChange() {
+  const open = number(state.marketOpen24) || number(state.marketFrames?.d1?.open);
+  if (open > 0 && state.price > 0) {
+    state.changeAmount = state.price - open;
+    state.change = (state.price / open - 1) * 100;
+  } else {
+    state.change = number(state.marketRawChange);
+    state.changeAmount = number(state.marketRawChangeAmount);
+  }
+}
+
+function syncEntrySparkToVisualPrice() {
+  if (!$('entryGate')?.classList.contains('visible') || !(state.price > 0)) return;
+  const last = state.entrySpark.points.at(-1);
+  if (!last?.live) return;
+  last.t = Date.now();
+  last.price = state.price;
+}
+
+function renderHomeMarketMotion() {
+  const { wallet, row } = selectedEntrySummary();
+  if (!wallet) return;
+  const total = number(row?.total);
+  const worth = total * state.price;
+  setEntryAnimatedValue('entryWalletWorth', total > 0 && state.price > 0 ? compactMoney(worth) : '—', worth, { roll: true, stableDigits: true });
+  setEntryAnimatedValue('entryMarketPrice', state.price > 0 ? money(state.price, state.price < 10 ? 4 : 3) : '—', state.price, { directional: true, roll: true });
+  const change = $('entryMarketChange');
+  if (change) {
+    const value = number(state.change);
+    change.className = value > 0 ? 'positive' : value < 0 ? 'negative' : 'neutral';
+    setEntryAnimatedValue('entryMarketChange', state.price > 0 ? `${value > 0 ? '+' : ''}${value.toFixed(2)}% · 24H` : '— · 24H', state.price > 0 ? value : NaN, { directional: true });
+  }
+  const gate = $('entryGate');
+  if (gate) {
+    const value = number(state.change);
+    gate.classList.toggle('market-positive', value > 0);
+    gate.classList.toggle('market-negative', value < 0);
+    gate.classList.toggle('market-neutral', value === 0 || !Number.isFinite(value));
+  }
+  const staked = number(row?.staked);
+  const cachedApr = number(row?.personalApr);
+  const apr = cachedApr > 0 ? cachedApr : (wallet.address === state.address ? number(state.personalApr) : 0);
+  const dailyReward = staked > 0 && apr > 0 ? staked * (apr / 100) / 365 : 0;
+  setEntryAnimatedValue('entryDesktopDailyRewardValue', dailyReward > 0 && state.price > 0 ? `${money(dailyReward * state.price, 2)} / giorno` : 'Stima netta', dailyReward > 0 && state.price > 0 ? dailyReward * state.price : NaN);
+  syncEntrySparkToVisualPrice();
+  renderEntryAtGlance();
+  renderEntryMarketMatrix();
+}
+
+function renderPortfolioMarketMotion() {
+  if (!state.address) return;
+  const totalInj = currentTotalInj();
+  const netWorth = totalInj * state.price;
+  setValue('netWorthUsd', state.price > 0 ? money(netWorth, 2) : '—', state.price > 0 ? netWorth : NaN, { roll: true, flash: false });
+  setValue('availableUsd', state.price > 0 ? money(state.available * state.price) : '—', state.available * state.price, { flash: false });
+  setValue('ownedTotalUsd', state.price > 0 ? money(totalInj * state.price) : '—', totalInj * state.price, { flash: false });
+  setValue('stakedUsd', state.price > 0 ? money(state.staked * state.price) : '—', state.staked * state.price, { flash: false });
+  setValue('rewardsUsd', state.price > 0 ? money(state.rewards * state.price) : '—', state.rewards * state.price, { flash: false });
+
+  const netWorthChange24h = totalInj * state.changeAmount;
+  const worthChange = $('netWorthChange24h');
+  if (worthChange && state.price > 0) {
+    const label = netWorthChange24h > 0 ? 'Guadagno 24h' : netWorthChange24h < 0 ? 'Perdita 24h' : 'Variazione 24h';
+    worthChange.className = `worth-change private ${netWorthChange24h > 0 ? 'positive' : netWorthChange24h < 0 ? 'negative' : 'neutral'}`;
+    setBlinkOnlyElement(worthChange, `${label} ${signedMoney(netWorthChange24h, 2)} (${state.change > 0 ? '+' : ''}${state.change.toFixed(2)}%)`, netWorthChange24h, { flash: false });
+  }
+
+  const pnlElement = $('netWorthPnl');
+  const averageBuyPrice = currentAverageBuyPrice();
+  if (pnlElement && state.price > 0 && averageBuyPrice > 0) {
+    const pnl = netWorth - totalInj * averageBuyPrice;
+    const pnlPercent = (state.price / averageBuyPrice - 1) * 100;
+    const prefix = pnl > 0 ? '+' : pnl < 0 ? '−' : '';
+    pnlElement.className = `worth-change private ${pnl > 0 ? 'positive' : pnl < 0 ? 'negative' : 'neutral'}`;
+    setBlinkOnlyElement(pnlElement, `PnL totale ${prefix}${money(Math.abs(pnl), 2)} (${pnlPercent > 0 ? '+' : ''}${pnlPercent.toFixed(2)}%)`, pnl, { flash: false });
+  }
+  const miniWorths = document.querySelectorAll('#walletCards .wallet-mini-worth');
+  miniWorths.forEach((element, index) => {
+    const wallet = state.wallets[index];
+    const row = wallet ? state.walletSummaries[wallet.address] : null;
+    if (row && state.price > 0) element.textContent = compactMoney(number(row.total) * state.price);
+  });
+}
+
+function renderRewardValuationMarketMotion() {
+  if (!(state.staked > 0 && state.personalApr > 0 && state.price > 0) || state.rewardSimulationPrice > 0) return;
+  const daily = state.staked * (state.personalApr / 100) / 365;
+  const rows = [
+    ['hourlyUsd', daily / 24, 4],
+    ['dailyUsd', daily, 3],
+    ['weeklyUsd', daily * 7, 3],
+    ['monthlyUsd', daily * 30, 2],
+    ['yearlyUsd', daily * 365, 2]
+  ];
+  rows.forEach(([id, inj, digits]) => setPulseOnlyValue(id, money(inj * state.price, digits), inj * state.price, { flash: false }));
+
+  const dailyUsdValue = daily * state.price;
+  const milestones = [0.25,0.5,1,2,3,5,7.5,10,15,20,25,50,75,100,150,200,250,500,750,1000,1500,2000,2500,5000];
+  let target = milestones.find((value) => value > dailyUsdValue + 1e-9);
+  if (!(target > 0)) {
+    const magnitude = 10 ** Math.max(0, Math.floor(Math.log10(Math.max(1, dailyUsdValue))));
+    target = Math.ceil(dailyUsdValue / magnitude + .001) * magnitude;
+    if (target <= dailyUsdValue) target += magnitude;
+  }
+  if (dailyUsdValue < 2) target = 2;
+  const rawScaleMax = Math.max(target * 1.12, dailyUsdValue * 1.08, .5);
+  const scaleStep = rawScaleMax <= 5 ? .5 : rawScaleMax <= 20 ? 1 : rawScaleMax <= 100 ? 5 : rawScaleMax <= 500 ? 25 : 100;
+  const scaleMax = Math.max(scaleStep, Math.ceil(rawScaleMax / scaleStep) * scaleStep);
+  const markerPct = Math.max(0, Math.min(100, dailyUsdValue / scaleMax * 100));
+  const targetPct = Math.max(0, Math.min(100, target / scaleMax * 100));
+  const gauge = $('rewardUsdProgress');
+  if (gauge) {
+    gauge.style.setProperty('--reward-usd-marker', `${markerPct}%`);
+    gauge.style.setProperty('--reward-usd-target', `${targetPct}%`);
+    gauge.classList.toggle('target-reached', dailyUsdValue >= target);
+  }
+  if ($('rewardDailyUsdGauge')) $('rewardDailyUsdGauge').textContent = `${money(dailyUsdValue, 3)} / giorno`;
+  if ($('rewardUsdTargetValue')) $('rewardUsdTargetValue').textContent = `${money(target, target < 10 ? 2 : 0)} / giorno`;
+  if ($('rewardUsdProgressCopy')) {
+    const progress = target > 0 ? Math.max(0, Math.min(100, dailyUsdValue / target * 100)) : 0;
+    $('rewardUsdProgressCopy').textContent = `${progress.toLocaleString('it-IT',{maximumFractionDigits:progress<10?1:0})}% del target`;
+  }
+  if ($('rewardUsdScaleMax')) $('rewardUsdScaleMax').textContent = money(scaleMax, scaleMax < 10 ? 2 : 0);
+}
+
+function renderAggregateMarketMotion() {
+  if (state.wallets.length <= 1) return;
+  const rows = state.wallets.map((wallet) => state.walletSummaries[wallet.address]).filter(Boolean);
+  const total = rows.reduce((sum, row) => sum + number(row.total), 0);
+  setValue('aggregateNetWorth', rows.length && state.price > 0 ? money(total * state.price, 2) : '—', total * state.price, { flash: false });
+}
+
+function renderGlobalMarketMotion() {
+  state.marketMotionRendering = true;
+  try {
+    if (state.currentView === 'home') {
+      renderHomeMarketMotion();
+      return;
+    }
+    if (state.currentView === 'dashboard') {
+      renderMarket();
+      renderPortfolioMarketMotion();
+      renderRewardValuationMarketMotion();
+      renderAggregateMarketMotion();
+      updateNativeChartLive(state.price);
+      return;
+    }
+    if (state.currentView === 'live') {
+      renderFocusDisplay();
+      return;
+    }
+    if (state.currentView === 'pulse') {
+      renderPulseView();
+      return;
+    }
+    if (state.currentView === 'charts') {
+      updateLiveChartsTick(state.price, Date.now());
+      scheduleLiveChartsRender(false);
+    }
+  } finally {
+    state.marketMotionRendering = false;
+  }
+}
+
+function runGlobalMarketMotion(timestamp) {
+  state.marketMotionFrame = 0;
+  if (document.hidden) return;
+  const target = number(state.marketTargetPrice) || number(state.marketRawPrice);
+  if (!(target > 0)) return;
+  const previousFrame = number(state.marketMotionLastFrame) || timestamp - 50;
+  const dt = Math.max(8, Math.min(120, timestamp - previousFrame));
+  state.marketMotionLastFrame = timestamp;
+  if (!(state.price > 0)) state.price = target;
+  const delta = target - state.price;
+  state.price += delta * (1 - Math.exp(-dt / 125));
+  if (Math.abs(target - state.price) < Math.max(0.0000005, target * 1e-8)) state.price = target;
+  syncVisualMarketChange();
+
+  if (timestamp - number(state.marketMotionLastRender) >= 80) {
+    state.marketMotionLastRender = timestamp;
+    renderGlobalMarketMotion();
+  }
+
+  const moving = Math.abs(target - state.price) > Math.max(0.0000005, target * 1e-8);
+  if (moving || timestamp < number(state.marketMotionUntil)) {
+    state.marketMotionFrame = requestAnimationFrame(runGlobalMarketMotion);
+  }
+}
+
+function startGlobalMarketMotion(duration = 1400) {
+  state.marketMotionUntil = Math.max(number(state.marketMotionUntil), performance.now() + Math.max(250, number(duration)));
+  if (!state.marketMotionFrame && !document.hidden) state.marketMotionFrame = requestAnimationFrame(runGlobalMarketMotion);
+}
+
+const MARKET_MATRIX_BUCKETS = { h1: 3_600_000 };
+const MARKET_MATRIX_IDS = { h1: 'H1', d1: 'D1', w1: 'W1', mo1: 'MO1', y1: 'Y1' };
+
+function marketMatrixBucketStart(now, duration) {
+  return Math.floor(now / duration) * duration;
+}
+
+function syncMarketMatrixBuckets(price, now = Date.now()) {
+  if (!(price > 0) || !state.marketMatrix) return;
+  for (const [key, duration] of Object.entries(MARKET_MATRIX_BUCKETS)) {
+    const start = marketMatrixBucketStart(now, duration);
+    if (number(state.marketMatrix.bucketStarts[key]) !== start) {
+      state.marketMatrix.bucketStarts[key] = start;
+      state.marketMatrix.opens[key] = price;
+    }
+  }
+  const weekStart = number(state.marketMatrix.bucketStarts.w1);
+  if (weekStart > 0 && now >= weekStart + 7 * 86_400_000) {
+    state.marketMatrix.bucketStarts.w1 = now;
+    state.marketMatrix.opens.w1 = price;
+  }
+}
+
+function marketMatrixPercent(open, price = state.price) {
+  const o = number(open);
+  const p = number(price);
+  return o > 0 && p > 0 ? (p / o - 1) * 100 : NaN;
+}
+
+function marketMatrixValueText(value) {
+  if (!Number.isFinite(value)) return '—';
+  const abs = Math.abs(value);
+  const digits = abs < .01 ? 3 : 2;
+  return `${value > 0 ? '+' : ''}${value.toFixed(digits)}%`;
+}
+
+function renderEntryMarketMatrix() {
+  const host = $('entryMarketMatrix');
+  if (!host) return;
+  const price = number(state.price);
+  const matrix = state.marketMatrix || {};
+  const values = {
+    h1: marketMatrixPercent(matrix.opens?.h1, price),
+    d1: marketMatrixPercent(state.marketOpen24, price),
+    w1: marketMatrixPercent(matrix.opens?.w1, price),
+    mo1: marketMatrixPercent(state.marketFrames?.m1?.open, price),
+    y1: marketMatrixPercent(state.marketFrames?.y1?.open, price)
+  };
+
+  let bullish = 0;
+  let bearish = 0;
+  let valid = 0;
+  for (const [key, value] of Object.entries(values)) {
+    const suffix = MARKET_MATRIX_IDS[key];
+    const output = $(`matrix${suffix}`);
+    const status = $(`matrix${suffix}State`);
+    const cell = host.querySelector(`[data-matrix-key="${key}"]`);
+    const rail = host.querySelector(`[data-segment="${key}"]`);
+    const direction = Number.isFinite(value) ? (value > .00005 ? 1 : value < -.00005 ? -1 : 0) : 0;
+    if (Number.isFinite(value)) valid += 1;
+    if (direction > 0) bullish += 1;
+    if (direction < 0) bearish += 1;
+    if (output) output.textContent = marketMatrixValueText(value);
+    if (status) status.textContent = !Number.isFinite(value) ? 'SYNC' : direction > 0 ? 'UP' : direction < 0 ? 'DOWN' : 'FLAT';
+    for (const node of [cell, rail]) {
+      if (!node) continue;
+      node.classList.remove('matrix-up', 'matrix-down', 'matrix-neutral');
+      node.classList.add(direction > 0 ? 'matrix-up' : direction < 0 ? 'matrix-down' : 'matrix-neutral');
+    }
+  }
+
+  const live = $('entryMarketMatrixLive');
+  if (live) {
+    live.classList.toggle('online', valid === 5 && price > 0);
+    const label = live.querySelector('b');
+    if (label) label.textContent = valid === 5 && price > 0 ? 'LIVE' : 'SYNC';
+  }
+
+  const consensus = $('entryMarketMatrixConsensus');
+  if (consensus) {
+    consensus.classList.remove('matrix-up', 'matrix-down', 'matrix-neutral');
+    if (!valid) {
+      consensus.textContent = 'SYNC';
+      consensus.classList.add('matrix-neutral');
+    } else if (bullish > bearish) {
+      consensus.textContent = `${bullish}/5 BULLISH`;
+      consensus.classList.add('matrix-up');
+    } else if (bearish > bullish) {
+      consensus.textContent = `${bearish}/5 BEARISH`;
+      consensus.classList.add('matrix-down');
+    } else {
+      consensus.textContent = `${bullish} UP · ${bearish} DOWN`;
+      consensus.classList.add('matrix-neutral');
+    }
+  }
+}
+
+async function loadEntryMarketMatrixAnchors(force = false) {
+  const matrix = state.marketMatrix;
+  if (!matrix || matrix.loading) return;
+  const now = Date.now();
+  if (!force && matrix.loadedAt && now - matrix.loadedAt < 8 * 60_000) return;
+  matrix.loading = true;
+  renderEntryMarketMatrix();
+  try {
+    const [minuteResult, weekResult] = await Promise.allSettled([
+      fetchJson('https://api.binance.com/api/v3/klines?symbol=INJUSDT&interval=1m&limit=65', 7000),
+      fetchJson('https://api.binance.com/api/v3/klines?symbol=INJUSDT&interval=1w&limit=2', 7000)
+    ]);
+
+    if (minuteResult.status === 'fulfilled' && Array.isArray(minuteResult.value)) {
+      const rows = minuteResult.value;
+      for (const [key, duration] of Object.entries(MARKET_MATRIX_BUCKETS)) {
+        const start = marketMatrixBucketStart(now, duration);
+        const row = rows.find((item) => number(item?.[0]) === start);
+        const open = number(row?.[1]);
+        if (open > 0) {
+          matrix.opens[key] = open;
+          matrix.bucketStarts[key] = start;
+        }
+      }
+    }
+
+    if (weekResult.status === 'fulfilled' && Array.isArray(weekResult.value)) {
+      const row = weekResult.value.at(-1);
+      const open = number(row?.[1]);
+      const start = number(row?.[0]);
+      if (open > 0) matrix.opens.w1 = open;
+      if (start > 0) matrix.bucketStarts.w1 = start;
+    }
+    matrix.loadedAt = Date.now();
+  } catch (_) {
+    // Existing live bucket anchors remain usable if the history request fails.
+  } finally {
+    matrix.loading = false;
+    renderEntryMarketMatrix();
+  }
+}
+
 function updateMarket(next) {
   state.lastMarketUpdate = Date.now();
   document.body.classList.remove('market-data-loading');
   const previousD1 = { ...state.marketFrames.d1 };
-  const nextPrice = number(next.price);
-  if (nextPrice > 0) state.price = nextPrice;
-  if (Number.isFinite(Number(next.change))) state.change = Number(next.change);
-  if (Number.isFinite(Number(next.changeAmount))) state.changeAmount = Number(next.changeAmount);
+  const rawPrice = number(next.price);
+  const firstPrice = !(state.price > 0);
+  if (rawPrice > 0) syncMarketMatrixBuckets(rawPrice, Date.now());
+
+  if (rawPrice > 0) {
+    state.marketRawPrice = rawPrice;
+    state.marketTargetPrice = rawPrice;
+    if (firstPrice) state.price = rawPrice;
+  }
+  if (Number.isFinite(Number(next.change))) state.marketRawChange = Number(next.change);
+  if (Number.isFinite(Number(next.changeAmount))) state.marketRawChangeAmount = Number(next.changeAmount);
+  if (number(next.open24h) > 0) state.marketOpen24 = number(next.open24h);
   if (number(next.low) > 0) state.low = number(next.low);
   if (number(next.high) > 0) state.high = number(next.high);
 
   if (number(next.open24h) > 0 && number(next.low) > 0 && number(next.high) > 0) {
     const nextD1 = { open: number(next.open24h), min: number(next.low), max: number(next.high), at: Date.now() - 86_400_000 };
-    const tolerance = Math.max(1e-10, number(state.price) * 1e-10);
+    const tolerance = Math.max(1e-10, rawPrice * 1e-10);
     const newMin = number(previousD1.min) > 0 && nextD1.min < number(previousD1.min) - tolerance;
     const newMax = number(previousD1.max) > 0 && nextD1.max > number(previousD1.max) + tolerance;
     state.marketFrames.d1 = nextD1;
@@ -2480,16 +3435,15 @@ function updateMarket(next) {
     if (newMax) requestAnimationFrame(() => flashMarketFrameExtreme('d1', 'max'));
   }
 
-  updateLiveMarketFrameExtremes(state.price);
-  renderMarket();
-  renderPortfolio();
-  renderRewardTracker();
-  renderTarget();
-  renderAggregate();
-  updateNativeChartLive(state.price);
-  updateLiveChartsTick(state.price);
-  renderMarketTools();
-  renderDataFreshness();
+  if (rawPrice > 0) {
+    updateLiveMarketFrameExtremes(rawPrice);
+    updateNativeChartLive(rawPrice);
+    if (state.currentView === 'charts') updateLiveChartsTick(rawPrice, Date.now());
+  }
+
+  // Keep the Home day chart historically truthful: only raw exchange ticks are
+  // stored. The final live point is visually interpolated by the global motion
+  // frame without manufacturing extra historical samples.
   if ($('entryGate')?.classList.contains('visible')) {
     const now = Date.now();
     const bounds = entryLocalDayBounds(now);
@@ -2497,21 +3451,28 @@ function updateMarket(next) {
       resetEntryPriceSession(bounds.start);
       void loadEntrySparkline(true);
     }
-
-    if (state.price > 0 && number(state.entrySpark.dayStart) === bounds.start) {
+    if (rawPrice > 0 && number(state.entrySpark.dayStart) === bounds.start) {
       let lastSpark = state.entrySpark.points.at(-1);
       const sampleAge = now - number(state.entrySpark.lastLiveSampleAt);
       if (!lastSpark || !lastSpark.live || sampleAge >= 180_000) {
         if (lastSpark?.live) lastSpark.live = false;
-        state.entrySpark.points.push({ t: now, price: state.price, live: true });
+        state.entrySpark.points.push({ t: now, price: rawPrice, live: true });
         state.entrySpark.lastLiveSampleAt = now;
       } else {
         lastSpark.t = now;
-        lastSpark.price = state.price;
+        lastSpark.price = rawPrice;
       }
     }
-    renderEntryOverview();
   }
+
+  syncVisualMarketChange();
+  renderDataFreshness();
+  if (firstPrice) {
+    state.marketMotionRendering = true;
+    try { renderAll(); if ($('entryGate')?.classList.contains('visible')) renderEntryOverview(); }
+    finally { state.marketMotionRendering = false; }
+  }
+  startGlobalMarketMotion();
 }
 
 async function loadMarket() {
@@ -2544,19 +3505,33 @@ async function loadMarket() {
 }
 
 function connectMarketSocket() {
+  if (document.hidden) return;
   try { state.socket?.close(); } catch (_) {}
   try {
-    const socket = new WebSocket('wss://stream.binance.com:9443/ws/injusdt@ticker');
+    // v15.98.62 — same lightweight Binance miniTicker feed used by Command Center.
+    // The raw tick is the target; the shared visual market clock interpolates it
+    // across every visible INJ Node surface.
+    const socket = new WebSocket('wss://stream.binance.com:9443/ws/injusdt@miniTicker');
     state.socket = socket;
     socket.onopen = () => setStatus('online', state.address ? 'Wallet online' : 'Mercato live');
     socket.onmessage = (event) => {
       try {
-        const tick = JSON.parse(event.data);
-        updateMarket({ price: tick.c, change: tick.P, changeAmount: tick.p, low: tick.l, high: tick.h, open24h: tick.o });
+        const payload = JSON.parse(event.data);
+        const tick = payload?.data || payload;
+        const price = number(tick.c);
+        const open = number(tick.o);
+        updateMarket({
+          price,
+          change: open > 0 && price > 0 ? (price / open - 1) * 100 : state.marketRawChange,
+          changeAmount: open > 0 && price > 0 ? price - open : state.marketRawChangeAmount,
+          low: tick.l,
+          high: tick.h,
+          open24h: tick.o
+        });
       } catch (_) {}
     };
     socket.onerror = () => setStatus('', 'Riconnessione…');
-    socket.onclose = () => setTimeout(connectMarketSocket, 4000);
+    socket.onclose = () => { if (!document.hidden) setTimeout(connectMarketSocket, 4000); };
   } catch (_) {
     setTimeout(connectMarketSocket, 5000);
   }
@@ -2780,20 +3755,37 @@ function syncFocusDisplayViewport() {
   dialog.style.setProperty('--focus-viewport-height', `${Math.round(height)}px`);
 }
 
-function setFocusDisplayValue(element, text, numericValue) {
+function setFocusDisplayValue(element, text, numericValue, { roll = false } = {}) {
   if (!element) return;
+  const nextText = String(text);
   const next = Number(numericValue);
   const previous = element.dataset.focusNumericValue === undefined ? NaN : Number(element.dataset.focusNumericValue);
   const previousText = element.dataset.focusRenderedValue;
-  const nextText = String(text);
-
-  element.textContent = nextText;
-
   const visibleChange = previousText !== undefined && previousText !== nextText;
   const numericChange = Number.isFinite(previous) && Number.isFinite(next) &&
     Math.abs(next - previous) > Math.max(1e-12, Math.abs(previous) * 1e-10);
+  const active = isFocusDisplayActive();
 
-  if (isFocusDisplayActive() && !state.suppressEffects && visibleChange && numericChange) {
+  // v15.98.13: Live View rolls only PRICE and CONTROVALORE. Every other
+  // metric is rendered as fixed text and retains the directional color blink.
+  if (active && roll && !state.marketMotionRendering) {
+    animateVerticalNumberRoll(element, previousText, nextText, previous, next);
+  } else {
+    clearTimeout(element._verticalRollTimer);
+    element._verticalRollTimer = null;
+    if (roll) {
+      element.classList.add('number-roll-host');
+      // v15.98.16: Live View is primed with the exact same per-digit geometry
+      // used during the roll before the fullscreen layer becomes visible.
+      // This removes the one-frame grow/snap seen on entry in Safari/iOS.
+      renderStableNumberText(element, nextText);
+    } else {
+      element.classList.remove('number-roll-host');
+      element.textContent = nextText;
+    }
+  }
+
+  if (active && !state.suppressEffects && !state.marketMotionRendering && visibleChange && numericChange) {
     const direction = next > previous ? 'up' : 'down';
     element.classList.remove('focus-value-up', 'focus-value-down');
     void element.offsetWidth;
@@ -2809,17 +3801,470 @@ function setFocusDisplayValue(element, text, numericValue) {
   else delete element.dataset.focusNumericValue;
 }
 
+
+const LIVE_CHART_MAX_WINDOW_MS = 60 * 60_000;
+const LIVE_CHART_MAX_SAMPLES = 1100;
+const LIVE_CHART_PLOT_LEFT_X = 12;
+const LIVE_CHART_PLOT_RIGHT_X = 850;
+const LIVE_CHART_VIEWBOX_HEIGHT = 220;
+const LIVE_CHART_TOP_Y = 28;
+const LIVE_CHART_BOTTOM_Y = 192;
+const LIVE_CHART_HISTORY_KEY = 'inj_node_live_charts_history_v1';
+const LIVE_CHART_RANGES = {
+  m5: { windowMs: 5 * 60_000, prefix: 'liveChart5m', momentumMs: 45_000, minimumSpanRatio: 0.00008 },
+  m10: { windowMs: 10 * 60_000, prefix: 'liveChart10m', momentumMs: 90_000, minimumSpanRatio: 0.00012 },
+  h1: { windowMs: 60 * 60_000, prefix: 'liveChart1h', momentumMs: 9 * 60_000, minimumSpanRatio: 0.00025 }
+};
+
+function isLiveChartsActive() {
+  const overlay = $('liveChartsDialog');
+  return Boolean(overlay && !overlay.hidden && !overlay.classList.contains('mode-parked') && !overlay.classList.contains('is-closing'));
+}
+
+function persistLiveChartsHistory(force = false) {
+  const chart = state.liveCharts;
+  const now = Date.now();
+  if (!force && now - number(chart.persistAt) < 60_000) return;
+  chart.persistAt = now;
+  try {
+    const cutoff = now - LIVE_CHART_MAX_WINDOW_MS - 90_000;
+    const rows = chart.samples.filter((row) => row.t >= cutoff && row.price > 0);
+    const compact = focusLiveRenderSamples(rows, 1200).map((row) => [Math.round(row.t), Number(row.price)]);
+    sessionStorage.setItem(LIVE_CHART_HISTORY_KEY, JSON.stringify(compact));
+  } catch (_) {}
+}
+
+function restoreLiveChartsHistory() {
+  try {
+    const raw = JSON.parse(sessionStorage.getItem(LIVE_CHART_HISTORY_KEY) || '[]');
+    if (!Array.isArray(raw)) return;
+    const cutoff = Date.now() - LIVE_CHART_MAX_WINDOW_MS - 90_000;
+    const restored = raw
+      .map((row) => ({ t: number(row?.[0]), price: number(row?.[1]) }))
+      .filter((row) => row.t >= cutoff && row.price > 0)
+      .sort((a, b) => a.t - b.t);
+    if (!restored.length) return;
+    state.liveCharts.samples = restored;
+    state.liveCharts.lastSampleAt = restored.at(-1).t;
+    state.liveCharts.targetPrice = restored.at(-1).price;
+    state.liveCharts.visualPrice = restored.at(-1).price;
+  } catch (_) {}
+}
+
+function mergeLiveChartsSamples(rows) {
+  if (!Array.isArray(rows) || !rows.length) return;
+  const cutoff = Date.now() - LIVE_CHART_MAX_WINDOW_MS - 90_000;
+  const combined = [...state.liveCharts.samples, ...rows]
+    .filter((row) => row && number(row.t) >= cutoff && number(row.price) > 0)
+    .map((row) => ({ t: number(row.t), price: number(row.price) }))
+    .sort((a, b) => a.t - b.t);
+  const merged = [];
+  for (const row of combined) {
+    const last = merged.at(-1);
+    if (last && Math.abs(row.t - last.t) < 50) {
+      last.t = Math.max(last.t, row.t);
+      last.price = row.price;
+    } else merged.push(row);
+  }
+  if (merged.length > LIVE_CHART_MAX_SAMPLES) merged.splice(0, merged.length - LIVE_CHART_MAX_SAMPLES);
+  state.liveCharts.samples = merged;
+  if (merged.length) {
+    state.liveCharts.lastSampleAt = Math.max(number(state.liveCharts.lastSampleAt), merged.at(-1).t);
+    if (!(state.liveCharts.targetPrice > 0)) state.liveCharts.targetPrice = merged.at(-1).price;
+    if (!(state.liveCharts.visualPrice > 0)) state.liveCharts.visualPrice = state.liveCharts.targetPrice;
+  }
+}
+
+async function loadLiveChartsHistory(force = false) {
+  const chart = state.liveCharts;
+  const now = Date.now();
+  if (!force && now - number(chart.historyLoadedAt) < 55_000) return;
+  chart.historyLoadedAt = now;
+  try {
+    const data = await fetchJson('https://api.binance.com/api/v3/klines?symbol=INJUSDT&interval=1m&limit=61', 6500);
+    if (!Array.isArray(data)) return;
+    const receivedAt = Date.now();
+    const rows = data.map((row) => ({ t: Math.min(number(row?.[6] || row?.[0]), receivedAt), price: number(row?.[4]) })).filter((row) => row.t > 0 && row.price > 0);
+    mergeLiveChartsSamples(rows);
+    persistLiveChartsHistory(true);
+    if (isLiveChartsActive()) scheduleLiveChartsRender(true);
+  } catch (_) {}
+}
+
+function updateLiveChartsTick(rawPrice, rawTime = Date.now()) {
+  const price = number(rawPrice);
+  if (!(price > 0)) return;
+  const chart = state.liveCharts;
+  const now = Number(rawTime) || Date.now();
+  const minGap = MOBILE_EFFICIENCY ? 1400 : 900;
+
+  chart.lastTradeAt = now;
+  chart.targetPrice = price;
+  if (!(chart.visualPrice > 0)) chart.visualPrice = price;
+
+  const last = chart.samples.at(-1);
+  if (last && now - chart.lastSampleAt < minGap) {
+    last.t = now;
+    last.price = price;
+  } else {
+    chart.samples.push({ t: now, price });
+    chart.lastSampleAt = now;
+  }
+
+  const cutoff = now - LIVE_CHART_MAX_WINDOW_MS - 90_000;
+  while (chart.samples.length > 2 && chart.samples[0].t < cutoff) chart.samples.shift();
+  if (chart.samples.length > LIVE_CHART_MAX_SAMPLES) chart.samples.splice(0, chart.samples.length - LIVE_CHART_MAX_SAMPLES);
+  if (isLiveChartsActive()) scheduleLiveChartsRender();
+}
+
+function focusLiveMedian(values) {
+  if (!values.length) return 0;
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = sorted.length >> 1;
+  return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+}
+
+function focusLiveSmoothPath(coords) {
+  if (!coords?.length) return '';
+  if (coords.length < 3) return coords.map((point, index) => `${index ? 'L' : 'M'}${point.x.toFixed(2)},${point.y.toFixed(2)}`).join(' ');
+  let path = `M${coords[0].x.toFixed(2)},${coords[0].y.toFixed(2)}`;
+  for (let i = 1; i < coords.length - 1; i++) {
+    const point = coords[i];
+    const next = coords[i + 1];
+    const midX = (point.x + next.x) / 2;
+    const midY = (point.y + next.y) / 2;
+    path += ` Q${point.x.toFixed(2)},${point.y.toFixed(2)} ${midX.toFixed(2)},${midY.toFixed(2)}`;
+  }
+  const penultimate = coords[coords.length - 2];
+  const last = coords.at(-1);
+  path += ` Q${penultimate.x.toFixed(2)},${penultimate.y.toFixed(2)} ${last.x.toFixed(2)},${last.y.toFixed(2)}`;
+  return path;
+}
+
+function focusLiveRenderSamples(samples, maxPoints = 140) {
+  if (samples.length <= maxPoints) return samples;
+  const result = [];
+  const step = (samples.length - 1) / (maxPoints - 1);
+  for (let i = 0; i < maxPoints - 1; i++) result.push(samples[Math.round(i * step)]);
+  result.push(samples.at(-1));
+  return result;
+}
+
+function liveChartsPriceText(price) {
+  if (!(price > 0)) return '—';
+  const digits = price < 10 ? 4 : price < 100 ? 3 : 2;
+  return money(price, digits);
+}
+
+function liveChartsLowerBound(samples, time) {
+  let low = 0;
+  let high = samples.length;
+  while (low < high) {
+    const mid = (low + high) >> 1;
+    if (samples[mid].t < time) low = mid + 1;
+    else high = mid;
+  }
+  return low;
+}
+
+function liveChartsDirection(samples, renderNow, config, latestPrice) {
+  if (!samples.length || !(latestPrice > 0)) return 0;
+  const targetTime = renderNow - config.momentumMs;
+  let index = liveChartsLowerBound(samples, targetTime);
+  if (index >= samples.length) index = samples.length - 1;
+  if (index > 0 && Math.abs(samples[index - 1].t - targetTime) < Math.abs(samples[index].t - targetTime)) index--;
+  const anchor = samples[Math.max(0, index)];
+  if (!anchor || !(anchor.price > 0)) return 0;
+  const delta = latestPrice - anchor.price;
+  const recentSteps = [];
+  for (let i = Math.max(1, samples.length - 60); i < samples.length; i++) {
+    recentSteps.push(Math.abs(samples[i].price - samples[i - 1].price));
+  }
+  const typical = focusLiveMedian(recentSteps) || latestPrice * 0.000004;
+  const deadzone = Math.max(latestPrice * 0.000015, typical * 1.4);
+  return Math.abs(delta) >= deadzone ? Math.sign(delta) : 0;
+}
+
+function ensureLiveChartsRuntime() {
+  const chart = state.liveCharts;
+  chart.scales ||= {};
+  chart.renderCache ||= {};
+  for (const key of Object.keys(LIVE_CHART_RANGES)) {
+    chart.scales[key] ||= { min: 0, max: 0 };
+    if (!(key in chart.renderCache)) chart.renderCache[key] = null;
+  }
+  return chart;
+}
+
+function buildLiveChartsPath(samples, visualPrice, rangeKey, renderNow, frameGap) {
+  const config = LIVE_CHART_RANGES[rangeKey];
+  if (!config || !(visualPrice > 0)) return null;
+  const windowEnd = renderNow;
+  const windowStart = windowEnd - config.windowMs;
+  let firstIndex = liveChartsLowerBound(samples, windowStart);
+  const seedIndex = Math.max(0, firstIndex - 1);
+  const seedPrice = samples[seedIndex]?.price > 0 ? samples[seedIndex].price : visualPrice;
+
+  let rawMin = Math.min(seedPrice, visualPrice);
+  let rawMax = Math.max(seedPrice, visualPrice);
+  let lastIndex = samples.length - 1;
+  while (lastIndex >= 0 && samples[lastIndex].t > windowEnd) lastIndex--;
+  if (firstIndex > lastIndex + 1) firstIndex = lastIndex + 1;
+
+  for (let i = firstIndex; i <= lastIndex; i++) {
+    const price = samples[i]?.price;
+    if (!(price > 0)) continue;
+    if (price < rawMin) rawMin = price;
+    if (price > rawMax) rawMax = price;
+  }
+
+  const minimumSpan = Math.max(visualPrice * config.minimumSpanRatio, visualPrice < 10 ? 0.00008 : 0.0008);
+  let rawSpan = rawMax - rawMin;
+  if (rawSpan < minimumSpan) {
+    const center = (rawMax + rawMin) / 2;
+    rawMin = center - minimumSpan / 2;
+    rawMax = center + minimumSpan / 2;
+    rawSpan = minimumSpan;
+  }
+  const targetMin = rawMin - rawSpan * 0.16;
+  const targetMax = rawMax + rawSpan * 0.16;
+  const scale = ensureLiveChartsRuntime().scales[rangeKey];
+  if (!(scale.min > 0) || !(scale.max > 0)) {
+    scale.min = targetMin;
+    scale.max = targetMax;
+  } else {
+    const minTau = targetMin < scale.min ? 95 : 1350;
+    const maxTau = targetMax > scale.max ? 95 : 1350;
+    const minAlpha = 1 - Math.exp(-Math.max(8, frameGap) / minTau);
+    const maxAlpha = 1 - Math.exp(-Math.max(8, frameGap) / maxTau);
+    scale.min += (targetMin - scale.min) * minAlpha;
+    scale.max += (targetMax - scale.max) * maxAlpha;
+  }
+
+  let min = scale.min;
+  let max = scale.max;
+  const liveGuard = Math.max((max - min) * .10, minimumSpan * .12);
+  if (visualPrice < min + liveGuard) min = visualPrice - liveGuard;
+  if (visualPrice > max - liveGuard) max = visualPrice + liveGuard;
+  scale.min = min;
+  scale.max = max;
+  const span = Math.max(max - min, minimumSpan);
+
+  const maxPoints = MOBILE_EFFICIENCY ? 78 : 110;
+  const available = Math.max(0, lastIndex - firstIndex + 1);
+  const step = available > maxPoints - 2 ? available / (maxPoints - 2) : 1;
+  const coords = [];
+  const addCoord = (time, price, isLast = false) => {
+    const ratio = Math.max(0, Math.min(1, (time - windowStart) / config.windowMs));
+    const x = isLast ? LIVE_CHART_PLOT_RIGHT_X : LIVE_CHART_PLOT_LEFT_X + ratio * (LIVE_CHART_PLOT_RIGHT_X - LIVE_CHART_PLOT_LEFT_X);
+    const normalized = Math.max(0, Math.min(1, (price - min) / span));
+    const y = LIVE_CHART_BOTTOM_Y - normalized * (LIVE_CHART_BOTTOM_Y - LIVE_CHART_TOP_Y);
+    const previous = coords.at(-1);
+    if (previous && Math.abs(previous.x - x) < .08 && !isLast) return;
+    coords.push({ x, y });
+  };
+
+  addCoord(windowStart, seedPrice, false);
+  if (available > 0) {
+    if (step <= 1) {
+      for (let i = firstIndex; i <= lastIndex; i++) addCoord(samples[i].t, samples[i].price, false);
+    } else {
+      for (let cursor = 0; cursor < available; cursor += step) {
+        const i = Math.min(lastIndex, firstIndex + Math.floor(cursor));
+        addCoord(samples[i].t, samples[i].price, false);
+      }
+      if (lastIndex >= firstIndex) addCoord(samples[lastIndex].t, samples[lastIndex].price, false);
+    }
+  }
+  addCoord(windowEnd, visualPrice, true);
+
+  const line = focusLiveSmoothPath(coords);
+  const first = coords[0];
+  const last = coords.at(-1);
+  const area = `${line} L${last.x.toFixed(2)},${LIVE_CHART_VIEWBOX_HEIGHT} L${first.x.toFixed(2)},${LIVE_CHART_VIEWBOX_HEIGHT} Z`;
+  const direction = liveChartsDirection(samples, renderNow, config, visualPrice);
+  return { line, area, last, min, max, mid: (min + max) / 2, latest: visualPrice, direction };
+}
+
+function setLiveChartsText(id, value) {
+  const node = $(id);
+  if (!node || node.textContent === value) return;
+  node.textContent = value;
+}
+
+function liveChartYForPrice(price, min, max) {
+  const span = Math.max(max - min, 1e-9);
+  const normalized = Math.max(0, Math.min(1, (price - min) / span));
+  return LIVE_CHART_BOTTOM_Y - normalized * (LIVE_CHART_BOTTOM_Y - LIVE_CHART_TOP_Y);
+}
+
+function renderLiveCharts(force = false, timestamp = performance.now(), fullPaths = true) {
+  if (!force && !isLiveChartsActive()) return false;
+  const chart = ensureLiveChartsRuntime();
+  const target = chart.targetPrice > 0 ? chart.targetPrice : (state.price > 0 ? state.price : chart.samples.at(-1)?.price);
+  if (!(target > 0)) return false;
+
+  if (!(chart.visualPrice > 0)) chart.visualPrice = target;
+  const frameGap = Math.max(8, Math.min(80, timestamp - (chart.visualFrameAt || timestamp - 16)));
+  const delta = target - chart.visualPrice;
+  const epsilon = Math.max(target * 0.00000025, 0.0000005);
+  if (Math.abs(delta) <= epsilon) chart.visualPrice = target;
+  else {
+    const alpha = 1 - Math.exp(-frameGap / (MOBILE_EFFICIENCY ? 82 : 62));
+    chart.visualPrice += delta * alpha;
+  }
+  chart.visualFrameAt = timestamp;
+
+  const renderNow = Date.now();
+  setLiveChartsText('liveChartsHeaderPrice', liveChartsPriceText(chart.visualPrice));
+
+  for (const [rangeKey, config] of Object.entries(LIVE_CHART_RANGES)) {
+    let path = chart.renderCache[rangeKey];
+
+    // Expensive work (window scan + path rebuild) runs at a restrained cadence.
+    // The dot and live scale marker still glide independently between rebuilds.
+    if (fullPaths || !path) {
+      path = buildLiveChartsPath(chart.samples, chart.visualPrice, rangeKey, renderNow, frameGap);
+      if (!path) continue;
+      chart.renderCache[rangeKey] = path;
+
+      const line = $(`${config.prefix}Line`);
+      const area = $(`${config.prefix}Area`);
+      if (line) line.setAttribute('d', path.line);
+      if (area) area.setAttribute('d', path.area);
+
+      const card = $(config.prefix);
+      if (card) {
+        const directionClass = path.direction > 0 ? 'up' : path.direction < 0 ? 'down' : 'neutral';
+        card.classList.remove('up', 'down', 'neutral');
+        card.classList.add(directionClass);
+      }
+
+      setLiveChartsText(`${config.prefix}Top`, liveChartsPriceText(path.max));
+      setLiveChartsText(`${config.prefix}Mid`, liveChartsPriceText(path.mid));
+      setLiveChartsText(`${config.prefix}Bottom`, liveChartsPriceText(path.min));
+    }
+
+    if (!path) continue;
+    const dot = $(`${config.prefix}Dot`);
+    const marker = $(`${config.prefix}Marker`);
+    const liveY = liveChartYForPrice(chart.visualPrice, path.min, path.max);
+    if (dot) {
+      dot.setAttribute('cx', String(LIVE_CHART_PLOT_RIGHT_X));
+      dot.setAttribute('cy', liveY.toFixed(2));
+    }
+    setLiveChartsText(`${config.prefix}Live`, liveChartsPriceText(chart.visualPrice));
+    if (marker) marker.style.top = `${Math.max(8, Math.min(92, (liveY / LIVE_CHART_VIEWBOX_HEIGHT) * 100))}%`;
+  }
+  return true;
+}
+
+function scheduleLiveChartsRender(force = false) {
+  const chart = ensureLiveChartsRuntime();
+  if (!isLiveChartsActive() && !force) return;
+  if (chart.renderFrame) {
+    if (force) chart._forceNext = true;
+    return;
+  }
+
+  chart.renderFrame = requestAnimationFrame((timestamp) => {
+    chart.renderFrame = 0;
+    if (!isLiveChartsActive()) return;
+    const forceThisFrame = Boolean(force || chart._forceNext);
+    chart._forceNext = false;
+    chart.lastRenderAt = timestamp;
+    chart.lastPathRenderAt = timestamp;
+    try { renderLiveCharts(forceThisFrame, timestamp, true); } catch (_) {}
+  });
+}
+
+function openLiveChartsView() {
+  const overlay = $('liveChartsDialog');
+  if (!overlay || state.currentView !== 'home') return;
+  const chart = ensureLiveChartsRuntime();
+
+  state.currentView = 'charts';
+  setHeaderMenuOpen(false);
+  setSearchOpen(false);
+
+  // Show the destination synchronously before any chart/history work.
+  overlay.hidden = false;
+  overlay.classList.remove('is-closing', 'mode-parked');
+  overlay.classList.add('mode-active');
+  document.body.classList.add('live-charts-open');
+
+  const token = ++chart.openToken;
+  if (state.price > 0) {
+    chart.targetPrice = state.price;
+    if (!(chart.visualPrice > 0)) chart.visualPrice = state.price;
+    setLiveChartsText('liveChartsHeaderPrice', liveChartsPriceText(state.price));
+  }
+
+  requestAnimationFrame(() => {
+    if (token !== chart.openToken || !isLiveChartsActive()) return;
+    try {
+      if (state.price > 0 && !chart.samples.length) {
+        chart.samples.push({ t: Date.now(), price: state.price });
+        chart.lastSampleAt = Date.now();
+      }
+      scheduleLiveChartsRender(true);
+    } catch (_) {}
+
+    // Fetch only after the fullscreen surface has painted. This is intentionally
+    // delayed enough for WebKit to complete the navigation frame first.
+    window.setTimeout(() => {
+      if (token !== chart.openToken || !isLiveChartsActive()) return;
+      void loadLiveChartsHistory(false);
+    }, 420);
+  });
+}
+
+function closeLiveChartsView({ revealDashboard = true, animate = false } = {}) {
+  const overlay = $('liveChartsDialog');
+  if (!overlay || overlay.hidden || overlay.classList.contains('is-closing') || overlay.classList.contains('mode-parked')) return;
+  state.liveCharts.openToken = number(state.liveCharts.openToken) + 1;
+  if (state.liveCharts.renderFrame) {
+    cancelAnimationFrame(state.liveCharts.renderFrame);
+    state.liveCharts.renderFrame = 0;
+  }
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (!revealDashboard) {
+    if (!animate || reduced) {
+      restoreEntryGateFromImmersive();
+      overlay.classList.remove('is-closing', 'mode-active');
+      overlay.classList.add('mode-parked');
+      document.body.classList.remove('live-charts-open', 'mode-returning');
+      return;
+    }
+    prepareImmersiveHomeCrossfade();
+    overlay.classList.add('is-closing');
+    window.setTimeout(() => finishImmersiveHomeCrossfade(overlay, 'live-charts-open'), 460);
+    return;
+  }
+
+  const finish = () => {
+    overlay.classList.remove('is-closing', 'mode-active');
+    overlay.classList.add('mode-parked');
+    document.body.classList.remove('live-charts-open', 'mode-returning');
+    pulseDashboardReveal();
+  };
+  if (!animate || reduced) { finish(); return; }
+  overlay.classList.add('is-closing');
+  window.setTimeout(finish, 420);
+}
+
 function renderFocusDisplay() {
   const price = $('focusDisplayPrice');
   const worth = $('focusDisplayWorth');
   const priceValue = state.price > 0 ? state.price : NaN;
-  setFocusDisplayValue(price, state.price > 0 ? money(state.price, state.price < 10 ? 4 : 3) : '—', priceValue);
+  setFocusDisplayValue(price, state.price > 0 ? money(state.price, state.price < 10 ? 4 : 3) : '—', priceValue, { roll: true });
 
   const change = $('focusDisplayChange24h');
   if (change) {
     const next = Number(state.change);
-    change.textContent = state.price > 0 ? `${next > 0 ? '+' : ''}${next.toFixed(2)}% · 24H` : '— · 24H';
     change.className = `focus-display-change ${next > 0 ? 'positive' : next < 0 ? 'negative' : 'neutral'}`;
+    setFocusDisplayValue(change, state.price > 0 ? `${next > 0 ? '+' : ''}${next.toFixed(2)}% · 24H` : '— · 24H', state.price > 0 ? next : NaN);
   }
 
   const activeWallet = state.wallets.find((wallet) => wallet.address === state.address);
@@ -2831,34 +4276,37 @@ function renderFocusDisplay() {
     setFocusDisplayValue(
       worth,
       state.address && state.price > 0 ? money(value, 2) : '—',
-      state.address && state.price > 0 ? value : NaN
+      state.address && state.price > 0 ? value : NaN,
+      { roll: true }
     );
   }
 
   if ($('focusDisplayTotalInj')) {
-    $('focusDisplayTotalInj').textContent = state.address ? formatInj(total, 4) : '—';
+    setFocusDisplayValue($('focusDisplayTotalInj'), state.address ? formatInj(total, 4) : '—', state.address ? total : NaN);
   }
 
   const dailyReward = state.staked > 0 && state.personalApr > 0
     ? state.staked * (state.personalApr / 100) / 365
     : 0;
   if ($('focusDisplayDailyReward')) {
-    $('focusDisplayDailyReward').textContent = dailyReward > 0
-      ? `+${dailyReward.toLocaleString('it-IT', { minimumFractionDigits: 6, maximumFractionDigits: 6 })} INJ / giorno`
-      : 'Reward / giorno —';
+    setFocusDisplayValue(
+      $('focusDisplayDailyReward'),
+      dailyReward > 0 ? `+${dailyReward.toLocaleString('it-IT', { minimumFractionDigits: 6, maximumFractionDigits: 6 })} INJ / giorno` : 'Reward / giorno —',
+      dailyReward > 0 ? dailyReward : NaN
+    );
   }
 
-  if ($('focusDisplayRangeMin')) $('focusDisplayRangeMin').textContent = state.low > 0 ? money(state.low, state.low < 10 ? 3 : 2) : '—';
-  if ($('focusDisplayRangeMax')) $('focusDisplayRangeMax').textContent = state.high > 0 ? money(state.high, state.high < 10 ? 3 : 2) : '—';
+  if ($('focusDisplayRangeMin')) setFocusDisplayValue($('focusDisplayRangeMin'), state.low > 0 ? money(state.low, state.low < 10 ? 3 : 2) : '—', state.low > 0 ? state.low : NaN);
+  if ($('focusDisplayRangeMax')) setFocusDisplayValue($('focusDisplayRangeMax'), state.high > 0 ? money(state.high, state.high < 10 ? 3 : 2) : '—', state.high > 0 ? state.high : NaN);
   const span = state.high - state.low;
   const rangePosition = span > 0 && state.price > 0
     ? Math.max(0, Math.min(100, ((state.price - state.low) / span) * 100))
     : 50;
   if ($('focusDisplayRangeMarker')) $('focusDisplayRangeMarker').style.left = `${rangePosition}%`;
   if ($('focusDisplayRangeFill')) $('focusDisplayRangeFill').style.width = `${rangePosition}%`;
-  if ($('focusDisplayApr')) $('focusDisplayApr').textContent = state.personalApr > 0 ? `${state.personalApr.toFixed(3)}%` : '—';
-  if ($('focusDisplayStaked')) $('focusDisplayStaked').textContent = state.address ? formatInj(state.staked, 4) : '—';
-  if ($('focusDisplayRewards')) $('focusDisplayRewards').textContent = state.address ? formatInj(state.rewards, 4) : '—';
+  if ($('focusDisplayApr')) setFocusDisplayValue($('focusDisplayApr'), state.personalApr > 0 ? `${state.personalApr.toFixed(3)}%` : '—', state.personalApr > 0 ? state.personalApr : NaN);
+  if ($('focusDisplayStaked')) setFocusDisplayValue($('focusDisplayStaked'), state.address ? formatInj(state.staked, 4) : '—', state.address ? state.staked : NaN);
+  if ($('focusDisplayRewards')) setFocusDisplayValue($('focusDisplayRewards'), state.address ? formatInj(state.rewards, 4) : '—', state.address ? state.rewards : NaN);
   renderFocusAmbient();
 }
 
@@ -2894,6 +4342,15 @@ function openFocusDisplay() {
   state.currentView = 'live';
   setHeaderMenuOpen(false);
   setSearchOpen(false);
+
+  // Remove any directional class left from the previous session before the
+  // fullscreen layer is exposed. Price and worth are then primed directly in
+  // their final fixed per-digit geometry.
+  [$('focusDisplayPrice'), $('focusDisplayWorth')].forEach((element) => {
+    if (!element) return;
+    clearTimeout(element._focusValueTimer);
+    element.classList.remove('focus-value-up', 'focus-value-down');
+  });
   renderFocusDisplay();
   renderFocusAmbient();
   dialog.hidden = false;
@@ -2904,29 +4361,58 @@ function openFocusDisplay() {
   scheduleFocusControlsHide();
 }
 
+function prepareImmersiveHomeCrossfade() {
+  const gate = $('entryGate');
+  if (!gate) return null;
+  state.currentView = 'home';
+
+  // v15.98.21 — Zero-reflow immersive return.
+  // Home is already fully painted and kept live underneath Live/Pulse for the
+  // whole session. Do not refresh, re-layer, fade, scale or force-layout it at
+  // the handoff frame. The outgoing immersive surface is now the ONLY layer
+  // that animates, revealing the exact same Home compositor surface below.
+  gate.classList.remove('leaving', 'mode-return', 'return-front', 'return-crossfade', 'return-crossfade-visible');
+  gate.classList.add('visible', 'immersive-underlay', 'home-return-stable');
+  gate.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('entry-gate-open', 'mode-returning');
+  document.body.classList.remove('entry-live-launch');
+  return gate;
+}
+
+function finishImmersiveHomeCrossfade(overlay, bodyOpenClass) {
+  const gate = $('entryGate');
+  overlay?.classList.remove('is-closing', 'mode-active');
+  overlay?.classList.add('mode-parked');
+  document.body.classList.remove(bodyOpenClass, 'mode-returning', 'entry-live-launch');
+  gate?.classList.remove('return-crossfade', 'return-crossfade-visible', 'immersive-underlay', 'mode-return', 'return-front');
+  gate?.classList.add('visible');
+  gate?.setAttribute('aria-hidden', 'false');
+}
+
 function closeFocusDisplay({ revealDashboard = true, animate = false } = {}) {
   const dialog = $('focusDisplayDialog');
   if (!dialog || dialog.hidden || dialog.classList.contains('is-closing') || dialog.classList.contains('mode-parked')) return;
   window.clearTimeout(state.focusControlsTimer);
   dialog.classList.remove('controls-hidden');
 
-  const finish = () => {
-    const gate = $('entryGate');
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    if (!revealDashboard) {
+  if (!revealDashboard) {
+    if (!animate || reduced) {
       restoreEntryGateFromImmersive();
-      gate?.classList.add('return-front');
-      // Home is made the top opaque page first. Only afterwards is Live parked.
-      // There is therefore no compositor frame where the root canvas is exposed.
-      requestAnimationFrame(() => {
-        dialog.classList.remove('is-closing', 'mode-active');
-        dialog.classList.add('mode-parked');
-        document.body.classList.remove('focus-display-open', 'mode-returning');
-        requestAnimationFrame(() => gate?.classList.remove('return-front'));
-      });
+      dialog.classList.remove('is-closing', 'mode-active');
+      dialog.classList.add('mode-parked');
+      document.body.classList.remove('focus-display-open', 'mode-returning');
       return;
     }
+    prepareImmersiveHomeCrossfade();
+    dialog.classList.add('is-closing');
+    window.setTimeout(() => finishImmersiveHomeCrossfade(dialog, 'focus-display-open'), 620);
+    return;
+  }
 
+  const finish = () => {
+    const gate = $('entryGate');
     dialog.classList.remove('is-closing', 'mode-active');
     dialog.classList.add('mode-parked');
     document.body.classList.remove('focus-display-open', 'mode-returning');
@@ -2934,14 +4420,9 @@ function closeFocusDisplay({ revealDashboard = true, animate = false } = {}) {
     pulseDashboardReveal();
   };
 
-  if (!animate || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    finish();
-    return;
-  }
-
+  if (!animate || reduced) { finish(); return; }
   dialog.classList.add('is-closing');
-  // Only inner UI softens; the opaque page background never changes opacity.
-  window.setTimeout(finish, 260);
+  window.setTimeout(finish, 460);
 }
 
 function returnDashboardToEntryGate() {
@@ -2951,24 +4432,29 @@ function returnDashboardToEntryGate() {
   state.currentView = 'home';
   renderEntryGate();
   loadEntrySparkline(false);
-  gate.classList.remove('leaving', 'immersive-underlay', 'mode-return', 'dashboard-underlay');
-  gate.classList.add('visible', 'return-front');
+
+  // Paint Home completely underneath the Dashboard first. The Dashboard then
+  // fades as one opaque compositor surface, so there is never an exposed root
+  // canvas (the source of the brief black frame on iOS/PWA).
+  gate.classList.remove('leaving', 'immersive-underlay', 'mode-return', 'return-front');
+  gate.classList.add('visible', 'dashboard-underlay', 'home-return-stable');
   gate.setAttribute('aria-hidden', 'false');
 
-  // v15.71 — atomic opaque-page handoff. Never fade/transform the full Dashboard
-  // surface: WebKit can expose one black compositor frame while doing so. Home
-  // is promoted already painted and opaque, then Dashboard is simply put back
-  // into its normal stacking context on the following frames.
-  document.body.classList.remove('entry-live-launch', 'mode-returning', 'dashboard-home-return', 'dashboard-home-fade');
-  document.body.classList.add('entry-gate-open');
+  document.body.classList.remove('entry-live-launch');
+  document.body.classList.add('entry-gate-open', 'dashboard-home-return', 'mode-returning');
 
+  // Force Home to be painted before beginning the opacity transition.
+  void gate.offsetWidth;
   requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      gate.classList.remove('return-front');
-      gate.classList.add('home-settled-accent');
-      window.setTimeout(() => gate.classList.remove('home-settled-accent'), 280);
-    });
+    requestAnimationFrame(() => document.body.classList.add('dashboard-home-fade'));
   });
+
+  window.setTimeout(() => {
+    document.body.classList.remove('dashboard-home-return', 'dashboard-home-fade', 'mode-returning');
+    gate.classList.remove('dashboard-underlay');
+    // v15.98.22: Home is already settled. Do not add any post-return accent,
+    // pulse or temporary class: that brief effect was visible as a flash.
+  }, 660);
 }
 
 function goHome(source = 'internal') {
@@ -2977,6 +4463,7 @@ function goHome(source = 'internal') {
   if (state.currentView === 'dashboard' && source !== 'dashboard-home-button') return;
   if (state.currentView === 'live' && !['immersive-close', 'immersive-keyboard'].includes(source)) return;
   if (state.currentView === 'pulse' && !['immersive-close', 'immersive-keyboard'].includes(source)) return;
+  if (state.currentView === 'charts' && !['immersive-close', 'immersive-keyboard'].includes(source)) return;
 
   setHeaderMenuOpen(false);
   setSearchOpen(false);
@@ -3003,6 +4490,16 @@ function goHome(source = 'internal') {
     gate?.classList.add('mode-return');
     document.body.classList.add('mode-returning');
     requestAnimationFrame(() => closePulseView({ revealDashboard: false, animate: true }));
+    return;
+  }
+
+  if (isLiveChartsActive()) {
+    state.currentView = 'home';
+    armModeExitLock(1600);
+    const gate = $('entryGate');
+    gate?.classList.add('mode-return');
+    document.body.classList.add('mode-returning');
+    requestAnimationFrame(() => closeLiveChartsView({ revealDashboard: false, animate: true }));
     return;
   }
 
@@ -3498,8 +4995,16 @@ function setPulseExtremeUI(id, metricKey, row, fullScale, flash = '') {
 
   const high = $(`${prefix}High`);
   const low = $(`${prefix}Low`);
-  if (high) high.textContent = hasHigh ? pulseExtremeText(metricKey, row.ghostHigh) : '—';
-  if (low) low.textContent = hasLow ? pulseExtremeText(metricKey, row.ghostLow) : '—';
+  if (high) {
+    const text = hasHigh ? pulseExtremeText(metricKey, row.ghostHigh) : '—';
+    const numeric = hasHigh ? Number(row.ghostHigh) : NaN;
+    setPlainNumberValue(high, text, numeric);
+  }
+  if (low) {
+    const text = hasLow ? pulseExtremeText(metricKey, row.ghostLow) : '—';
+    const numeric = hasLow ? Number(row.ghostLow) : NaN;
+    setPlainNumberValue(low, text, numeric);
+  }
   if (flash) flashPulseExtreme(id, flash);
 }
 
@@ -3534,8 +5039,16 @@ function setPulseMetric(id, value, level, deltaText, currentText, metaText) {
   const delta = $(`${prefix}Delta`);
   const current = $(`${prefix}Value`);
   const meta = $(`${prefix}Meta`);
-  if (delta) delta.textContent = deltaText;
-  if (current) current.textContent = currentText;
+  const rewardMetric = id === 'pulseMetricReward';
+  if (delta) {
+    setPlainNumberValue(delta, deltaText, n);
+  }
+  if (current) {
+    const currentNumeric = id === 'pulseMetricPrice' ? state.price
+      : id === 'pulseMetricPnl' ? currentTotalInj() * state.price
+      : state.rewards;
+    setPlainNumberValue(current, currentText, currentNumeric);
+  }
   if (meta) meta.textContent = metaText;
 }
 
@@ -3718,8 +5231,8 @@ function renderPulseView() {
   setPulseExtremeUI('pulseMetricReward', 'reward', rewardUiRow, 1, rewardExtreme.flash);
   const rewardHigh = $('pulseRewardHigh');
   const rewardLow = $('pulseRewardLow');
-  if (rewardHigh && rewardExtreme.row.ghostHigh !== null && rewardExtreme.row.ghostHigh !== undefined && Number.isFinite(Number(rewardExtreme.row.ghostHigh))) rewardHigh.textContent = pulseExtremeText('reward', rewardExtreme.row.ghostHigh);
-  if (rewardLow && rewardExtreme.row.ghostLow !== null && rewardExtreme.row.ghostLow !== undefined && Number.isFinite(Number(rewardExtreme.row.ghostLow))) rewardLow.textContent = pulseExtremeText('reward', rewardExtreme.row.ghostLow);
+  if (rewardHigh && rewardExtreme.row.ghostHigh !== null && rewardExtreme.row.ghostHigh !== undefined && Number.isFinite(Number(rewardExtreme.row.ghostHigh))) setPlainNumberValue(rewardHigh, pulseExtremeText('reward', rewardExtreme.row.ghostHigh), Number(rewardExtreme.row.ghostHigh));
+  if (rewardLow && rewardExtreme.row.ghostLow !== null && rewardExtreme.row.ghostLow !== undefined && Number.isFinite(Number(rewardExtreme.row.ghostLow))) setPlainNumberValue(rewardLow, pulseExtremeText('reward', rewardExtreme.row.ghostLow), Number(rewardExtreme.row.ghostLow));
 
   addPulseMiniSample(pricePct, dailyPnl, state.rewards);
   renderPulseMiniCharts();
@@ -3751,21 +5264,24 @@ function closePulseView({ revealDashboard = true, animate = false } = {}) {
   window.clearTimeout(state.pulseControlsTimer);
   overlay.classList.remove('controls-hidden');
 
-  const finish = () => {
-    const gate = $('entryGate');
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    if (!revealDashboard) {
+  if (!revealDashboard) {
+    if (!animate || reduced) {
       restoreEntryGateFromImmersive();
-      gate?.classList.add('return-front');
-      requestAnimationFrame(() => {
-        overlay.classList.remove('is-closing', 'mode-active');
-        overlay.classList.add('mode-parked');
-        document.body.classList.remove('pulse-view-open', 'mode-returning');
-        requestAnimationFrame(() => gate?.classList.remove('return-front'));
-      });
+      overlay.classList.remove('is-closing', 'mode-active');
+      overlay.classList.add('mode-parked');
+      document.body.classList.remove('pulse-view-open', 'mode-returning');
       return;
     }
+    prepareImmersiveHomeCrossfade();
+    overlay.classList.add('is-closing');
+    window.setTimeout(() => finishImmersiveHomeCrossfade(overlay, 'pulse-view-open'), 620);
+    return;
+  }
 
+  const finish = () => {
+    const gate = $('entryGate');
     overlay.classList.remove('is-closing', 'mode-active');
     overlay.classList.add('mode-parked');
     document.body.classList.remove('pulse-view-open', 'mode-returning');
@@ -3773,46 +5289,43 @@ function closePulseView({ revealDashboard = true, animate = false } = {}) {
     pulseDashboardReveal();
   };
 
-  if (!animate || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    finish();
-    return;
-  }
-
+  if (!animate || reduced) { finish(); return; }
   overlay.classList.add('is-closing');
-  // Keep the fullscreen canvas opaque; only its internal UI performs the exit cue.
-  window.setTimeout(finish, 260);
+  window.setTimeout(finish, 460);
 }
 
 function renderMarket() {
-  setValue('marketPrice', state.price > 0 ? money(state.price, 4) : '—', state.price || NaN);
-  setValue('dayLow', state.low > 0 ? money(state.low, 3) : '—', state.low || NaN, { flash: false });
-  setValue('dayHigh', state.high > 0 ? money(state.high, 3) : '—', state.high || NaN, { flash: false });
+  setValue('marketPrice', state.price > 0 ? money(state.price, 4) : '—', state.price || NaN, { roll: true });
+  setValue('dayLow', state.low > 0 ? money(state.low, 3) : '—', state.low || NaN);
+  setValue('dayHigh', state.high > 0 ? money(state.high, 3) : '—', state.high || NaN);
 
   const change = $('marketChange');
   const next = Number(state.change);
-  change.textContent = state.price > 0 ? `${next > 0 ? '+' : ''}${next.toFixed(2)}%` : '—';
+  setBlinkOnlyElement(change, state.price > 0 ? `${next > 0 ? '+' : ''}${next.toFixed(2)}%` : '—', state.price > 0 ? next : NaN, { flash: false });
   change.className = `market-change ${next > 0 ? 'positive' : next < 0 ? 'negative' : 'neutral'}`;
   if (state.price > 0) {
     change.dataset.numericValue = String(next);
   }
   const amount = $('marketChangeAmount');
-  amount.textContent = state.price > 0 ? usdt(state.changeAmount, 4) : '— USDT';
+  setBlinkOnlyElement(amount, state.price > 0 ? usdt(state.changeAmount, 4) : '— USDT', state.price > 0 ? state.changeAmount : NaN);
   amount.className = state.changeAmount > 0 ? 'positive' : state.changeAmount < 0 ? 'negative' : '';
 
   const terminalPrice = $('chartHeaderPrice');
   const terminalChange = $('chartHeaderChange');
   if (terminalPrice) {
-    terminalPrice.textContent = state.price > 0
-      ? `$${state.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: state.price < 10 ? 4 : 2 })}`
-      : '$—';
+    setBlinkOnlyElement(
+      terminalPrice,
+      state.price > 0 ? `$${state.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: state.price < 10 ? 4 : 2 })}` : '$—',
+      state.price > 0 ? state.price : NaN
+    );
   }
   if (terminalChange) {
-    terminalChange.textContent = state.price > 0 ? `${next > 0 ? '+' : ''}${next.toFixed(2)}% · 24H` : '—';
+    setBlinkOnlyElement(terminalChange, state.price > 0 ? `${next > 0 ? '+' : ''}${next.toFixed(2)}% · 24H` : '—', state.price > 0 ? next : NaN, { flash: false });
     terminalChange.className = next > 0 ? 'positive' : next < 0 ? 'negative' : 'neutral';
   }
   renderMarketTimeframes();
-  renderFocusDisplay();
-  renderPulseView();
+  if (isFocusDisplayActive()) renderFocusDisplay();
+  if (isPulseViewActive()) renderPulseView();
 }
 
 function renderPortfolio() {
@@ -3827,26 +5340,26 @@ function renderPortfolio() {
 
   const activeWallet = state.wallets.find((wallet) => wallet.address === state.address);
   $('walletState').textContent = activeWallet ? `${activeWallet.label} · ${shortAddress(state.address)}` : state.address ? shortAddress(state.address) : 'Wallet non caricato';
-  setValue('netWorthUsd', state.address ? money(netWorth, 2) : '—', state.address ? netWorth : NaN, { flash: false });
+  setValue('netWorthUsd', state.address ? money(netWorth, 2) : '—', state.address ? netWorth : NaN, { roll: true });
   setValue('netWorthInj', formatInj(totalInj, 4), totalInj);
   setValue('availableInj', formatInj(state.available), state.available);
-  setValue('availableUsd', money(state.available * state.price), state.available * state.price, { flash: false });
+  setValue('availableUsd', money(state.available * state.price), state.available * state.price);
   setValue('ownedTotalInj', formatInj(totalInj), totalInj);
-  setValue('ownedTotalUsd', money(totalInj * state.price), totalInj * state.price, { flash: false });
+  setValue('ownedTotalUsd', money(totalInj * state.price), totalInj * state.price);
   const ownedVsStaked = Math.max(0, totalInj - state.staked);
   setValue('ownedVsStakedInj', formatInj(ownedVsStaked), ownedVsStaked);
   setValue('stakedInj', formatInj(state.staked), state.staked);
-  setValue('stakedUsd', money(state.staked * state.price), state.staked * state.price, { flash: false });
-  setValue('rewardsInj', formatInj(state.rewards), state.rewards);
+  setValue('stakedUsd', money(state.staked * state.price), state.staked * state.price);
+  setAccruedRewardValue(formatInj(state.rewards), state.rewards);
   setValue('rewardsUsd', money(state.rewards * state.price), state.rewards * state.price, { flash: false });
   setValue('aprValue', state.personalApr > 0 ? `${state.personalApr.toFixed(3)}%` : '—', state.personalApr || NaN);
-  setValue('stakedShare', `${stakedShare.toFixed(1)}%`, stakedShare, { flash: false });
-  setValue('liquidShare', `${liquidShare.toFixed(1)}%`, liquidShare, { flash: false });
+  setValue('stakedShare', `${stakedShare.toFixed(1)}%`, stakedShare);
+  setValue('liquidShare', `${liquidShare.toFixed(1)}%`, liquidShare);
   const worthChange = $('netWorthChange24h');
   if (state.address && state.price > 0) {
     const label = netWorthChange24h > 0 ? 'Guadagno 24h' : netWorthChange24h < 0 ? 'Perdita 24h' : 'Variazione 24h';
-    worthChange.textContent = `${label} ${signedMoney(netWorthChange24h, 2)} (${state.change > 0 ? '+' : ''}${state.change.toFixed(2)}%)`;
     worthChange.className = `worth-change private ${netWorthChange24h > 0 ? 'positive' : netWorthChange24h < 0 ? 'negative' : 'neutral'}`;
+    setBlinkOnlyElement(worthChange, `${label} ${signedMoney(netWorthChange24h, 2)} (${state.change > 0 ? '+' : ''}${state.change.toFixed(2)}%)`, netWorthChange24h, { flash: false });
   } else {
     worthChange.textContent = 'Variazione 24h —';
     worthChange.className = 'worth-change private neutral';
@@ -3859,16 +5372,16 @@ function renderPortfolio() {
     const pnl = netWorth - costBasis;
     const pnlPercent = averageBuyPrice > 0 ? ((state.price / averageBuyPrice) - 1) * 100 : 0;
     const prefix = pnl > 0 ? '+' : pnl < 0 ? '−' : '';
-    pnlElement.textContent = `PnL totale ${prefix}${money(Math.abs(pnl), 2)} (${pnlPercent > 0 ? '+' : ''}${pnlPercent.toFixed(2)}%)`;
     pnlElement.className = `worth-change private ${pnl > 0 ? 'positive' : pnl < 0 ? 'negative' : 'neutral'}`;
+    setBlinkOnlyElement(pnlElement, `PnL totale ${prefix}${money(Math.abs(pnl), 2)} (${pnlPercent > 0 ? '+' : ''}${pnlPercent.toFixed(2)}%)`, pnl, { flash: false });
   } else {
     pnlElement.textContent = 'PnL totale —';
     pnlElement.className = 'worth-change private neutral';
   }
   renderAveragePriceControl();
   $('allocationBar').style.width = `${Math.max(0, Math.min(100, stakedShare))}%`;
-  renderFocusDisplay();
-  renderPulseView();
+  if (isFocusDisplayActive()) renderFocusDisplay();
+  if (isPulseViewActive()) renderPulseView();
 }
 
 
@@ -3908,20 +5421,84 @@ function rewardEtaCopy(days) {
   return { duration, date };
 }
 
-function renderRewardSmartMilestones(active) {
-  const total = currentTotalInj();
-  const smartTarget = Math.max(2000, Math.ceil((total + 0.0001) / 500) * 500);
-  const rows = [
-    { amount: 1, valueId: 'rewardEtaOne', dateId: 'rewardEtaOneDate' },
-    { amount: 10, valueId: 'rewardEtaTen', dateId: 'rewardEtaTenDate' },
-    { amount: Math.max(0, smartTarget - total), valueId: 'rewardEtaTarget', dateId: 'rewardEtaTargetDate' }
+function rewardLiquidEta(missingInj, dailyReward) {
+  const missing = Math.max(0, number(missingInj));
+  const daily = Math.max(0, number(dailyReward));
+  if (!(missing > 0) || !(daily > 0)) return '—';
+  const exactHours = missing / (daily / 24);
+  if (!Number.isFinite(exactHours) || exactHours <= 0) return '—';
+  if (exactHours < 1) return '<1H';
+  const totalHours = Math.ceil(exactHours);
+  const days = Math.floor(totalHours / 24);
+  const hours = totalHours % 24;
+  if (days > 0 && hours > 0) return `${days}G ${hours}H`;
+  if (days > 0) return `${days}G`;
+  return `${hours}H`;
+}
+
+function rewardLiquidityMilestone(liquidValue) {
+  const liquid = Math.max(0, number(liquidValue));
+  const epsilon = 1e-9;
+
+  // Milestone leggibili che si adattano anche ai wallet con piccoli saldi.
+  // Dopo 1 INJ la scala continua naturalmente 2 → 5 → 10 → 25 → 50...
+  const milestones = [
+    0.01, 0.05, 0.1, 0.25, 0.5,
+    1, 2, 5, 10, 25, 50, 100, 250, 500, 1000
   ];
-  if ($('rewardEtaTargetLabel')) $('rewardEtaTargetLabel').textContent = `TARGET ${smartTarget.toLocaleString('it-IT')} INJ`;
-  rows.forEach((row) => {
-    const copy = active ? rewardEtaCopy(compoundDaysForGain(row.amount)) : { duration: '—', date: '—' };
-    if ($(row.valueId)) $(row.valueId).textContent = copy.duration;
-    if ($(row.dateId)) $(row.dateId).textContent = copy.date;
+
+  const index = milestones.findIndex((value) => value > liquid + epsilon);
+  if (index >= 0) {
+    return {
+      goal: milestones[index],
+      base: index > 0 ? milestones[index - 1] : 0
+    };
+  }
+
+  // Oltre la scala predefinita usa una progressione 1 → 2 → 5 per decade.
+  const magnitude = 10 ** Math.floor(Math.log10(Math.max(1, liquid)));
+  const ladder = [1, 2, 5, 10].map((step) => step * magnitude);
+  const ladderIndex = ladder.findIndex((value) => value > liquid + epsilon);
+  if (ladderIndex >= 0) {
+    return {
+      goal: ladder[ladderIndex],
+      base: ladderIndex > 0 ? ladder[ladderIndex - 1] : magnitude / 2
+    };
+  }
+
+  return { goal: magnitude * 20, base: magnitude * 10 };
+}
+
+function rewardLiquidityTargetText(value) {
+  const amount = Math.max(0, number(value));
+  return amount.toLocaleString('it-IT', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: amount < 1 ? 4 : 2
   });
+}
+
+function renderRewardLiquidityTarget(active, dailyReward) {
+  const liquid = Math.max(0, number(state.available)) + Math.max(0, number(state.rewards));
+  const { goal, base } = rewardLiquidityMilestone(liquid);
+  const missing = Math.max(0, goal - liquid);
+  const span = Math.max(1e-12, goal - base);
+  const progress = Math.max(0, Math.min(100, ((liquid - base) / span) * 100));
+  const eta = active ? rewardLiquidEta(missing, dailyReward) : '—';
+  const goalText = rewardLiquidityTargetText(goal);
+
+  if ($('rewardLiquidTotal')) $('rewardLiquidTotal').textContent = state.address ? formatInj(liquid, 4) : '—';
+  if ($('rewardLiquidGoal')) $('rewardLiquidGoal').textContent = state.address ? `${goalText} INJ` : '—';
+  if ($('rewardLiquidMissing')) $('rewardLiquidMissing').textContent = state.address ? formatInj(missing, 4) : '—';
+  if ($('rewardLiquidEta')) $('rewardLiquidEta').textContent = state.address ? eta : '—';
+  if ($('rewardLiquidBar')) $('rewardLiquidBar').style.width = state.address ? `${progress}%` : '0%';
+
+  const panel = $('rewardLiquidNext');
+  if (panel) {
+    panel.classList.toggle('inactive', !state.address || !active);
+    panel.setAttribute('aria-label', state.address
+      ? `Disponibile più reward ${formatInj(liquid, 4)}. Mancano ${formatInj(missing, 4)} per arrivare al prossimo target di ${goalText} INJ. Tempo stimato ${eta}.`
+      : 'Prossimo target disponibile non disponibile');
+  }
 }
 
 function renderRewardTracker() {
@@ -3939,26 +5516,72 @@ function renderRewardTracker() {
   $('yieldCard')?.classList.toggle('simulation-active', simulationActive);
   if ($('rewardModePill')) $('rewardModePill').textContent = simulationActive ? 'SIMULAZIONE' : 'LIVE';
 
-  setValue('hourlyEstimate', active ? formatInj(hourly, 4) : '—', active ? hourly : NaN, { flash: false });
-  setValue('hourlyUsd', active && valuationPrice > 0 ? money(hourly * valuationPrice, 4) : '—', active && valuationPrice > 0 ? hourly * valuationPrice : NaN, { flash: false });
-  setValue('dailyEstimate', active ? formatInj(daily, 4) : '—', active ? daily : NaN, { flash: false });
-  setValue('dailyUsd', active && valuationPrice > 0 ? money(daily * valuationPrice, 3) : '—', active && valuationPrice > 0 ? daily * valuationPrice : NaN, { flash: false });
-  setValue('weeklyEstimate', active ? formatInj(weekly, 4) : '—', active ? weekly : NaN, { flash: false });
-  setValue('weeklyUsd', active && valuationPrice > 0 ? money(weekly * valuationPrice, 3) : '—', active && valuationPrice > 0 ? weekly * valuationPrice : NaN, { flash: false });
-  setValue('monthlyEstimate', active ? formatInj(monthly, 4) : '—', active ? monthly : NaN, { flash: false });
-  setValue('monthlyUsd', active && valuationPrice > 0 ? money(monthly * valuationPrice) : '—', active && valuationPrice > 0 ? monthly * valuationPrice : NaN, { flash: false });
-  setValue('yearlyEstimate', active ? formatInj(yearly, 4) : '—', active ? yearly : NaN, { flash: false });
-  setValue('yearlyUsd', active && valuationPrice > 0 ? money(yearly * valuationPrice) : '—', active && valuationPrice > 0 ? yearly * valuationPrice : NaN, { flash: false });
+  setRewardEstimateValue('hourlyEstimate', hourly, active, 4);
+  setPulseOnlyValue('hourlyUsd', active && valuationPrice > 0 ? money(hourly * valuationPrice, 4) : '—', active && valuationPrice > 0 ? hourly * valuationPrice : NaN, { flash: false });
+  setRewardEstimateValue('dailyEstimate', daily, active, 4);
+  setPulseOnlyValue('dailyUsd', active && valuationPrice > 0 ? money(daily * valuationPrice, 3) : '—', active && valuationPrice > 0 ? daily * valuationPrice : NaN, { flash: false });
+  setRewardEstimateValue('weeklyEstimate', weekly, active, 4);
+  setPulseOnlyValue('weeklyUsd', active && valuationPrice > 0 ? money(weekly * valuationPrice, 3) : '—', active && valuationPrice > 0 ? weekly * valuationPrice : NaN, { flash: false });
+  setRewardEstimateValue('monthlyEstimate', monthly, active, 4);
+  setPulseOnlyValue('monthlyUsd', active && valuationPrice > 0 ? money(monthly * valuationPrice) : '—', active && valuationPrice > 0 ? monthly * valuationPrice : NaN, { flash: false });
+  setRewardEstimateValue('yearlyEstimate', yearly, active, 4);
+  setPulseOnlyValue('yearlyUsd', active && valuationPrice > 0 ? money(yearly * valuationPrice) : '—', active && valuationPrice > 0 ? yearly * valuationPrice : NaN, { flash: false });
+
+  // v15.98.16 — Added USD/day target gauge. Existing Reward Tracker values
+  // remain untouched; this is a live visual layer driven by selected wallet,
+  // personal APR and current/simulated INJ valuation.
+  const dailyUsdValue = active && valuationPrice > 0 ? daily * valuationPrice : 0;
+
+  // v15.98.18 — Self-scaling reward gauge. $2/day remains the first major
+  // objective; after it is passed, the target advances automatically through
+  // useful daily-income milestones. Wallet changes and market moves therefore
+  // require no manual configuration.
+  const rewardUsdMilestones = [0.25, 0.5, 1, 2, 3, 5, 7.5, 10, 15, 20, 25, 50, 75, 100, 150, 200, 250, 500, 750, 1000, 1500, 2000, 2500, 5000];
+  let rewardUsdTarget = rewardUsdMilestones.find((value) => value > dailyUsdValue + 1e-9);
+  if (!(rewardUsdTarget > 0)) {
+    const magnitude = 10 ** Math.max(0, Math.floor(Math.log10(Math.max(1, dailyUsdValue))));
+    rewardUsdTarget = Math.ceil(dailyUsdValue / magnitude + 0.001) * magnitude;
+    if (rewardUsdTarget <= dailyUsdValue) rewardUsdTarget += magnitude;
+  }
+  if (dailyUsdValue < 2) rewardUsdTarget = 2;
+
+  const rawScaleMax = Math.max(rewardUsdTarget * 1.12, dailyUsdValue * 1.08, 0.5);
+  const scaleStep = rawScaleMax <= 5 ? 0.5 : rawScaleMax <= 20 ? 1 : rawScaleMax <= 100 ? 5 : rawScaleMax <= 500 ? 25 : 100;
+  const rewardUsdScaleMax = Math.max(scaleStep, Math.ceil(rawScaleMax / scaleStep) * scaleStep);
+  const markerPct = rewardUsdScaleMax > 0 ? Math.max(0, Math.min(100, (dailyUsdValue / rewardUsdScaleMax) * 100)) : 0;
+  const targetPct = rewardUsdScaleMax > 0 ? Math.max(0, Math.min(100, (rewardUsdTarget / rewardUsdScaleMax) * 100)) : 80;
+  const gauge = $('rewardUsdProgress');
+  if (gauge) {
+    gauge.classList.toggle('target-reached', dailyUsdValue >= rewardUsdTarget);
+    gauge.classList.toggle('inactive', !active || !(valuationPrice > 0));
+    gauge.style.setProperty('--reward-usd-marker', `${markerPct}%`);
+    gauge.style.setProperty('--reward-usd-target', `${targetPct}%`);
+    gauge.setAttribute('aria-label', active && valuationPrice > 0
+      ? `Reward giornaliero ${money(dailyUsdValue, 3)}. Prossimo target ${money(rewardUsdTarget, rewardUsdTarget < 10 ? 2 : 0)} al giorno.`
+      : 'Reward giornaliero non disponibile');
+  }
+  if ($('rewardDailyUsdGauge')) $('rewardDailyUsdGauge').textContent = active && valuationPrice > 0 ? `${money(dailyUsdValue, 3)} / giorno` : '—';
+  if ($('rewardUsdTargetValue')) $('rewardUsdTargetValue').textContent = `${money(rewardUsdTarget, rewardUsdTarget < 10 ? 2 : 0)} / giorno`;
+  const rewardTargetProgress = rewardUsdTarget > 0 ? Math.max(0, Math.min(100, (dailyUsdValue / rewardUsdTarget) * 100)) : 0;
+  if ($('rewardUsdProgressCopy')) $('rewardUsdProgressCopy').textContent = active && valuationPrice > 0
+    ? `${rewardTargetProgress.toLocaleString('it-IT', { maximumFractionDigits: rewardTargetProgress < 10 ? 1 : 0 })}% del target`
+    : '— verso target';
+  if ($('rewardUsdScaleMax')) $('rewardUsdScaleMax').textContent = money(rewardUsdScaleMax, rewardUsdScaleMax < 10 ? 2 : 0);
+  if ($('rewardUsdMarker')) $('rewardUsdMarker').setAttribute('aria-label', active && valuationPrice > 0 ? `Reward giornaliero ${money(dailyUsdValue, 3)}` : 'Reward giornaliero non disponibile');
+
+  // Clear any classes left by older builds so this card never flashes red/green.
+  $('yieldCard')?.classList.remove('data-flash-up', 'data-flash-down');
+  $('yieldCard')?.querySelectorAll('.value-change-up, .value-change-down').forEach((node) => node.classList.remove('value-change-up', 'value-change-down'));
 
   const milestones = [0.1, 0.25, 0.5, 1, 2, 5, 10, 20, 50];
   const milestone = milestones.find((value) => value > daily + 1e-9) || Math.ceil(daily / 10) * 10 + 10;
   const required = active ? milestone * 365 / (state.personalApr / 100) : 0;
   const missing = Math.max(0, required - stakingBase);
   if ($('rewardMilestoneHeading')) $('rewardMilestoneHeading').textContent = 'Prossimo livello';
-  $('rewardMilestoneLabel').textContent = active ? `${milestone.toLocaleString('it-IT')} INJ / giorno` : '—';
-  $('rewardMilestoneMissing').textContent = active ? `${formatInj(missing, 4)} di staking mancanti` : '—';
+  setPulseOnlyValue('rewardMilestoneLabel', active ? `${milestone.toLocaleString('it-IT')} INJ / giorno` : '—', active ? milestone : NaN, { flash: false });
+  setPulseOnlyValue('rewardMilestoneMissing', active ? `${formatInj(missing, 4)} di staking mancanti` : '—', active ? missing : NaN, { flash: false });
   $('rewardMilestoneBar').style.width = active ? `${Math.min(100, (daily / milestone) * 100)}%` : '0%';
-  renderRewardSmartMilestones(active);
+  renderRewardLiquidityTarget(active, daily);
 
   if (simulationActive) {
     $('aprMethod').textContent = `Simulazione sui ${formatInj(stakingBase, 4)} realmente delegati in questo wallet, valorizzati a ${usdMoney(simulationPrice)} per INJ. APR netto personale ${state.personalApr.toFixed(3)}%. Clicca fuori dalla card per tornare al prezzo LIVE.`;
@@ -4013,6 +5636,25 @@ function etaText(days) {
   return `${months} mesi · ${date.toLocaleDateString('it-IT', { month: 'short', year: 'numeric' })}`;
 }
 
+function setTargetProgressValue(total, target) {
+  const element = $('targetProgressCopy');
+  if (!element) return;
+  const currentText = number(total).toLocaleString('it-IT', { minimumFractionDigits: 4, maximumFractionDigits: 4 });
+  const targetText = number(target).toLocaleString('it-IT', { minimumFractionDigits: 0, maximumFractionDigits: 4 });
+  element.classList.add('target-progress-rich');
+  element.innerHTML = `<span class="target-progress-current"><span class="target-progress-number">${currentText}</span><span class="target-progress-unit">INJ</span></span><span class="target-progress-separator">/</span><span class="target-progress-goal">${targetText} INJ</span>`;
+  element.dataset.plainNumericValue = String(number(total));
+}
+
+function setTargetMissingValue(missing) {
+  const element = $('targetMissing');
+  if (!element) return;
+  const missingText = number(missing).toLocaleString('it-IT', { minimumFractionDigits: 4, maximumFractionDigits: 4 });
+  element.classList.add('target-missing-rich');
+  element.innerHTML = `<span class="target-missing-number">${missingText}</span><span class="target-missing-unit"> INJ</span>`;
+  element.dataset.plainNumericValue = String(number(missing));
+}
+
 function renderTarget() {
   const input = $('targetInput');
   if (!input) return;
@@ -4030,11 +5672,12 @@ function renderTarget() {
   if (document.activeElement !== input) input.value = String(Number(target.toFixed(3)));
   const percent = target > 0 ? Math.min(100, (total / target) * 100) : 0;
   const missing = Math.max(0, target - total);
-  $('targetProgressCopy').textContent = `${formatInj(total, 4)} / ${formatInj(target, 4)}`;
+  setTargetProgressValue(total, target);
   $('targetProgressBar').style.width = `${percent}%`;
-  $('targetMissing').textContent = formatInj(missing, 4);
-  $('targetPercent').textContent = `${percent.toFixed(2)}%`;
-  $('targetEta').textContent = etaText(estimateTargetDays(target));
+  setTargetMissingValue(missing);
+  setPulseOnlyValue('targetPercent', `${percent.toFixed(2)}%`, percent);
+  const targetDays = estimateTargetDays(target);
+  setPulseOnlyValue('targetEta', etaText(targetDays), Number.isFinite(targetDays) ? targetDays : NaN);
 }
 
 function renderValidators() {
@@ -4693,7 +6336,7 @@ function closeChartDialog() {
   if (!dialog) return;
   dialog.classList.remove('is-open');
   dialog.hidden = true;
-  document.body.classList.remove('chart-overlay-open', 'home-market-overlay-open');
+  document.body.classList.remove('chart-overlay-open');
   document.documentElement.classList.remove('chart-overlay-open');
   hideNativeChartTooltip();
 }
@@ -4702,607 +6345,6 @@ function setNativeChartRange(range) {
   if (!NATIVE_CHART_CONFIG[range] || range === state.nativeChartRange && state.nativeChart.open > 0) return;
   state.nativeChart.liveSamples = [];
   loadNativeChart(range, false);
-}
-
-
-
-const LIVE_CHART_CONFIG = {
-  min1: { label: '1M', interval: '1s', limit: 60, bucketMs: 1000, durationMs: 60_000 },
-  min5: { label: '5M', interval: '1s', limit: 300, bucketMs: 5000, durationMs: 300_000, aggregateMs: 5000 },
-  min10: { label: '10M', interval: '1s', limit: 600, bucketMs: 10000, durationMs: 600_000, aggregateMs: 10000 },
-  h1: { label: '1H', interval: '1m', limit: 60, bucketMs: 60_000, durationMs: 3_600_000 },
-  d1: { label: '1D', interval: '30m', limit: 48, bucketMs: 1_800_000, durationMs: 86_400_000 },
-  w1: { label: '1S', interval: '4h', limit: 42, bucketMs: 14_400_000, durationMs: 7 * 86_400_000 },
-  m1: { label: '1Mese', interval: '12h', limit: 62, bucketMs: 43_200_000, durationMs: 31 * 86_400_000 },
-  y1: { label: '1Y', interval: '1d', limit: 366, bucketMs: 86_400_000, durationMs: 366 * 86_400_000 },
-  all: { label: 'ALL', interval: '1w', limit: 1000, bucketMs: 604_800_000, durationMs: 0 }
-};
-
-function liveChartsOpen() {
-  return marketToolIsOpen('liveChartsDialog');
-}
-
-function liveChartsBucket(timestamp, bucketMs) {
-  return Math.floor(number(timestamp) / bucketMs) * bucketMs;
-}
-
-function aggregateLiveCandles(rows, bucketMs) {
-  if (!(bucketMs > 1000)) return rows;
-  const out = [];
-  for (const row of rows) {
-    const t = liveChartsBucket(row.t, bucketMs);
-    let candle = out[out.length - 1];
-    if (!candle || candle.t !== t) {
-      candle = { t, o: row.o, h: row.h, l: row.l, c: row.c, v: row.v };
-      out.push(candle);
-    } else {
-      candle.h = Math.max(candle.h, row.h);
-      candle.l = Math.min(candle.l, row.l);
-      candle.c = row.c;
-      candle.v += row.v;
-    }
-  }
-  return out;
-}
-
-async function fetchLiveChartsCandles(range) {
-  const config = LIVE_CHART_CONFIG[range] || LIVE_CHART_CONFIG.h1;
-  const now = Date.now();
-  const params = [`symbol=INJUSDT`, `interval=${encodeURIComponent(config.interval)}`, `limit=${config.limit}`];
-  if (config.durationMs > 0) params.push(`startTime=${Math.max(0, now - config.durationMs)}`);
-  const data = await fetchJson(`https://api.binance.com/api/v3/klines?${params.join('&')}`, 10_000);
-  let rows = (Array.isArray(data) ? data : []).map((row) => ({
-    t: number(row?.[0]), o: number(row?.[1]), h: number(row?.[2]), l: number(row?.[3]), c: number(row?.[4]), v: number(row?.[5])
-  })).filter((row) => row.t > 0 && row.o > 0 && row.h > 0 && row.l > 0 && row.c > 0);
-  if (config.aggregateMs) rows = aggregateLiveCandles(rows, config.aggregateMs);
-  if (!rows.length) throw new Error('Candles unavailable');
-  return rows;
-}
-
-function emaSeries(values, period) {
-  const p = Math.max(1, period|0);
-  const k = 2 / (p + 1);
-  const out = [];
-  let prev = null;
-  values.forEach((value, index) => {
-    const v = number(value);
-    prev = prev === null ? v : (v * k + prev * (1-k));
-    out[index] = prev;
-  });
-  return out;
-}
-
-function rsiSeries(values, period = 14) {
-  const out = new Array(values.length).fill(null);
-  if (values.length < 2) return out;
-  let avgGain = 0, avgLoss = 0;
-  for (let i = 1; i < values.length; i++) {
-    const delta = values[i] - values[i-1];
-    const gain = Math.max(0, delta);
-    const loss = Math.max(0, -delta);
-    if (i <= period) {
-      avgGain += gain; avgLoss += loss;
-      if (i === period) {
-        avgGain /= period; avgLoss /= period;
-        out[i] = avgLoss === 0 ? 100 : 100 - 100/(1 + avgGain/avgLoss);
-      }
-    } else {
-      avgGain = (avgGain*(period-1)+gain)/period;
-      avgLoss = (avgLoss*(period-1)+loss)/period;
-      out[i] = avgLoss === 0 ? 100 : 100 - 100/(1 + avgGain/avgLoss);
-    }
-  }
-  return out;
-}
-
-function macdSeries(values) {
-  const fast = emaSeries(values,12), slow = emaSeries(values,26);
-  const macd = values.map((_,i) => fast[i]-slow[i]);
-  const signal = emaSeries(macd,9);
-  const hist = macd.map((v,i) => v-signal[i]);
-  return { macd, signal, hist };
-}
-
-function liveSvgPath(values, xFor, yFor) {
-  let started = false;
-  return values.map((value,index) => {
-    if (value === null || value === undefined || !Number.isFinite(Number(value))) return '';
-    const part = `${started ? 'L' : 'M'}${xFor(index).toFixed(1)},${yFor(number(value)).toFixed(1)}`;
-    started = true;
-    return part;
-  }).filter(Boolean).join(' ');
-}
-
-function renderLiveChartsControls() {
-  document.querySelectorAll('[data-live-range]').forEach((button) => {
-    const active = button.dataset.liveRange === state.liveCharts.range;
-    button.classList.toggle('active', active);
-    button.setAttribute('aria-pressed', active ? 'true' : 'false');
-  });
-  const config = LIVE_CHART_CONFIG[state.liveCharts.range] || LIVE_CHART_CONFIG.h1;
-  if ($('liveChartsRangeLabel')) $('liveChartsRangeLabel').textContent = config.label;
-}
-
-function renderLiveCharts() {
-  if (!liveChartsOpen()) return;
-  renderLiveChartsControls();
-  const price = state.price;
-  if ($('liveChartsPrice')) $('liveChartsPrice').textContent = marketToolPrice(price);
-  const ch = number(state.change);
-  if ($('liveChartsChange')) { $('liveChartsChange').textContent = state.price > 0 ? `${ch>=0?'+':''}${ch.toFixed(2)}% · 24H` : '—'; $('liveChartsChange').className = ch>0?'positive':ch<0?'negative':'neutral'; }
-  const loading = $('liveChartsLoading');
-  if (loading) loading.hidden = !state.liveCharts.loading && state.liveCharts.candles.length > 0;
-  const candles = state.liveCharts.candles || [];
-  const svg = $('liveChartsSvg');
-  if (!svg || !candles.length) return;
-
-  const last = candles.at(-1);
-  if ($('liveChartsOhlc')) $('liveChartsOhlc').textContent = `O ${marketToolPrice(last.o)} · H ${marketToolPrice(last.h)} · L ${marketToolPrice(last.l)} · C ${marketToolPrice(last.c)}`;
-  const closes = candles.map(c=>c.c);
-  const ema12 = emaSeries(closes,12), ema26 = emaSeries(closes,26), ema50 = emaSeries(closes,50), ema200 = emaSeries(closes,200);
-  const rsi = rsiSeries(closes,14);
-  const macd = macdSeries(closes);
-
-  const allPrices = candles.flatMap(c=>[c.h,c.l]).concat(ema12,ema26,ema50,ema200).filter(v=>Number.isFinite(v)&&v>0);
-  let minP = Math.min(...allPrices), maxP = Math.max(...allPrices);
-  const padP = Math.max((maxP-minP)*.08, Math.max(.0001, price*.0015)); minP -= padP; maxP += padP;
-  const left=58,right=1142, top=26, bottom=334, rsiTop=374,rsiBottom=446, macdTop=486,macdBottom=575;
-  const n=candles.length; const step=(right-left)/Math.max(1,n); const bodyW=Math.max(2,Math.min(15,step*.62));
-  const x=i=>left+(i+.5)*step;
-  const yP=p=>top+(1-(p-minP)/(maxP-minP))*(bottom-top);
-  const yR=v=>rsiTop+(1-v/100)*(rsiBottom-rsiTop);
-  const macdAbs=Math.max(1e-9,...macd.macd.map(Math.abs),...macd.signal.map(Math.abs),...macd.hist.map(Math.abs));
-  const yM=v=>(macdTop+macdBottom)/2 - (v/macdAbs)*((macdBottom-macdTop)*.43);
-
-  const grid=[];
-  for(let i=0;i<5;i++){ const yy=top+i*(bottom-top)/4; const val=maxP-(i/4)*(maxP-minP); grid.push(`<line x1="${left}" y1="${yy}" x2="${right}" y2="${yy}" class="lc-grid"/><text x="${right-5}" y="${yy-5}" text-anchor="end" class="lc-axis-label">${marketToolPrice(val)}</text>`); }
-  grid.push(`<line x1="${left}" y1="${yR(70)}" x2="${right}" y2="${yR(70)}" class="lc-indicator-guide"/><line x1="${left}" y1="${yR(30)}" x2="${right}" y2="${yR(30)}" class="lc-indicator-guide"/><line x1="${left}" y1="${(macdTop+macdBottom)/2}" x2="${right}" y2="${(macdTop+macdBottom)/2}" class="lc-indicator-guide"/>`);
-
-  const candleSvg=candles.map((c,i)=>{ const up=c.c>=c.o; const cls=up?'up':'down'; const yyO=yP(c.o),yyC=yP(c.c),yyH=yP(c.h),yyL=yP(c.l); const y=Math.min(yyO,yyC); const h=Math.max(1.6,Math.abs(yyC-yyO)); return `<g class="lc-candle ${cls}"><line x1="${x(i)}" y1="${yyH}" x2="${x(i)}" y2="${yyL}"/><rect x="${(x(i)-bodyW/2).toFixed(1)}" y="${y.toFixed(1)}" width="${bodyW.toFixed(1)}" height="${h.toFixed(1)}" rx="1"/></g>`; }).join('');
-  const emaPaths=`<path d="${liveSvgPath(ema12,x,yP)}" class="lc-ema ema12"/><path d="${liveSvgPath(ema26,x,yP)}" class="lc-ema ema26"/><path d="${liveSvgPath(ema50,x,yP)}" class="lc-ema ema50"/><path d="${liveSvgPath(ema200,x,yP)}" class="lc-ema ema200"/>`;
-  const rsiPath=`<path d="${liveSvgPath(rsi,x,yR)}" class="lc-rsi"/><text x="${left}" y="${rsiTop-10}" class="lc-panel-label">RSI 14</text><text x="${right}" y="${rsiTop-10}" text-anchor="end" class="lc-panel-value">${rsi.at(-1)!=null?rsi.at(-1).toFixed(1):'—'}</text>`;
-  const hist=macd.hist.map((v,i)=>{ const yy=yM(v), zero=yM(0); return `<rect x="${(x(i)-Math.max(1,bodyW*.32)).toFixed(1)}" y="${Math.min(yy,zero).toFixed(1)}" width="${Math.max(1,bodyW*.64).toFixed(1)}" height="${Math.max(1,Math.abs(zero-yy)).toFixed(1)}" class="lc-macd-hist ${v>=0?'up':'down'}"/>`; }).join('');
-  const macdSvg=`${hist}<path d="${liveSvgPath(macd.macd,x,yM)}" class="lc-macd-line main"/><path d="${liveSvgPath(macd.signal,x,yM)}" class="lc-macd-line signal"/><text x="${left}" y="${macdTop-10}" class="lc-panel-label">MACD 12·26·9</text>`;
-  const tickUp=last.c>=last.o; const tickY=yP(last.c); const tickX=x(n-1); const tickOffset=tickUp?-Math.max(5,bodyW*.55):Math.max(5,bodyW*.55); const tick=`<line x1="${(tickX-bodyW/2).toFixed(1)}" y1="${(tickY+tickOffset).toFixed(1)}" x2="${(tickX+bodyW/2).toFixed(1)}" y2="${(tickY+tickOffset).toFixed(1)}" class="lc-price-tick ${state.liveCharts.priceTickDirection>=0?'flash-up':'flash-down'}"/><text x="${Math.min(right-2,tickX+bodyW+7).toFixed(1)}" y="${(tickY+tickOffset+4).toFixed(1)}" class="lc-live-label">${marketToolPrice(last.c)}</text>`;
-  const timeLabels=[0,Math.floor((n-1)/2),n-1].map((i,idx)=>{ const d=new Date(candles[i].t); const cfg=state.liveCharts.range; const label=(cfg==='min1'||cfg==='min5'||cfg==='min10'||cfg==='h1'||cfg==='d1')?d.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'}):d.toLocaleDateString('it-IT',{day:'2-digit',month:'short'}); return `<text x="${x(i)}" y="${bottom+22}" text-anchor="${idx===0?'start':idx===2?'end':'middle'}" class="lc-time-label">${label}</text>`; }).join('');
-  svg.innerHTML=`${grid.join('')}${candleSvg}${emaPaths}${tick}${timeLabels}${rsiPath}${macdSvg}`;
-}
-
-async function loadLiveCharts(range = state.liveCharts.range) {
-  if (!LIVE_CHART_CONFIG[range]) range='h1';
-  state.liveCharts.range=range;
-  try { localStorage.setItem('inj_node_live_charts_range', range); } catch (_) {}
-  const id=++state.liveCharts.requestId;
-  state.liveCharts.loading=true;
-  renderLiveChartsControls();
-  const loading=$('liveChartsLoading'); if(loading){loading.hidden=false; const span=loading.querySelector('span'); if(span) span.textContent='Caricamento candele…';}
-  try {
-    const candles=await fetchLiveChartsCandles(range);
-    if(id!==state.liveCharts.requestId) return;
-    state.liveCharts.candles=candles;
-    state.liveCharts.loadedAt=Date.now();
-    state.liveCharts.loading=false;
-    renderLiveCharts();
-  } catch (_) {
-    if(id!==state.liveCharts.requestId) return;
-    state.liveCharts.loading=false;
-    if(loading){loading.hidden=false; const span=loading.querySelector('span'); if(span) span.textContent='Dati chart temporaneamente non disponibili';}
-  }
-}
-
-function updateLiveChartsTick(price) {
-  if (!liveChartsOpen() || !(number(price)>0) || !state.liveCharts.candles.length) return;
-  const p=number(price); const cfg=LIVE_CHART_CONFIG[state.liveCharts.range]||LIVE_CHART_CONFIG.h1; const now=Date.now(); const bucket=liveChartsBucket(now,cfg.bucketMs);
-  let last=state.liveCharts.candles.at(-1); const previousClose=last?.c||p;
-  if (!last || last.t < bucket) {
-    state.liveCharts.candles.push({t:bucket,o:previousClose,h:Math.max(previousClose,p),l:Math.min(previousClose,p),c:p,v:0});
-    const max=cfg.limit||1000; if(state.liveCharts.candles.length>max) state.liveCharts.candles=state.liveCharts.candles.slice(-max);
-  } else {
-    last.h=Math.max(last.h,p); last.l=Math.min(last.l,p); last.c=p;
-  }
-  state.liveCharts.priceTickDirection=p>=previousClose?1:-1;
-  renderLiveCharts();
-}
-
-function openLiveChartsDialog() {
-  const dialog=$('liveChartsDialog'); if(!dialog) return;
-  dialog.hidden=false; dialog.classList.add('is-open');
-  document.body.classList.add('market-tool-open'); document.documentElement.classList.add('market-tool-open');
-  let saved='h1'; try { const v=localStorage.getItem('inj_node_live_charts_range'); if(LIVE_CHART_CONFIG[v]) saved=v; } catch (_) {}
-  state.liveCharts.range=saved;
-  renderLiveChartsControls();
-  void loadLiveCharts(saved);
-}
-
-function closeLiveChartsDialog() {
-  const dialog=$('liveChartsDialog'); if(!dialog) return;
-  dialog.classList.remove('is-open'); dialog.hidden=true;
-  if(!marketToolIsOpen('orderBookDialog')&&!marketToolIsOpen('terminalDialog')){document.body.classList.remove('market-tool-open');document.documentElement.classList.remove('market-tool-open');}
-}
-
-function marketToolIsOpen(id) {
-  const dialog = $(id);
-  return Boolean(dialog && !dialog.hidden && dialog.classList.contains('is-open'));
-}
-
-function marketToolsNeedOrderBook() {
-  return marketToolIsOpen('orderBookDialog') || marketToolIsOpen('terminalDialog');
-}
-
-function marketToolPrice(value) {
-  const v = number(value);
-  if (!(v > 0)) return '$—';
-  return `$${v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: v < 10 ? 4 : 2 })}`;
-}
-
-function marketToolQty(value) {
-  const v = Math.max(0, number(value));
-  if (v >= 10000) return v.toLocaleString('en-US', { maximumFractionDigits: 0 });
-  if (v >= 100) return v.toLocaleString('en-US', { maximumFractionDigits: 2 });
-  return v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 });
-}
-
-function marketToolTotal(value) {
-  const converted = currencyValue(value);
-  const symbol = state.currency === 'EUR' ? '€' : '$';
-  if (Math.abs(converted) >= 1_000_000) return `${symbol}${(converted / 1_000_000).toFixed(2)}M`;
-  if (Math.abs(converted) >= 10_000) return `${symbol}${(converted / 1_000).toFixed(1)}K`;
-  return `${symbol}${converted.toLocaleString(state.currency === 'EUR' ? 'it-IT' : 'en-US', { maximumFractionDigits: 0 })}`;
-}
-
-function normalizedBookRows(levels, side, limit = 20) {
-  const clean = (Array.isArray(levels) ? levels : [])
-    .map((row) => ({ price: number(row?.[0]), qty: number(row?.[1]) }))
-    .filter((row) => row.price > 0 && row.qty > 0)
-    .sort((a, b) => side === 'ask' ? a.price - b.price : b.price - a.price)
-    .slice(0, limit);
-  let cumulative = 0;
-  clean.forEach((row) => {
-    cumulative += row.price * row.qty;
-    row.total = cumulative;
-  });
-  const maxTotal = Math.max(1, ...clean.map((row) => row.total));
-  clean.forEach((row) => { row.depth = Math.max(2, Math.min(100, row.total / maxTotal * 100)); });
-  return side === 'ask' ? clean.slice().reverse() : clean;
-}
-
-function renderBookRows(containerId, levels, side, { limit = 20, compact = false } = {}) {
-  const host = $(containerId);
-  if (!host) return;
-  const rows = normalizedBookRows(levels, side, limit);
-  if (!rows.length) {
-    host.innerHTML = '<div class="orderbook-loading">In attesa del flusso realtime…</div>';
-    return;
-  }
-  host.innerHTML = rows.map((row) => `
-    <div class="${compact ? 'terminal-book-row' : 'orderbook-row'} ${side}" style="--book-depth:${row.depth.toFixed(1)}%">
-      <i></i><span>${marketToolPrice(row.price).replace('$','')}</span><span>${marketToolQty(row.qty)}</span><span>${marketToolTotal(row.total)}</span>
-    </div>`).join('');
-}
-
-function topBookStats() {
-  const bids = (state.marketTools.bids || []).map((r) => [number(r?.[0]), number(r?.[1])]).filter((r) => r[0] > 0 && r[1] > 0).sort((a,b) => b[0]-a[0]);
-  const asks = (state.marketTools.asks || []).map((r) => [number(r?.[0]), number(r?.[1])]).filter((r) => r[0] > 0 && r[1] > 0).sort((a,b) => a[0]-b[0]);
-  const bestBid = number(bids[0]?.[0]);
-  const bestAsk = number(asks[0]?.[0]);
-  const spread = bestAsk > 0 && bestBid > 0 ? Math.max(0, bestAsk - bestBid) : 0;
-  const spreadPct = spread > 0 && bestBid > 0 ? spread / bestBid * 100 : 0;
-  const bidQty = bids.slice(0,20).reduce((sum,row) => sum + row[1], 0);
-  const askQty = asks.slice(0,20).reduce((sum,row) => sum + row[1], 0);
-  const imbalance = bidQty + askQty > 0 ? bidQty / (bidQty + askQty) * 100 : 50;
-  return { bestBid, bestAsk, spread, spreadPct, imbalance };
-}
-
-function renderTerminalChart() {
-  const svg = $('terminalChartSvg');
-  if (!svg) return;
-  const bounds = entryLocalDayBounds(Date.now());
-  const raw = (Array.isArray(state.entrySpark.points) ? state.entrySpark.points : [])
-    .filter((row) => number(row?.t) >= bounds.start && number(row?.price) > 0)
-    .map((row) => ({ t: number(row.t), price: number(row.price) }));
-  if (state.price > 0) raw.push({ t: Date.now(), price: state.price });
-  if (raw.length < 2) {
-    svg.innerHTML = '<text x="500" y="215" text-anchor="middle" class="terminal-chart-empty">Caricamento chart realtime…</text>';
-    return;
-  }
-  raw.sort((a,b) => a.t-b.t);
-  const min = Math.min(...raw.map((p) => p.price));
-  const max = Math.max(...raw.map((p) => p.price));
-  const spread = Math.max((max-min)*1.18, Math.max(0.002, state.price * .004));
-  const mid = (min+max)/2;
-  const low = mid-spread/2;
-  const high = mid+spread/2;
-  const x = (t) => 38 + Math.max(0, Math.min(1, (t-bounds.start)/(bounds.end-bounds.start))) * 924;
-  const y = (p) => 28 + (1-Math.max(0,Math.min(1,(p-low)/(high-low))))*356;
-  const path = raw.map((p,i) => `${i?'L':'M'}${x(p.t).toFixed(1)},${y(p.price).toFixed(1)}`).join(' ');
-  const first = raw[0].price;
-  const positive = state.price >= first;
-  const grid = [0,1,2,3,4].map((n) => `<line x1="38" y1="${(28+n*89).toFixed(1)}" x2="962" y2="${(28+n*89).toFixed(1)}" class="terminal-grid-line"/>`).join('');
-  const priceY = y(state.price || raw.at(-1).price);
-  svg.innerHTML = `${grid}<line x1="38" y1="${priceY.toFixed(1)}" x2="962" y2="${priceY.toFixed(1)}" class="terminal-price-guide"/><path d="${path}" class="terminal-live-path ${positive?'positive':'negative'}"/><circle cx="${x(raw.at(-1).t).toFixed(1)}" cy="${y(raw.at(-1).price).toFixed(1)}" r="4.5" class="terminal-live-dot ${positive?'positive':'negative'}"/><text x="952" y="${Math.max(20,priceY-10).toFixed(1)}" text-anchor="end" class="terminal-chart-price-label">${marketToolPrice(state.price || raw.at(-1).price)}</text>`;
-}
-
-function renderMarketTools() {
-  const stats = topBookStats();
-  const change = number(state.change);
-  const changeText = state.price > 0 ? `${change >= 0 ? '+' : ''}${change.toFixed(2)}%` : '—';
-  const cls = change > 0 ? 'positive' : change < 0 ? 'negative' : 'neutral';
-
-  if ($('orderBookPrice')) $('orderBookPrice').textContent = marketToolPrice(state.price);
-  if ($('orderBookChange')) { $('orderBookChange').textContent = `${changeText} · 24H`; $('orderBookChange').className = cls; }
-  if ($('orderBookBestBid')) $('orderBookBestBid').textContent = stats.bestBid > 0 ? marketToolPrice(stats.bestBid) : '—';
-  if ($('orderBookBestAsk')) $('orderBookBestAsk').textContent = stats.bestAsk > 0 ? marketToolPrice(stats.bestAsk) : '—';
-  if ($('orderBookSpread')) $('orderBookSpread').textContent = stats.spread > 0 ? `${stats.spread.toFixed(4)} · ${stats.spreadPct.toFixed(3)}%` : '—';
-  if ($('orderBookImbalance')) { $('orderBookImbalance').textContent = `${stats.imbalance.toFixed(0)}% BID`; $('orderBookImbalance').className = stats.imbalance >= 50 ? 'positive' : 'negative'; }
-  const curr = state.currency === 'EUR' ? '€' : '$';
-  if ($('orderBookTotalLabelAsk')) $('orderBookTotalLabelAsk').textContent = `TOTALE ${curr}`;
-  if ($('orderBookTotalLabelBid')) $('orderBookTotalLabelBid').textContent = `TOTALE ${curr}`;
-  if ($('terminalBookTotalLabel')) $('terminalBookTotalLabel').textContent = `TOTAL ${curr}`;
-
-  if (marketToolIsOpen('orderBookDialog')) {
-    renderBookRows('orderBookAsks', state.marketTools.asks, 'ask', { limit: 100 });
-    renderBookRows('orderBookBids', state.marketTools.bids, 'bid', { limit: 100 });
-    if ($('orderBookUpdated')) $('orderBookUpdated').textContent = state.marketTools.orderUpdatedAt ? `Ultimo update ${new Date(state.marketTools.orderUpdatedAt).toLocaleTimeString('it-IT')}` : 'Connessione al book…';
-  }
-
-  if (marketToolIsOpen('terminalDialog')) {
-    if ($('terminalPrice')) $('terminalPrice').textContent = marketToolPrice(state.price);
-    if ($('terminalChange')) { $('terminalChange').textContent = changeText; $('terminalChange').className = cls; }
-    if ($('terminalLow')) $('terminalLow').textContent = state.low > 0 ? marketToolPrice(state.low) : '—';
-    if ($('terminalHigh')) $('terminalHigh').textContent = state.high > 0 ? marketToolPrice(state.high) : '—';
-    if ($('terminalSpread')) $('terminalSpread').textContent = stats.spread > 0 ? `${stats.spread.toFixed(4)} USDT` : '—';
-    if ($('terminalBookBias')) { $('terminalBookBias').textContent = `${stats.imbalance.toFixed(0)}% BID`; $('terminalBookBias').className = stats.imbalance >= 50 ? 'positive' : 'negative'; }
-    if ($('terminalBookMidPrice')) $('terminalBookMidPrice').textContent = marketToolPrice(state.price || ((stats.bestAsk+stats.bestBid)/2));
-    if ($('terminalBookMidSpread')) $('terminalBookMidSpread').textContent = stats.spread > 0 ? `Spread ${stats.spreadPct.toFixed(3)}%` : 'Spread —';
-    renderBookRows('terminalBookAsks', state.marketTools.asks, 'ask', { limit: 10, compact: true });
-    renderBookRows('terminalBookBids', state.marketTools.bids, 'bid', { limit: 10, compact: true });
-
-    const total = currentTotalInj();
-    const allocated = state.available + state.staked;
-    const stakeRatio = allocated > 0 ? state.staked / allocated * 100 : 0;
-    const wallet = state.wallets.find((item) => item.address === state.address);
-    if ($('terminalWalletName')) $('terminalWalletName').textContent = wallet?.label || 'Wallet';
-    if ($('terminalWalletAddress')) $('terminalWalletAddress').textContent = state.address ? shortAddress(state.address) : '—';
-    if ($('terminalNetWorth')) $('terminalNetWorth').textContent = state.address && state.price > 0 ? money(total * state.price, 2) : '—';
-    if ($('terminalTotalInj')) $('terminalTotalInj').textContent = state.address ? formatInj(total, 4) : '—';
-    if ($('terminalAvailable')) $('terminalAvailable').textContent = state.address ? formatInj(state.available, 4) : '—';
-    if ($('terminalAvailableValue')) $('terminalAvailableValue').textContent = state.address && state.price > 0 ? money(state.available * state.price, 2) : '—';
-    if ($('terminalStaked')) $('terminalStaked').textContent = state.address ? formatInj(state.staked, 4) : '—';
-    if ($('terminalStakeRatio')) $('terminalStakeRatio').textContent = allocated > 0 ? `${stakeRatio.toFixed(1)}% allocato` : '—';
-    if ($('terminalRewards')) $('terminalRewards').textContent = state.address ? formatInj(state.rewards, 4) : '—';
-    if ($('terminalRewardValue')) $('terminalRewardValue').textContent = state.address && state.price > 0 ? money(state.rewards * state.price, 2) : '—';
-    if ($('terminalApr')) $('terminalApr').textContent = state.personalApr > 0 ? `${state.personalApr.toFixed(2)}%` : '—';
-    if ($('terminalFreshness')) $('terminalFreshness').textContent = state.lastMarketUpdate ? `Market ${Math.max(0, Math.floor((Date.now()-state.lastMarketUpdate)/1000))}s fa · Book ${state.marketTools.orderUpdatedAt ? Math.max(0, Math.floor((Date.now()-state.marketTools.orderUpdatedAt)/1000))+'s fa' : '—'}` : 'Aggiornamento dati…';
-    renderTerminalChart();
-    renderTerminalMatrix();
-  }
-}
-
-async function loadInitialOrderBook() {
-  const endpoints = [
-    'https://api.binance.com/api/v3/depth?symbol=INJUSDT&limit=100',
-    'https://api1.binance.com/api/v3/depth?symbol=INJUSDT&limit=100',
-    'https://api2.binance.com/api/v3/depth?symbol=INJUSDT&limit=100'
-  ];
-  for (const endpoint of endpoints) {
-    try {
-      const data = await fetchJson(endpoint, 7000);
-      if (!Array.isArray(data?.bids) || !Array.isArray(data?.asks)) throw new Error('Book snapshot non valido');
-      state.marketTools.bids = data.bids;
-      state.marketTools.asks = data.asks;
-      state.marketTools.orderLastUpdateId = number(data.lastUpdateId);
-      state.marketTools.orderUpdatedAt = Date.now();
-      renderMarketTools();
-      return true;
-    } catch (_) {}
-  }
-  return false;
-}
-
-function applyOrderBookDiff(updates, side) {
-  const source = side === 'bid' ? state.marketTools.bids : state.marketTools.asks;
-  const map = new Map((Array.isArray(source) ? source : []).map((row) => [String(row?.[0]), String(row?.[1])]));
-  (Array.isArray(updates) ? updates : []).forEach((row) => {
-    const price = String(row?.[0] || '');
-    const qty = number(row?.[1]);
-    if (!price) return;
-    if (qty <= 0) map.delete(price);
-    else map.set(price, String(row[1]));
-  });
-  const rows = [...map.entries()].filter((row) => number(row[0]) > 0 && number(row[1]) > 0)
-    .sort((a,b) => side === 'bid' ? number(b[0]) - number(a[0]) : number(a[0]) - number(b[0]))
-    .slice(0, 100);
-  if (side === 'bid') state.marketTools.bids = rows;
-  else state.marketTools.asks = rows;
-}
-
-function startOrderBookWatchdog() {
-  clearInterval(state.marketTools.orderWatchTimer);
-  state.marketTools.orderWatchTimer = window.setInterval(() => {
-    if (!marketToolsNeedOrderBook()) return;
-    const stale = !state.marketTools.orderUpdatedAt || Date.now() - state.marketTools.orderUpdatedAt > 5000;
-    if (!stale) return;
-    if ($('orderBookStatus')) $('orderBookStatus').textContent = 'RECOVERY';
-    const socket = state.marketTools.orderSocket;
-    state.marketTools.orderSocket = null;
-    try { socket?.close(); } catch (_) {}
-    ensureOrderBookSocket();
-  }, 2500);
-}
-
-async function ensureOrderBookSocket() {
-  if (!marketToolsNeedOrderBook()) return;
-  const current = state.marketTools.orderSocket;
-  if (current && (current.readyState === WebSocket.OPEN || current.readyState === WebSocket.CONNECTING)) return;
-  clearTimeout(state.marketTools.orderReconnectTimer);
-  const snapshotOk = await loadInitialOrderBook();
-  if (!marketToolsNeedOrderBook()) return;
-  if (!snapshotOk) {
-    state.marketTools.orderReconnectTimer = window.setTimeout(ensureOrderBookSocket, 1800);
-    return;
-  }
-  try {
-    const socket = new WebSocket('wss://stream.binance.com:9443/ws/injusdt@depth@100ms');
-    state.marketTools.orderSocket = socket;
-    socket.onopen = () => {
-      if ($('orderBookStatus')) $('orderBookStatus').textContent = 'LIVE';
-      startOrderBookWatchdog();
-    };
-    socket.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        const first = number(data?.U);
-        const last = number(data?.u);
-        const currentId = number(state.marketTools.orderLastUpdateId);
-        if (last <= currentId) return;
-        if (currentId > 0 && first > currentId + 1) {
-          if ($('orderBookStatus')) $('orderBookStatus').textContent = 'SYNC';
-          state.marketTools.orderSocket = null;
-          try { socket.close(); } catch (_) {}
-          state.marketTools.orderReconnectTimer = window.setTimeout(ensureOrderBookSocket, 350);
-          return;
-        }
-        applyOrderBookDiff(data?.b, 'bid');
-        applyOrderBookDiff(data?.a, 'ask');
-        state.marketTools.orderLastUpdateId = last || currentId;
-        state.marketTools.orderUpdatedAt = Date.now();
-        renderMarketTools();
-      } catch (_) {}
-    };
-    socket.onerror = () => { if ($('orderBookStatus')) $('orderBookStatus').textContent = 'SYNC'; };
-    socket.onclose = () => {
-      if (state.marketTools.orderSocket === socket) state.marketTools.orderSocket = null;
-      if (marketToolsNeedOrderBook()) {
-        if ($('orderBookStatus')) $('orderBookStatus').textContent = 'RECONNECT';
-        state.marketTools.orderReconnectTimer = window.setTimeout(ensureOrderBookSocket, 1500);
-      }
-    };
-  } catch (_) {
-    state.marketTools.orderReconnectTimer = window.setTimeout(ensureOrderBookSocket, 2000);
-  }
-}
-
-function stopOrderBookIfIdle() {
-  if (marketToolsNeedOrderBook()) return;
-  clearTimeout(state.marketTools.orderReconnectTimer);
-  clearInterval(state.marketTools.orderWatchTimer);
-  state.marketTools.orderWatchTimer = 0;
-  const socket = state.marketTools.orderSocket;
-  state.marketTools.orderSocket = null;
-  try { socket?.close(); } catch (_) {}
-}
-
-function openOrderBookDialog() {
-  const dialog = $('orderBookDialog');
-  if (!dialog) return;
-  dialog.hidden = false;
-  dialog.classList.add('is-open');
-  document.body.classList.add('market-tool-open');
-  document.documentElement.classList.add('market-tool-open');
-  renderMarketTools();
-  ensureOrderBookSocket();
-}
-
-function closeOrderBookDialog() {
-  const dialog = $('orderBookDialog');
-  if (!dialog) return;
-  dialog.classList.remove('is-open');
-  dialog.hidden = true;
-  if (!marketToolIsOpen('terminalDialog') && !liveChartsOpen()) {
-    document.body.classList.remove('market-tool-open');
-    document.documentElement.classList.remove('market-tool-open');
-  }
-  stopOrderBookIfIdle();
-}
-
-
-function terminalMatrixIds(range) {
-  const suffix = { h1:'H1', d1:'D1', w1:'W1', m1:'M1', y1:'Y1' }[range] || 'H1';
-  return { svg: `terminalMatrix${suffix}`, perf: `terminalMatrixPerf${suffix}` };
-}
-
-function renderTerminalMatrixCard(range) {
-  const data = state.marketTools.terminalMatrix?.[range];
-  const ids = terminalMatrixIds(range);
-  const svg = $(ids.svg);
-  const perfEl = $(ids.perf);
-  if (!svg || !perfEl) return;
-  const points = Array.isArray(data?.points) ? data.points.filter((p)=>number(p?.price)>0) : [];
-  const current = state.price > 0 ? state.price : number(points.at(-1)?.price);
-  const open = number(data?.open) || number(points[0]?.price);
-  const perf = current > 0 && open > 0 ? ((current/open)-1)*100 : 0;
-  perfEl.textContent = open > 0 ? `${perf>=0?'+':''}${perf.toFixed(2)}%` : '—';
-  perfEl.className = perf>0?'positive':perf<0?'negative':'neutral';
-  if (points.length < 2) {
-    svg.innerHTML = '<path d="M8 36 H212" class="terminal-matrix-empty"/>';
-    return;
-  }
-  const values = points.map((p)=>number(p.price));
-  if (current>0) values.push(current);
-  let min=Math.min(...values),max=Math.max(...values); const pad=Math.max((max-min)*.12,Math.max(.0001,current*.001)); min-=pad;max+=pad;
-  const all=points.slice(); if(current>0) all.push({t:Date.now(),price:current});
-  const x=i=>8+(i/Math.max(1,all.length-1))*204;
-  const y=v=>8+(1-(v-min)/(max-min))*56;
-  const path=all.map((p,i)=>`${i?'L':'M'}${x(i).toFixed(1)},${y(number(p.price)).toFixed(1)}`).join(' ');
-  svg.innerHTML = `<path d="M8 36 H212" class="terminal-matrix-zero"/><path d="${path}" class="terminal-matrix-line ${perf>=0?'positive':'negative'}"/><circle cx="${x(all.length-1).toFixed(1)}" cy="${y(current||number(all.at(-1).price)).toFixed(1)}" r="2.5" class="terminal-matrix-dot ${perf>=0?'positive':'negative'}"/>`;
-}
-
-function renderTerminalMatrix() {
-  ['h1','d1','w1','m1','y1'].forEach(renderTerminalMatrixCard);
-}
-
-async function loadTerminalMatrix() {
-  if (!marketToolIsOpen('terminalDialog')) return;
-  const ranges=['h1','d1','w1','m1','y1'];
-  await Promise.allSettled(ranges.map(async (range)=>{
-    try {
-      const bounds=nativeChartPeriodBounds(range);
-      const data=await fetchNativeChartSeries(range,bounds);
-      state.marketTools.terminalMatrix[range]=data;
-      renderTerminalMatrixCard(range);
-    } catch (_) {}
-  }));
-}
-
-function updateTerminalClock() {
-  const now = new Date();
-  if ($('terminalClock')) $('terminalClock').textContent = now.toLocaleTimeString('it-IT', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
-  if ($('terminalDate')) $('terminalDate').textContent = now.toLocaleDateString('it-IT', { weekday:'short', day:'2-digit', month:'short', year:'numeric' }).toUpperCase();
-  if (marketToolIsOpen('terminalDialog')) renderMarketTools();
-}
-
-function openTerminalDialog() {
-  const dialog = $('terminalDialog');
-  if (!dialog) return;
-  dialog.hidden = false;
-  dialog.classList.add('is-open');
-  document.body.classList.add('market-tool-open');
-  document.documentElement.classList.add('market-tool-open');
-  void loadEntrySparkline(false).then(renderMarketTools);
-  ensureOrderBookSocket();
-  updateTerminalClock();
-  clearInterval(state.marketTools.terminalClockTimer);
-  clearInterval(state.marketTools.terminalMatrixTimer);
-  state.marketTools.terminalClockTimer = window.setInterval(updateTerminalClock, 1000);
-  state.marketTools.terminalMatrixTimer = window.setInterval(loadTerminalMatrix, 60_000);
-  void loadTerminalMatrix();
-  renderMarketTools();
-}
-
-function closeTerminalDialog() {
-  const dialog = $('terminalDialog');
-  if (!dialog) return;
-  dialog.classList.remove('is-open');
-  dialog.hidden = true;
-  clearInterval(state.marketTools.terminalClockTimer);
-  clearInterval(state.marketTools.terminalMatrixTimer);
-  state.marketTools.terminalClockTimer = 0;
-  state.marketTools.terminalMatrixTimer = 0;
-  if (!marketToolIsOpen('orderBookDialog') && !liveChartsOpen()) {
-    document.body.classList.remove('market-tool-open');
-    document.documentElement.classList.remove('market-tool-open');
-  }
-  stopOrderBookIfIdle();
 }
 
 function syncPrivacyUi(active) {
@@ -5403,7 +6445,7 @@ function updateInstallUi() {
 
 function registerPwa() {
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js?v=15.98.3').catch(() => {}), { once: true });
+    window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js?v=15.98.79').catch(() => {}), { once: true });
   }
   updateInstallUi();
 }
@@ -5412,7 +6454,8 @@ function applyTheme(theme, notify = false) {
   const themes = {
     navy: { label: 'Aurora', color: '#03070b' },
     black: { label: 'Obsidian', color: '#030303' },
-    light: { label: 'Chiaro', color: '#eef5ff' }
+    light: { label: 'Chiaro', color: '#eef5ff' },
+    amber: { label: 'Midnight Ember', color: '#070b11' }
   };
   const selected = themes[theme] ? theme : 'navy';
   document.documentElement.dataset.theme = selected;
@@ -5435,6 +6478,39 @@ function setThemePickerOpen(open) {
   $('themeButton').setAttribute('aria-expanded', open ? 'true' : 'false');
 }
 
+
+const UI_STYLE_META = {
+  elegant: { label: 'Elegant', description: 'Pulito · raffinato · minimale' },
+  futuristic: { label: 'Futuristic', description: 'Glass · tech · luminoso' },
+  ultra: { label: 'Ultra Premium', description: 'Profondo · luxury · high-end' }
+};
+
+function applyUiStyle(style, notify = false) {
+  const selected = UI_STYLE_META[style] ? style : 'elegant';
+  document.documentElement.dataset.uiStyle = selected;
+  localStorage.setItem('inj_monitor_ui_style', selected);
+  const label = $('uiStyleLabel');
+  if (label) label.textContent = UI_STYLE_META[selected].label;
+  $('uiStyleButton')?.setAttribute('aria-label', `Stile interfaccia attuale ${UI_STYLE_META[selected].label}. Cambia stile`);
+  document.querySelectorAll('[data-ui-style-choice]').forEach((button) => {
+    const active = button.dataset.uiStyleChoice === selected;
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-pressed', active ? 'true' : 'false');
+  });
+  if (notify) toast(`Stile ${UI_STYLE_META[selected].label}`);
+}
+
+function setUiStylePickerOpen(open) {
+  $('uiStyleControl')?.classList.toggle('open', open);
+  $('uiStyleButton')?.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+
+let themeInteractionGuardUntil = 0;
+
+function guardThemeInteraction(ms = 850) {
+  themeInteractionGuardUntil = Math.max(themeInteractionGuardUntil, performance.now() + ms);
+}
+
 function toggleCurrency() {
   state.currency = state.currency === 'USD' ? 'EUR' : 'USD';
   if ($('currencyValue')) $('currencyValue').textContent = state.currency === 'EUR' ? '€' : '$';
@@ -5443,7 +6519,92 @@ function toggleCurrency() {
   renderAll();
 }
 
+
+// v15.98.23 — Mobile Fast Tap Engine.
+// Modern iOS normally synthesizes click quickly, but a dense PWA with nested
+// composited layers can still make controls feel hesitant. For coarse touch
+// pointers we activate native <button> elements directly on pointerup when the
+// finger has not moved, then suppress only the duplicate trusted click Safari
+// may dispatch afterwards. Mouse, trackpad and keyboard semantics are untouched.
+const mobileFastTap = {
+  pointerId: null,
+  button: null,
+  startX: 0,
+  startY: 0,
+  moved: false,
+  lastButton: null,
+  lastAt: 0,
+  lastX: 0,
+  lastY: 0
+};
+
+function bindMobileFastTap() {
+  const reset = () => {
+    mobileFastTap.pointerId = null;
+    mobileFastTap.button = null;
+    mobileFastTap.moved = false;
+  };
+
+  document.addEventListener('pointerdown', (event) => {
+    if (event.pointerType !== 'touch' && event.pointerType !== 'pen') return;
+    const button = event.target?.closest?.('button:not(:disabled)');
+    if (!button || !document.documentElement.contains(button)) return;
+    mobileFastTap.pointerId = event.pointerId;
+    mobileFastTap.button = button;
+    mobileFastTap.startX = event.clientX;
+    mobileFastTap.startY = event.clientY;
+    mobileFastTap.moved = false;
+  }, true);
+
+  document.addEventListener('pointermove', (event) => {
+    if (event.pointerId !== mobileFastTap.pointerId || !mobileFastTap.button) return;
+    const dx = event.clientX - mobileFastTap.startX;
+    const dy = event.clientY - mobileFastTap.startY;
+    if ((dx * dx) + (dy * dy) > 144) mobileFastTap.moved = true; // 12 px radius.
+  }, { capture: true, passive: true });
+
+  document.addEventListener('pointerup', (event) => {
+    if (event.pointerId !== mobileFastTap.pointerId || !mobileFastTap.button) return;
+    const button = mobileFastTap.button;
+    const releasedOnSameButton = event.target?.closest?.('button') === button;
+    const shouldActivate = !mobileFastTap.moved && releasedOnSameButton && !button.disabled && document.documentElement.contains(button);
+    reset();
+    if (!shouldActivate) return;
+
+    mobileFastTap.lastButton = button;
+    mobileFastTap.lastAt = performance.now();
+    mobileFastTap.lastX = event.clientX;
+    mobileFastTap.lastY = event.clientY;
+    // Programmatic click keeps all existing app handlers/guards in one place,
+    // but happens immediately on finger release instead of waiting on WebKit.
+    button.click();
+  }, true);
+
+  document.addEventListener('pointercancel', (event) => {
+    if (event.pointerId === mobileFastTap.pointerId) reset();
+  }, true);
+
+  document.addEventListener('click', (event) => {
+    if (!event.isTrusted || !mobileFastTap.lastButton) return;
+    const age = performance.now() - mobileFastTap.lastAt;
+    if (age > 850) return;
+    const button = event.target?.closest?.('button');
+    const sameButton = button === mobileFastTap.lastButton;
+    const dx = Number(event.clientX) - mobileFastTap.lastX;
+    const dy = Number(event.clientY) - mobileFastTap.lastY;
+    // iOS can retarget its delayed synthetic click after a theme picker closes.
+    // Suppress that same physical tap even if the DOM underneath changed.
+    const sameTapPoint = Number.isFinite(dx) && Number.isFinite(dy) && (dx * dx + dy * dy) <= 900;
+    const themeRetargetRisk = mobileFastTap.lastButton?.matches?.('[data-theme-choice], [data-ui-style-choice]');
+    if (!sameButton && !sameTapPoint && !themeRetargetRisk) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    mobileFastTap.lastButton = null;
+  }, true);
+}
+
 function bindEvents() {
+  bindMobileFastTap();
   window.addEventListener('beforeinstallprompt', (event) => {
     event.preventDefault();
     state.deferredInstallPrompt = event;
@@ -5463,6 +6624,7 @@ function bindEvents() {
   $('entryWalletInput')?.addEventListener('input', clearEntryWalletError);
   $('entryWalletName')?.addEventListener('input', clearEntryWalletError);
   bindEntrySparkInteraction();
+  bindEntryOverviewWalletGestures();
   $('addressForm').addEventListener('submit', (event) => {
     event.preventDefault();
     loadWallet(true, $('addressInput').value, $('walletNameInput')?.value || '');
@@ -5470,7 +6632,7 @@ function bindEvents() {
   $('entryMenuButton')?.addEventListener('click', (event) => {
     event.preventDefault();
     event.stopPropagation();
-    if (state.currentView !== 'home') return;
+    if (state.currentView !== 'home' || performance.now() < themeInteractionGuardUntil) return;
     const open = !$('headerMenu')?.classList.contains('open');
     if (open) {
       setSearchOpen(false);
@@ -5508,16 +6670,10 @@ function bindEvents() {
   bindEntryLauncher('entryPulseButton', enterPulseViewFromGate);
   bindEntryLauncher('entryLiveChartsButton', enterLiveChartsFromGate);
   bindEntryLauncher('entryOrderBookButton', enterOrderBookFromGate);
-  $('closeLiveChartsButton')?.addEventListener('click', closeLiveChartsDialog);
-  document.querySelectorAll('[data-live-range]').forEach((button) => button.addEventListener('click', () => loadLiveCharts(button.dataset.liveRange)));
-  bindEntryLauncher('entryTerminalButton', enterTerminalFromGate);
-  $('closeOrderBookButton')?.addEventListener('click', closeOrderBookDialog);
-  $('closeTerminalButton')?.addEventListener('click', closeTerminalDialog);
-  $('orderBookDialog')?.addEventListener('click', (event) => { if (event.target === $('orderBookDialog')) closeOrderBookDialog(); });
-  $('terminalDialog')?.addEventListener('click', (event) => { if (event.target === $('terminalDialog')) closeTerminalDialog(); });
+  bindEntryLauncher('entryCommandCenterButton', enterCommandCenterFromGate);
   document.addEventListener('click', (event) => {
     if (Date.now() >= Number(state.modeExitLockUntil || 0)) return;
-    if (!event.target?.closest?.('#entryDashboardButton, #entryLiveButton, #entryPulseButton, #entryLiveChartsButton, #entryOrderBookButton, #entryTerminalButton')) return;
+    if (!event.target?.closest?.('#entryDashboardButton, #entryLiveButton, #entryPulseButton, #entryLiveChartsButton, #entryOrderBookButton, #entryCommandCenterButton')) return;
     event.preventDefault();
     event.stopImmediatePropagation();
   }, true);
@@ -5528,6 +6684,7 @@ function bindEvents() {
   };
   $('closeFocusDisplayButton')?.addEventListener('click', closeImmersiveToHome);
   $('closePulseViewButton')?.addEventListener('click', closeImmersiveToHome);
+  $('closeLiveChartsButton')?.addEventListener('click', closeImmersiveToHome);
   $('focusDisplayDialog')?.addEventListener('pointermove', showFocusControls, { passive: true });
   $('focusDisplayDialog')?.addEventListener('pointerdown', showFocusControls, { passive: true });
   $('focusDisplayDialog')?.addEventListener('touchstart', showFocusControls, { passive: true });
@@ -5545,8 +6702,8 @@ function bindEvents() {
   $('nativeChartHost')?.addEventListener('pointerleave', hideNativeChartTooltip);
   $('nativeChartHost')?.addEventListener('pointerup', hideNativeChartTooltip);
   $('nativeChartHost')?.addEventListener('pointercancel', hideNativeChartTooltip);
-  window.addEventListener('resize', () => { syncChartViewport(); syncFocusDisplayViewport(); }, { passive: true });
-  window.addEventListener('orientationchange', () => { requestAnimationFrame(() => { syncChartViewport(); syncFocusDisplayViewport(); }); setTimeout(() => { syncChartViewport(); syncFocusDisplayViewport(); }, 180); }, { passive: true });
+  window.addEventListener('resize', () => { syncChartViewport(); syncFocusDisplayViewport(); scheduleLiveChartsRender(true); }, { passive: true });
+  window.addEventListener('orientationchange', () => { requestAnimationFrame(() => { syncChartViewport(); syncFocusDisplayViewport(); scheduleLiveChartsRender(true); }); setTimeout(() => { syncChartViewport(); syncFocusDisplayViewport(); }, 180); }, { passive: true });
   window.visualViewport?.addEventListener('resize', () => { syncChartViewport(); syncFocusDisplayViewport(); }, { passive: true });
   window.visualViewport?.addEventListener('scroll', () => { syncChartViewport(); syncFocusDisplayViewport(); }, { passive: true });
   $('averageBuyPrice').addEventListener('input', () => {
@@ -5568,6 +6725,10 @@ function bindEvents() {
   $('marketTimeframeToggle').addEventListener('click', () => toggleTimeframes('market'));
   $('rewardTrackerToggle').addEventListener('click', () => toggleTracker('reward'));
   $('targetTrackerToggle').addEventListener('click', () => toggleTracker('target'));
+  $('walletSectionToggle')?.addEventListener('click', () => toggleDashboardSection('wallet'));
+  $('stakingSectionToggle')?.addEventListener('click', () => toggleDashboardSection('staking'));
+  $('validatorToggle')?.addEventListener('click', () => toggleDashboardSection('validators'));
+  $('marketMatrixToggle')?.addEventListener('click', () => toggleDashboardSection('matrix'));
   $('rewardSimPrice').addEventListener('input', () => {
     state.rewardSimulationPrice = Math.max(0, number($('rewardSimPrice').value));
     renderRewardTracker();
@@ -5584,18 +6745,60 @@ function bindEvents() {
   });
   $('privacyButton').addEventListener('click', togglePrivacy);
   $('entryPrivacyButton')?.addEventListener('click', togglePrivacy);
-  $('themeButton').addEventListener('click', () => {
+  $('themeButton').addEventListener('pointerdown', () => guardThemeInteraction(), { passive: true });
+  $('themeButton').addEventListener('click', (event) => {
+    event.stopPropagation();
+    guardThemeInteraction();
     const open = !$('themeControl').classList.contains('open');
-    if (open) setSearchOpen(false);
+    if (open) {
+      setSearchOpen(false);
+      setUiStylePickerOpen(false);
+    }
     setThemePickerOpen(open);
   });
   document.querySelectorAll('[data-theme-choice]').forEach((button) => {
-    button.addEventListener('click', () => {
+    button.addEventListener('pointerdown', () => guardThemeInteraction(950), { passive: true });
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      guardThemeInteraction(950);
+      const currencyBeforeTheme = state.currency;
       applyTheme(button.dataset.themeChoice, true);
+      // Theme is presentation-only. Explicitly preserve the selected currency.
+      state.currency = currencyBeforeTheme;
       setThemePickerOpen(false);
     });
   });
-  $('currencyButton').addEventListener('click', toggleCurrency);
+  $('uiStyleButton')?.addEventListener('pointerdown', () => guardThemeInteraction(), { passive: true });
+  $('uiStyleButton')?.addEventListener('click', (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    guardThemeInteraction();
+    const open = !$('uiStyleControl')?.classList.contains('open');
+    if (open) {
+      setSearchOpen(false);
+      setThemePickerOpen(false);
+    }
+    setUiStylePickerOpen(open);
+  });
+  document.querySelectorAll('[data-ui-style-choice]').forEach((button) => {
+    button.addEventListener('pointerdown', () => guardThemeInteraction(850), { passive: true });
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      guardThemeInteraction(850);
+      applyUiStyle(button.dataset.uiStyleChoice, true);
+      setUiStylePickerOpen(false);
+    });
+  });
+  $('currencyButton').addEventListener('click', (event) => {
+    if (performance.now() < themeInteractionGuardUntil) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      return;
+    }
+    toggleCurrency();
+  });
   document.addEventListener('pointerdown', (event) => {
     if ($('headerSearch').classList.contains('open') && !$('headerSearch').contains(event.target)) setSearchOpen(false);
     if ($('headerMenu').classList.contains('open') && !$('headerMenu').contains(event.target)) setHeaderMenuOpen(false);
@@ -5607,24 +6810,34 @@ function bindEvents() {
     if (event.key === 'Escape' && $('headerSearch').classList.contains('open')) setSearchOpen(false);
     if (event.key === 'Escape' && $('headerMenu').classList.contains('open')) setHeaderMenuOpen(false);
     if (event.key === 'Escape' && $('themeControl').classList.contains('open')) setThemePickerOpen(false);
+    if (event.key === 'Escape' && $('uiStyleControl')?.classList.contains('open')) setUiStylePickerOpen(false);
     if (event.key === 'Escape' && state.rewardSimulationPrice > 0) clearRewardSimulation();
-    if (event.key === 'Escape' && liveChartsOpen()) { closeLiveChartsDialog(); return; }
-    if (event.key === 'Escape' && marketToolIsOpen('terminalDialog')) { closeTerminalDialog(); return; }
-    if (event.key === 'Escape' && marketToolIsOpen('orderBookDialog')) { closeOrderBookDialog(); return; }
     if (event.key === 'Escape' && isChartOpen()) closeChartDialog();
     if (event.key === 'Escape' && isFocusDisplayActive()) goHome('immersive-keyboard');
     if (event.key === 'Escape' && isPulseViewActive()) goHome('immersive-keyboard');
+    if (event.key === 'Escape' && isLiveChartsActive()) goHome('immersive-keyboard');
   });
   window.addEventListener('online', () => { renderDataFreshness(); refreshAll(false); });
   window.addEventListener('offline', () => { setStatus('offline', 'Offline'); renderDataFreshness(); });
   document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) refreshAll(false);
+    if (document.hidden) {
+      try { state.socket?.close(); } catch (_) {}
+      return;
+    }
+    if (isLiveChartsActive()) void loadLiveChartsHistory(true);
+    connectMarketSocket();
+    refreshAll(false);
+    void loadEntryMarketMatrixAnchors(false);
   });
 }
+
+
+// v15.98.99 — Dashboard navigation is now section-native: macro headings collapse in place.
 
 async function init() {
   try {
     state.currency = localStorage.getItem('inj_monitor_currency') === 'EUR' ? 'EUR' : 'USD';
+    localStorage.removeItem('inj_monitor_card_style');
     state.nativeChartRange = ['h1', 'd1', 'w1', 'm1', 'y1'].includes(localStorage.getItem('inj_monitor_native_chart_range'))
       ? localStorage.getItem('inj_monitor_native_chart_range')
       : 'd1';
@@ -5641,40 +6854,61 @@ async function init() {
     $('addressInput').value = state.address;
   } catch (_) {}
 
+  state.currentView = 'dashboard';
   bindEvents();
-  registerPwa();
+  // Standalone Dashboard uses the official root service worker.
   document.body.classList.add('market-data-loading');
   if (state.address && !state.walletSummaries[state.address]?.updated) setWalletSkeleton(true);
   applyTheme(document.documentElement.dataset.theme);
+  applyUiStyle(document.documentElement.dataset.uiStyle || localStorage.getItem('inj_monitor_ui_style') || 'elegant');
   setTimeframeCollapsed('market', timeframeCollapsedPreference('market'), false);
   setTrackerCollapsed('reward', trackerCollapsedPreference('reward'), false);
   setTrackerCollapsed('target', trackerCollapsedPreference('target'), false);
+  // Overview is intentionally always open. Clear any legacy collapsed preference.
+  try { localStorage.removeItem('inj_node_dashboard_overview_collapsed_v1'); } catch (_) {}
+  $('accountDetail')?.classList.remove('dashboard-collapsed');
+  if ($('overviewSectionPanel')) $('overviewSectionPanel').hidden = false;
+  setDashboardCollapsed('wallet', dashboardCollapsedPreference('wallet'), false);
+  setDashboardCollapsed('staking', dashboardCollapsedPreference('staking'), false);
+  // Position progression is inline, not an independently collapsible subsection.
+  try { localStorage.removeItem('inj_node_dashboard_goals_collapsed_v1'); } catch (_) {}
+  setDashboardCollapsed('validators', dashboardCollapsedPreference('validators'), false);
+  setDashboardCollapsed('matrix', dashboardCollapsedPreference('matrix'), false);
   renderAll();
   renderWalletControls();
   loadEurRate();
   await loadMarket();
+  void loadEntryMarketMatrixAnchors(true);
   loadMarketTimeframes(false);
   connectMarketSocket();
   if (state.address) await loadWallet(false, state.address);
   if (state.wallets.length) await refreshWalletSummaries(true);
   state.suppressEffects = false;
 
-  setInterval(loadMarket, 60_000);
+  // v15.98.28 — Mobile scheduling keeps live data responsive while avoiding
+  // duplicate network/DOM work that would otherwise keep iPhone CPU/GPU awake.
+  setInterval(() => {
+    if (!document.hidden && (!state.socket || state.socket.readyState !== WebSocket.OPEN)) loadMarket();
+  }, 60_000);
   setInterval(() => { if (!document.hidden) loadMarketTimeframes(false); }, 15 * 60_000);
+  setInterval(() => { if (!document.hidden) void loadEntryMarketMatrixAnchors(false); }, 2 * 60_000);
+  const summaryEvery = MOBILE_EFFICIENCY ? 60_000 : 30_000;
   setTimeout(() => {
     if (!document.hidden) refreshWalletSummaries(false);
     setInterval(() => {
       if (!document.hidden) refreshWalletSummaries(false);
-    }, 30_000);
+    }, summaryEvery);
   }, 15_000);
-  setInterval(() => renderWalletCards(), 10_000);
-  setInterval(renderDataFreshness, 1000);
+  setInterval(() => {
+    if (!document.hidden && state.currentView === 'dashboard') renderWalletCards();
+  }, MOBILE_EFFICIENCY ? 30_000 : 10_000);
+  setInterval(() => { if (!document.hidden) renderDataFreshness(); }, MOBILE_EFFICIENCY ? 3_000 : 1_000);
   renderDataFreshness();
   renderSystemStatus();
   renderFocusAmbient();
   setInterval(() => {
-    if (state.address && !document.hidden && !state.loading) loadWallet(false, state.address);
-  }, 30_000);
+    if (state.address && !document.hidden && !state.loading && ['dashboard','live','pulse'].includes(state.currentView)) loadWallet(false, state.address);
+  }, MOBILE_EFFICIENCY ? 45_000 : 30_000);
 }
 
 scheduleBootSplashExit();
@@ -5756,3 +6990,61 @@ init();
   observer.observe(document.body, {attributes:true, attributeFilter:['class']});
   syncDrawerLock();
 })();
+
+
+// v15.98.17 — Home wallet countervalue switch is geometry-stable: no cross-wallet odometer jump; same-wallet live price rolls remain.
+
+// v15.98.27 — Midnight Ember: cool graphite nocturnal theme shared by Home, Dashboard, Live View and Pulse View, with restrained champagne/copper edge light.
+// v15.98.28 — Mobile Fluid: card-swipe wallet switching, safe theme taps, reliable page scrolling and adaptive low-power scheduling.
+
+// v15.98.29 — iOS wallet-search focus guard prevents Safari input auto-zoom and releases focus when the search panel closes.
+
+
+// v15.98.34 — Three persistent interface styles share all four color themes without continuous decorative animation.
+
+
+// v15.98.38 — Live View 10M continuous scale: the ribbon never hard-resets, drifts continuously while Live View is open and exposes a dynamic right-edge price scale.
+
+// v15.98.39 — Live Charts moved out of Live View into a dedicated Home destination with vertically stacked 5m/10m/1h continuous charts and readable adaptive price scales.
+// v15.98.40 — Stability fix: Live Charts opens before heavy work, dot/price marker render independently from path rebuilds, and mobile sample/path density is reduced.
+
+// v15.98.41 — Live Charts Safe Engine removes permanent animation loops and eager session-history parsing; chart work runs only in short bounded bursts.
+
+// v15.98.43 — Live Charts now runs on an isolated Canvas page to protect the main application thread.
+
+
+// v15.98.62 — resume the shared visual price clock after iOS/browser visibility suspension.
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    if (state.marketMotionFrame) cancelAnimationFrame(state.marketMotionFrame);
+    state.marketMotionFrame = 0;
+    state.marketMotionLastFrame = 0;
+    return;
+  }
+  if ((state.marketTargetPrice > 0 || state.marketRawPrice > 0) && !state.marketMotionFrame) startGlobalMarketMotion(900);
+});
+
+// v15.98.67 — Home Market Matrix adds live multi-timeframe momentum consensus without opening another socket.
+
+// v15.98.79 — Order Book isolated from Live Charts; dedicated Home destination.
+// Freeze only transient realtime work while Home is in browser history; keep all
+// wallet/UI state in memory so history.back() can reveal Home immediately.
+window.addEventListener('pagehide', () => {
+  try { state.socket?.close(); } catch (_) {}
+  if (state.marketMotionFrame) cancelAnimationFrame(state.marketMotionFrame);
+  state.marketMotionFrame = 0;
+  state.marketMotionLastFrame = 0;
+});
+window.addEventListener('pageshow', (event) => {
+  if (!event.persisted) return;
+  requestAnimationFrame(() => {
+    try { connectMarketSocket(); } catch (_) {}
+    if ((state.marketTargetPrice > 0 || state.marketRawPrice > 0) && !state.marketMotionFrame) {
+      try { startGlobalMarketMotion(700); } catch (_) {}
+    }
+    window.setTimeout(() => {
+      try { refreshAll(false); } catch (_) {}
+      try { loadEntryMarketMatrixAnchors(false); } catch (_) {}
+    }, 180);
+  });
+});
