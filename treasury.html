@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html data-theme="navy" lang="it">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
+<meta content="#040b1d" name="theme-color"/>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
+<meta content="INJ NODE Treasury — valore aggregato pubblico con wallet protetti." name="description"/>
+<title>INJ NODE Treasury</title>
+<script>
+try {
+  const theme = localStorage.getItem('inj_monitor_theme');
+  document.documentElement.dataset.theme = ['navy','black','light','amber'].includes(theme) ? theme : 'navy';
+} catch (_) {}
+</script>
+<link href="style.css?v=15.99.25" rel="stylesheet"/>
+<link href="treasury.css?v=15.99.25" rel="stylesheet"/>
+</head>
+<body class="treasury-page">
+<div class="treasury-shell">
+<header class="treasury-topbar">
+  <button class="treasury-home" id="treasuryHome" type="button" aria-label="Torna alla Home" title="Home">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 11 8-7 8 7"></path><path d="M6.5 10v9h11v-9M10 19v-5h4v5"></path></svg>
+  </button>
+  <div class="treasury-brand">
+    <svg aria-hidden="true" class="treasury-node-symbol" viewBox="0 0 48 48"><path d="M8.5 27.4A16.5 16.5 0 0 1 33.7 9.6M39.5 20.6A16.5 16.5 0 0 1 14.3 38.4"></path><path d="M15 33V15l18 18V15"></path><circle cx="15" cy="15" r="2.4"></circle><circle cx="33" cy="33" r="2.4"></circle><circle cx="24" cy="24" r="2.75"></circle></svg>
+    <div><span>INJ NODE</span><strong>Treasury</strong></div>
+  </div>
+  <div class="treasury-top-actions">
+    <button class="treasury-currency" id="treasuryCurrency" type="button" aria-label="Cambia valuta">$</button>
+    <span class="treasury-live"><i></i><b id="treasuryLiveText">LIVE</b></span>
+  </div>
+</header>
+
+<main class="treasury-main">
+  <section class="treasury-hero" aria-label="Valore totale Treasury">
+    <div class="treasury-hero-copy">
+      <span class="treasury-eyebrow"><i></i> PUBLIC AGGREGATE</span>
+      <h1>INJ NODE Treasury</h1>
+      <p>Una vista pubblica del capitale monitorato da INJ NODE. I dati sono aggregati: gli indirizzi che compongono la Treasury non vengono inviati al browser.</p>
+    </div>
+    <div class="treasury-total-block">
+      <span>TOTALE GESTITO</span>
+      <strong id="treasuryTotalInj">— INJ</strong>
+      <b id="treasuryNetWorth">—</b>
+      <div class="treasury-price-line"><span>INJ</span><strong id="treasuryPrice">$—</strong><em id="treasuryChange">— · 24H</em></div>
+    </div>
+    <div class="treasury-security-strip">
+      <span class="treasury-security-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.5 2.8 8.2 7 10 4.2-1.8 7-5.5 7-10V6l-7-3Z"></path><path d="m9.3 12 1.7 1.7 3.8-4"></path></svg></span>
+      <span><strong>Privacy by design</strong><small>Aggregated data · wallet addresses hidden</small></span>
+      <span class="treasury-sync" id="treasurySync">Sincronizzazione…</span>
+    </div>
+  </section>
+
+  <section class="treasury-kpis" aria-label="Composizione Treasury">
+    <article class="treasury-kpi">
+      <span>STAKED</span>
+      <strong id="treasuryStaked">— INJ</strong>
+      <small id="treasuryStakedValue">—</small>
+      <div class="treasury-mini-bar"><i id="treasuryStakedBar"></i></div>
+    </article>
+    <article class="treasury-kpi">
+      <span>DISPONIBILE</span>
+      <strong id="treasuryAvailable">— INJ</strong>
+      <small id="treasuryAvailableValue">—</small>
+      <div class="treasury-mini-bar"><i id="treasuryAvailableBar"></i></div>
+    </article>
+    <article class="treasury-kpi treasury-kpi-reward">
+      <span>REWARD LIVE</span>
+      <strong id="treasuryRewards">— INJ</strong>
+      <small id="treasuryRewardsValue">—</small>
+      <div class="treasury-reward-pulse"><i></i><span>UNCLAIMED</span></div>
+    </article>
+  </section>
+
+  <section class="treasury-grid">
+    <article class="treasury-panel treasury-allocation-panel">
+      <header><div><span>ALLOCATION</span><strong>Composizione Treasury</strong></div><small>100%</small></header>
+      <div class="treasury-allocation-ring" id="treasuryAllocationRing"><div><strong id="treasuryStakePct">—%</strong><span>STAKED</span></div></div>
+      <div class="treasury-allocation-list">
+        <div><span><i class="stake"></i>Staking</span><strong id="treasuryStakePctRow">—%</strong></div>
+        <div><span><i class="available"></i>Disponibile</span><strong id="treasuryAvailablePctRow">—%</strong></div>
+        <div><span><i class="reward"></i>Reward</span><strong id="treasuryRewardPctRow">—%</strong></div>
+      </div>
+    </article>
+
+    <article class="treasury-panel treasury-velocity-panel">
+      <header><div><span>REWARD VELOCITY</span><strong>Produzione stimata</strong></div><small id="treasuryApr">APR —</small></header>
+      <div class="treasury-velocity-grid">
+        <div><span>1 ORA</span><strong id="rewardHour">—</strong></div>
+        <div><span>1 GIORNO</span><strong id="rewardDay">—</strong></div>
+        <div><span>1 SETTIMANA</span><strong id="rewardWeek">—</strong></div>
+        <div><span>1 MESE</span><strong id="rewardMonth">—</strong></div>
+        <div class="wide"><span>1 ANNO</span><strong id="rewardYear">—</strong><small id="rewardYearValue">—</small></div>
+      </div>
+      <p>Stima basata sull'APR di rete corrente e sul totale in staking. I reward effettivi possono variare per commissioni, validatori e variazioni dell'APR.</p>
+    </article>
+
+    <article class="treasury-panel treasury-milestone-panel">
+      <header><div><span>NEXT MILESTONE</span><strong id="milestoneTitle">Prossimo livello</strong></div><small id="milestonePct">—%</small></header>
+      <div class="treasury-milestone-value"><strong id="milestoneCurrent">— INJ</strong><span>→</span><b id="milestoneTarget">— INJ</b></div>
+      <div class="treasury-progress"><i id="milestoneBar"></i></div>
+      <div class="treasury-milestone-meta"><span id="milestoneMissing">— mancanti</span><strong id="milestoneRewardTime">—</strong></div>
+    </article>
+
+    <article class="treasury-panel treasury-session-panel">
+      <header><div><span>LIVE SESSION</span><strong>Treasury Value</strong></div><small id="sessionDelta">—</small></header>
+      <div class="treasury-session-chart" id="sessionChart">
+        <svg viewBox="0 0 720 220" preserveAspectRatio="none" aria-label="Andamento live del valore Treasury">
+          <defs><linearGradient id="treasuryArea" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="currentColor" stop-opacity=".24"></stop><stop offset="100%" stop-color="currentColor" stop-opacity="0"></stop></linearGradient></defs>
+          <path class="session-area" id="sessionArea"></path>
+          <path class="session-line" id="sessionLine"></path>
+          <circle class="session-dot" id="sessionDot" r="4"></circle>
+        </svg>
+        <div class="treasury-chart-empty" id="sessionEmpty">In attesa dei dati live…</div>
+      </div>
+      <div class="treasury-session-footer"><span>SESSION START</span><strong id="sessionStart">—</strong><span>NOW</span><strong id="sessionNow">—</strong></div>
+    </article>
+  </section>
+
+  <footer class="treasury-footer">
+    <span><i></i> Treasury data synchronized from Injective</span>
+    <small>INJ NODE · Public aggregate · addresses never exposed to the client</small>
+  </footer>
+</main>
+</div>
+<div class="treasury-toast" id="treasuryToast" role="status" aria-live="polite"></div>
+<script defer src="treasury.js?v=15.99.25"></script>
+</body>
+</html>
