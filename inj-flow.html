@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html data-theme="navy" lang="it">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <meta name="theme-color" content="#040b1d"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="INJ Node"/>
+  <meta name="description" content="INJ Flow — visualizzazione dinamica dei flussi di staking e reward di Injective."/>
+  <title>INJ Flow · INJ Node</title>
+  <link rel="manifest" href="manifest.webmanifest?v=16.00.20"/>
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon-v15.68.png"/>
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32-v15.68.png"/>
+  <link rel="icon" type="image/png" sizes="64x64" href="icons/favicon-64-v15.68.png"/>
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192-v15.68.png"/>
+  <script>
+    try {
+      const savedTheme = localStorage.getItem('inj_monitor_theme');
+      document.documentElement.dataset.theme = ['navy', 'black', 'light', 'amber'].includes(savedTheme) ? savedTheme : 'navy';
+      const savedUiStyle = localStorage.getItem('inj_monitor_ui_style');
+      document.documentElement.dataset.uiStyle = ['elegant', 'futuristic', 'ultra'].includes(savedUiStyle) ? savedUiStyle : 'elegant';
+    } catch (_) {}
+  </script>
+  <link rel="stylesheet" href="style.css?v=16.00.19"/>
+  <link rel="stylesheet" href="inj-flow.css?v=16.00.20"/>
+  <link rel="stylesheet" href="viewport.css?v=16.00.14"/>
+  <script defer src="viewport.js?v=16.00.14"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded',()=>{
+      const c = getComputedStyle(document.documentElement).getPropertyValue('--theme-canvas').trim();
+      if(c) document.querySelector('meta[name="theme-color"]')?.setAttribute('content', c);
+    }, {once:true});
+  </script>
+</head>
+<body class="inj-flow-page" data-market="flat">
+  <div class="flow-shell">
+    <header class="flow-header">
+      <a class="flow-back" href="./index.html" aria-label="Torna alla Home di INJ Node" title="Home">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 11 8-7 8 7"></path><path d="M6.5 10v9h11v-9M10 19v-5h4v5"></path></svg>
+      </a>
+      <div class="flow-brand">
+        <div class="flow-brand-mark">IF</div>
+        <div class="flow-brand-copy">
+          <span>INJ NODE</span>
+          <strong>INJ Flow</strong>
+          <small id="flowBrandSubline">Capitale in movimento · reward in tempo reale</small>
+        </div>
+      </div>
+      <div class="flow-header-right">
+        <div class="flow-market-pill" id="flowMarketPill"><i></i><span id="flowMarketStatus">Mercato live</span></div>
+        <button class="flow-night-button" id="flowNightButton" type="button" aria-label="Attiva Night Watch" title="Night Watch">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 15.8A8 8 0 1 1 8.2 4 6.5 6.5 0 0 0 20 15.8Z"></path><circle cx="17.5" cy="6.5" r="1"></circle></svg>
+        </button>
+        <button class="flow-refresh" id="flowRefreshButton" type="button" aria-label="Aggiorna INJ Flow" title="Aggiorna">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6v5h-5M4 18v-5h5M18.4 9A7 7 0 0 0 6.8 6.4L4 11m16 2-2.8 4.6A7 7 0 0 1 5.6 15"></path></svg>
+        </button>
+      </div>
+    </header>
+
+    <section class="flow-hero">
+      <article class="flow-hero-card flow-hero-main">
+        <div class="flow-card-kicker">NUCLEO INJ</div>
+        <div class="flow-hero-mainline">
+          <strong id="flowTotalInj">—</strong>
+          <span id="flowPrice">INJ $—</span>
+        </div>
+        <div class="flow-hero-subline">
+          <span id="flowTotalFiat">—</span>
+          <small id="flowUpdatedAt">In attesa di sincronizzazione…</small>
+        </div>
+      </article>
+      <article class="flow-hero-card">
+        <div class="flow-card-kicker">PRODUZIONE STIMATA</div>
+        <strong id="flowDailyReward">—</strong>
+        <small id="flowDailyRewardFiat">—</small>
+      </article>
+      <article class="flow-hero-card">
+        <div class="flow-card-kicker">REWARD DISPONIBILI</div>
+        <strong id="flowRewardTotal">—</strong>
+        <small id="flowRewardHint">Flusso reale dai wallet salvati</small>
+      </article>
+      <article class="flow-hero-card">
+        <div class="flow-card-kicker">VELOCITÀ FLUSSO</div>
+        <strong id="flowVelocity">—</strong>
+        <small id="flowVelocityHint">Adattiva in base a staking e reward</small>
+      </article>
+    </section>
+
+    <section class="flow-scene-card">
+      <div class="flow-scene-head">
+        <div>
+          <span>INJ FLOW</span>
+          <strong id="flowSceneTitle">Rete attiva</strong>
+          <small id="flowSceneMeta">I nodi wallet alimentano il nucleo e i reward scorrono verso il collettore.</small>
+        </div>
+        <div class="flow-badges">
+          <span class="flow-badge"><i></i><b id="flowWalletCount">0 wallet</b></span>
+          <span class="flow-badge flow-badge-soft"><b id="flowApr">APR —</b></span>
+          <button class="flow-night-exit" id="flowNightExit" type="button" aria-label="Chiudi Night Watch">×</button>
+        </div>
+      </div>
+      <div class="flow-scene" id="flowScene">
+        <div class="flow-scene-glow"></div>
+        <svg class="flow-svg" id="flowSvg" viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+          <defs>
+            <linearGradient id="flowPathGradient" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="rgba(92,225,255,.02)"></stop>
+              <stop offset="50%" stop-color="rgba(92,225,255,.55)"></stop>
+              <stop offset="100%" stop-color="rgba(78,255,174,.04)"></stop>
+            </linearGradient>
+            <radialGradient id="flowParticleGlow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#f5ffff"></stop>
+              <stop offset="58%" stop-color="#8ee8ff"></stop>
+              <stop offset="100%" stop-color="rgba(72,215,255,0)"></stop>
+            </radialGradient>
+            <radialGradient id="flowClaimGlow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#ffffff"></stop>
+              <stop offset="45%" stop-color="#58f6a9"></stop>
+              <stop offset="100%" stop-color="rgba(57,229,140,0)"></stop>
+            </radialGradient>
+          </defs>
+          <g id="flowPaths"></g>
+          <g id="flowParticles"></g>
+          <g id="flowClaimParticles"></g>
+        </svg>
+        <div class="flow-core" id="flowCore">
+          <div class="flow-core-ring"></div>
+          <div class="flow-core-ring flow-core-ring-b"></div>
+          <div class="flow-core-progress" id="flowCoreProgress"></div>
+          <div class="flow-orbit flow-orbit-a"><i></i></div>
+          <div class="flow-orbit flow-orbit-b"><i></i></div>
+          <div class="flow-orbit flow-orbit-c"><i></i></div>
+          <div class="flow-core-body">
+            <span>NUCLEO</span>
+            <strong id="flowCoreValue">—</strong>
+            <small id="flowCoreSubValue">—</small>
+            <div class="flow-core-milestone" id="flowCoreMilestone">NEXT —</div>
+          </div>
+        </div>
+        <div class="flow-reward-orbit" id="flowRewardOrbit">
+          <div class="flow-reward-orbit-ring"></div>
+          <div class="flow-reward-orbit-copy">
+            <span>REWARD</span>
+            <strong id="flowRewardOrbitValue">—</strong>
+            <small id="flowRewardOrbitFiat">—</small>
+          </div>
+        </div>
+        <div class="flow-claim-toast" id="flowClaimToast" aria-live="polite"><span>CLAIM</span><strong id="flowClaimValue">—</strong><small id="flowClaimWallet">—</small></div>
+        <div class="flow-wallet-layer" id="flowWalletLayer"></div>
+      </div>
+    </section>
+
+    <section class="flow-grid">
+      <article class="flow-panel">
+        <div class="flow-panel-head">
+          <span>COMPOSIZIONE</span>
+          <strong>Bilanci attivi</strong>
+        </div>
+        <div class="flow-metric-grid">
+          <div class="flow-metric"><span>In staking</span><strong id="flowStaked">—</strong><small id="flowStakedFiat">—</small></div>
+          <div class="flow-metric"><span>Disponibile</span><strong id="flowAvailable">—</strong><small id="flowAvailableFiat">—</small></div>
+          <div class="flow-metric"><span>Reward</span><strong id="flowRewardPanel">—</strong><small id="flowRewardPanelFiat">—</small></div>
+          <div class="flow-metric"><span>Wallet attivo</span><strong id="flowActiveWallet">—</strong><small id="flowActiveWalletHint">—</small></div>
+        </div>
+      </article>
+      <article class="flow-panel">
+        <div class="flow-panel-head">
+          <span>ATTIVITÀ</span>
+          <strong>Ritmo del motore</strong>
+        </div>
+        <div class="flow-engine-strip">
+          <div class="flow-engine-meter">
+            <div class="flow-engine-fill" id="flowEngineFill"></div>
+          </div>
+          <div class="flow-engine-meta">
+            <div><span>Engine load</span><strong id="flowEngineLoad">—</strong></div>
+            <div><span>Pulse</span><strong id="flowPulse">—</strong></div>
+            <div><span>Market bias</span><strong id="flowBias">—</strong></div>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section class="flow-wallets-panel">
+      <div class="flow-panel-head">
+        <span>NODI WALLET</span>
+        <strong>Flussi individuali</strong>
+      </div>
+      <div class="flow-wallet-list" id="flowWalletList"></div>
+    </section>
+  </div>
+
+  <script src="inj-flow.js?v=16.00.20"></script>
+</body>
+</html>
