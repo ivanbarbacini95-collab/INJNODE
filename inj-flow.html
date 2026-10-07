@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="it" data-theme="navy">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#020708">
+  <title>INJ Flow · INJ Node</title>
+  <script>
+    (()=>{try{document.documentElement.dataset.theme=localStorage.getItem('inj_monitor_theme')||'navy'}catch(_){}})();
+  </script>
+  <link rel="stylesheet" href="style.css?v=16.00.18">
+  <link rel="stylesheet" href="inj-flow-v24.css">
+</head>
+<body class="inj-flow-page" data-i18n-skip="true">
+  <div class="flow-market-ambient" aria-hidden="true"></div>
+  <div class="inj-flow-shell">
+    <header class="flow-header">
+      <button class="flow-home" id="flowClose" type="button" aria-label="Torna alla Home" title="Home">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 11 8-7 8 7"></path><path d="M6.5 10v9h11v-9M10 19v-5h4v5"></path></svg>
+      </button>
+      <div class="flow-title">
+        <span>INJ NODE</span>
+        <strong>INJ Flow</strong>
+        <small id="flowSubtitle">Produzione live · staking · ricompense on-chain</small>
+      </div>
+      <div class="flow-header-live">
+        <div class="flow-market-readout">
+          <span class="flow-price" id="flowPrice">INJ —</span>
+          <span class="flow-trend neutral" id="flowTrend">24H —</span>
+        </div>
+        <span class="flow-live-badge" id="flowLiveBadge"><i></i><b id="flowLiveText">SYNC 0/5</b></span>
+      </div>
+    </header>
+
+    <main class="flow-main">
+      <section class="flow-stage" id="flowStage" aria-label="Flusso realtime dei wallet Injective">
+        <div class="flow-market-meaning" id="flowMarketMeaning">Colore flussi = velocità di produzione · azzurro → oro</div>
+        <div class="flow-grid" aria-hidden="true"></div>
+        <div class="flow-orbit flow-orbit-a" aria-hidden="true"></div>
+        <div class="flow-orbit flow-orbit-b" aria-hidden="true"></div>
+        <div class="flow-beams" id="flowBeams" aria-hidden="true"></div>
+        <div class="flow-wallets" id="flowWallets" aria-label="Wallet salvati"></div>
+
+        <article class="flow-core flow-core-production" id="flowCore" aria-live="polite">
+          <div class="flow-core-halo" aria-hidden="true"></div>
+          <span class="flow-core-kicker" id="flowCoreKicker">PRODUZIONE TOTALE</span>
+          <strong class="flow-core-production-value private" id="flowDailyReward">—</strong>
+          <span class="flow-core-production-unit" id="flowDailyUnit">INJ / GIORNO</span>
+          <div class="flow-core-rate"><i></i><span class="private" id="flowMinuteRate">— INJ / min</span></div>
+          <small class="flow-core-staked private" id="flowCoreStaked">— INJ IN STAKING</small>
+          <b class="flow-core-tier" id="flowCoreTier">—</b>
+        </article>
+
+        <div class="flow-empty" id="flowEmpty" hidden>
+          <strong id="flowEmptyTitle">Nessun wallet salvato</strong>
+          <span id="flowEmptyText">Aggiungi un wallet dalla Home di INJ Node.</span>
+        </div>
+
+        <div class="claim-channel flow-claim-compact" id="claimChannel" aria-label="Canale claim reward verso disponibile">
+          <div class="claim-station claim-reward">
+            <span id="claimRewardLabel">RICOMPENSE ON-CHAIN</span>
+            <strong class="private" id="claimRewardValue">—</strong>
+          </div>
+          <div class="claim-track" aria-hidden="true"><span></span><i></i><b></b></div>
+          <div class="claim-station claim-available">
+            <span id="claimAvailableLabel">DISPONIBILE</span>
+            <strong class="private" id="claimAvailableValue">—</strong>
+          </div>
+          <small class="claim-status" id="claimStatus">Monitoraggio claim attivo</small>
+        </div>
+      </section>
+
+      <section class="flow-production-panel" id="flowProductionPanel" aria-label="Produzione INJ">
+        <div class="flow-production-head">
+          <div>
+            <span id="flowProductionEyebrow">MOTORE DI PRODUZIONE</span>
+            <strong id="flowProductionTitle">Produzione INJ al ritmo attuale</strong>
+          </div>
+          <div class="flow-production-now">
+            <span class="private" id="flowScaleCurrent">— INJ / giorno</span>
+            <b id="flowScaleTier">—</b>
+          </div>
+        </div>
+
+        <div class="flow-production-projections">
+          <article><span id="flowProjHourLabel">1 ORA</span><strong class="private" id="flowProjectionHour">—</strong><small>INJ</small></article>
+          <article><span id="flowProjDayLabel">1 GIORNO</span><strong class="private" id="flowProjectionDay">—</strong><small>INJ</small></article>
+          <article><span id="flowProjWeekLabel">7 GIORNI</span><strong class="private" id="flowProjectionWeek">—</strong><small>INJ</small></article>
+          <article><span id="flowProjMonthLabel">30 GIORNI</span><strong class="private" id="flowProjectionMonth">—</strong><small>INJ</small></article>
+          <article><span id="flowProjYearLabel">1 ANNO</span><strong class="private" id="flowProjectionYear">—</strong><small>INJ</small></article>
+          <article class="flow-next-inj"><span id="flowNextInjLabel">1 INJ OGNI</span><strong id="flowNextInj">—</strong><small id="flowNextInjMeta">al ritmo attuale</small></article>
+        </div>
+
+        <div class="flow-scale-caption">
+          <span id="flowScaleCaption">SCALA VELOCITÀ PRODUZIONE</span>
+          <small id="flowParticleLegend">1 particella = 0,000005 INJ prodotti</small>
+        </div>
+        <div class="flow-scale-track" id="flowScaleTrack">
+          <div data-tier="low"><i></i><b id="tierLow">BASSA</b><small id="tierLowRange">&lt; 0,025/g</small></div>
+          <div data-tier="normal"><i></i><b id="tierNormal">NORMALE</b><small id="tierNormalRange">0,025–0,075/g</small></div>
+          <div data-tier="high"><i></i><b id="tierHigh">ALTA</b><small id="tierHighRange">0,075–0,150/g</small></div>
+          <div data-tier="very-high"><i></i><b id="tierVeryHigh">MOLTO ALTA</b><small id="tierVeryHighRange">0,150–0,300/g</small></div>
+          <div data-tier="extreme"><i></i><b id="tierExtreme">ESTREMA</b><small id="tierExtremeRange">&gt; 0,300/g</small></div>
+        </div>
+      </section>
+
+      <section class="flow-wallet-detail" id="flowWalletDetail" hidden aria-live="polite">
+        <div class="flow-detail-handle" aria-hidden="true"></div>
+        <div class="flow-detail-head">
+          <div>
+            <span class="flow-detail-kicker"><i></i> <span id="flowDetailKickerText">PRODUZIONE WALLET</span></span>
+            <strong id="flowDetailName">Wallet</strong>
+            <small id="flowDetailAddress">—</small>
+          </div>
+          <div class="flow-detail-actions">
+            <span id="flowDetailSync">Sincronizzazione…</span>
+            <button type="button" id="flowDetailClose" aria-label="Chiudi dettagli">×</button>
+          </div>
+        </div>
+
+        <div class="flow-detail-velocity flow-detail-velocity-primary" id="flowDetailVelocityPanel" data-tier="low">
+          <div class="flow-detail-velocity-head">
+            <div><span id="flowDetailVelocityLabel">INJ PRODOTTI / GIORNO</span><strong class="private" id="flowDetailVelocity">—</strong></div>
+            <b id="flowDetailTier">—</b>
+          </div>
+          <div class="flow-detail-velocity-bar" aria-hidden="true">
+            <i data-tier="low"></i><i data-tier="normal"></i><i data-tier="high"></i><i data-tier="very-high"></i><i data-tier="extreme"></i>
+            <em id="flowDetailVelocityMarker"></em>
+          </div>
+          <div class="flow-detail-production-meta">
+            <div><span id="flowDetailMinuteLabel">AL MINUTO</span><strong class="private" id="flowDetailVelocityMinute">—</strong></div>
+            <div><span id="flowDetailYearLabel">IN 1 ANNO</span><strong class="private" id="flowDetailProjectedYear">—</strong></div>
+            <div><span id="flowDetailNextLabel">1 INJ OGNI</span><strong id="flowDetailNextInj">—</strong></div>
+          </div>
+          <small class="flow-detail-particle-rate" id="flowDetailParticleRate">1 particella = 0,000005 INJ</small>
+        </div>
+
+        <div class="flow-detail-grid">
+          <article><span id="flowDetailAvailableLabel">DISPONIBILE</span><strong class="private" id="flowDetailAvailable">—</strong><small class="private" id="flowDetailAvailableFiat">—</small></article>
+          <article><span id="flowDetailStakedLabel">IN STAKING</span><strong class="private" id="flowDetailStaked">—</strong><small id="flowDetailValidators">— validator</small></article>
+          <article><span id="flowDetailRewardLabel">RICOMPENSE ON-CHAIN</span><strong class="private flow-detail-reward" id="flowDetailReward">—</strong><small class="private" id="flowDetailRewardFiat">—</small></article>
+          <article><span id="flowDetailTotalLabel">TOTALE WALLET</span><strong class="private" id="flowDetailTotal">—</strong><small class="private" id="flowDetailTotalFiat">—</small></article>
+          <article><span id="flowDetailAprLabel">APR NETTO</span><strong id="flowDetailApr">—</strong><small id="flowDetailAprSource">Dati validator</small></article>
+          <article><span id="flowDetailDailyLabel">PRODUZIONE / GIORNO</span><strong class="private" id="flowDetailDaily">—</strong><small id="flowDetailDailyMeta">Stima da staking + APR</small></article>
+        </div>
+      </section>
+
+      <section class="flow-metrics" aria-label="Metriche INJ Flow">
+        <article><span id="flowStakedLabel">IN STAKING</span><strong class="private" id="flowStaked">—</strong><small id="flowStakingRatio">—</small></article>
+        <article><span id="flowRewardLabel">RICOMPENSE ON-CHAIN</span><strong class="private flow-reward-number" id="flowRewardLive">—</strong><small class="private" id="flowRewardFiat">—</small></article>
+        <article><span id="flowMonthlyLabel">PRODUZIONE · 30 GIORNI</span><strong class="private" id="flowProduction">—</strong><small id="flowApr">APR ponderato —</small></article>
+        <article><span id="flowYearlyLabel">PRODUZIONE · 1 ANNO</span><strong class="private" id="flowWalletCount">—</strong><small id="flowUpdated">Sincronizzazione…</small></article>
+      </section>
+    </main>
+  </div>
+
+  <script src="i18n.js?v=16.00.19"></script>
+  <script defer src="inj-flow-v24.js"></script>
+</body>
+</html>
