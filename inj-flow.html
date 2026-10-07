@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="it" data-theme="navy">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#020708">
+  <title>INJ Flow · INJ Node</title>
+  <script>(()=>{try{document.documentElement.dataset.theme=localStorage.getItem('inj_monitor_theme')||'navy'}catch(_){}})();</script>
+  <link rel="stylesheet" href="style.css?v=16.00.18">
+  <link rel="stylesheet" href="inj-flow-v27.css?v=16.00.32">
+</head>
+<body class="inj-flow-page" data-i18n-skip="true">
+  <div class="flow-shell">
+    <header class="flow-header">
+      <button class="flow-close" id="flowClose" type="button" aria-label="Torna alla Home" title="Home">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 11 8-7 8 7"></path><path d="M6.5 10v9h11v-9M10 19v-5h4v5"></path></svg>
+      </button>
+      <div class="flow-brand">
+        <span>INJ NODE</span>
+        <strong>INJ Flow</strong>
+        <small id="flowSubtitle">Flusso della produzione INJ</small>
+      </div>
+      <div class="flow-status">
+        <div class="flow-market">
+          <span id="flowPrice">INJ —</span>
+          <small id="flowTrend">24H —</small>
+        </div>
+        <div class="flow-live" id="flowLiveBadge"><i></i><b id="flowLiveText">SYNC 0/5</b></div>
+      </div>
+    </header>
+
+    <main class="flow-main">
+      <section class="flow-pipeline" id="flowPipeline" aria-label="Flusso produzione Injective">
+        <div class="flow-grid-bg" aria-hidden="true"></div>
+        <svg class="flow-connections" id="flowConnections" aria-hidden="true"></svg>
+        <div class="flow-particles" id="flowParticles" aria-hidden="true"></div>
+
+        <section class="flow-sources" aria-label="Wallet sorgenti">
+          <div class="flow-column-head">
+            <span id="sourcesEyebrow">SORGENTI</span>
+            <strong id="sourcesTitle">5 wallet</strong>
+          </div>
+          <div class="flow-wallets" id="flowWallets"></div>
+          <div class="flow-empty" id="flowEmpty" hidden>
+            <strong id="flowEmptyTitle">Nessun wallet salvato</strong>
+            <span id="flowEmptyText">Aggiungi un wallet dalla Home.</span>
+          </div>
+        </section>
+
+        <section class="flow-engine-wrap" aria-label="Motore produzione totale">
+          <article class="flow-engine" id="flowCore">
+            <div class="flow-engine-rings" aria-hidden="true"><i></i><i></i><i></i></div>
+            <span class="flow-engine-kicker" id="flowCoreKicker">STAKING TOTALE</span>
+            <strong class="flow-engine-value private" id="flowDailyReward">—</strong>
+            <span class="flow-engine-unit" id="flowDailyUnit">INJ IN STAKING</span>
+            <div class="flow-engine-rate"><span class="private" id="flowHourRate">— INJ / giorno</span><i></i><span class="private" id="flowMinuteRate">— INJ / ora</span></div>
+            <div class="flow-engine-meta">
+              <div><span id="coreStakedLabel">PRODUZIONE / GIORNO</span><strong class="private" id="flowCoreStaked">—</strong></div>
+              <div><span id="coreRewardLabel">WALLET ATTIVI</span><strong class="private" id="flowCoreReward">—</strong></div>
+            </div>
+            <div class="flow-engine-bottom">
+              <b class="flow-tier" id="flowCoreTier">—</b>
+              <span><em id="flowNextInjLabel">1 INJ OGNI</em><strong id="flowNextInj">—</strong></span>
+            </div>
+          </article>
+          <div class="flow-legend">
+            <span id="flowLegendLabel">VELOCITÀ DI PRODUZIONE</span>
+            <div class="flow-tier-scale">
+              <div data-tier="low"><i></i><b id="legendLow">BASSA</b><small>&lt; 0,01</small></div>
+              <div data-tier="normal"><i></i><b id="legendNormal">NORMALE</b><small>0,01–0,05</small></div>
+              <div data-tier="high"><i></i><b id="legendHigh">ALTA</b><small>0,05–0,10</small></div>
+              <div data-tier="very-high"><i></i><b id="legendVeryHigh">MOLTO ALTA</b><small>0,10–0,20</small></div>
+              <div data-tier="extreme"><i></i><b id="legendExtreme">ESTREMA</b><small>≥ 0,20</small></div>
+            </div>
+            <em>INJ / giorno per wallet</em>
+          </div>
+        </section>
+
+        <section class="flow-outputs" aria-label="Reward raggiunto">
+          <div class="flow-column-head">
+            <span id="outputsEyebrow">DESTINAZIONE</span>
+            <strong id="outputsTitle">Reward raggiunto</strong>
+          </div>
+          <article class="flow-reward-output" id="flowRewardOutput">
+            <div class="flow-reward-beacon" aria-hidden="true"><i></i><i></i><i></i></div>
+            <span class="flow-reward-kicker" id="rewardReachedLabel">REWARD RAGGIUNTO</span>
+            <strong class="flow-reward-value private" id="flowRewardReached">—</strong>
+            <span class="flow-reward-unit">INJ</span>
+            <b class="flow-reward-fiat private" id="flowRewardFiat">—</b>
+            <div class="flow-reward-stats">
+              <div><span id="rewardCurrentProductionLabel">PRODUZIONE ATTUALE</span><strong class="private" id="flowRewardDaily">—</strong></div>
+              <div><span id="rewardNextLabel">PROSSIMO +1 INJ</span><strong id="flowRewardNext">—</strong></div>
+            </div>
+            <div class="flow-reward-live"><i></i><span id="rewardFlowLabel">FLUSSO LIVE</span></div>
+            <section class="flow-reward-stream" id="flowRewardStreamPanel" aria-label="Reward Stream">
+              <div class="flow-stream-head">
+                <span id="rewardStreamTitle">REWARD STREAM</span>
+                <b class="private" id="flowStreamCounter">0 / 0,01 INJ</b>
+              </div>
+              <div class="flow-stream-target">
+                <label for="flowStreamTarget" id="flowStreamTargetLabel">TARGET</label>
+                <div class="flow-stream-target-control">
+                  <input id="flowStreamTarget" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" value="0,01" aria-label="Target reward stream">
+                  <span>INJ</span>
+                  <button id="flowStreamTargetApply" type="button" aria-label="Applica target">OK</button>
+                </div>
+              </div>
+              <div class="flow-packet-setting">
+                <label for="flowPacketTarget" id="flowPacketTargetLabel">PALLINO OGNI</label>
+                <div class="flow-packet-presets" id="flowPacketPresets">
+                  <button type="button" data-packet="0.0001">0,0001</button><button type="button" data-packet="0.001">0,001</button><button type="button" data-packet="0.01">0,01</button>
+                </div>
+                <div class="flow-stream-target-control"><input id="flowPacketTarget" type="text" inputmode="decimal" value="0,001"><span>INJ</span><button id="flowPacketTargetApply" type="button">OK</button></div>
+              </div>
+              <div class="flow-stream-progress" aria-hidden="true"><i id="flowStreamProgress"></i></div>
+              <div class="flow-stream-list" id="flowRewardStream" aria-live="polite"></div>
+              <div class="flow-stream-empty" id="flowStreamEmpty">In attesa del prossimo reward…</div>
+              <div class="flow-stream-complete private" id="flowStreamComplete" aria-hidden="true">+0 INJ COMPLETATO</div>
+            </section>
+          </article>
+        </section>
+      </section>
+
+      <footer class="flow-footnote">
+        <span id="flowDataNote">Saldo, staking e reward sono dati on-chain. Il Reward Stream mostra in chiaro cosa trasporta ogni pallino.</span>
+        <span id="flowUpdated">Sincronizzazione…</span>
+      </footer>
+    </main>
+  </div>
+
+  <script defer src="inj-flow-v27.js?v=16.00.32"></script>
+</body>
+</html>
