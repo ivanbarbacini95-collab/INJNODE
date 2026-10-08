@@ -1,0 +1,34 @@
+/* INJ Node · Live Presence v2. Presentation layer only. */
+(()=>{'use strict';
+ const cc=!!document.getElementById('commandCenter');
+ const host=cc?document.querySelector('.cc-main'):document.querySelector('.metrics-grid');
+ if(!host)return;
+ const strip=document.createElement('section');
+ strip.className='inj-presence';strip.setAttribute('aria-label','Indicatori operativi live');
+ strip.innerHTML='<div class="inj-presence-title"><span class="inj-presence-orb" aria-hidden="true"></span><span data-presence-title>LIVE PULSE</span><small data-presence-update>In attesa dei dati</small></div><div class="inj-presence-items"><div class="inj-presence-chip"><span data-presence-market-label>Direzione mercato</span><strong data-presence-market>—</strong><i class="inj-presence-meter" aria-hidden="true"><b data-presence-market-bar></b></i></div><div class="inj-presence-chip"><span data-presence-wallet-label>Wallet</span><strong data-presence-wallet>In attesa</strong><small data-presence-wallet-sub>Sincronizzazione</small></div><div class="inj-presence-chip"><span data-presence-staking-label>Staking</span><strong data-presence-staking>—</strong><small data-presence-staking-sub>Quota delegata</small></div></div>';
+ host.parentNode.insertBefore(strip,host);
+ const $=s=>strip.querySelector(s), source=id=>document.getElementById(id);
+ const read=id=>source(id)?.textContent?.trim()||'';
+ const valid=s=>s&&!/^[-—–]+$/.test(s)&&!/(caricament|attesa|non caricato)/i.test(s);
+ const number=s=>{let v=String(s||'').replace(/[^\d.,+\-]/g,'');if(!v)return NaN;const c=v.lastIndexOf(','),d=v.lastIndexOf('.');if(c>d)v=v.replace(/\./g,'').replace(',','.');else v=v.replace(/,/g,'');return Number(v)};
+ const changes=cc?['ccChange24','ccLivePrice']:['marketChange','marketChangeAmount'];
+ const stateIds=cc?['ccWalletState','ccConnection']:['walletState'];
+ let snapshot='',initialized=false;
+ function refresh(){if(document.hidden)return;
+  const change=read(changes[0]);const n=number(change);const direction=Number.isFinite(n)?n>0?'up':n<0?'down':'flat':'unknown';
+  const wallet=stateIds.map(read).find(valid)||'';
+  const share=cc? (()=>{const ratio=read('ccStakeRatio');return valid(ratio)?ratio:''})():read('stakedShare');
+  const signature=[change,wallet,share,direction].join('|');if(signature===snapshot)return;snapshot=signature;
+  const dirNames={up:'Rialzista',down:'Ribassista',flat:'Stabile',unknown:'In attesa'};
+  $('[data-presence-market]').textContent=valid(change)?`${dirNames[direction]} · ${change}`:dirNames[direction];
+  strip.dataset.direction=direction;
+  const width=Number.isFinite(n)?Math.min(100,Math.max(8,Math.abs(n)*12)):0;
+  $('[data-presence-market-bar]').style.width=width+'%';
+  $('[data-presence-wallet]').textContent=wallet||'In attesa';
+  $('[data-presence-staking]').textContent=valid(share)?share:'—';
+  $('[data-presence-update]').textContent=initialized?'Dati aggiornati':'Monitoraggio attivo';initialized=true;
+  strip.classList.remove('inj-presence-updated');void strip.offsetWidth;strip.classList.add('inj-presence-updated');
+ }
+ refresh();const timer=setInterval(refresh,1800);
+ window.addEventListener('pagehide',()=>clearInterval(timer),{once:true});
+})();
