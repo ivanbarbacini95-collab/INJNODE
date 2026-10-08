@@ -1,0 +1,8 @@
+INJ NODE — MERGE SU BASE UFFICIALE (08/10/2026)
+
+BASE INALTERATA: index.html (Home e sue sezioni originarie), app.js, style.css.
+NUOVI COLLEGAMENTI HOME: INJ Flow e Live Rewards, nello stesso elenco e stile della Home ufficiale.
+MODULI AGGIORNATI: Treasury, Command Center, Live Charts, Order Book, INJ Flow, Live Rewards (pagine, CSS e JS).
+Service worker rivisto per tollerare asset icona assenti e ridurre cache obsolete.
+ISTRUZIONI: Caricare i file CONTENUTI nello ZIP nella radice della repository GitHub Pages. Non caricare una cartella contenitore.
+NOTA: Verifiche statiche completate, API live e navigazione Safari da controllare sul deploy reale.
