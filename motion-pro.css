@@ -1,0 +1,43 @@
+/* INJ NODE · Motion Pro — visual-only progressive enhancement */
+:root{--motion-glow:color-mix(in srgb,var(--accent,#26cfa5) 19%,transparent)}
+.entry-actions>.entry-action,.app-shell .data-card,.app-shell .aggregate-metric,.app-shell .overview-grid>article{position:relative;isolation:isolate;transition:transform .28s cubic-bezier(.2,.8,.2,1),border-color .28s ease,box-shadow .28s ease;}
+.entry-actions>.entry-action{overflow:hidden;}
+.entry-actions>.entry-action::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 10%,color-mix(in srgb,var(--accent,#26cfa5) 8%,transparent) 50%,transparent 90%);transform:translateX(-130%);transition:transform .65s ease;z-index:-1;}
+.entry-actions>.entry-action:is(:hover,:focus-visible)::after{transform:translateX(130%)}
+.entry-actions>.entry-action:is(:hover,:focus-visible){transform:translateY(-3px);box-shadow:0 12px 32px -22px var(--motion-glow)}
+.entry-actions>.entry-action:is(:hover,:focus-visible) .entry-action-arrow{transform:translateX(3px)}
+.entry-action-arrow{transition:transform .25s ease}
+.app-shell .data-card:hover,.app-shell .aggregate-metric:hover{border-color:color-mix(in srgb,var(--accent,#26cfa5) 26%,transparent);box-shadow:0 12px 32px -28px var(--motion-glow)}
+/* Triggered only when real text updates — avoids fake price movement */
+.motion-tick-up{animation:motionTickUp .58s ease-out}
+.motion-tick-down{animation:motionTickDown .58s ease-out}
+@keyframes motionTickUp{0%{text-shadow:0 0 0 transparent}35%{text-shadow:0 0 13px rgba(54,211,145,.32)}100%{text-shadow:none}}
+@keyframes motionTickDown{0%{text-shadow:0 0 0 transparent}35%{text-shadow:0 0 13px rgba(242,108,110,.28)}100%{text-shadow:none}}
+/* Soft reveal: never hide content while JS is loading or on scroll failures */
+.motion-visible{animation:motionReveal .48s both cubic-bezier(.2,.8,.2,1)}
+@keyframes motionReveal{from{opacity:.76;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+@media(hover:none){.entry-actions>.entry-action:hover,.app-shell .data-card:hover,.app-shell .aggregate-metric:hover{transform:none;box-shadow:none}}
+@media(prefers-reduced-motion:reduce){.entry-actions>.entry-action,.app-shell .data-card,.app-shell .aggregate-metric,.app-shell .overview-grid>article,.entry-action-arrow{transition:none!important}.motion-visible,.motion-tick-up,.motion-tick-down{animation:none!important}.entry-actions>.entry-action::after{display:none}}
+
+/* v2 · ambient motion with real data, no fictional ticker */
+.inj-presence{display:grid;grid-template-columns:minmax(150px,.6fr) minmax(0,2.6fr);gap:14px;align-items:center;margin:14px 0 18px;padding:15px 18px;border:1px solid color-mix(in srgb,var(--accent,#27cba2) 23%,transparent);border-radius:18px;background:linear-gradient(120deg,color-mix(in srgb,var(--accent,#27cba2) 6%,transparent),transparent 60%),rgba(10,22,30,.34);position:relative;overflow:hidden;isolation:isolate}
+.inj-presence:before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(100deg,transparent 12%,color-mix(in srgb,var(--accent,#27cba2) 6%,transparent) 48%,transparent 75%);transform:translateX(-100%);animation:injPresenceSweep 13s linear infinite;z-index:-1}
+.inj-presence-title{display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-size:11px;font-weight:800;letter-spacing:.12em}
+.inj-presence-title small{flex-basis:100%;padding-left:16px;letter-spacing:0;font-size:11px;font-weight:500;opacity:.58}
+.inj-presence-orb{height:7px;width:7px;border-radius:50%;background:var(--accent,#32deb0);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent,#32deb0) 12%,transparent),0 0 16px var(--accent,#32deb0);animation:injPresenceBreathe 3s ease-in-out infinite}
+.inj-presence-items{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;min-width:0}
+.inj-presence-chip{min-width:0;padding:8px 11px;border:1px solid rgba(139,168,182,.12);border-radius:11px;background:rgba(127,159,184,.035);display:flex;flex-direction:column;gap:5px}
+.inj-presence-chip>span{font-size:10px;opacity:.65;letter-spacing:.03em}.inj-presence-chip>strong{font-size:clamp(11px,1vw,14px);font-variant-numeric:tabular-nums;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}.inj-presence-chip>small{font-size:10px;opacity:.48}
+.inj-presence-meter{height:2px;border-radius:3px;background:rgba(146,169,188,.16);width:100%;overflow:hidden}.inj-presence-meter>b{display:block;height:100%;width:0;background:var(--accent,#32deb0);border-radius:inherit;transition:width .65s ease}
+/* Live Pulse: the negative market state must tint the value text and
+   the thin momentum indicator only. Do not paint a red band behind the value. */
+.inj-presence[data-direction="down"] [data-presence-market]{color:#fa858d;background:transparent}
+.inj-presence[data-direction="down"] .inj-presence-meter>b{background-color:#fa858d}
+.inj-presence[data-direction="up"] [data-presence-market]{color:#6aebbb}
+.inj-presence-updated .inj-presence-chip>strong{animation:injPresenceText .48s ease-out}
+@keyframes injPresenceBreathe{50%{opacity:.58;box-shadow:0 0 0 6px transparent,0 0 9px var(--accent,#32deb0)}}
+@keyframes injPresenceSweep{0%,15%{transform:translateX(-100%)}50%,100%{transform:translateX(120%)}}
+@keyframes injPresenceText{50%{filter:brightness(1.28)}}
+@media(max-width:800px){.inj-presence{grid-template-columns:1fr;padding:13px;gap:12px}.inj-presence-title small{flex-basis:auto;padding-left:0}.inj-presence-items{grid-template-columns:repeat(3,minmax(0,1fr))}.inj-presence-chip{padding:8px}.inj-presence-chip>strong{font-size:11px}}
+@media(max-width:440px){.inj-presence-items{grid-template-columns:repeat(2,minmax(0,1fr))}.inj-presence-chip:first-child{grid-column:span 2}.inj-presence-chip>strong{font-size:12px}}
+@media(prefers-reduced-motion:reduce){.inj-presence:before,.inj-presence-orb,.inj-presence-updated .inj-presence-chip>strong{animation:none!important}.inj-presence-meter>b{transition:none}}

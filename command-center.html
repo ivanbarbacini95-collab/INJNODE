@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html data-inj-page="command-center" data-inj-viewport="80" data-theme="navy" data-ui-style="elegant" lang="it">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="theme-color" content="#05090d"/>
+<title>Command Center · INJ Node</title>
+<script>
+try {
+  const theme = localStorage.getItem('inj_monitor_theme');
+  const style = localStorage.getItem('inj_monitor_ui_style');
+  document.documentElement.dataset.theme = ['navy','black','light','amber'].includes(theme) ? theme : 'navy';
+  document.documentElement.dataset.uiStyle = ['elegant','futuristic','ultra'].includes(style) ? style : 'elegant';
+} catch (_) {}
+</script>
+<script>
+(() => {
+  const ua = String(navigator.userAgent || '');
+  const appleTouchTablet = /Macintosh/i.test(ua) && Number(navigator.maxTouchPoints || 0) > 1;
+  const mobileDevice = /Android|iPhone|iPad|iPod|Mobile/i.test(ua) || appleTouchTablet;
+  const allowedStandalone = !mobileDevice && window.matchMedia('(min-width:1100px)').matches;
+  if (!allowedStandalone) {
+    document.documentElement.style.visibility = 'hidden';
+    window.location.replace('./index.html?command-center=pc-only');
+  }
+})();
+</script>
+<link rel="stylesheet" href="command-center.css?v=redesign-digits-20261008-r2"/>
+<script>document.addEventListener('DOMContentLoaded',()=>{const c=getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();if(c)document.querySelector('meta[name="theme-color"]')?.setAttribute('content',c)},{once:true});</script>
+<link rel="stylesheet" href="viewport.css?v=official-merged-20261008">
+<script defer src="viewport.js?v=official-merged-20261008"></script>
+<link rel="stylesheet" href="motion-pro.css?v=2"/>
+<link rel="stylesheet" href="command-premium.css?v=20261008-pro"/>
+</head>
+<body>
+<main class="cc-shell" id="commandCenter">
+  <header class="cc-topbar">
+    <div class="cc-brand">
+      <button id="ccBack" class="cc-back" type="button" aria-label="Torna alla Home">×</button>
+      <svg aria-hidden="true" class="cc-logo" viewBox="0 0 48 48"><path d="M8.5 27.4A16.5 16.5 0 0 1 33.7 9.6"></path><path d="M39.5 20.6A16.5 16.5 0 0 1 14.3 38.4"></path><path d="M15 33V15l18 18V15"></path><circle cx="15" cy="15" r="2.4"></circle><circle cx="33" cy="33" r="2.4"></circle><circle cx="24" cy="24" r="2.75"></circle></svg>
+      <div class="cc-brand-copy"><strong>INJ NODE</strong><span>COMMAND CENTRE</span></div>
+    </div>
+
+    <div class="cc-wallet-head">
+      <span>Wallet selezionato</span>
+      <strong id="ccWalletName">Wallet</strong>
+      <small id="ccWalletAddress">—</small>
+    </div>
+
+    <div class="cc-live-head">
+      <span class="cc-live-badge" id="ccConnection"><i></i>ATTESA</span>
+      <time id="ccClock">--:--:--</time>
+    </div>
+  </header>
+
+  <section class="cc-overview-strip" aria-label="Panoramica rapida">
+    <article class="cc-mini-stat">
+      <span>Prezzo INJ</span>
+      <strong id="ccLivePrice">—</strong>
+      <small id="ccChange24">— · 24H</small>
+    </article>
+    <article class="cc-mini-stat">
+      <span>Patrimonio</span>
+      <strong class="private" id="ccNetWorth">—</strong>
+      <small class="private" id="ccTotalInj">— INJ</small>
+    </article>
+    <article class="cc-mini-stat">
+      <span>P/L totale</span>
+      <strong class="private" id="ccTotalPnl">—</strong>
+      <small class="private" id="ccTotalPnlPct">—</small>
+    </article>
+    <article class="cc-mini-stat">
+      <span>Reward / giorno</span>
+      <strong class="private" id="ccDailyReward">—</strong>
+      <small class="private" id="ccDailyRewardUsd">—</small>
+    </article>
+  </section>
+
+  <section class="cc-main-card">
+    <div class="cc-card-head">
+      <div>
+        <span class="cc-eyebrow">AREA GRAFICA</span>
+        <h1>INJ / USDT <span class="cc-heading-muted">· Grafico live</span></h1>
+        <p>Grafico a candele in tempo reale · intervallo selezionabile</p>
+      </div>
+      <div class="cc-card-status">
+        <span id="ccWalletState">WALLET · ATTESA</span>
+        <span id="ccLastSync">—</span>
+      </div>
+    </div>
+
+    <div class="cc-chart-tools" role="group" aria-label="Selezione timeframe">
+      <div class="cc-timeframe-row">
+        <span class="cc-timeframe-label">TIMEFRAME</span>
+        <button class="cc-time-btn" data-promote="m1" type="button">1M</button>
+        <button class="cc-time-btn" data-promote="m5" type="button">5M</button>
+        <button class="cc-time-btn" data-promote="m10" type="button">10M</button>
+        <button class="cc-time-btn" data-promote="h1" type="button">1H</button>
+        <button class="cc-time-btn" data-promote="d1" type="button">1D</button>
+        <button class="cc-time-btn" data-promote="w1" type="button">1W</button>
+      </div>
+      <select id="ccMainRange" class="cc-hidden-select" aria-label="Timeframe grafico principale">
+        <option value="m1">1 MIN</option>
+        <option value="m5">5 MIN</option>
+        <option value="m10">10 MIN</option>
+        <option value="h1" selected>1 ORA</option>
+        <option value="d1">1 GIORNO</option>
+        <option value="w1">1 SETTIMANA</option>
+      </select>
+      <div class="cc-chart-actions">
+        <button id="ccLevelsButton" type="button">Livelli</button>
+        <button id="ccObserve" type="button" aria-pressed="false">Osservazione</button>
+        <button id="ccEventsButton" type="button">Eventi</button>
+      </div>
+    </div>
+
+    <section class="cc-chart-stage" aria-label="Grafico principale">
+      <article class="cc-chart cc-chart-1m neutral" data-key="m1" hidden>
+        <header>
+          <div class="cc-chart-title"><strong>1 MIN</strong><small>Immediate momentum</small></div>
+          <div class="cc-chart-status"><b class="neutral" id="cc1mChange">—</b><span class="cc-chart-feed">ATTESA</span></div>
+        </header>
+        <div class="cc-chart-body"><canvas id="ccCanvas1m"></canvas><aside class="cc-scale"><span id="cc1mTop">—</span><span id="cc1mMid">—</span><span id="cc1mBottom">—</span><b id="cc1mMarker">—</b></aside></div>
+        <div class="cc-time-axis"><time></time><span></span><time></time></div>
+      </article>
+
+      <article class="cc-chart cc-chart-5m neutral" data-key="m5" hidden>
+        <header>
+          <div class="cc-chart-title"><strong>5 MIN</strong><small>Micro momentum</small></div>
+          <div class="cc-chart-status"><b class="neutral" id="cc5Change">—</b><span class="cc-chart-feed">ATTESA</span></div>
+        </header>
+        <div class="cc-chart-body"><canvas id="ccCanvas5m"></canvas><aside class="cc-scale"><span id="cc5Top">—</span><span id="cc5Mid">—</span><span id="cc5Bottom">—</span><b id="cc5Marker">—</b></aside></div>
+        <div class="cc-time-axis"><time></time><span></span><time></time></div>
+      </article>
+
+      <article class="cc-chart cc-chart-10m neutral" data-key="m10" hidden>
+        <header>
+          <div class="cc-chart-title"><strong>10 MIN</strong><small>Short trend</small></div>
+          <div class="cc-chart-status"><b class="neutral" id="cc10Change">—</b><span class="cc-chart-feed">ATTESA</span></div>
+        </header>
+        <div class="cc-chart-body"><canvas id="ccCanvas10m"></canvas><aside class="cc-scale"><span id="cc10Top">—</span><span id="cc10Mid">—</span><span id="cc10Bottom">—</span><b id="cc10Marker">—</b></aside></div>
+        <div class="cc-time-axis"><time></time><span></span><time></time></div>
+      </article>
+
+      <article class="cc-chart cc-chart-1h neutral" data-key="h1">
+        <header>
+          <div class="cc-chart-title"><strong>1 ORA</strong><small>Primary intraday signal</small></div>
+          <div class="cc-chart-status"><b class="neutral" id="cc1hChange">—</b><span class="cc-chart-feed">ATTESA</span></div>
+        </header>
+        <div class="cc-chart-body"><canvas id="ccCanvas1h"></canvas><aside class="cc-scale"><span id="cc1hTop">—</span><span id="cc1hMid">—</span><span id="cc1hBottom">—</span><b id="cc1hMarker">—</b></aside></div>
+        <div class="cc-time-axis"><time></time><span></span><time></time></div>
+      </article>
+
+      <article class="cc-chart cc-chart-1d neutral" data-key="d1" hidden>
+        <header>
+          <div class="cc-chart-title"><strong>1 GIORNO</strong><small>Daily structure</small></div>
+          <div class="cc-chart-status"><b class="neutral" id="cc1dChange">—</b><span class="cc-chart-feed">ATTESA</span></div>
+        </header>
+        <div class="cc-chart-body"><canvas id="ccCanvas1d"></canvas><aside class="cc-scale"><span id="cc1dTop">—</span><span id="cc1dMid">—</span><span id="cc1dBottom">—</span><b id="cc1dMarker">—</b></aside></div>
+        <div class="cc-time-axis"><time></time><span></span><time></time></div>
+      </article>
+
+      <article class="cc-chart cc-chart-1w neutral" data-key="w1" hidden>
+        <header>
+          <div class="cc-chart-title"><strong>1 SETTIMANA</strong><small>Weekly structure</small></div>
+          <div class="cc-chart-status"><b class="neutral" id="cc1wChange">—</b><span class="cc-chart-feed">ATTESA</span></div>
+        </header>
+        <div class="cc-chart-body"><canvas id="ccCanvas1w"></canvas><aside class="cc-scale"><span id="cc1wTop">—</span><span id="cc1wMid">—</span><span id="cc1wBottom">—</span><b id="cc1wMarker">—</b></aside></div>
+        <div class="cc-time-axis"><time></time><span></span><time></time></div>
+      </article>
+    </section>
+  </section>
+
+  <section class="cc-wallet-section">
+    <div class="cc-card-head">
+      <div>
+        <span class="cc-eyebrow">WALLET SELEZIONATO</span>
+        <h2>Dati principali</h2>
+        <p>Le informazioni principali del wallet attivo, raccolte in basso.</p>
+      </div>
+      <div class="cc-data-side">
+        <span id="ccConnectionMini">Trend timeframe <b id="ccConsensus">—</b></span>
+        <span id="ccLastQuote">Ultimo prezzo —</span>
+      </div>
+    </div>
+
+    <div class="cc-data-grid">
+      <article class="cc-data-card"><span>Disponibile</span><strong class="private" id="ccAvailable">—</strong></article>
+      <article class="cc-data-card"><span>In staking</span><strong class="private" id="ccStaked">—</strong></article>
+      <article class="cc-data-card"><span>Reward disponibili</span><strong class="private" id="ccRewards">—</strong></article>
+      <article class="cc-data-card"><span>Quota in staking</span><strong class="private" id="ccStakeRatio">—</strong></article>
+      <article class="cc-data-card"><span>APR personale</span><strong id="ccApr">—</strong></article>
+      <article class="cc-data-card"><span>APR network</span><strong id="ccNetworkApr">—</strong></article>
+      <article class="cc-data-card"><span>Commissione media</span><strong id="ccCommission">—</strong></article>
+      <article class="cc-data-card"><span>Prezzo medio</span><strong class="private" id="ccAvgPrice">—</strong></article>
+      <article class="cc-data-card"><span>P/L giornaliero</span><strong class="private" id="ccDailyPnl">—</strong><small class="private" id="ccDailyPnlPct">—</small></article>
+      <article class="cc-data-card"><span>Distanza minimo 24h</span><strong id="ccLowDistance">—</strong></article>
+      <article class="cc-data-card"><span>Distanza massimo 24h</span><strong id="ccHighDistance">—</strong></article>
+      <article class="cc-data-card"><span>Livelli impostati</span><strong id="ccLevelSummary">Livelli personali · non impostati</strong></article>
+    </div>
+
+    <article class="cc-validator-panel">
+      <div class="cc-validator-head">
+        <div>
+          <span class="cc-eyebrow">VALIDATORI</span>
+          <h3>Delegazioni attive</h3>
+        </div>
+        <strong id="ccValidatorCount">0 validators</strong>
+      </div>
+      <div id="ccValidatorList" class="cc-validator-list"></div>
+    </article>
+  </section>
+
+  <section class="cc-hidden-support" aria-hidden="true">
+    <span id="ccLow24"></span>
+    <span id="ccHigh24"></span>
+    <span id="ccRangePosition"></span>
+    <span id="ccSnapshot1h"></span>
+    <span id="ccSnapshot24"></span>
+    <span id="ccMomentum"></span>
+    <span id="ccPulsePrice"></span>
+    <span id="ccPulsePnl"></span>
+    <span id="ccPulseRewardValue"></span>
+    <span id="ccPulseRewardUsd"></span>
+    <span id="ccApiState"></span>
+    <span id="ccMarketState"></span>
+    <span id="ccFooterLive"></span>
+    <span id="ccFooterSystem"></span>
+    <span id="ccFooterApr"></span>
+    <span id="ccFooterReward"></span>
+    <span id="ccApiDot"></span>
+    <span id="ccMarketDot"></span>
+    <span id="ccDataDot"></span>
+    <span id="ccFooterLow"></span>
+    <span id="ccFooterHigh"></span>
+    <span id="ccFooterFill"></span>
+    <span id="ccFooterDot"></span>
+    <span id="ccRangeFill"></span>
+    <span id="ccRangeDot"></span>
+    <span id="ccTotal"></span>
+    <span id="ccEventCount"></span>
+    <div id="ccLatestEvent"></div>
+  </section>
+
+  <dialog id="ccLevelsDialog" class="cc-dialog">
+    <form id="ccLevelsForm" method="dialog" class="cc-dialog-body">
+      <div class="cc-dialog-head"><strong>Livelli personali</strong><button type="button" data-close="ccLevelsDialog">×</button></div>
+      <label>Livello 1 <input id="ccLevel1" type="number" step="0.0001" inputmode="decimal"></label>
+      <label>Livello 2 <input id="ccLevel2" type="number" step="0.0001" inputmode="decimal"></label>
+      <div class="cc-dialog-actions"><button type="button" data-close="ccLevelsDialog">Chiudi</button><button type="submit">Salva</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="ccEventsDialog" class="cc-dialog">
+    <div class="cc-dialog-body">
+      <div class="cc-dialog-head"><strong>Eventi recenti</strong><button type="button" data-close="ccEventsDialog">×</button></div>
+      <ul id="ccEventList" class="cc-events-list"></ul>
+      <div class="cc-dialog-actions"><button type="button" data-close="ccEventsDialog">Chiudi</button></div>
+    </div>
+  </dialog>
+</main>
+<script defer src="command-center.js?v=20261008-pro"></script>
+</body>
+</html>
