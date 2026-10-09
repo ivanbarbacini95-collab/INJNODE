@@ -1,0 +1,100 @@
+/* INJ NODE v16.00.45 — iOS/PWA crisp top bars.
+   Fix: sticky glass/raster text and a mobile Futures bar whose fixed 68px
+   height was smaller than the iPhone safe-area + its own padding. */
+
+/* No backdrop blur on navigation chrome: titles and prices always render sharp.
+   This does not alter chart effects, card glows or the blur of an OPEN menu. */
+.app-shell > .topbar,
+.futures-header,
+.treasury-header,
+.rewards-header,
+.book-topbar,
+.terminal-header,
+.cc-topbar,
+.flow-header {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  -webkit-filter: none !important;
+  filter: none !important;
+  -webkit-font-smoothing: antialiased;
+  backface-visibility: visible;
+}
+.app-shell > .topbar > *,
+.futures-header > *,
+.treasury-header > *,
+.rewards-header > *,
+.book-topbar > *,
+.terminal-header > *,
+.cc-topbar > *,
+.flow-header > * {
+  -webkit-filter: none !important;
+  filter: none !important;
+}
+
+/* Futures: body draws behind the translucent iOS status bar (viewport-fit=cover).
+   Never squeeze the status-bar inset and the 38px Home button in a 68px box. */
+.futures-header {
+  box-sizing: border-box !important;
+  height: auto !important;
+  min-height: calc(70px + env(safe-area-inset-top, 0px)) !important;
+  padding: calc(env(safe-area-inset-top, 0px) + 10px)
+           max(16px, env(safe-area-inset-right, 0px))
+           11px
+           max(16px, env(safe-area-inset-left, 0px)) !important;
+  position: relative !important; /* document flow: never masks the first card */
+  top: auto !important;
+  isolation: isolate;
+  background: var(--bg, #061018) !important;
+  box-shadow: 0 1px 0 var(--line, rgba(255,255,255,.08));
+  z-index: 20;
+}
+.futures-main { position: relative; padding-top: max(16px, 2vw) !important; }
+
+/* Solid header surfaces avoid faint content from scrolling under titles.
+   The existing themed text, indicator LEDs and separators are unchanged. */
+.treasury-header,
+.rewards-header {
+  background: var(--bg, #061018) !important;
+  -webkit-transform: none !important;
+  transform: none !important;
+}
+.treasury-header::before,
+.rewards-header::before {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  background: var(--bg, #061018) !important;
+}
+.book-topbar,
+.terminal-header { background-color: var(--canvas, var(--bg, #061018)) !important; }
+.cc-topbar { background: var(--bg, #061018) !important; }
+
+@media (max-width: 900px), (hover: none) and (pointer: coarse) {
+  .futures-header {
+    min-height: calc(66px + env(safe-area-inset-top, 0px)) !important;
+    padding-top: calc(env(safe-area-inset-top, 0px) + 8px) !important;
+    padding-bottom: 10px !important;
+    padding-left: max(12px, env(safe-area-inset-left, 0px)) !important;
+    padding-right: max(12px, env(safe-area-inset-right, 0px)) !important;
+  }
+  .futures-home { flex-shrink: 0; }
+  .futures-title { min-width: 0; }
+  .futures-market-head { min-width: 0; }
+  .treasury-header,
+  .rewards-header {
+    top: env(safe-area-inset-top, 0px) !important;
+  }
+  /* Keep Dashboard controls sharp without creating a separate blurred GPU layer. */
+  .app-shell > .topbar {
+    -webkit-transform: none !important;
+    transform: none !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    background-color: var(--theme-canvas, var(--bg, #061018)) !important;
+  }
+  #entryGate.visible:not(.immersive-underlay) .entry-gate-shell > h1,
+  #entryGate.visible:not(.immersive-underlay) .entry-gate-shell > .entry-home-menu {
+    filter: none !important;
+    -webkit-filter: none !important;
+    -webkit-font-smoothing: antialiased;
+  }
+}
