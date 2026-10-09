@@ -1,0 +1,89 @@
+<!doctype html>
+<html data-inj-page="futures" data-theme="navy" lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#07121b">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>INJ NODE · Futures</title>
+<script>
+try{const t=localStorage.getItem('inj_monitor_theme');document.documentElement.dataset.theme=['navy','black','light','amber'].includes(t)?t:'navy'}catch(_){ }
+</script>
+<link rel="stylesheet" href="./futures.css?v=16.00.41">
+<link rel="stylesheet" href="./viewport.css?v=16.00.14">
+<script defer src="./viewport.js?v=16.00.14"></script>
+<script defer src="./futures.js?v=16.00.41"></script>
+</head>
+<body>
+<div class="futures-shell">
+<header class="futures-header">
+<a class="futures-home" id="futuresHome" href="./index.html" aria-label="Torna alla Home" title="Home">
+<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 11 8-7 8 7"></path><path d="M6.5 10v9h11v-9M10 19v-5h4v5"></path></svg>
+</a>
+<div class="futures-title"><span>INJ NODE</span><strong>Futures</strong><small>KuCoin · INJ perpetual monitor</small></div>
+<div class="futures-market-head"><strong id="livePrice">—</strong><span class="live-badge" id="liveBadge"><i></i>KUCOIN LIVE</span></div>
+</header>
+<main class="futures-main">
+<section class="hero-grid">
+<article class="position-card" id="positionCard">
+<div class="position-topline">
+<div><span class="eyebrow">POSIZIONE ATTIVA</span><div class="side-pills" role="group" aria-label="Direzione posizione"><button type="button" class="active long" data-side="long">LONG</button><button type="button" class="short" data-side="short">SHORT</button></div></div>
+<div class="market-mode"><span>KuCoin Futures</span><strong>INJUSDTM</strong></div>
+</div>
+<div class="position-value"><span>P/L LIVE</span><strong id="pnlValue">—</strong><small id="pnlPercent">ROI —</small></div>
+<div class="metrics-grid">
+<div><span>ENTRY</span><strong id="entryMetric">—</strong></div>
+<div><span>PREZZO LIVE</span><strong id="priceMetric">—</strong></div>
+<div><span>LEVA</span><strong id="leverageMetric">—</strong></div>
+<div><span>MARGINE</span><strong id="marginMetric">—</strong></div>
+<div><span>SIZE</span><strong id="sizeMetric">—</strong></div>
+<div><span>MOVIMENTO</span><strong id="moveMetric">—</strong></div>
+</div>
+<div class="range-block">
+<div class="range-labels"><span id="liqLabel">LIQ. INDICATIVA</span><span>ENTRY</span><span>LIVE</span></div>
+<div class="range-track"><i class="range-fill" id="rangeFill"></i><b class="marker liq" id="liqMarker"></b><b class="marker entry" id="entryMarker"></b><b class="marker live" id="liveMarker"></b></div>
+<div class="range-values"><span id="liqValue">—</span><span id="rangeEntry">—</span><span id="rangeLive">—</span></div>
+</div>
+<div class="position-note" id="positionNote">Inserisci i dati della posizione per iniziare.</div>
+</article>
+
+<aside class="setup-card">
+<div class="setup-head"><div><span class="eyebrow">SETUP POSIZIONE</span><strong>Parametri KuCoin</strong></div><button type="button" id="newPositionButton">Nuova</button></div>
+<form id="positionForm" autocomplete="off">
+<div class="form-grid">
+<label><span>Prezzo di entrata</span><div class="input-unit"><input id="entryInput" inputmode="decimal" type="number" step="0.0001" min="0" placeholder="5,4200"><em>USDT</em></div></label>
+<label><span>Leva</span><div class="input-unit"><input id="leverageInput" inputmode="decimal" type="number" step="1" min="1" max="100" placeholder="5"><em>×</em></div></label>
+<label><span>Margine</span><div class="input-unit"><input id="marginInput" inputmode="decimal" type="number" step="0.01" min="0" placeholder="1000"><em>USDT</em></div></label>
+<label><span>Modalità</span><select id="marginModeInput"><option value="isolated">Isolated</option><option value="cross">Cross</option></select></label>
+<label class="wide"><span>Prezzo liquidazione KuCoin <small>(opzionale)</small></span><div class="input-unit"><input id="liquidationInput" inputmode="decimal" type="number" step="0.0001" min="0" placeholder="Lascia vuoto per stima"><em>USDT</em></div></label>
+<label class="wide"><span>Nome posizione</span><input id="nameInput" maxlength="34" placeholder="Es. INJ Long 5x"></label>
+</div>
+<div class="form-actions"><button type="button" class="ghost" id="clearButton">Azzera</button><button type="submit" class="primary">Salva posizione</button></div>
+</form>
+</aside>
+</section>
+
+<section class="secondary-grid">
+<article class="mini-card">
+<div class="mini-head"><span class="eyebrow">RISCHIO</span><strong>Distanza liquidazione</strong></div>
+<div class="risk-value"><strong id="liqDistance">—</strong><small id="liqMeta">Stima semplice · commissioni/funding esclusi</small></div>
+</article>
+<article class="mini-card">
+<div class="mini-head"><span class="eyebrow">PRODUZIONE</span><strong>Quantità posizione</strong></div>
+<div class="risk-value"><strong id="quantityValue">—</strong><small>INJ teorici equivalenti</small></div>
+</article>
+<article class="mini-card">
+<div class="mini-head"><span class="eyebrow">MERCATO</span><strong>Fonte prezzo</strong></div>
+<div class="risk-value"><strong id="sourceValue">KuCoin</strong><small id="updatedValue">In attesa…</small></div>
+</article>
+</section>
+
+<section class="saved-panel">
+<div class="saved-head"><div><span class="eyebrow">POSIZIONI SALVATE</span><strong>I tuoi trade monitorati</strong></div><span id="savedCount">0</span></div>
+<div class="saved-list" id="savedList"><div class="empty-state">Nessuna posizione salvata.</div></div>
+</section>
+<footer>INJ NODE · by IB</footer>
+</main>
+</div>
+</body>
+</html>
