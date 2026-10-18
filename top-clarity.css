@@ -132,3 +132,14 @@
     content:none!important;display:none!important;filter:none!important;
   }
 }
+
+/* Safari standalone: keep dashboard chrome opaque in every theme.
+   Match the theme-qualified rules in style.css, which otherwise win and
+   leave this header transparent despite the earlier mobile override. */
+@media (max-width:900px), (hover:none) and (pointer:coarse) {
+  html[data-theme] .app-shell > .topbar {
+    background:var(--theme-canvas,var(--bg))!important;
+    background-color:var(--theme-canvas,var(--bg))!important;
+  }
+  .header-search:not(.open) .search-panel { display:none!important; }
+}
