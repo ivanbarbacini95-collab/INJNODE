@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.00.67-mobile-crisp-controls';
+const CACHE_NAME = 'inj-node-v16.00.68-mobile-no-backdrop';
 const APP_SHELL = [
   './navigation.css?v=160067',
   './navigation.js?v=160066',
@@ -11,10 +11,10 @@ const APP_SHELL = [
   './market.js?v=160062',
   './manifest.webmanifest?v=16.00.14',
   './viewport.css?v=16.00.14',
-  './top-clarity.css?v=16.00.67',
+  './top-clarity.css?v=16.00.68',
   './viewport.js?v=16.00.14',
   './style.css?v=16.00.49',
-  './app.js?v=16.00.67',
+  './app.js?v=16.00.68',
   './i18n.js?v=160066',
   './live-charts.html',
   './live-charts.css?v=16.00.39',

@@ -116,3 +116,19 @@
     background:var(--surface,var(--theme-canvas,var(--bg,var(--canvas))))!important;
   }
 }
+
+/* Mobile WebKit: cards and controls also used backdrop blur below the header.
+   Remove it from every app surface, not only the navigation ancestors. */
+@media (max-width:900px), (hover:none) and (pointer:coarse) {
+  html[data-theme] body :is(#entryGate,#focusDisplayDialog,#converterView,#performanceTimelineView,.app-shell,.treasury-shell,.rewards-shell,.live-page,.book-page,.cc-shell,.shell),
+  html[data-theme] body :is(#entryGate,#focusDisplayDialog,#converterView,#performanceTimelineView,.app-shell,.treasury-shell,.rewards-shell,.live-page,.book-page,.cc-shell,.shell) *,
+  html[data-theme] body :is(#entryGate,#focusDisplayDialog,#converterView,#performanceTimelineView,.app-shell,.treasury-shell,.rewards-shell,.live-page,.book-page,.cc-shell,.shell) *::before,
+  html[data-theme] body :is(#entryGate,#focusDisplayDialog,#converterView,#performanceTimelineView,.app-shell,.treasury-shell,.rewards-shell,.live-page,.book-page,.cc-shell,.shell) *::after {
+    -webkit-backdrop-filter:none!important;
+    backdrop-filter:none!important;
+  }
+  #focusDisplayDialog .focus-display-shell::before,
+  #focusDisplayDialog .focus-display-shell::after {
+    content:none!important;display:none!important;filter:none!important;
+  }
+}
