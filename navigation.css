@@ -122,3 +122,31 @@ html[data-inj-viewport] .live-page,html[data-inj-viewport] .book-page,html[data-
 }
 /* A single document scroller avoids an unscrollable body trapping wheel input. */
 html:not([data-inj-page="index"]) body,html[data-inj-page]:not([data-inj-page="index"]) body{height:auto!important;overflow:visible!important}
+/* Align the existing Home controls at one safe-area-aware top inset. */
+:root{--inj-control-inset:calc(8px + env(safe-area-inset-top,0px))}
+html[data-inj-viewport] .treasury-shell,
+html[data-inj-viewport] .rewards-shell,
+html[data-inj-viewport] .live-page,
+html[data-inj-viewport] .book-page,
+html[data-inj-viewport] .cc-shell,
+html[data-inj-viewport] #converterView .converter-view-shell,
+html[data-inj-viewport] #performanceTimelineView .performance-timeline-shell{padding-top:0!important}
+html[data-inj-viewport] .treasury-header,
+html[data-inj-viewport] .rewards-header,
+html[data-inj-viewport] .terminal-header,
+html[data-inj-viewport] .book-topbar,
+html[data-inj-viewport] .cc-topbar,
+html[data-inj-viewport] .converter-view-header,
+html[data-inj-viewport] .performance-timeline-header,
+html[data-inj-viewport] .app-shell>.topbar{
+ padding-top:var(--inj-control-inset)!important;min-height:60px;align-items:start!important;
+}
+#treasuryClose,#rewardsClose,#bookBack,#ccBack,#closeConverterButton,#closePerformanceTimelineButton,#dashboardHomeButton,#marketBack{
+ align-self:start!important;margin-top:0!important;width:44px;height:44px;box-sizing:border-box;
+}
+#liveChartsBack{top:var(--inj-control-inset)!important;translate:none!important;width:44px;height:44px}
+#closeFocusDisplayButton{top:var(--inj-control-inset)!important}
+html:not([data-inj-page]) body>.shell{padding-top:0!important}
+html:not([data-inj-page]) body>.shell>.header{padding-top:var(--inj-control-inset)!important;align-items:start!important;min-height:60px}
+/* Safe-area spacing is applied once in the header padding. */
+.treasury-header,.rewards-header{top:0!important}

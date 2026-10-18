@@ -66,3 +66,53 @@
     -webkit-font-smoothing: antialiased;
   }
 }
+
+/* Mobile: do not leave invisible blurred layers in WebKit's compositor. */
+@media (max-width: 900px), (hover: none) and (pointer: coarse) {
+  html { -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+  html, body,
+  #entryGate.visible:not(.immersive-underlay):not(.dashboard-underlay),
+  #entryGate.visible:not(.immersive-underlay):not(.dashboard-underlay) > .entry-gate-shell,
+  .entry-home-top, .entry-brand,
+  .app-shell > .topbar,
+  .treasury-shell, .rewards-shell, .live-page, .book-page, .cc-shell,
+  .treasury-header, .rewards-header, .terminal-header, .book-topbar, .cc-topbar,
+  .converter-view-header, .performance-timeline-header, .header {
+    -webkit-filter:none!important;filter:none!important;
+    -webkit-backdrop-filter:none!important;backdrop-filter:none!important;
+    -webkit-transform:none!important;transform:none!important;
+    will-change:auto!important;
+    -webkit-backface-visibility:visible!important;backface-visibility:visible!important;
+  }
+  #entryGate.visible:not(.immersive-underlay):not(.dashboard-underlay) > .entry-gate-shell,
+  .entry-home-top, .entry-brand {
+    animation:none!important;
+  }
+  /* The themed page gradient remains; the large blurred pseudo-layers do not. */
+  body::before, body::after, #entryGate::before, #entryGate::after {
+    content:none!important;display:none!important;
+    filter:none!important;-webkit-filter:none!important;
+    animation:none!important;transform:none!important;
+  }
+  .header-menu:not(.open) .header-menu-backdrop,
+  .header-menu:not(.open) .header-menu-panel {
+    display:none!important;
+  }
+  .header-menu .header-menu-backdrop,
+  .header-menu .header-menu-panel {
+    -webkit-backdrop-filter:none!important;backdrop-filter:none!important;
+    will-change:auto!important;
+    -webkit-backface-visibility:visible!important;backface-visibility:visible!important;
+  }
+  .header-menu.open .header-menu-panel {
+    background:var(--dialog-gradient,var(--surface))!important;
+    background-color:var(--surface)!important;
+    transform:none!important;-webkit-transform:none!important;
+  }
+  /* Opaque top surfaces need no blur to keep text readable while scrolling. */
+  .app-shell > .topbar, .treasury-header, .rewards-header,
+  .terminal-header, .book-topbar, .cc-topbar,
+  .converter-view-header, .performance-timeline-header, .header {
+    background:var(--surface,var(--theme-canvas,var(--bg,var(--canvas))))!important;
+  }
+}
