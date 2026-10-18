@@ -12,6 +12,16 @@
 
   // Pairs are intentionally UI-oriented: crypto/product names remain unchanged where they are clearer as product terms.
   const pairs = [
+    ["Pannello di controllo", "Dashboard"],
+    ["Vista in tempo reale", "Live View"],
+    ["Grafici in tempo reale", "Live Charts"],
+    ["Libro ordini", "Order Book"],
+    ["Cronologia rendimenti", "Performance Timeline"],
+    ["Convertitore INJ", "INJ Converter"],
+    ["Centro di controllo", "Command Center"],
+    ["Tesoreria INJ", "INJ Treasury"],
+    ["Ricompense in tempo reale", "Live Rewards"],
+
     ['Apri Mercato','Open Market'], ['Apri menu','Open menu'], ['Chiudi menu','Close menu'], ['Chiudi sezione e torna alla Home','Close section and return Home'], ['Lingua', 'Language'], ['Italiano', 'Italian'], ['Inglese', 'English'], ['Interfaccia', 'Interface'],
     ['PRIMO ACCESSO', 'FIRST ACCESS'], ['Collega il tuo wallet', 'Connect your wallet'],
     ['Incolla il tuo indirizzo pubblico Injective per iniziare. Non servono seed phrase, chiavi private o connessioni al wallet.', 'Paste your public Injective address to get started. No seed phrase, private keys or wallet connections are required.'],

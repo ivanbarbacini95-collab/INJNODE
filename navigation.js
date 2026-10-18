@@ -2,6 +2,28 @@
 (() => {
 'use strict';
 const main=!!document.getElementById('entryGate');
+// Reuse the selected palette in every standalone/embedded section.
+const themeKeys=['--bg','--surface','--surface-strong','--surface-soft','--line','--line-strong','--text','--muted','--muted-strong','--accent','--accent-soft','--up','--up-soft','--down','--down-soft','--page-gradient','--theme-canvas','--theme-canvas-soft','--theme-backdrop'];
+function syncSectionTheme(){
+ if(main)return;
+ let theme='navy';
+ try{theme=localStorage.getItem('inj_monitor_theme')||theme;}catch(_){}
+ if(!['navy','black','light','amber'].includes(theme))theme='navy';
+ const root=document.documentElement;root.dataset.theme=theme;
+ try{
+  if(parent!==window && parent.location.origin===location.origin){
+   const css=parent.getComputedStyle(parent.document.documentElement);
+   for(const key of themeKeys){const value=css.getPropertyValue(key).trim();if(value)root.style.setProperty(key,value);}
+  }
+ }catch(_){}
+ root.style.colorScheme=theme==='light'?'light':'dark';
+ const color=getComputedStyle(root).getPropertyValue('--bg').trim();
+ if(color)document.querySelector('meta[name="theme-color"]')?.setAttribute('content',color);
+}
+syncSectionTheme();
+window.addEventListener('storage',event=>{if(event.key==='inj_monitor_theme')syncSectionTheme();});
+window.addEventListener('pageshow',syncSectionTheme);
+
 function home(){
  if(parent===window)return;
  parent.postMessage({type:location.pathname.endsWith('market.html')?'injnode:market:home':'injnode:section:home'},location.origin);

@@ -1,7 +1,7 @@
-const CACHE_NAME = 'inj-node-v16.00.65-original-home-menu';
+const CACHE_NAME = 'inj-node-v16.00.66-scroll-theme-language';
 const APP_SHELL = [
-  './navigation.css?v=160065',
-  './navigation.js?v=160065',
+  './navigation.css?v=160066',
+  './navigation.js?v=160066',
   './',
   './index.html',
   './market.html',
@@ -14,8 +14,8 @@ const APP_SHELL = [
   './top-clarity.css?v=16.00.49',
   './viewport.js?v=16.00.14',
   './style.css?v=16.00.49',
-  './app.js?v=16.00.65',
-  './i18n.js?v=160062',
+  './app.js?v=16.00.66',
+  './i18n.js?v=160066',
   './live-charts.html',
   './live-charts.css?v=16.00.39',
   './live-charts.js?v=16.00.18',
