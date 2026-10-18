@@ -114,8 +114,6 @@ html:not([data-inj-page="index"]) .rewards-shell,
 html:not([data-inj-page="index"]) .live-page,
 html:not([data-inj-page="index"]) .book-page,
 html:not([data-inj-page="index"]) .cc-shell{background:var(--page-gradient),var(--bg)!important}
-/* Avoid the old nearly-black header rectangle on Aurora. */
-.treasury-header,.rewards-header{background:var(--surface)!important;box-shadow:none!important}
 .treasury-header::before,.treasury-header::after,.rewards-header::before,.rewards-header::after{content:none!important;display:none!important}
 html[data-inj-viewport] .live-page,html[data-inj-viewport] .book-page,html[data-inj-viewport] .cc-shell{
  height:var(--inj-viewport-height,100dvh)!important;min-height:0!important;max-height:none!important;overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior:none!important;
@@ -150,3 +148,16 @@ html:not([data-inj-page]) body>.shell{padding-top:0!important}
 html:not([data-inj-page]) body>.shell>.header{padding-top:var(--inj-control-inset)!important;align-items:start!important;min-height:60px}
 /* Safe-area spacing is applied once in the header padding. */
 .treasury-header,.rewards-header{top:0!important}
+
+/* Navigation sits on the page's own themed gradient, without a separate slab.
+   In-flow headers scroll with their section so content cannot pass behind them. */
+html[data-theme] body :is(.app-shell > .topbar,.treasury-header,.rewards-header,
+ .terminal-header,.book-topbar,.cc-topbar,.converter-view-header,
+ .performance-timeline-header,.shell > .header,.entry-home-top) {
+ background:transparent!important;
+ box-shadow:none!important;
+ -webkit-backdrop-filter:none!important;backdrop-filter:none!important;
+}
+html[data-theme] body :is(.treasury-header,.rewards-header,.cc-topbar) {
+ position:relative!important;top:auto!important;
+}

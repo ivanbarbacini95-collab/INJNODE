@@ -28,24 +28,6 @@
   filter: none !important;
 }
 
-/* Solid header surfaces avoid faint content from scrolling under titles.
-   The existing themed text, indicator LEDs and separators are unchanged. */
-.treasury-header,
-.rewards-header {
-  background: var(--bg, #061018) !important;
-  -webkit-transform: none !important;
-  transform: none !important;
-}
-.treasury-header::before,
-.rewards-header::before {
-  -webkit-backdrop-filter: none !important;
-  backdrop-filter: none !important;
-  background: var(--bg, #061018) !important;
-}
-.book-topbar,
-.terminal-header { background-color: var(--canvas, var(--bg, #061018)) !important; }
-.cc-topbar { background: var(--bg, #061018) !important; }
-
 @media (max-width: 900px), (hover: none) and (pointer: coarse) {
   .treasury-header,
   .rewards-header {
@@ -57,7 +39,6 @@
     transform: none !important;
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
-    background-color: var(--theme-canvas, var(--bg, #061018)) !important;
   }
   #entryGate.visible:not(.immersive-underlay) .entry-gate-shell > h1,
   #entryGate.visible:not(.immersive-underlay) .entry-gate-shell > .entry-home-menu {
@@ -109,12 +90,7 @@
     background-color:var(--surface)!important;
     transform:none!important;-webkit-transform:none!important;
   }
-  /* Opaque top surfaces need no blur to keep text readable while scrolling. */
-  .app-shell > .topbar, .treasury-header, .rewards-header,
-  .terminal-header, .book-topbar, .cc-topbar,
-  .converter-view-header, .performance-timeline-header, .header {
-    background:var(--surface,var(--theme-canvas,var(--bg,var(--canvas))))!important;
-  }
+
 }
 
 /* Mobile WebKit: cards and controls also used backdrop blur below the header.
@@ -133,13 +109,7 @@
   }
 }
 
-/* Safari standalone: keep dashboard chrome opaque in every theme.
-   Match the theme-qualified rules in style.css, which otherwise win and
-   leave this header transparent despite the earlier mobile override. */
+/* Hidden search layers must not participate in Safari compositing. */
 @media (max-width:900px), (hover:none) and (pointer:coarse) {
-  html[data-theme] .app-shell > .topbar {
-    background:var(--theme-canvas,var(--bg))!important;
-    background-color:var(--theme-canvas,var(--bg))!important;
-  }
   .header-search:not(.open) .search-panel { display:none!important; }
 }

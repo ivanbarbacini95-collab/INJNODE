@@ -1,6 +1,6 @@
-const CACHE_NAME = 'inj-node-v16.00.69-pwa-opaque-status';
+const CACHE_NAME = 'inj-node-v16.00.70-theme-integrated-headers';
 const APP_SHELL = [
-  './navigation.css?v=160067',
+  './navigation.css?v=160070',
   './navigation.js?v=160066',
   './',
   './index.html',
@@ -11,10 +11,10 @@ const APP_SHELL = [
   './market.js?v=160062',
   './manifest.webmanifest?v=16.00.14',
   './viewport.css?v=16.00.14',
-  './top-clarity.css?v=16.00.69',
+  './top-clarity.css?v=16.00.70',
   './viewport.js?v=16.00.14',
   './style.css?v=16.00.49',
-  './app.js?v=16.00.69',
+  './app.js?v=16.00.70',
   './i18n.js?v=160066',
   './live-charts.html',
   './live-charts.css?v=16.00.39',
