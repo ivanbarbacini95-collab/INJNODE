@@ -1,7 +1,7 @@
-const CACHE_NAME = 'inj-node-v16.00.62-language-sync';
+const CACHE_NAME = 'inj-node-v16.00.63-retained-home';
 const APP_SHELL = [
-  './navigation.css?v=160062',
-  './navigation.js?v=160062',
+  './navigation.css?v=160063',
+  './navigation.js?v=160063',
   './',
   './index.html',
   './market.html',
@@ -14,7 +14,7 @@ const APP_SHELL = [
   './top-clarity.css?v=16.00.49',
   './viewport.js?v=16.00.14',
   './style.css?v=16.00.49',
-  './app.js?v=16.00.47',
+  './app.js?v=16.00.63',
   './i18n.js?v=160062',
   './live-charts.html',
   './live-charts.css?v=16.00.39',

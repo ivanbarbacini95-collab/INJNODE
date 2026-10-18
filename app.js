@@ -2357,7 +2357,7 @@ function enterLiveChartsFromGate() {
   setHeaderMenuOpen(false);
   setSearchOpen(false);
   try { sessionStorage.setItem('inj_node_livecharts_from_home', '1'); } catch (_) {}
-  window.location.assign('./live-charts.html?v=16.00.14');
+  window.INJ_OPEN_SECTION('./live-charts.html?v=16.00.14');
 }
 
 function enterOrderBookFromGate() {
@@ -2365,7 +2365,7 @@ function enterOrderBookFromGate() {
   setHeaderMenuOpen(false);
   setSearchOpen(false);
   try { sessionStorage.setItem('inj_node_orderbook_from_home', '1'); } catch (_) {}
-  window.location.assign('./order-book.html?v=16.00.14');
+  window.INJ_OPEN_SECTION('./order-book.html?v=16.00.14');
 }
 
 function isPerformanceTimelineActive() {
@@ -2494,7 +2494,7 @@ function enterCommandCenterFromGate() {
 
   setHeaderMenuOpen(false);
   setSearchOpen(false);
-  window.location.assign(`./command-center.html?wallet=${encodeURIComponent(wallet.address)}&v=16.00.14`);
+  window.INJ_OPEN_SECTION(`./command-center.html?wallet=${encodeURIComponent(wallet.address)}&v=16.00.14`);
 }
 
 // v15.70 — Home launchers require a fresh gesture that actually began on the
