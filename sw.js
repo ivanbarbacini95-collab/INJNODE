@@ -1,7 +1,7 @@
-const CACHE_NAME = 'inj-node-v16.00.63-retained-home';
+const CACHE_NAME = 'inj-node-v16.00.64-integrated-navigation';
 const APP_SHELL = [
-  './navigation.css?v=160063',
-  './navigation.js?v=160063',
+  './navigation.css?v=160064',
+  './navigation.js?v=160064',
   './',
   './index.html',
   './market.html',
