@@ -56,7 +56,13 @@ html[data-inj-page="command-center"] .jn-monogram,
 /* The centered title is part of the pre-existing, localized Home heading.
    Attaching it to h1 keeps Your Injective space on the next line and does
    not insert another grid item into the fragile iPhone home layout. */
+/* The former kicker is hidden to avoid duplicated INJ Node titles. */
+html[data-inj-page="index"] body #entryGate .entry-gate-shell > .home-title-brand{
+  display:none!important;
+}
 html[data-inj-page="index"] body #entryGate .entry-gate-shell:not(.first-access) > h1 {
+  display:block!important;
+  visibility:visible!important;
   text-align:center!important;
   justify-self:center!important;
   align-self:center!important;
