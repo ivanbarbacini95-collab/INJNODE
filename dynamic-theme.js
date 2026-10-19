@@ -1,12 +1,13 @@
-/* INJ Node · Dynamic Theme v16.01.06
-   Stable graphite surfaces; live INJ daily performance shifts discreet accents,
-   never major layout backgrounds. Same baseline used by P/L today. */
+/* INJ Node · Dynamic Trading Desk v16.01.07
+   Real daily INJ return subtly adjusts trim only. Backgrounds remain charcoal.
+   No synthetic performance, no full-screen green or red fills. */
 (() => {
  'use strict';
  const root=document.documentElement, KEY='inj_node_dynamic_signal_v1';
- const props=['--dynamic-rgb','--bg','--canvas','--theme-canvas','--theme-browser',
- '--surface','--surface-strong','--surface-soft','--panel','--panel-strong','--accent','--accent-soft',
- '--line','--line-strong','--header-glow-a','--header-glow-b','--header-edge','--page-gradient'];
+ const legacySurfaceProps=['--bg','--canvas','--theme-canvas','--theme-browser','--surface','--surface-strong',
+ '--surface-soft','--panel','--panel-strong','--page-gradient'];
+ const props=['--dynamic-rgb','--dynamic-tint','--dynamic-strength','--accent','--accent-soft',
+ '--line','--line-strong','--header-glow-a','--header-glow-b','--header-edge',...legacySurfaceProps];
  const stops=[
  {p:-8,bg:[7,13,19],surface:[14,23,29],strong:[21,32,39],soft:[30,43,51],accent:[174,67,91]},
  {p:-3,bg:[7,13,19],surface:[14,23,29],strong:[21,32,39],soft:[30,43,51],accent:[150,79,101]},
@@ -32,32 +33,61 @@
   return null;
  }
  let currentMood='',currentStep=NaN,lastWrite=0,lastSavedPercent=NaN;
+ function syncBadge(pct){
+  const badge=document.getElementById('dynamicMarketPulse');
+  if(!badge)return;
+  const active=root.dataset.theme==='dynamic'&&Number.isFinite(pct);
+  badge.hidden=!active;
+  if(!active)return;
+  const lang=root.lang==='en'?'en-US':'it-IT';
+  const percent=badge.querySelector('.dynamic-pulse-percent');
+  const caption=badge.querySelector('.dynamic-pulse-caption');
+  const name=badge.querySelector('.dynamic-pulse-name');
+  const mood=Math.abs(pct)<.5?'neutral':pct<0?'bear':'bull';
+  const suffix=pct>0?'+':pct<0?'−':'';
+  if(percent)percent.textContent=suffix+Math.abs(pct).toLocaleString(lang,{minimumFractionDigits:2,maximumFractionDigits:2})+'%';
+  if(name)name.textContent=root.lang==='en'?'INJ TODAY':'INJ OGGI';
+  if(caption)caption.textContent=root.lang==='en'?
+    (mood==='bull'?'UP':mood==='bear'?'DOWN':'FLAT'):
+    (mood==='bull'?'RIALZO':mood==='bear'?'RIBASSO':'STABILE');
+ }
  function paint(pct){
   if(root.dataset.theme!=='dynamic')return;
-  const good=Number.isFinite(pct), bounded=good?Math.max(-8,Math.min(8,pct)):0;
-  const step=Math.round(bounded*4)/4, mood=Math.abs(step)<.5?'neutral':step<0?'bear':'bull';
+  const valid=Number.isFinite(pct);
+  syncBadge(valid?pct:NaN);
+  // Neutral fallback for missing data; do not infer a daily return.
+  const limited=valid?Math.max(-8,Math.min(8,pct)):0;
+  const step=Math.round(limited*4)/4;
+  const mood=Math.abs(step)<.5?'neutral':step<0?'bear':'bull';
   if(mood===currentMood&&step===currentStep)return;
   currentMood=mood;currentStep=step;
   const v=palette(step),rgb=v.accent.map(Math.round).join(',');
-  const bg=hx(v.bg),sf=hx(v.surface),st=hx(v.strong),soft=hx(v.soft);
-  const lv=Math.min(1,Math.max(0,(Math.abs(step)-.5)/7.5));
+  const power=Math.min(1,Math.max(0,(Math.abs(step)-.5)/7.5));
+  // Older Dynamic iterations changed global surface backgrounds. Remove those
+  // inline overrides. Only fine detailing receives the market signal now.
+  legacySurfaceProps.forEach(k=>root.style.removeProperty(k));
   const values={
     '--dynamic-rgb':rgb,
-    '--bg':bg,'--canvas':bg,'--theme-canvas':bg,'--theme-browser':bg,
-    '--surface':sf,'--panel':sf,'--surface-strong':st,'--panel-strong':st,'--surface-soft':soft,
-    '--accent':hx(v.accent),'--accent-soft':'rgba('+rgb+',.065)',
-    '--line':'rgba('+rgb+',.09)','--line-strong':'rgba('+rgb+',.18)',
-    '--header-glow-a':'rgba('+rgb+',.07)','--header-glow-b':'rgba('+rgb+',.025)',
-    '--header-edge':'rgba('+rgb+',.12)',
-    '--page-gradient':'radial-gradient(ellipse at 70% 0%,rgba('+rgb+','+(.012+.017*lv).toFixed(3)+'),transparent 48%),linear-gradient(155deg,'+sf+','+bg+' 65%,'+bg+')'
+    '--dynamic-strength':power.toFixed(3),
+    '--dynamic-tint':'rgba('+rgb+','+(.04+.06*power).toFixed(3)+')',
+    '--accent':hx(v.accent),
+    '--accent-soft':'rgba('+rgb+','+(.045+.015*power).toFixed(3)+')',
+    '--line':'rgba('+rgb+',.12)',
+    '--line-strong':'rgba('+rgb+',.23)',
+    '--header-glow-a':'rgba('+rgb+',.05)',
+    '--header-glow-b':'rgba('+rgb+',.025)',
+    '--header-edge':'rgba('+rgb+',.12)'
   };
-  Object.entries(values).forEach(([k,val])=>root.style.setProperty(k,val));
+  Object.entries(values).forEach(([key,value])=>root.style.setProperty(key,value));
   root.dataset.dynamicMood=mood;
-  document.querySelector('meta[name="theme-color"]')?.setAttribute('content',bg);
+  root.dataset.dynamicIntensity=power>.66?'high':power>.25?'medium':'low';
+  // Safari's top safe area remains dark rather than turning into green/red.
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content','#070b10');
  }
  function clear(){
   props.forEach(k=>root.style.removeProperty(k));
-  delete root.dataset.dynamicMood;currentMood='';currentStep=NaN;
+  delete root.dataset.dynamicMood;delete root.dataset.dynamicIntensity;
+  syncBadge(NaN);currentMood='';currentStep=NaN;
  }
  function apply(theme){
   if(theme==='dynamic'){
@@ -68,6 +98,7 @@
  function updatePerformance(pct,openPrice){
   if(!Number.isFinite(pct)||!Number.isFinite(openPrice)||openPrice<=0)return;
   const now=Date.now();
+  if(root.dataset.theme==='dynamic')syncBadge(pct);
   if(lastWrite&&now-lastWrite<12000&&Number.isFinite(lastSavedPercent)&&Math.abs(pct-lastSavedPercent)<.18)return;
   lastWrite=now;lastSavedPercent=pct;
   const x={day:dateKey(),updated:now,pct:Math.max(-25,Math.min(25,pct)),openPrice};
@@ -75,6 +106,9 @@
   if(root.dataset.theme==='dynamic')paint(x.pct);
  }
  window.INJ_DYNAMIC_THEME={apply,updatePerformance,refresh:()=>apply(root.dataset.theme)};
+ window.addEventListener('injnode:languagechange',()=>{
+   if(root.dataset.theme==='dynamic')syncBadge(cache()?.pct??NaN);
+ });
  try{if(localStorage.getItem('inj_monitor_theme')==='dynamic')apply('dynamic')}catch(_){}
  window.addEventListener('pageshow',()=>{if(root.dataset.theme==='dynamic')apply('dynamic')});
  window.addEventListener('storage',e=>{
