@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.00.95-treasury-crisp';
+const CACHE_NAME = 'inj-node-v16.00.96-home-icons-off-pnl-large';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160088',
