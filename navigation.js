@@ -8,7 +8,8 @@ function syncSectionTheme(){
  if(main)return;
  let theme='navy';
  try{theme=localStorage.getItem('inj_monitor_theme')||theme;}catch(_){}
- if(!['navy','black','light','amber'].includes(theme))theme='navy';
+ if(theme==='dynamic')theme='ocean';
+ if(!['navy','black','light','amber','ocean'].includes(theme))theme='navy';
  const root=document.documentElement;root.dataset.theme=theme;
  try{
   if(parent!==window && parent.location.origin===location.origin){
