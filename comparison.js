@@ -216,6 +216,44 @@
   }catch(err){if(sequence===usCapSequence)usCapFailure=String(err?.message||err);}
   finally{if(sequence===usCapSequence){usCapPending=false;render();}}
  }
+
+ /* An index value in points is not a market cap. Estimate supported indices
+    as the sum of covered constituent stock caps, from DAILY source snapshots. */
+ async function estimateIndex(){
+  const request=++indexRequestSeq,selected=manualPicked;
+  if(state.kind!=='index'||!selected){indexPending=false;render();return;}
+  const url=INDEX_DATASETS[selected.symbol];
+  if(!url){indexPending=false;render();return;}
+  const prior=estimatedIndexCaps.get(selected.symbol);
+  if(prior&&Date.now()-prior.updated<20*60000){render();return;}
+  indexPending=true;indexError='';render();
+  try{
+   await loadUsStockCaps();
+   const abort=new AbortController(),timer=setTimeout(()=>abort.abort(),14000);
+   let raw='';
+   try{const response=await fetch(url,{signal:abort.signal,cache:'no-store'});
+    if(!response.ok)throw Error('Index dataset '+response.status);
+    raw=await response.text();
+   }finally{clearTimeout(timer)}
+   if(request!==indexRequestSeq)return;
+   const symbols=selected.symbol==='SPX'
+     ?raw.split(/\r?\n/).slice(1).map(line=>line.split(',')[0]).filter(Boolean)
+     :(JSON.parse(raw)||[]).map(item=>item.Ticker).filter(Boolean);
+   if(symbols.length<70)throw Error('Missing constituents');
+   const unique=new Map();let matched=0;
+   for(const ticker of symbols){
+    const key=tickerKey(ticker),cap=usMarketCaps.get(key);
+    if(!positive(cap))continue;matched++;
+    const issuer=({'GOOG':'GOOGL','FOX':'FOXA','NWS':'NWSA'})[key]||key;
+    unique.set(issuer,Math.max(unique.get(issuer)||0,cap));
+   }
+   if(matched/symbols.length<.85)throw Error('Insufficient coverage');
+   const cap=[...unique.values()].reduce((sum,v)=>sum+v,0);
+   if(!positive(cap))throw Error('Empty capitalization');
+   estimatedIndexCaps.set(selected.symbol,{cap,matched,total:symbols.length,updated:Date.now()});
+  }catch(error){if(request===indexRequestSeq)indexError=String(error?.message||error);}
+  finally{if(request===indexRequestSeq){indexPending=false;render();}}
+ }
  function marketCapSource(ref){
   const status=$('capStockStatus'),fields=$('capManualValues');
   if(!status||!fields)return;
