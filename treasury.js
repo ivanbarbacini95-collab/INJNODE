@@ -1739,6 +1739,12 @@ function ownershipPercent(value,total){return total>0&&Number.isFinite(value)?Ma
 function renderWalletOwnership(){
  const track=$('treasuryOwnershipTrack'),head=$('treasuryOwnershipSummary');
  if(!track||!head)return;
+ const ownershipTitle=$('treasuryOwnershipTitle');
+ if(ownershipTitle){
+  let language='it';
+  try{language=localStorage.getItem('inj_node_language_v1')==='en'?'en':'it';}catch(_){}
+  ownershipTitle.textContent=language==='en'?'WALLET OWNERSHIP':'QUOTE DEI WALLET';
+ }
  const saved=ownershipSavedNames();
  const active=TREASURY_ADDRESSES.map(address=>{
   const r=state.walletRows[address];const raw=saved.get(address)||'';
