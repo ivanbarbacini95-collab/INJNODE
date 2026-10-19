@@ -99,9 +99,7 @@ html[data-theme] .app-shell :is(.card-label,.method-note,.allocation-labels,
   .market-range,.market-tf-range-values,.wallet-dock-title small){
  color:var(--muted);
 }
-html[data-theme] .app-shell :is(.section-heading h2,.hero-number,.metric-value){
- text-shadow:none;
-}
+/* Preserve existing number animations, reward glow and P/L emphasis. */
 html[data-theme] .app-shell :is(.header-main-button,.chart-launch-button){
  border-color:var(--line)!important;
  color:var(--text);
