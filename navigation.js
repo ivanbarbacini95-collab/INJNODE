@@ -11,7 +11,7 @@ function syncSectionTheme(){
  let theme='navy';
  try{theme=localStorage.getItem('inj_monitor_theme')||theme;}catch(_){}
  if(theme==='dynamic')theme='ocean';
- if(!['navy','black','light','amber','ocean','chromatic','velvet'].includes(theme))theme='navy';
+ if(!['navy','black','light','amber','ocean','chromatic','velvet','aqua'].includes(theme))theme='navy';
  const root=document.documentElement;root.dataset.theme=theme;
  try{
   if(parent!==window && parent.location.origin===location.origin){
@@ -19,7 +19,7 @@ function syncSectionTheme(){
    for(const key of themeKeys){const value=css.getPropertyValue(key).trim();if(value)root.style.setProperty(key,value);else root.style.removeProperty(key);}
   }
  }catch(_){}
- root.style.colorScheme=theme==='light'?'light':'dark';
+ root.style.colorScheme=(theme==='light'||theme==='aqua')?'light':'dark';
  const color=getComputedStyle(root).getPropertyValue('--bg').trim();
  if(color)document.querySelector('meta[name="theme-color"]')?.setAttribute('content',color);
 }

@@ -7738,7 +7738,7 @@ function updateInstallUi() {
 
 function registerPwa() {
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js?v=16.01.12').catch(() => {}), { once: true });
+    window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js?v=16.01.13').catch(() => {}), { once: true });
   }
   updateInstallUi();
 }
@@ -7751,7 +7751,8 @@ function applyTheme(theme, notify = false) {
     amber: { label: 'Midnight Ember', color: '#070b11' },
     ocean: { label: 'Ocean Aurora', color: '#07131f' },
     chromatic: { label: 'Chromatic Mist', color: '#111323' },
-    velvet: { label: 'Velvet Nebula', color: '#0a1024' }
+    velvet: { label: 'Velvet Nebula', color: '#0a1024' },
+    aqua: { label: 'Aqua Mirage', color: '#d7e9ef' }
   };
   const selected = themes[theme] ? theme : 'navy';
   document.documentElement.dataset.theme = selected;

@@ -34,7 +34,7 @@
     ['Prezzo medio INJ', 'Average INJ price'], ['Usato per calcolare il PnL', 'Used to calculate PnL'],
     ['Preferenze', 'Preferences'], ['Personalizza INJ Node', 'Customize INJ Node'], ['Valuta', 'Currency'],
     ['Nascondi valori', 'Hide values'], ['Mostra valori', 'Show values'], ['Tema', 'Theme'], ['Scegli tema', 'Choose theme'],
-    ['Nero', 'Black'], ['Chiaro', 'Light'], ['Ocean Aurora · fluido','Ocean Aurora · fluid'], ['7 temi disponibili','7 themes available'], ['Chromatic Mist · multicolore','Chromatic Mist · multicolor'], ['Velvet Nebula · profondo','Velvet Nebula · deep'], ['Reset grafici Treasury', 'Reset Treasury charts'],
+    ['Nero', 'Black'], ['Chiaro', 'Light'], ['Ocean Aurora · fluido','Ocean Aurora · fluid'], ['8 temi disponibili','8 themes available'], ['Chromatic Mist · multicolore','Chromatic Mist · multicolor'], ['Velvet Nebula · profondo','Velvet Nebula · deep'], ['Aqua Mirage · cristallino','Aqua Mirage · crystalline'], ['Reset grafici Treasury', 'Reset Treasury charts'],
     ['Ricomincia lo storico da adesso', 'Restart history from now'], ['Stato rete & API', 'Network & API status'],
     ['Verifica servizi live', 'Check live services'], ['Installa INJ Node', 'Install INJ Node'],
     ['Aggiungi l’app al dispositivo', 'Add the app to this device'], ['Dati', 'Data'], ['In attesa…', 'Waiting…'],
