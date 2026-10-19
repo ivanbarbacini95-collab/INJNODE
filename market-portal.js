@@ -33,7 +33,11 @@
     document.title = originalTitle;
     if (!fromBrowserBack && history.state?.injMarketPortal) history.back();
     try { launcher.focus({ preventScroll: true }); } catch (_) {}
-    if (Math.abs(window.scrollY - entryScroll) > 8) window.scrollTo(0, entryScroll);
+    // Unlock the document first; then restore the exact Home offset.
+    window.INJ_SCROLL_GUARD?.refresh();
+    requestAnimationFrame(() => {
+      if (!open && Math.abs(window.scrollY - entryScroll) > 8) window.scrollTo(0, entryScroll);
+    });
   }
   launcher.addEventListener('click', (event) => {
     // Ordinary keyboard/touch interaction stays in INJ Node. Modified clicks

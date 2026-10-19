@@ -2,8 +2,8 @@
 .inj-content-frame{position:fixed;inset:0;width:100%;height:100dvh;border:0;z-index:2147483600;background:var(--theme-canvas,#07111f)}
 body.inj-section-open{overflow:hidden!important}
 /* One viewport-sized surface; scrolling belongs to its content only. */
-html[data-inj-viewport]:has(#converterView.open,#performanceTimelineView.open,#focusDisplayDialog:not([hidden]),.inj-content-frame,#injMarketPortal:not([hidden])),
-html[data-inj-viewport]:has(#converterView.open,#performanceTimelineView.open,#focusDisplayDialog:not([hidden]),.inj-content-frame,#injMarketPortal:not([hidden])) body{
+html[data-inj-viewport]:has(#converterView.open,#performanceTimelineView.open,#focusDisplayDialog.mode-active:not(.mode-parked),.inj-content-frame,#injMarketPortal:not([hidden])),
+html[data-inj-viewport]:has(#converterView.open,#performanceTimelineView.open,#focusDisplayDialog.mode-active:not(.mode-parked),.inj-content-frame,#injMarketPortal:not([hidden])) body{
  overflow:hidden!important;overscroll-behavior:none!important;
 }
 html[data-inj-viewport] #converterView,
@@ -162,30 +162,42 @@ html[data-theme] body :is(.treasury-header,.rewards-header,.cc-topbar) {
  position:relative!important;top:auto!important;
 }
 
-/* v16.00.72 — PWA native-scrolling override for ordinary Home/Dashboard. */
+/* v16.00.74 — one native document scroller on Home and Dashboard.
+   No nested 100svh Home scrollbox after exiting an iframe or overlay. */
+html[data-inj-page="index"][data-inj-scroll="home"],
+html[data-inj-page="index"][data-inj-scroll="home"] body,
 html[data-inj-page="index"][data-inj-scroll="dashboard"],
 html[data-inj-page="index"][data-inj-scroll="dashboard"] body {
   position:static!important;
   top:auto!important;
   height:auto!important;
   min-height:100%!important;
+  max-height:none!important;
   overflow-x:hidden!important;
   overflow-y:auto!important;
   overscroll-behavior-y:auto!important;
   touch-action:pan-y pinch-zoom!important;
   -webkit-overflow-scrolling:touch!important;
 }
+html[data-inj-page="index"][data-inj-scroll="home"] #entryGate.entry-gate.visible:not(.immersive-underlay):not(.dashboard-underlay) {
+  position:relative!important;
+  inset:auto!important;
+  width:100%!important;
+  height:auto!important;
+  min-height:var(--inj-viewport-height,100dvh)!important;
+  max-height:none!important;
+  overflow:visible!important;
+  overscroll-behavior-y:auto!important;
+  touch-action:pan-y pinch-zoom!important;
+}
+html[data-inj-page="index"][data-inj-scroll="home"] #entryGate.entry-gate.visible .entry-gate-shell:not(.first-access) {
+  height:auto!important;
+  min-height:var(--inj-viewport-height,100dvh)!important;
+  max-height:none!important;
+  overflow:visible!important;
+}
 @media (max-width:900px), (pointer:coarse) {
-  html[data-inj-page="index"][data-inj-scroll="home"] #entryGate.entry-gate.visible:not(.immersive-underlay) {
-    overflow-x:hidden!important;
-    overflow-y:auto!important;
-    -webkit-overflow-scrolling:touch!important;
-    touch-action:pan-y pinch-zoom!important;
-    overscroll-behavior-y:contain!important;
-  }
-  html[data-inj-page="index"][data-inj-scroll="home"] #entryGate.entry-gate.visible .entry-gate-shell:not(.first-access) {
-    height:auto!important;
-    max-height:none!important;
-    overflow:visible!important;
+  html[data-inj-page="index"][data-inj-scroll="home"] #entryGate.entry-gate.visible :is(.entry-wallets,.entry-pnl-timeline-scroll) {
+    overscroll-behavior-y:auto!important;
   }
 }

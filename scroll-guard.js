@@ -1,61 +1,82 @@
-/* INJ Node v16.00.72 — Safari PWA scroll state. */
+/* INJ Node v16.00.74 — scroll ownership after section exits.
+   Reconcile on navigation/DOM changes, never while a touch/wheel is in progress. */
 (() => {
   'use strict';
   const root = document.documentElement;
   if (root.dataset.injPage !== 'index') return;
   const $ = id => document.getElementById(id);
-  let queued = false;
-  function open(id) {
-    const node = $(id);
-    return !!node && !node.hidden && !node.classList.contains('mode-parked');
-  }
-  function hasOverlay() {
-    return !!document.querySelector('dialog[open],.inj-content-frame') ||
-      open('injMarketPortal') ||
-      !!$('converterView')?.classList.contains('open') ||
-      !!$('performanceTimelineView')?.classList.contains('open') ||
-      open('focusDisplayDialog') || open('liveChartsDialog') || open('pulseViewDialog');
-  }
+  let scheduled = false;
+  const has = (node, cls) => !!node?.classList.contains(cls);
+  const immersiveActive = id => {
+    const el = $(id);
+    return !!el && !el.hidden && !has(el, 'mode-parked') &&
+      (has(el, 'mode-active') || has(el, 'is-closing'));
+  };
   function reconcile() {
-    queued = false;
+    scheduled = false;
     const body = document.body;
     if (!body) return;
     const gate = $('entryGate');
     const menu = $('headerMenu');
-    const homeVisible = !!gate?.classList.contains('visible') && gate.getAttribute('aria-hidden') === 'false';
-    const dashboard = body.classList.contains('dashboard-scroll-ready');
-    const menuOpen = !!menu?.classList.contains('open');
-    if (!menuOpen) body.classList.remove('menu-overlay-open');
-    if (dashboard && !homeVisible) body.classList.remove('entry-gate-open');
-    let mode = '';
-    if (!menuOpen && !hasOverlay()) {
-      if (dashboard) mode = 'dashboard';
-      else if (homeVisible && body.classList.contains('entry-gate-open')) mode = 'home';
+    const menuOpen = has(menu, 'open');
+    const sectionFrame = !!document.querySelector('.inj-content-frame');
+    const marketOpen = !!$('injMarketPortal') && !$('injMarketPortal').hidden;
+    const modalOpen = !!document.querySelector('dialog[open]');
+    const converterOpen = has($('converterView'), 'open');
+    const performanceOpen = has($('performanceTimelineView'), 'open');
+    const focusOpen = immersiveActive('focusDisplayDialog');
+    const chartsOpen = immersiveActive('liveChartsDialog');
+    const pulseOpen = immersiveActive('pulseViewDialog');
+    const overlayOpen = sectionFrame || marketOpen || modalOpen ||
+      converterOpen || performanceOpen || focusOpen || chartsOpen || pulseOpen;
+
+    // Clear only obsolete locks after bfcache restore/interrupted transitions.
+    if (!menuOpen && has(body, 'menu-overlay-open')) body.classList.remove('menu-overlay-open');
+    if (!sectionFrame && has(body, 'inj-section-open')) body.classList.remove('inj-section-open');
+    if (!focusOpen && has(body, 'focus-display-open')) body.classList.remove('focus-display-open');
+    if (!chartsOpen && has(body, 'live-charts-open')) body.classList.remove('live-charts-open');
+    if (!pulseOpen && has(body, 'pulse-view-open')) body.classList.remove('pulse-view-open');
+    if (!modalOpen && has(body, 'chart-overlay-open')) body.classList.remove('chart-overlay-open');
+
+    const gateVisible = has(gate, 'visible') && gate?.getAttribute('aria-hidden') === 'false';
+    const dashboard = has(body, 'dashboard-scroll-ready');
+    if (dashboard && !gateVisible && has(body, 'entry-gate-open')) {
+      body.classList.remove('entry-gate-open');
     }
-    if (root.dataset.injScroll !== mode) {
-      if (mode) root.dataset.injScroll = mode;
+    let next = '';
+    if (!menuOpen && !overlayOpen) {
+      if (dashboard) next = 'dashboard';
+      else if (gateVisible && has(body, 'entry-gate-open')) next = 'home';
+    }
+    if (root.dataset.injScroll !== next) {
+      if (next) root.dataset.injScroll = next;
       else root.removeAttribute('data-inj-scroll');
     }
   }
-  function schedule() {
-    if (queued) return;
-    queued = true;
+  function refresh() {
+    if (scheduled) return;
+    scheduled = true;
     requestAnimationFrame(reconcile);
   }
-  function start() {
-    const body = document.body;
-    if (!body) return;
-    const observer = new MutationObserver(schedule);
-    observer.observe(body, { attributes:true, attributeFilter:['class'], childList:true });
-    for (const node of [$('entryGate'), $('headerMenu'), $('injMarketPortal')]) {
-      if (node) observer.observe(node, { attributes:true, attributeFilter:['class','aria-hidden','hidden'] });
+  function init() {
+    if (!document.body) return;
+    const observer = new MutationObserver(refresh);
+    observer.observe(document.body, { attributes:true, attributeFilter:['class'], childList:true });
+    for (const node of [
+      $('entryGate'), $('headerMenu'), $('injMarketPortal'),
+      $('focusDisplayDialog'), $('liveChartsDialog'), $('pulseViewDialog'),
+      $('converterView'), $('performanceTimelineView')
+    ]) {
+      if (node) observer.observe(node, {
+        attributes:true, attributeFilter:['class','hidden','aria-hidden']
+      });
     }
-    document.addEventListener('click', schedule, { passive:true, capture:true });
-    window.addEventListener('pageshow', schedule, { passive:true });
-    window.addEventListener('popstate', schedule, { passive:true });
-    document.addEventListener('visibilitychange', () => { if (!document.hidden) schedule(); });
-    schedule();
+    window.addEventListener('pageshow', refresh, { passive:true });
+    window.addEventListener('popstate', refresh, { passive:true });
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
+    refresh();
   }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once:true });
-  else start();
+  window.INJ_SCROLL_GUARD = { refresh };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once:true });
+  else init();
 })();

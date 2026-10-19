@@ -94,8 +94,8 @@ html[data-inj-viewport] .treasury-shell{
 /* Lock document scroll only while a modal section or the menu is open. */
 html[data-inj-viewport]:has(.performance-timeline-view.open),
 html[data-inj-viewport]:has(.converter-view.open),
-html[data-inj-viewport]:has(.focus-display-dialog:not([hidden])),
-html[data-inj-viewport]:has(.pulse-view-dialog:not([hidden])),
+html[data-inj-viewport]:has(.focus-display-dialog.mode-active:not(.mode-parked)),
+html[data-inj-viewport]:has(.pulse-view-dialog.mode-active:not(.mode-parked)),
 html[data-inj-viewport]:has(body.menu-overlay-open),
 html[data-inj-viewport] body.menu-overlay-open,
 html[data-inj-viewport] body.focus-display-open,

@@ -36,6 +36,8 @@ function closeSection(fromHistory=false){
  document.body.classList.remove('inj-section-open');
  if(!fromHistory && history.state?.injSection)history.back();
  sectionLauncher?.focus({preventScroll:true});
+ // Section iframe is gone: hand the native scroll surface back to Home.
+ window.INJ_SCROLL_GUARD?.refresh();
 }
 window.INJ_OPEN_SECTION=function(url){
  if(!main || section)return;
