@@ -10,7 +10,12 @@
  const QUERY_CACHE='inj_node_comparison_recent_v1';
  const SELECTED_KEY='inj_node_comparison_selected_wallet_v1';
  const NASDAQ_URL='https://raw.githubusercontent.com/zyhe16/top-us-stock-tickers/main/tickers/all.csv';
- const usMarketCaps=new Map();
+ const usMarketCaps=new Map(),usStockNames=new Map(), estimatedIndexCaps=new Map();
+ const INDEX_DATASETS={
+   SPX:'https://raw.githubusercontent.com/zyhe16/top-us-stock-tickers/main/tickers/sp500.csv',
+   NDX:'https://raw.githubusercontent.com/Gary-Strauss/NASDAQ100_Constituents/master/data/nasdaq100_constituents.json'
+ };
+ let indexPending=false,indexError='',indexRequestSeq=0;
  let usCapUpdated=0,usCapDownload=null,usCapPending=false,usCapFailure='',usCapSequence=0;
  const SOURCE_DEFAULT={id:'injective-protocol',name:'Injective',symbol:'INJ'};
  const TARGET_DEFAULT={id:'bitcoin',name:'Bitcoin',symbol:'BTC'};
@@ -23,15 +28,15 @@
  const translations={
   subTitle:['Confronta market cap e valore del wallet','Compare market caps and wallet value'],
   title:['Quanto potrebbe valere?','How much could it be worth?'],
-  intro:['Scegli due asset: guarda quanti X servirebbero e quanto varrebbe il tuo wallet INJ.','Choose two assets to see the required multiple and hypothetical value of your INJ wallet.'],
+  intro:['Scegli A e B: market cap e valore del wallet INJ calcolati automaticamente.','Select A and B: market caps and INJ wallet value calculated automatically.'],
   starting:['ASSET DI PARTENZA','SOURCE ASSET'],
-  sourceHeading:['Scegli una crypto','Choose a crypto'],
+  sourceHeading:['Asset A','Asset A'],
   sourceSearchLabel:['Cerca crypto per nome o simbolo','Search crypto by name or ticker'],
-  sourceCap:['MARKET CAP ATTUALE','CURRENT MARKET CAP'],
+  sourceCap:['MARKET CAP A','MARKET CAP A'],
   sourcePrice:['PREZZO ATTUALE','CURRENT PRICE'],
   sourceSupply:['OFFERTA CIRCOLANTE','CIRCULATING SUPPLY'],
   target:['MARKET CAP DI RIFERIMENTO','REFERENCE MARKET CAP'],
-  targetHeading:['Confronta con','Compare with'],
+  targetHeading:['Asset B','Asset B'],
   crypto:['Crypto','Crypto'],stock:['Azione','Stock'],index:['Indice','Index'],
   targetSearchLabel:['Cerca la crypto di riferimento','Search reference cryptocurrency'],
   manualNameLabel:['Cerca per nome o ticker','Search by name or ticker'],
@@ -39,8 +44,8 @@
   manualScale:['Unità · USD','Units · USD'],
   billions:['Miliardi (B)','Billions (B)'],trillions:['Migliaia di miliardi (T)','Trillions (T)'],
   millions:['Milioni (M)','Millions (M)'],fullUsd:['USD interi','Full USD'],
-  manualWarning:['I suggerimenti aiutano a scegliere il titolo; inserisci la capitalizzazione da una fonte verificata.','Suggestions identify the asset; enter the market cap from a verified source.'],
-  targetCap:['CAPITALIZZAZIONE DI RIFERIMENTO','REFERENCE MARKET CAP'],
+  manualWarning:['Market cap calcolata automaticamente.','Market cap calculated automatically.'],
+  targetCap:['MARKET CAP B','MARKET CAP B'],
   autoSource:['Dati crypto CoinGecko · USD','CoinGecko crypto data · USD'],
   scenario:['Scenario a pari market cap','Equal-market-cap scenario'],
   moreDetails:['Mostra i dettagli del calcolo','Show calculation details'],
@@ -59,7 +64,7 @@
   futureWallet:['VALORE IPOTETICO · USD','THEORETICAL VALUE · USD'],
   walletFutureHelp:['Se INJ raggiungesse la market cap selezionata','If INJ reached the reference market cap'],
   walletNote:['Il controvalore ipotetico si calcola quando la crypto di partenza è INJ. Il wallet non viene modificato.','The hypothetical wallet value applies when INJ is the source crypto. The wallet is never modified.'],
-  sources:['Fonti: CoinGecko per crypto, snapshot Nasdaq giornaliero per azioni USA; indici e altri mercati manuali.','Sources: CoinGecko crypto, daily Nasdaq US equities; indexes and other markets manual.']
+  sources:['CoinGecko crypto; azioni USA Nasdaq giornaliero; stime parziali per indici supportati.','CoinGecko crypto; daily Nasdaq US equities; partial supported-index estimates.']
  };
  const language=()=>{try{return localStorage.getItem('inj_node_language_v1')==='en'?'en':'it'}catch(_){return 'it'}};
  const english=()=>language()==='en';
@@ -161,7 +166,7 @@
  function recentCrypto(id){const q=quote(id);return q&&Date.now()-q.updated<180000&&!q.fromCache;}
  function renderStatus(){
   const needed=[state.source.id,...(state.kind==='crypto'?[state.target.id]:[])];
-  const fresh=needed.every(id=>recentCrypto(id));
+  const fresh=state.kind==='crypto'&&needed.every(id=>recentCrypto(id));
   const cached=needed.some(id=>quote(id));
   const status=$('comparisonStatus');
   status.classList.toggle('live',fresh);
@@ -171,8 +176,7 @@
 
  function tickerKey(symbol){return String(symbol||'').trim().toUpperCase().replace(/\./g,'/');}
  function isUsEquity(){
-  return state.kind==='stock'&&manualPicked?.kind==='stock'&&
-   (manualPicked.market==='NASDAQ'||manualPicked.market==='NYSE');
+  return state.kind==='stock'&&manualPicked?.kind==='stock';
  }
  // Public Nasdaq screener snapshot, republished on weekdays via GitHub.
  // This is updated daily, not a live exchange tick.
@@ -184,17 +188,18 @@
    try{
     const response=await fetch(NASDAQ_URL,{cache:'no-store',signal:abort.signal});
     if(!response.ok)throw Error('Nasdaq '+response.status);
-    const csv=await response.text(),fresh=new Map();
-    const pattern=/^([^,]+),(?:"(?:[^"]|"")*"|[^,]*),[^,]*,([^,\r\n]+)/;
+    const csv=await response.text(),fresh=new Map(),names=new Map();
+    const pattern=/^([^,]+),(?:"((?:[^"]|"")*)"|([^,]*)),[^,]*,([^,\r\n]+)/;
     for(const line of csv.split(/\r?\n/).slice(1)){
      const match=line.match(pattern);
      if(!match)continue;
-     const symbol=tickerKey(match[1]),cap=Number(match[2]);
-     if(symbol&&positive(cap))fresh.set(symbol,cap);
+     const symbol=tickerKey(match[1]),cap=Number(match[4]),name=String(match[2]||match[3]||symbol).replace(/""/g,'"');
+     if(symbol&&positive(cap)){fresh.set(symbol,cap);names.set(symbol,name);}
     }
     if(fresh.size<100)throw Error('Incomplete Nasdaq CSV');
-    usMarketCaps.clear();
+    usMarketCaps.clear();usStockNames.clear();
     for(const [symbol,cap] of fresh)usMarketCaps.set(symbol,cap);
+    for(const [symbol,name] of names)usStockNames.set(symbol,name);
     usCapUpdated=Date.now();usCapFailure='';
    }finally{clearTimeout(timer);usCapDownload=null;}
   })();
@@ -211,33 +216,71 @@
   }catch(err){if(sequence===usCapSequence)usCapFailure=String(err?.message||err);}
   finally{if(sequence===usCapSequence){usCapPending=false;render();}}
  }
+
+ /* An index value in points is not a market cap. Estimate supported indices
+    as the sum of covered constituent stock caps, from DAILY source snapshots. */
+ async function estimateIndex(){
+  const request=++indexRequestSeq,selected=manualPicked;
+  if(state.kind!=='index'||!selected){indexPending=false;render();return;}
+  const url=INDEX_DATASETS[selected.symbol];
+  if(!url){indexPending=false;render();return;}
+  const prior=estimatedIndexCaps.get(selected.symbol);
+  if(prior&&Date.now()-prior.updated<20*60000){render();return;}
+  indexPending=true;indexError='';render();
+  try{
+   await loadUsStockCaps();
+   const abort=new AbortController(),timer=setTimeout(()=>abort.abort(),14000);
+   let raw='';
+   try{const response=await fetch(url,{signal:abort.signal,cache:'no-store'});
+    if(!response.ok)throw Error('Index dataset '+response.status);
+    raw=await response.text();
+   }finally{clearTimeout(timer)}
+   if(request!==indexRequestSeq)return;
+   const symbols=selected.symbol==='SPX'
+     ?raw.split(/\r?\n/).slice(1).map(line=>line.split(',')[0]).filter(Boolean)
+     :(JSON.parse(raw)||[]).map(item=>item.Ticker).filter(Boolean);
+   if(symbols.length<70)throw Error('Missing constituents');
+   const unique=new Map();let matched=0;
+   for(const ticker of symbols){
+    const key=tickerKey(ticker),cap=usMarketCaps.get(key);
+    if(!positive(cap))continue;matched++;
+    const issuer=({'GOOG':'GOOGL','FOX':'FOXA','NWS':'NWSA'})[key]||key;
+    unique.set(issuer,Math.max(unique.get(issuer)||0,cap));
+   }
+   if(matched/symbols.length<.85)throw Error('Insufficient coverage');
+   const cap=[...unique.values()].reduce((sum,v)=>sum+v,0);
+   if(!positive(cap))throw Error('Empty capitalization');
+   estimatedIndexCaps.set(selected.symbol,{cap,matched,total:symbols.length,updated:Date.now()});
+  }catch(error){if(request===indexRequestSeq)indexError=String(error?.message||error);}
+  finally{if(request===indexRequestSeq){indexPending=false;render();}}
+ }
  function marketCapSource(ref){
   const status=$('capStockStatus'),fields=$('capManualValues');
   if(!status||!fields)return;
-  const stock=state.kind==='stock'&&!!manualPicked;
-  const automated=stock&&ref.source==='Nasdaq'&&positive(ref.cap);
-  status.hidden=!stock;
-  fields.hidden=stock&&(usCapPending||automated);
-  if(stock)status.textContent=automated?
-   t('Nasdaq · rilevazione giornaliera (non tick live).','Nasdaq · daily snapshot (not a live tick).'):
-   usCapPending?t('Recupero automatico della market cap…','Retrieving market cap automatically…'):
-   isUsEquity()?t('Fonte non disponibile: puoi inserire un dato verificato.','Source unavailable: you can enter a verified figure.'):
-    t('Questa borsa non è coperta: inserisci un dato verificato.','This exchange is not covered: enter a verified figure.');
+  fields.hidden=true;
+  status.hidden=state.kind==='crypto';
+  if(state.kind==='crypto')return;
+  status.textContent=state.kind==='stock'?
+    usCapPending?t('Recupero capitalizzazione in corso…','Fetching capitalization…'):
+    positive(ref.cap)?t('Nasdaq · rilevazione giornaliera (non tick live)','Nasdaq · daily snapshot (not live ticks)'):
+    t('Dato non disponibile: nessun inserimento manuale','Unavailable: no manual data input'):
+    indexPending?t('Calcolo capitalizzazione dei componenti…','Calculating constituent capitalization…'):
+    positive(ref.cap)?t('Stima parziale dei componenti · dato giornaliero','Partial constituents estimate · daily snapshot'):
+    indexError?t('Indice non disponibile · riprova più tardi','Index unavailable · retry later'):
+    t('Stima automatica non disponibile per questo indice','Automatic estimate not available for this index');
  }
  function currentReference(){
   if(state.kind==='crypto'){
    const q=quote(state.target.id);
    return {cap:q?.cap||NaN,name:state.target.name,symbol:state.target.symbol,manual:false,source:'CoinGecko'};
   }
-  if(isUsEquity()){
+  if(!manualPicked)return {cap:NaN,name:'',symbol:'',manual:false,source:'Unavailable'};
+  if(state.kind==='stock'){
    const cap=usMarketCaps.get(tickerKey(manualPicked.symbol));
-   if(positive(cap))return {cap,name:manualPicked.name,symbol:manualPicked.symbol,manual:false,source:'Nasdaq'};
+   return {cap:positive(cap)?cap:NaN,name:manualPicked.name,symbol:manualPicked.symbol,manual:false,source:'Nasdaq'};
   }
-  const raw=parseUserNumber($('capManualCap').value);
-  const scale=number($('capManualScale').value);
-  const cap=positive(raw)&&positive(scale)?raw*scale:NaN;
-  return {cap,name:manualPicked?.name||$('capManualName').value.trim()||t('Riferimento manuale','Manual reference'),
-   symbol:manualPicked?.symbol||(state.kind==='stock'?'STOCK':'INDEX'),manual:true};
+  const row=estimatedIndexCaps.get(manualPicked.symbol);
+  return {cap:row?.cap||NaN,name:manualPicked.name,symbol:manualPicked.symbol,manual:false,source:row?'IndexBasket':'Unavailable',coverage:row};
  }
  function selectedWallet(){
   try{
@@ -289,9 +332,10 @@
   set('capSourceCap',money(source?.cap));set('capSourcePrice',priceMoney(source?.price));
   set('capSourceSupply',positive(source?.supply)?fmt(source.supply,0)+' '+state.source.symbol:'—');
   set('capTargetCap',money(ref.cap));
-  set('capTargetMeta',ref.manual?t('Riferimento manuale · verifica fonte e data','Manual reference · check source and date'):
-    ref.source==='Nasdaq'?t('Nasdaq · rilevazione giornaliera · USD','Nasdaq · daily snapshot · USD'):
-    'CoinGecko · USD'+(recentCrypto(state.target.id)?' · LIVE':' · '+t('salvato','cached')));
+  set('capTargetMeta',ref.source==='Nasdaq'?t('Nasdaq · snapshot giornaliero · USD','Nasdaq · daily snapshot · USD'):
+     ref.source==='IndexBasket'?t('Stima '+ref.coverage.matched+'/'+ref.coverage.total+' società · giornaliero','Estimate '+ref.coverage.matched+'/'+ref.coverage.total+' constituents · daily'):
+     ref.source==='CoinGecko'?'CoinGecko · USD'+(recentCrypto(state.target.id)?' · LIVE':' · '+t('salvato','cached')):
+     t('In attesa del dato automatico','Waiting for automatic data'));
    marketCapSource(ref);
    const can=source&&positive(source.cap)&&positive(source.price)&&positive(ref.cap);
   const multiplier=can?ref.cap/source.cap:NaN;
@@ -304,7 +348,7 @@
   $('capScenarioState').textContent=can?t('CALCOLATO','CALCULATED'):t('IN ATTESA DATI','WAITING FOR DATA');
   $('capScenarioState').classList.toggle('ready',can);
   set('capBarSourceLabel',state.source.symbol);
-  set('capBarTargetLabel',ref.manual?ref.name:state.target.symbol);
+  set('capBarTargetLabel',state.kind==='crypto'?state.target.symbol:(ref.symbol||'—'));
   set('capBarSourceValue',money(source?.cap));
   set('capBarTargetValue',money(ref.cap));
   const max=can?Math.max(source.cap,ref.cap):NaN;
@@ -374,7 +418,7 @@
     $('capManualSelected').hidden=true;
     $('capManualSuggestions').hidden=true;
     manualPicked=null;
-    usCapSequence++;usCapPending=false;
+    usCapSequence++;usCapPending=false;indexRequestSeq++;indexPending=false;
     $('capManualName').setAttribute('aria-expanded','false');
   }
   $('capTargetCryptoPanel').hidden=kind!=='crypto';
@@ -384,8 +428,9 @@
   });
   $('capManualName').placeholder=kind==='stock'?t('Apple, Nvidia, Microsoft…','Apple, Nvidia, Microsoft…'):t('S&P 500, Nasdaq-100…','S&P 500, Nasdaq-100…');
   $('capManualHint').textContent=kind==='stock'?
-   t('Inserisci la capitalizzazione totale dell’azienda e verifica la data. Per le azioni USA il dato viene recuperato automaticamente dal dataset Nasdaq giornaliero.','Enter the company market cap and verify the date. For US stocks the figure is fetched automatically from a daily Nasdaq snapshot.'):
-   t('Gli indici sono espressi in punti: inserisci la capitalizzazione complessiva dei componenti secondo una metodologia dichiarata.','Indices are quoted in points: enter the aggregate market cap of constituents using a stated methodology.');
+   t('Capitalizzazione automatica delle azioni USA · snapshot giornaliero Nasdaq.','Automatic US stock caps · Nasdaq daily snapshot.'):
+   t('Stima automatica per S&P 500 e Nasdaq-100: somma dei componenti disponibili, dato giornaliero.','Automatic S&P 500 / Nasdaq-100 estimate: available constituents, daily snapshot.');
+  if(kind==='stock')void loadUsStockCaps().then(()=>{render();if(document.activeElement===$('capManualName'))renderManualSuggestions();}).catch(()=>render());
   if(kind==='crypto')hideManualSuggestions();
   render();if(kind==='crypto')void refreshQuotes();
  }
@@ -471,7 +516,10 @@
  let manualPicked=null;
  function manualChoices(){
    const q=normSearch($('capManualName').value);
-   const pool=securityCatalog[state.kind]||[];
+   const pool=state.kind==='index'?securityCatalog.index.filter(row=>Boolean(INDEX_DATASETS[row[0]])):
+   state.kind==='stock'&&usMarketCaps.size?
+     [...usMarketCaps.keys()].map(symbol=>[symbol,usStockNames.get(symbol)||symbol,'US','']):
+     securityCatalog.stock.filter(row=>['NASDAQ','NYSE'].includes(row[2]));
    if(!q)return pool.slice(0,7);
    const parts=q.split(/\s+/).filter(Boolean);
    return pool.map(entry=>{
@@ -501,7 +549,7 @@
    hideManualSuggestions();
    render();
    if(state.kind==='stock')void updateUsStock();
-   else $('capManualCap').focus({preventScroll:true});
+   else void estimateIndex();
  }
  function renderManualSuggestions(){
    if(state.kind==='crypto')return hideManualSuggestions();
@@ -535,7 +583,7 @@
    input.addEventListener('input',()=>{
      if(manualPicked){
        manualPicked=null;
-       usCapSequence++;usCapPending=false;
+       usCapSequence++;usCapPending=false;indexRequestSeq++;indexPending=false;
        $('capManualSelected').hidden=true;
        $('capManualCap').value='';
      }

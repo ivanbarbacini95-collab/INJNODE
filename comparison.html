@@ -8,11 +8,14 @@
 <title>Market Cap Comparison · INJ Node</title>
 <style>html,body{margin:0;min-height:100%;background:#020708}html[data-theme="black"],html[data-theme="black"] body{background:#000}html[data-theme="light"],html[data-theme="light"] body{background:#eef5ff;color-scheme:light}html[data-theme="amber"],html[data-theme="amber"] body{background:#060a10}</style>
 <script>try{const theme=localStorage.getItem('inj_monitor_theme');document.documentElement.dataset.theme=['navy','black','light','amber'].includes(theme)?theme:'navy';document.documentElement.lang=localStorage.getItem('inj_node_language_v1')==='en'?'en':'it'}catch(_){}</script>
-<link rel="stylesheet" href="./comparison.css?v=160092">
+<link rel="stylesheet" href="./comparison.css?v=160095">
 <link rel="stylesheet" href="./top-clarity.css?v=16.00.90">
 <link rel="stylesheet" href="./navigation.css?v=160090">
 <script defer src="./navigation.js?v=160090"></script>
-<script defer src="./comparison.js?v=160092"></script>
+<script defer src="./comparison.js?v=160095"></script>
+
+<link rel="stylesheet" href="./ios-screen-fixes.css?v=160095">
+<link rel="stylesheet" href="./comparison-ab.css?v=160095">
 </head>
 <body>
 <div class="cap-shell">
@@ -27,11 +30,11 @@
   <section class="cap-intro">
    <span class="cap-eyebrow">MARKET CAP COMPARISON</span>
    <h1 data-t="title">Quanto potrebbe valere?</h1>
-   <p data-t="intro">Scegli due asset: guarda quanti X servirebbero e quanto varrebbe il tuo wallet INJ.</p>
+   <p data-t="intro">Scegli A e B. Il confronto e il valore ipotetico del wallet sono calcolati automaticamente.</p>
   </section>
   <section class="cap-picker-grid" aria-label="Selezione asset">
-   <article class="cap-panel">
-    <header class="cap-panel-title"><span class="cap-step">01</span><div><small data-t="starting">ASSET DI PARTENZA</small><h2 data-t="sourceHeading">Scegli una crypto</h2></div></header>
+   <article class="cap-panel cap-asset-a">
+    <header class="cap-panel-title"><span class="cap-step">A</span><div><small data-t="starting">ASSET DI PARTENZA</small><h2 data-t="sourceHeading">Asset A</h2></div></header>
     <div class="cap-search-wrap">
      <label class="cap-label" for="capSourceSearch" data-t="sourceSearchLabel">Cerca crypto per nome o simbolo</label>
      <div class="cap-search-row"><icon aria-hidden="true">⌕</icon><input id="capSourceSearch" type="search" autocomplete="off" spellcheck="false" placeholder="INJ · Injective" aria-autocomplete="list" aria-controls="capSourceResults"><span id="capSourceSpin" class="cap-search-spinner" aria-hidden="true"></span></div>
@@ -44,8 +47,8 @@
      <div><span data-t="sourceSupply">OFFERTA CIRCOLANTE</span><strong id="capSourceSupply">—</strong></div>
     </div>
    </article>
-   <article class="cap-panel">
-    <header class="cap-panel-title"><span class="cap-step">02</span><div><small data-t="target">MARKET CAP DI RIFERIMENTO</small><h2 data-t="targetHeading">Confronta con</h2></div></header>
+   <article class="cap-panel cap-asset-b">
+    <header class="cap-panel-title"><span class="cap-step">B</span><div><small data-t="target">MARKET CAP DI RIFERIMENTO</small><h2 data-t="targetHeading">Asset B</h2></div></header>
     <div class="cap-tabs" role="group" aria-label="Tipo di riferimento">
      <button type="button" data-target-kind="crypto" class="active" aria-pressed="true" data-t="crypto">Crypto</button>
      <button type="button" data-target-kind="stock" aria-pressed="false" data-t="stock">Azione</button>
@@ -74,7 +77,7 @@
       <label><span class="cap-label" data-t="manualCapLabel">Capitalizzazione di riferimento</span><input id="capManualCap" class="cap-input" type="text" inputmode="decimal" autocomplete="off" placeholder="es. 3200"></label>
       <label><span class="cap-label" data-t="manualScale">Unità · USD</span><select id="capManualScale" class="cap-input"><option value="1000000000" data-t="billions">Miliardi (B)</option><option value="1000000000000" data-t="trillions">Migliaia di miliardi (T)</option><option value="1000000" data-t="millions">Milioni (M)</option><option value="1" data-t="fullUsd">USD interi</option></select></label>
      </div>
-     <p class="cap-help" id="capManualHint" data-t="manualWarning">Scegli l’azione: la market cap USA viene recuperata automaticamente, mentre gli indici richiedono un riferimento verificato.</p>
+     <p class="cap-help" id="capManualHint" data-t="manualWarning">Le capitalizzazioni sono automatiche: nessun valore da inserire a mano.</p>
     </div>
     <div class="cap-target-foot"><span data-t="targetCap">CAPITALIZZAZIONE DI RIFERIMENTO</span><strong id="capTargetCap">—</strong><small id="capTargetMeta" data-t="autoSource">Dati crypto CoinGecko · USD</small></div>
    </article>
@@ -104,7 +107,7 @@
    </div>
    <p class="cap-wallet-note" id="capWalletNote" data-t="walletNote">Il controvalore ipotetico si calcola quando la crypto di partenza è INJ. Il wallet non viene modificato.</p>
   </section>
-  <footer class="cap-footer"><span data-t="sources">Fonti: CoinGecko (crypto), Nasdaq giornaliero (azioni USA); riferimenti manuali per indici.</span><span id="capUpdatedAt">—</span></footer>
+  <footer class="cap-footer"><span data-t="sources">Fonti: CoinGecko (crypto), Nasdaq giornaliero (azioni USA), stime parziali indici supportati.</span><span id="capUpdatedAt">—</span></footer>
  </main>
 </div>
 </body>
