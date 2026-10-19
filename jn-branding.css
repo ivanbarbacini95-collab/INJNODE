@@ -118,6 +118,18 @@ html[data-inj-page="index"] body #entryGate .home-safe-heading > h1 > span {
 :root[data-theme="light"] body #entryGate .home-safe-heading > h1 > span {color:#087b89!important}
 :root[data-theme="black"] body #entryGate .home-safe-heading > h1 > span {color:#d9f0ed!important}
 :root[data-theme="amber"] body #entryGate .home-safe-heading > h1 > span {color:var(--accent,#dfbb83)!important}
+html[data-inj-page="index"] body #entryGate .home-safe-heading > h1 > strong{
+  font:inherit!important;
+  font-weight:900!important;
+  color:var(--text,#f4f8f8)!important;
+}
+html[data-inj-page="index"] body #entryGate .home-safe-heading > h1 > span{
+  display:inline!important;
+  margin-left:.19em!important;
+  font:inherit!important;
+  font-weight:620!important;
+  color:var(--accent,#75e9d1)!important;
+}
 html[data-inj-page="index"] body #entryGate .home-safe-heading > p{
   display:block!important;
   margin:0!important;
