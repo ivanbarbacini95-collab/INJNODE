@@ -8150,22 +8150,15 @@ function bindEvents() {
 function bindUniversalPageWheelScroll() {
   if (window.__injUniversalWheelBound) return;
   window.__injUniversalWheelBound = true;
-  document.addEventListener('wheel', (event) => {
+  // WebKit PWA: never change scrolling geometry during wheel/touch gestures.
+  const restore = () => {
     if (state.currentView === 'dashboard') healDashboardScrollState({ force: false });
-  }, { passive: false, capture: true });
-
-  // On iPhone/iPad a stale touch-action/overflow lock must be removed before
-  // WebKit decides whether the vertical gesture is scrollable.
-  document.addEventListener('touchstart', () => {
-    if (state.currentView === 'dashboard') healDashboardScrollState({ force: false });
-  }, { passive: true, capture: true });
-
-  document.addEventListener('pointerdown', (event) => {
-    if (state.currentView !== 'dashboard') return;
-    if (event.pointerType === 'mouse' || event.pointerType === 'touch' || event.pointerType === 'pen') {
-      healDashboardScrollState({ force: false });
-    }
-  }, { passive: true, capture: true });
+  };
+  window.addEventListener('pageshow', restore, { passive: true });
+  window.addEventListener('popstate', () => requestAnimationFrame(restore), { passive: true });
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) requestAnimationFrame(restore);
+  });
 }
 
 async function init() {

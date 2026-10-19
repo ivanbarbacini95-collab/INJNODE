@@ -161,3 +161,31 @@ html[data-theme] body :is(.app-shell > .topbar,.treasury-header,.rewards-header,
 html[data-theme] body :is(.treasury-header,.rewards-header,.cc-topbar) {
  position:relative!important;top:auto!important;
 }
+
+/* v16.00.72 — PWA native-scrolling override for ordinary Home/Dashboard. */
+html[data-inj-page="index"][data-inj-scroll="dashboard"],
+html[data-inj-page="index"][data-inj-scroll="dashboard"] body {
+  position:static!important;
+  top:auto!important;
+  height:auto!important;
+  min-height:100%!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  overscroll-behavior-y:auto!important;
+  touch-action:pan-y pinch-zoom!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+@media (max-width:900px), (pointer:coarse) {
+  html[data-inj-page="index"][data-inj-scroll="home"] #entryGate.entry-gate.visible:not(.immersive-underlay) {
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    -webkit-overflow-scrolling:touch!important;
+    touch-action:pan-y pinch-zoom!important;
+    overscroll-behavior-y:contain!important;
+  }
+  html[data-inj-page="index"][data-inj-scroll="home"] #entryGate.entry-gate.visible .entry-gate-shell:not(.first-access) {
+    height:auto!important;
+    max-height:none!important;
+    overflow:visible!important;
+  }
+}

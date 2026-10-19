@@ -303,7 +303,7 @@
   }
 
   let observer;
-  let flushTimer = 0;
+  // Translate realtime text updates before the next paint.
   const pending = new Set();
 
   function observe() {
@@ -318,7 +318,6 @@
   }
 
   function flushMutations() {
-    flushTimer = 0;
     if (!pending.size) return;
     observer?.disconnect();
     applying = true;
@@ -344,7 +343,7 @@
       if (mutation.type === 'characterData' || mutation.type === 'attributes') pending.add(mutation.target);
       else mutation.addedNodes.forEach((node) => pending.add(node));
     }
-    if (!flushTimer) flushTimer = window.setTimeout(flushMutations, 80);
+    flushMutations();
   });
 
   function safeApply(nextLang, persist = true) {
@@ -355,12 +354,10 @@
   window.addEventListener('pageshow',()=>{const saved=readStoredLanguage();if(VALID.has(saved)&&saved!==lang)safeApply(saved,false);});
   function start() {
     bindControls();
-    // Core INJ Node has already completed its load before this script is injected.
-    // Translation is therefore presentation-only and cannot block the boot screen.
-    window.setTimeout(() => {
-      safeApply(lang, false);
-      observe();
-    }, 40);
+    // Apply the stored language immediately at DOM-ready and translate
+    // subsequent live updates synchronously with the mutation microtask.
+    safeApply(lang, false);
+    observe();
   }
 
   window.INJ_I18N = {

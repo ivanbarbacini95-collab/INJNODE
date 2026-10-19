@@ -68,5 +68,5 @@ if(main){
 }
 function language(){const en=localStorage.getItem('inj_node_language_v1')==='en';const el=document.querySelector('#entryMarketButton strong');if(el)el.textContent=en?'Market':'Mercato';}
 window.addEventListener('injnode:languagechange',language);window.addEventListener('storage',language);language();
-new MutationObserver(()=>{const el=document.querySelector('#entryMarketButton strong');const v=localStorage.getItem('inj_node_language_v1')==='en'?'Market':'Mercato';if(el&&el.textContent!==v)el.textContent=v;}).observe(document.documentElement,{subtree:true,childList:true,characterData:true});
+// The common i18n observer owns live text translation (no competing observer).
 })();
