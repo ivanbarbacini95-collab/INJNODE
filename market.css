@@ -119,3 +119,98 @@ html[data-inj-market] #marketBack svg{
 @media (max-width:750px) {
   html[data-inj-market] .shell>.header {margin-bottom:12px;padding-bottom:11px;}
 }
+
+
+/* INJ Node Market 16.00.82 — balanced global dashboard / seamless metrics ribbon. */
+html[data-inj-market] .shell{padding-top:max(10px,env(safe-area-inset-top,0px))}
+html[data-inj-market] .shell>.header{display:grid!important;grid-template-columns:44px minmax(0,1fr) auto;align-items:center;gap:clamp(8px,1.6vw,18px);margin-bottom:10px!important;padding-bottom:12px!important}
+html[data-inj-market] .header .brand{display:flex;flex-direction:column;justify-content:center;min-width:0}
+html[data-inj-market] .header .brand h1{display:flex;align-items:center;flex-wrap:wrap;gap:7px;margin:3px 0;min-width:0}
+html[data-inj-market] .header .brand h1 em{white-space:nowrap}
+html[data-inj-market] .header .live{justify-self:end;white-space:nowrap;margin:0;letter-spacing:.06em}
+html[data-inj-market] .market-ticker{margin:0 0 clamp(12px,1.6vw,19px);width:100%;position:relative;overflow:hidden;min-height:44px;border:1px solid var(--line);border-radius:12px;background:color-mix(in srgb,var(--panel) 80%,var(--bg))}
+html[data-inj-market] .market-ticker::before,html[data-inj-market] .market-ticker::after{content:"";position:absolute;top:0;bottom:0;width:24px;z-index:2;pointer-events:none}
+html[data-inj-market] .market-ticker::before{left:0;background:linear-gradient(90deg,var(--panel),transparent)}
+html[data-inj-market] .market-ticker::after{right:0;background:linear-gradient(270deg,var(--panel),transparent)}
+html[data-inj-market] .market-ticker-viewport{width:100%;overflow:hidden;min-height:43px;display:flex;align-items:center}
+html[data-inj-market] .market-ticker-track{width:max-content;display:flex;align-items:center;min-height:43px;white-space:nowrap;animation:marketGlobalTicker 58s linear infinite;will-change:transform}
+html[data-inj-market] .market-ticker-track:has(.market-ticker-wait){animation:none}
+html[data-inj-market] .market-ticker-group{display:flex;align-items:center;flex:0 0 auto;gap:23px;padding:0 20px;min-height:42px}
+html[data-inj-market] .market-ticker-item{display:inline-flex;gap:8px;align-items:center;white-space:nowrap;font-size:11px;font-variant-numeric:tabular-nums}
+html[data-inj-market] .market-ticker-label{color:var(--muted);font-size:9px;font-weight:800;letter-spacing:.075em}
+html[data-inj-market] .market-ticker-number{font-weight:820;color:var(--text);font-size:12px}
+html[data-inj-market] .market-ticker-number.up{color:var(--positive)}
+html[data-inj-market] .market-ticker-number.down{color:var(--negative)}
+html[data-inj-market] .market-ticker-divider{display:inline-block;width:1px;height:15px;opacity:.6;background:var(--line)}
+html[data-inj-market] .market-ticker-wait{padding:0 16px;color:var(--muted);font-size:10px;letter-spacing:.1em}
+html[data-inj-market] .market-ticker:hover .market-ticker-track,
+html[data-inj-market] .market-ticker:focus-within .market-ticker-track{animation-play-state:paused}
+@keyframes marketGlobalTicker{from{transform:translate3d(0,0,0)}to{transform:translate3d(-50%,0,0)}}
+html[data-inj-market] .overview{grid-template-columns:minmax(0,1.18fr) minmax(0,1.15fr) minmax(0,.8fr) minmax(0,1fr);gap:clamp(9px,1.25vw,17px);margin-bottom:16px;align-items:stretch}
+html[data-inj-market] .overview article{padding:clamp(14px,1.5vw,23px);display:flex;flex-direction:column;min-height:112px;justify-content:space-between;gap:6px;border-radius:15px}
+html[data-inj-market] .overview article small{font-size:10px;font-weight:850;line-height:1.3;letter-spacing:.07em}
+html[data-inj-market] .overview article strong{font-size:clamp(19px,2vw,29px);margin:0;min-height:27px;line-height:1.13;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html[data-inj-market] .overview .overview-detail,html[data-inj-market] .overview article>span{font-size:10px;line-height:1.25;min-height:13px}
+html[data-inj-market] .overview .overview-detail.up{color:var(--positive)}
+html[data-inj-market] .overview .overview-detail.down{color:var(--negative)}
+html[data-inj-market] .overview article:nth-child(1){border-color:color-mix(in srgb,var(--accent) 29%,var(--line))}
+html[data-inj-market] .overview article:nth-child(3) strong{color:var(--accent)}
+html[data-inj-market] .toolbar{gap:16px;align-items:center}
+html[data-inj-market] .toolbar .heading{min-width:160px}
+html[data-inj-market] .toolbar .tools{margin-left:auto;min-width:0}
+@media(max-width:750px){
+ html[data-inj-market] .overview{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:12px}
+ html[data-inj-market] .overview article{min-height:100px;padding:12px 10px;border-radius:12px}
+ html[data-inj-market] .overview article small{font-size:9px}
+ html[data-inj-market] .overview article strong{font-size:clamp(17px,4.4vw,22px)}
+ html[data-inj-market] .overview .overview-detail{font-size:9px}
+ html[data-inj-market] .market-ticker{margin-bottom:12px}
+ html[data-inj-market] .market-ticker-group{gap:16px;padding:0 16px}
+ html[data-inj-market] .market-ticker-track{animation-duration:74s}
+ html[data-inj-market] .toolbar .heading{min-width:100%}
+ html[data-inj-market] .toolbar .tools{margin-left:0}
+}
+@media(max-width:380px){
+ html[data-inj-market] .shell>.header{gap:7px}
+ html[data-inj-market] .header .brand h1{font-size:18px}
+ html[data-inj-market] .header .brand h1 em{font-size:8px}
+ html[data-inj-market] .overview article strong{font-size:16px}
+}
+/* Terminal price update: only actual changed digits receive restrained color.
+   No highlight rectangle, glow, shadow or blur on price quotes. */
+html[data-inj-market] .live-price,
+html[data-inj-market] .live-price.price-pulse,
+html[data-inj-market] .price-pulse.price-rise,
+html[data-inj-market] .price-pulse.price-fall{
+ background:transparent!important;
+ box-shadow:none!important;
+ text-shadow:none!important;
+ filter:none!important;
+ color:inherit!important;
+ animation:none!important;
+ transition:none!important;
+ isolation:auto!important;
+}
+html[data-inj-market] .price-digit{display:inline-block;color:inherit;white-space:pre}
+html[data-inj-market] .price-digit-changed.digit-rise{
+ animation:marketQuietDigitRise .42s ease-out both!important;
+ text-shadow:none!important;box-shadow:none!important
+}
+html[data-inj-market] .price-digit-changed.digit-fall{
+ animation:marketQuietDigitFall .42s ease-out both!important;
+ text-shadow:none!important;box-shadow:none!important
+}
+@keyframes marketQuietDigitRise{0%{color:var(--positive);opacity:.76;transform:translateY(1px)}100%{color:inherit;opacity:1;transform:translateY(0)}}
+@keyframes marketQuietDigitFall{0%{color:var(--negative);opacity:.76;transform:translateY(-1px)}100%{color:inherit;opacity:1;transform:translateY(0)}}
+html[data-inj-market] .price-tick-arrow{
+ animation:marketQuietArrow .7s ease-out both!important;
+ font-weight:750!important;
+ text-shadow:none!important;
+ filter:none!important;
+}
+@keyframes marketQuietArrow{0%{opacity:0;transform:translate(-2px,-50%)}20%{opacity:.85;transform:translate(0,-50%)}65%{opacity:.55}100%{opacity:0;transform:translate(1px,-50%)}}
+@media(prefers-reduced-motion:reduce){
+ html[data-inj-market] .market-ticker-track{animation:none!important;transform:none!important}
+ html[data-inj-market] .market-ticker-viewport{overflow-x:auto!important;scrollbar-width:thin}
+ html[data-inj-market] .price-digit-changed,html[data-inj-market] .price-tick-arrow{animation:none!important}
+}

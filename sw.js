@@ -1,21 +1,25 @@
-const CACHE_NAME = 'inj-node-v16.00.80-radar-converter-stable';
+const CACHE_NAME = 'inj-node-v16.00.84-sentiment-market-ticker-quiet-prices';
 const APP_SHELL = [
   './navigation.css?v=160080',
-  './navigation.js?v=160080',
+  './navigation.js?v=160084',
+  // Standalone sections still request these legacy cache keys.
+  './navigation.css?v=160074',
+  './navigation.js?v=160074',
+  './i18n.js?v=160072',
   './',
   './index.html',
   './market.html',
   './market-portal.js?v=160076',
-  './market-lang.js?v=160062',
-  './market.css?v=160076',
-  './market.js?v=160062',
+  './market-lang.js?v=160082',
+  './market.css?v=160082',
+  './market.js?v=160082',
   './manifest.webmanifest?v=16.00.14',
   './viewport.css?v=16.00.74',
   './top-clarity.css?v=16.00.70',
   './viewport.js?v=16.00.14',
   './style.css?v=16.00.49',
   './app.js?v=16.00.80',
-  './i18n.js?v=160080',
+  './i18n.js?v=160084',
   './scroll-guard.js?v=160074',
   './live-charts.html',
   './live-charts.css?v=16.00.39',
@@ -32,9 +36,9 @@ const APP_SHELL = [
   './treasury.html',
   './treasury.css?v=16.00.39',
   './treasury.js?v=16.00.46',
-  './radar.html',
-  './radar.css?v=160080',
-  './radar.js?v=160080'
+  './sentiment.html',
+  './sentiment.css?v=160084',
+  './sentiment.js?v=160084'
 ];
 
 self.addEventListener('install', (event) => {
@@ -60,7 +64,7 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return;
 
   if (request.mode === 'navigate') {
-    const isolatedPath = ['live-charts.html', 'live-rewards.html', 'command-center.html', 'order-book.html', 'treasury.html', 'market.html', 'radar.html'].find((name) => url.pathname.endsWith('/' + name));
+    const isolatedPath = ['live-charts.html', 'live-rewards.html', 'command-center.html', 'order-book.html', 'treasury.html', 'market.html', 'sentiment.html'].find((name) => url.pathname.endsWith('/' + name));
     event.respondWith(
       fetch(request, { cache: 'no-store' })
         .then((response) => {

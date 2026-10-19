@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="it" data-inj-page="sentiment" data-theme="navy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#020708">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>INJ Sentiment · INJ Node</title>
+<style>html,body{margin:0;min-height:100%;background:#020708}html[data-theme="black"],html[data-theme="black"] body{background:#000}html[data-theme="light"],html[data-theme="light"] body{background:#f1f6fc}html[data-theme="amber"],html[data-theme="amber"] body{background:#05080d}</style>
+<script>
+try {
+ const saved=localStorage.getItem('inj_monitor_theme');
+ document.documentElement.dataset.theme=['navy','black','light','amber'].includes(saved)?saved:'navy';
+ document.documentElement.lang=localStorage.getItem('inj_node_language_v1')==='en'?'en':'it';
+}catch(_){}
+</script>
+<link rel="stylesheet" href="./navigation.css?v=160080">
+<link rel="stylesheet" href="./sentiment.css?v=160084">
+<script defer src="./navigation.js?v=160084"></script>
+<script defer src="./sentiment.js?v=160084"></script>
+</head>
+<body>
+<div class="sent-shell">
+ <header class="sent-header">
+  <a href="./index.html" id="sentBack" class="sent-back" aria-label="Torna alla Home" title="Home">
+   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 11 8-7 8 7"></path><path d="M6.5 10v9h11v-9M10 19v-5h4v5"></path></svg>
+  </a>
+  <div class="sent-brand"><span>INJ NODE</span><strong>CRYPTO SENTIMENT</strong><small data-t="subtitle">Psicologia e forza del mercato globale</small></div>
+  <div class="sent-status" role="status" aria-live="polite" id="sentConnection"><i></i><span id="sentConnectionText">SYNC</span></div>
+ </header>
+ <main class="sent-main">
+  <div class="sent-headline"><span class="sent-eyebrow">MARKET INTELLIGENCE</span><h1 data-t="headline">Il polso del mercato crypto</h1><p data-t="subhead">Sentiment, direzione, partecipazione e dominance. Nessun valore simulato.</p></div>
+  <div class="sent-hero">
+   <section class="sent-fear" aria-labelledby="sentFearHeading">
+    <div class="sent-section-head"><div><span class="sent-eyebrow">SENTIMENT INDEX</span><h2 id="sentFearHeading">Fear &amp; Greed</h2></div><small class="sent-source-badge" data-t="daily">AGGIORNAMENTO GIORNALIERO</small></div>
+    <div class="sent-fear-body">
+     <div class="sent-dial" role="img" aria-label="Fear and Greed Index" id="sentDial">
+      <div class="sent-dial-ring"></div><div class="sent-dial-needle" id="sentNeedle"></div>
+      <div class="sent-dial-core"><strong id="sentFearValue">—</strong><small>/ 100</small></div>
+     </div>
+     <div class="sent-fear-copy"><span data-t="currentEmotion">SENTIMENT ATTUALE</span><strong id="sentFearClass">—</strong><p id="sentFearExplanation" data-t="fearExplain">Indice di psicologia del mercato crypto, prevalentemente Bitcoin.</p><small id="sentFearWhen">—</small></div>
+    </div>
+    <div class="sent-fear-footer"><span data-t="fngContext">Il valore è fornito da Alternative.me: non è una previsione di prezzo.</span><a href="https://alternative.me/crypto/fear-and-greed-index/" target="_blank" rel="noopener noreferrer">Alternative.me <span aria-hidden="true">↗</span></a></div>
+   </section>
+   <section class="sent-pulse" aria-labelledby="sentPulseHeading">
+    <div class="sent-section-head"><div><span class="sent-eyebrow">MARKET PULSE</span><h2 id="sentPulseHeading" data-t="marketPulse">Forza del mercato</h2></div><small class="sent-source-badge">CoinGecko</small></div>
+    <div class="sent-pulse-row"><div><span data-t="marketTrend">CAPITALIZZAZIONE · 24H</span><strong id="sentCapChange">—</strong></div><small id="sentCapTrend" data-t="awaiting">In attesa dei dati</small></div>
+    <div class="sent-pulse-rule"></div>
+    <div class="sent-breadth-head"><div><span data-t="marketBreadth">PARTECIPAZIONE · TOP 200</span><strong id="sentBreadth">—</strong></div><small id="sentBreadthCount">—</small></div>
+    <div class="sent-breadth-track"><i id="sentBreadthUp"></i><i id="sentBreadthDown"></i></div>
+    <div class="sent-breadth-legend"><span class="sent-up" id="sentBreadthPos">—</span><span class="sent-down" id="sentBreadthNeg">—</span></div>
+    <div class="sent-pulse-foot"><span data-t="breadthNote">Quota delle prime 200 crypto in rialzo nelle ultime 24 ore.</span><small id="sentMarketWhen">—</small></div>
+   </section>
+  </div>
+  <section class="sent-metrics" aria-label="Global crypto metrics">
+   <article><span data-t="totalCap">MARKET CAP TOTALE</span><strong id="sentTotalCap">—</strong><small data-t="totalCapHint">Capitalizzazione del mercato crypto</small></article>
+   <article><span data-t="totalVolume">VOLUME GLOBALE 24H</span><strong id="sentVolume">—</strong><small data-t="volumeHint">Volume riportato dalla fonte</small></article>
+   <article><span data-t="btcDom">DOMINANCE BTC</span><strong id="sentBtcDominance">—</strong><div class="sent-meter"><i id="sentBtcMeter"></i></div></article>
+   <article><span data-t="ethDom">DOMINANCE ETH</span><strong id="sentEthDominance">—</strong><div class="sent-meter"><i id="sentEthMeter"></i></div></article>
+  </section>
+  <section class="sent-history">
+   <div class="sent-section-head"><div><span class="sent-eyebrow">SENTIMENT HISTORY</span><h2 data-t="historicalTitle">Fear &amp; Greed · ultimi 7 rilevamenti</h2></div><small id="sentHistoryDelta">—</small></div>
+   <div class="sent-history-bars" id="sentHistoryBars" aria-label="Fear and Greed Index negli ultimi sette rilevamenti">
+    <div class="sent-waiting" data-t="awaiting">In attesa dei dati</div>
+   </div>
+   <p data-t="historyNote">I rilevamenti sono giornalieri. Il sentiment non misura direttamente la performance dei prezzi.</p>
+  </section>
+  <footer class="sent-footer"><span data-t="sourceFooter">Fonti: Alternative.me (sentiment) · CoinGecko (mercato)</span><span id="sentUpdated">—</span></footer>
+ </main>
+</div>
+</body>
+</html>
