@@ -1,0 +1,160 @@
+/* INJ Node · Theme Harmony v16.01.11
+   The same semantic colour system for Home, Dashboard, PWA overlays,
+   and autonomous sections. Presentation-only: no geometry, scrolling,
+   chart updates, or position transforms are changed. */
+
+/* Existing four palettes retain their original values. The two newer
+   ambient themes now define the Dashboard-specific surface tokens too. */
+:root[data-theme="ocean"] {
+ --accent-ink:#031b26;
+ --card-gradient:
+  radial-gradient(ellipse at 100% 0%,rgba(78,163,196,.075),transparent 44%),
+  linear-gradient(145deg,rgba(18,44,64,.93),rgba(9,25,41,.96));
+ --market-gradient:
+  radial-gradient(ellipse at 100% 5%,rgba(51,155,185,.12),transparent 47%),
+  linear-gradient(145deg,rgba(18,49,67,.94),rgba(9,29,47,.97));
+ --dock-gradient:linear-gradient(130deg,rgba(17,43,63,.94),rgba(10,26,43,.95));
+ --floating-surface:rgba(15,34,50,.97);
+ --dialog-gradient:linear-gradient(140deg,#182d44,#0c1e31);
+ --card-orb:rgba(65,163,206,.07);
+ --card-orb-alt:rgba(111,96,199,.05);
+ --card-inner-highlight:rgba(227,248,255,.048);
+ --card-shadow-accent:rgba(80,161,191,.045);
+ --shadow:0 19px 48px rgba(3,13,28,.30),0 6px 20px rgba(3,21,35,.18);
+ --section-overview:var(--accent);
+ --section-wallet:var(--accent);
+ --section-staking:var(--accent);
+ --section-market:var(--accent);
+ --section-delegations:var(--accent);
+}
+:root[data-theme="chromatic"] {
+ --accent-ink:#221528;
+ --card-gradient:
+  radial-gradient(ellipse at 98% 1%,rgba(204,137,206,.09),transparent 47%),
+  linear-gradient(145deg,rgba(45,37,69,.93),rgba(27,29,53,.96));
+ --market-gradient:
+  radial-gradient(ellipse at 96% 6%,rgba(109,164,220,.14),transparent 50%),
+  linear-gradient(145deg,rgba(48,40,74,.94),rgba(27,32,58,.97));
+ --dock-gradient:linear-gradient(125deg,rgba(48,40,72,.94),rgba(28,31,53,.95));
+ --floating-surface:rgba(39,34,62,.97);
+ --dialog-gradient:linear-gradient(145deg,#372b50,#1d203b);
+ --card-orb:rgba(213,129,189,.07);
+ --card-orb-alt:rgba(94,179,207,.06);
+ --card-inner-highlight:rgba(255,239,255,.05);
+ --card-shadow-accent:rgba(188,124,213,.055);
+ --shadow:0 19px 48px rgba(12,8,29,.34),0 6px 20px rgba(18,11,35,.19);
+ --section-overview:var(--accent);
+ --section-wallet:var(--accent);
+ --section-staking:var(--accent);
+ --section-market:var(--accent);
+ --section-delegations:var(--accent);
+}
+/* Shared aliases use each theme's palette instead of stale defaults from
+   independent pages. They follow changes to data-theme immediately. */
+:root[data-theme]{
+ --canvas:var(--bg);
+ --panel:var(--surface);
+ --panel-strong:var(--surface-strong);
+ --surface2:var(--surface-strong);
+ --surface-2:var(--surface-strong);
+ --surface-3:var(--surface-soft);
+ --muted2:var(--muted-strong);
+ --muted-2:var(--muted-strong);
+ --positive:var(--up);
+ --negative:var(--down);
+ --theme-browser:var(--bg);
+ --inj-theme-panel:var(--card-gradient,linear-gradient(145deg,var(--surface-strong),var(--surface)));
+ --inj-theme-inset:color-mix(in srgb,var(--surface-strong) 88%,var(--surface));
+}
+/* Main Dashboard: explicit theme gradients for all six selections.
+   Theme-sensitive original styles only covered a subset of palettes. */
+html[data-theme] .app-shell{
+ color:var(--text)!important;
+ --inj-dashboard-background:var(--page-gradient);
+}
+html[data-theme] .app-shell :is(.wallet-dock,.aggregate-strip,.data-card,.wallet-mini){
+ border-color:var(--line)!important;
+ color:var(--text);
+}
+html[data-theme] .app-shell :is(.data-card,.wallet-mini){
+ background:var(--inj-theme-panel)!important;
+}
+html[data-theme] .app-shell .market-card{
+ background:var(--market-gradient,var(--inj-theme-panel))!important;
+}
+html[data-theme] .app-shell .wallet-dock,
+html[data-theme] .app-shell .aggregate-strip{
+ background:var(--dock-gradient,var(--inj-theme-panel))!important;
+}
+html[data-theme] .app-shell .wallet-mini.active{
+ border-color:color-mix(in srgb,var(--accent) 47%,var(--line))!important;
+ background:color-mix(in srgb,var(--accent) 8%,var(--surface-strong))!important;
+}
+html[data-theme] .app-shell :is(.reward-rate-grid>div,.target-stats>div,.target-live-missing,
+  .milestone-block,.validator-list>div,.allocation,.market-tf-track){
+ border-color:var(--line);
+ background-color:var(--inj-theme-inset);
+}
+html[data-theme] .app-shell :is(.card-label,.method-note,.allocation-labels,
+  .market-range,.market-tf-range-values,.wallet-dock-title small){
+ color:var(--muted);
+}
+html[data-theme] .app-shell :is(.section-heading h2,.hero-number,.metric-value){
+ text-shadow:none;
+}
+html[data-theme] .app-shell :is(.header-main-button,.chart-launch-button){
+ border-color:var(--line)!important;
+ color:var(--text);
+ background:color-mix(in srgb,var(--surface-strong) 84%,transparent)!important;
+}
+html[data-theme] .app-shell :is(.search-panel,.wallet-dialog),
+html[data-theme] :is(.wallet-dialog,.native-chart-dialog,.system-status-dialog){
+ color:var(--text);
+ border-color:var(--line);
+ background:var(--dialog-gradient,var(--surface))!important;
+}
+html[data-theme] .app-shell :is(.search-panel input,.target-input-label input,.reward-sim-control input){
+ color:var(--text);border-color:var(--line-strong);
+}
+/* All independent tools share semantic borders/surfaces. Keep chart
+   candles and positive/negative performance colours untouched. */
+html[data-theme] :is(.treasury-panel,.treasury-card,.rewards-total-panel,.rewards-card,
+ .market-asset-section,.market-card,.cap-panel,.comparison-card,.data-card){
+ border-color:var(--line);
+}
+html[data-theme] :is(.treasury-panel,.rewards-total-panel,.market-asset-section,
+ .cap-panel,.comparison-card){
+ background:var(--inj-theme-panel)!important;
+ color:var(--text);
+}
+html[data-theme] :is(.treasury-close,.rewards-close,.book-back,.cc-back,.home){
+ border-color:var(--line)!important;
+ color:var(--text);
+}
+html[data-theme] :is(.market-asset-dialog,.market-asset-dialog[open]){
+ color:var(--text);
+ border-color:var(--line);
+ background:var(--dialog-gradient,var(--surface))!important;
+}
+/* Ambient themes: an opaque page shell masks the moving layers. Make only
+   those shells transparent, keeping the themed document background. */
+html:is([data-theme="ocean"],[data-theme="chromatic"]):not([data-inj-page="index"])
+ :is(.treasury-shell,.rewards-shell,.live-page,.book-page,.cc-shell,body>.shell){
+ background:transparent!important;
+}
+html:is([data-theme="ocean"],[data-theme="chromatic"]) .app-shell{
+ background:transparent!important;
+}
+/* No opaque header strip and no new fixed blur effects on iOS. */
+html[data-theme] :is(.app-shell>.topbar,.treasury-header,.rewards-header,
+ .terminal-header,.cc-topbar,.book-topbar,.shell>.header){
+ background:transparent!important;
+ -webkit-backdrop-filter:none!important;
+ backdrop-filter:none!important;
+}
+@media(max-width:900px),(hover:none) and (pointer:coarse){
+ html[data-theme] :is(.app-shell,.treasury-shell,.rewards-shell,.live-page,.book-page,.cc-shell){
+  -webkit-backdrop-filter:none!important;backdrop-filter:none!important;
+ }
+}
+/* Sections and old local scripts must never recolour gains or losses. */
