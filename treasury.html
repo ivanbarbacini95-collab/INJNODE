@@ -9,10 +9,10 @@
   <script>
     try {
       const savedTheme = localStorage.getItem('inj_monitor_theme');
-      const theme = ['navy','black','light','amber'].includes(savedTheme) ? savedTheme : 'navy';
+      const theme = ['navy','black','light','amber','dynamic'].includes(savedTheme) ? savedTheme : 'navy';
       document.documentElement.dataset.theme = theme;
       const themeColors = { navy:'#07121b', black:'#090b0e', light:'#f8fbff', amber:'#0a111a' };
-      document.querySelector('meta[name=\"theme-color\"]')?.setAttribute('content', themeColors[theme]);
+      document.querySelector('meta[name=\"theme-color\"]')?.setAttribute('content', (themeColors[theme] || '#080d12'));
     } catch (_) {}
   </script>
   <link rel="stylesheet" href="./treasury.css?v=16.00.37">
@@ -26,6 +26,8 @@
 
 <link rel="stylesheet" href="./ios-screen-fixes.css?v=160095">
 <link rel="stylesheet" href="./treasury-ownership.css?v=160099">
+<link rel="stylesheet" href="./dynamic-theme.css?v=160105">
+<script defer src="./dynamic-theme.js?v=160105"></script>
 </head>
 <body>
   <div class="treasury-shell">
