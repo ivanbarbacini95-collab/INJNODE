@@ -113,3 +113,73 @@
 @media (max-width:900px), (hover:none) and (pointer:coarse) {
   .header-search:not(.open) .search-panel { display:none!important; }
 }
+
+
+/* INJ NODE v16.00.88 · iPhone Safari/PWA non-blurred page tops
+   Root cause addressed: sticky translucent header compositing, including
+   pseudo-element gradients that survived earlier backdrop-filter overrides.
+   These rules do NOT touch data cards, live charts or page scrolling owners. */
+@media (max-width:900px), (hover:none) and (pointer:coarse) {
+  /* Separate page headings from sticky/filter layers; keep their contents sharp
+     and let the native document scroll carry the whole header naturally. */
+  .app-shell > .topbar,
+  .treasury-header,
+  .rewards-header,
+  .shell > .header,
+  .terminal-header,
+  .book-topbar,
+  .cc-topbar {
+    position:relative!important;
+    top:auto!important;
+    transform:none!important;
+    -webkit-transform:none!important;
+    filter:none!important;
+    -webkit-filter:none!important;
+    backdrop-filter:none!important;
+    -webkit-backdrop-filter:none!important;
+    will-change:auto!important;
+    backface-visibility:visible!important;
+    -webkit-backface-visibility:visible!important;
+  }
+  /* These blur-backed strips extend ABOVE the Treasury/Rewards header.
+     The parent header was sharp, but the translucent strip still covered text
+     in WebKit's rubber-band / safe-area compositor. Do not create it. */
+  .treasury-header::before,
+  .rewards-header::before {
+    content:none!important;
+    display:none!important;
+    background:none!important;
+    backdrop-filter:none!important;
+    -webkit-backdrop-filter:none!important;
+    filter:none!important;
+    -webkit-filter:none!important;
+    mask-image:none!important;
+    -webkit-mask-image:none!important;
+  }
+  .treasury-header,
+  .rewards-header,
+  .app-shell > .topbar,
+  .shell > .header {
+    background-image:none!important;
+    -webkit-background-clip:border-box!important;
+  }
+  /* The themed root paints under the non-translucent iOS status bar. */
+  html,body {
+    background-attachment:scroll!important;
+    -webkit-font-smoothing:antialiased;
+  }
+}
+
+/* iOS Home: legacy ambient ::before/::after were fixed 90px blur layers.
+   Remove them only on touch phones; the normal theme gradient stays intact. */
+@media (max-width:900px), (hover:none) and (pointer:coarse) {
+  html[data-inj-page="index"] .entry-gate::before,
+  html[data-inj-page="index"] .entry-gate::after {
+    content:none!important;
+    display:none!important;
+    filter:none!important;
+    -webkit-filter:none!important;
+    backdrop-filter:none!important;
+    -webkit-backdrop-filter:none!important;
+  }
+}

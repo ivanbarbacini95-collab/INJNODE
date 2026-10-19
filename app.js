@@ -1152,9 +1152,40 @@ function entryConverterValues() {
   return { EUR: eur, USD: usd, INJ: inj };
 }
 
+
+/* INJ Converter · selected wallet is the same active Home carousel account.
+   Only on-chain wallet summaries with a timestamp are eligible for valuation. */
+function entryConverterSelectedPortfolio(){
+  const {wallet,row}=selectedEntrySummary();
+  const total=Number(row?.total);
+  const ready=Boolean(wallet && row && Number(row.updated)>0 && Number.isFinite(total) && total>=0);
+  return {wallet,total:ready?total:NaN,updated:ready?Number(row.updated):0};
+}
+
+function renderEntryConverterWallet(){
+  const name=$('entryConverterWalletName');
+  if(!name)return;
+  const {wallet,total,updated}=entryConverterSelectedPortfolio();
+  const price=Number(state.price);
+  const usd=Number.isFinite(total)&&Number.isFinite(price)&&price>0?total*price:NaN;
+  const en=window.INJ_I18N?.getLanguage?.()==='en';
+  name.textContent=wallet?.label||(en?'Select a wallet':'Seleziona un wallet');
+  const qty=$('entryConverterWalletInj');
+  if(qty)qty.textContent=Number.isFinite(total)?formatInj(total,4):'—';
+  const usdNode=$('entryConverterWalletUsd');
+  if(usdNode)usdNode.textContent=Number.isFinite(usd)?usdMoney(usd,2):'—';
+  const freshness=$('entryConverterWalletAge');
+  if(freshness)freshness.textContent=updated>0
+    ?(en?'Wallet data: ':'Dati wallet: ')+formatFreshAge(updated)
+    :(en?'Waiting for wallet data':'In attesa dei dati wallet');
+  const use=$('entryConverterUseWallet');
+  if(use)use.disabled=!Number.isFinite(total)||!(price>0);
+}
+
 function renderEntryConverter() {
   const host = $('entryConverter');
   if (!host) return;
+  renderEntryConverterWallet();
   const price = number(state.price);
   const eurPerUsd = number(state.eurRate);
   const usdPerEur = eurPerUsd > 0 ? 1 / eurPerUsd : 0;
@@ -1190,6 +1221,19 @@ function renderEntryConverter() {
 }
 
 function bindEntryConverter() {
+  $('entryConverterUseWallet')?.addEventListener('click', () => {
+    const {total}=entryConverterSelectedPortfolio();
+    if(!Number.isFinite(total)||!(Number(state.price)>0))return;
+    // Preserve the original manual editing logic; only choose the INJ source.
+    state.converter.source='INJ';
+    state.converter.value=total;
+    state.converter.hasValue=true;
+    renderEntryConverter();
+    // Do not focus inputs here: focusing would open the iOS keyboard.
+  });
+  window.addEventListener('injnode:languagechange', () => {
+    if(isConverterActive())renderEntryConverterWallet();
+  });
   const fields = {
     EUR: $('entryConverterEur'),
     USD: $('entryConverterUsd'),
@@ -2446,8 +2490,10 @@ function enterConverterFromGate() {
   state.currentView = 'converter';
   view.hidden = false;
   view.setAttribute('aria-hidden', 'false');
+  // The page is opaque immediately: never expose a translucent Home frame
+  // before the first paint on iOS Safari.
+  view.classList.add('open');
   renderEntryConverter();
-  requestAnimationFrame(() => view.classList.add('open'));
 }
 
 function closeConverterToHome() {
@@ -2455,12 +2501,13 @@ function closeConverterToHome() {
   if (!view || view.hidden) return;
   state.currentView = 'home';
   armModeExitLock(650);
+  // Blur the active input so WebKit dismisses the keyboard without zooming
+  // or leaving the edited viewport scaled on return to Home.
+  if (view.contains(document.activeElement)) document.activeElement.blur();
   view.classList.remove('open');
   view.setAttribute('aria-hidden', 'true');
-  window.setTimeout(() => {
-    view.hidden = true;
-    restoreEntryGateFromImmersive();
-  }, 180);
+  view.hidden = true;
+  restoreEntryGateFromImmersive();
 }
 
 

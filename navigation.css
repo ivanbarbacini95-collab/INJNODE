@@ -620,3 +620,214 @@ html[data-inj-page="index"] #converterView .entry-converter-head > * {
 @media (prefers-reduced-motion:reduce){
   html[data-inj-page="index"] .entry-gate-shell:not(.first-access) > .entry-actions.entry-flat-v44 > :is(#entryDashboardButton,#entryLiveButton,#entryLiveChartsButton,#entryOrderBookButton,#entryPerformanceButton,#entryConverterButton,#entryMarketButton,#entryLiveRewardsButton,#entryTreasuryButton) {transition:none!important;}
 }
+
+
+/* v16.00.88 — Isolated INJ Converter viewport on iPhone.
+   Never let the Home bleed through; editing uses native in-panel scroll.
+   16px+ input text avoids Safari's automatic focus zoom while still allowing
+   user pinch zoom for accessibility. */
+html[data-inj-page="index"] #converterView.open {
+  position:fixed!important;
+  inset:0!important;
+  z-index:2147483500!important;
+  display:block!important;
+  box-sizing:border-box!important;
+  width:100%!important;
+  height:var(--inj-viewport-height,100dvh)!important;
+  min-height:0!important;
+  max-height:none!important;
+  padding:0!important;
+  margin:0!important;
+  overflow:hidden!important;
+  opacity:1!important;
+  visibility:visible!important;
+  isolation:isolate!important;
+  pointer-events:auto!important;
+  transform:none!important;
+  -webkit-transform:none!important;
+  transition:none!important;
+  background:var(--page-gradient),var(--theme-canvas,var(--bg,#020708))!important;
+  background-color:var(--theme-canvas,var(--bg,#020708))!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+  filter:none!important;
+  -webkit-filter:none!important;
+}
+/* Hide the painted Home while this opaque page is active. Returning Home
+   simply removes .open; no second Home has to be mounted or reloaded. */
+html[data-inj-page="index"]:has(#converterView.open) #entryGate {
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+html[data-inj-page="index"] #converterView.open > .converter-view-shell,
+html[data-inj-page="index"] #converterView.open:focus-within > .converter-view-shell {
+  display:grid!important;
+  grid-template-rows:auto minmax(0,1fr)!important;
+  box-sizing:border-box!important;
+  width:100%!important;
+  height:100%!important;
+  min-height:0!important;
+  max-height:100%!important;
+  padding:max(10px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left))!important;
+  margin:0!important;
+  overflow:hidden!important;
+  transform:none!important;
+  -webkit-transform:none!important;
+}
+html[data-inj-page="index"] #converterView.open .converter-view-header {
+  position:relative!important;
+  top:auto!important;
+  transform:none!important;
+  -webkit-transform:none!important;
+  filter:none!important;
+  -webkit-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+  z-index:1!important;
+}
+html[data-inj-page="index"] #converterView.open .converter-view-main,
+html[data-inj-page="index"] #converterView.open:focus-within .converter-view-main {
+  display:grid!important;
+  width:100%!important;
+  min-height:0!important;
+  max-height:100%!important;
+  height:100%!important;
+  padding:0!important;
+  box-sizing:border-box!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  -webkit-overflow-scrolling:touch!important;
+  align-items:safe center!important;
+  justify-items:stretch!important;
+  overscroll-behavior-y:contain!important;
+}
+html[data-inj-page="index"] #converterView.open .converter-view-main > .entry-converter,
+html[data-inj-page="index"] #converterView.open:focus-within .converter-view-main > .entry-converter {
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  width:100%!important;
+  flex:0 0 auto!important;
+  align-self:safe center!important;
+  justify-content:space-between!important;
+}
+html[data-inj-page="index"] #converterView.open .entry-converter-input input {
+  font-size:max(16px,1rem)!important;
+  -webkit-text-size-adjust:100%!important;
+  text-size-adjust:100%!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+}
+@media(max-width:720px){
+  html[data-inj-page="index"] #converterView.open .entry-converter-flow,
+  html[data-inj-page="index"] #converterView.open:focus-within .entry-converter-flow {
+    flex:0 0 auto!important;
+    min-height:0!important;
+    height:auto!important;
+    justify-content:flex-start!important;
+    gap:clamp(9px,1.4vh,16px)!important;
+  }
+  html[data-inj-page="index"] #converterView.open .entry-converter-field {
+    flex:0 0 auto!important;
+  }
+  html[data-inj-page="index"] #converterView.open .entry-converter-input input {
+    font-size:16px!important;
+    line-height:1.25!important;
+  }
+}
+
+/* v16.00.88 · Selected-wallet valuation inside the isolated Converter. */
+html[data-inj-page="index"] #converterView .entry-converter-wallet {
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  align-items:center!important;
+  min-width:0!important;
+  width:100%!important;
+  gap:10px 16px!important;
+  border:1px solid color-mix(in srgb,var(--accent) 19%,var(--line))!important;
+  background:color-mix(in srgb,var(--surface-strong) 86%,var(--bg))!important;
+  border-radius:15px!important;
+  padding:12px 15px!important;
+  box-sizing:border-box!important;
+}
+html[data-inj-page="index"] #converterView .entry-converter-wallet-copy {
+  display:grid!important;gap:2px!important;min-width:0!important;
+}
+html[data-inj-page="index"] #converterView .entry-converter-wallet-kicker,
+html[data-inj-page="index"] #converterView .entry-converter-wallet-balances small {
+  color:var(--muted)!important;
+  font-size:10px!important;
+  font-weight:850!important;
+  letter-spacing:.055em!important;
+}
+html[data-inj-page="index"] #converterView .entry-converter-wallet-copy > strong {
+  color:var(--text)!important;
+  font-size:14px!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+html[data-inj-page="index"] #converterView .entry-converter-wallet-copy > small {
+  color:var(--muted)!important;
+  font-size:10px!important;
+}
+html[data-inj-page="index"] #converterView .entry-converter-wallet-balances {
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:9px 16px!important;
+  min-width:0!important;
+  grid-column:1 / -1!important;
+}
+html[data-inj-page="index"] #converterView .entry-converter-wallet-balances > span{
+  display:grid!important;
+  min-width:0!important;
+  gap:2px!important;
+}
+html[data-inj-page="index"] #converterView .entry-converter-wallet-balances strong{
+  display:block!important;
+  color:var(--text)!important;
+  font-size:clamp(15px,2.4vw,22px)!important;
+  font-variant-numeric:tabular-nums!important;
+  min-width:0!important;
+  max-width:100%!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+html[data-inj-page="index"] #converterView #entryConverterWalletUsd{
+  color:var(--up)!important;
+}
+html[data-inj-page="index"] #converterView .entry-converter-use-wallet{
+  padding:9px 13px!important;
+  min-width:110px!important;
+  max-width:100%!important;
+  box-sizing:border-box!important;
+  border-radius:10px!important;
+  border:1px solid color-mix(in srgb,var(--accent) 38%,var(--line))!important;
+  color:var(--accent)!important;
+  background:color-mix(in srgb,var(--accent) 8%,var(--surface-strong))!important;
+  font:750 12px/1.25 system-ui,-apple-system,sans-serif!important;
+  white-space:nowrap!important;
+  cursor:pointer!important;
+}
+html[data-inj-page="index"] #converterView .entry-converter-use-wallet:disabled{
+  opacity:.48!important;
+  cursor:default!important;
+}
+@media(max-width:720px){
+  html[data-inj-page="index"] #converterView .entry-converter-wallet{
+    padding:10px 12px!important;
+    gap:8px!important;
+  }
+  html[data-inj-page="index"] #converterView .entry-converter-wallet-balances{
+    gap:8px!important;
+  }
+  html[data-inj-page="index"] #converterView .entry-converter-wallet-balances strong{
+    font-size:clamp(14px,4vw,19px)!important;
+  }
+  html[data-inj-page="index"] #converterView .entry-converter-use-wallet{
+    padding:9px!important;
+    min-width:103px!important;
+    font-size:11px!important;
+  }
+}

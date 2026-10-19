@@ -1,6 +1,6 @@
-const CACHE_NAME = 'inj-node-v16.00.87-mobile-tile-alignment';
+const CACHE_NAME = 'inj-node-v16.00.88-ios-crisp-top-converter';
 const APP_SHELL = [
-  './navigation.css?v=160087',
+  './navigation.css?v=160088',
   './navigation.css?v=160080',
   './navigation.js?v=160084',
   // Standalone sections still request these legacy cache keys.
@@ -16,10 +16,11 @@ const APP_SHELL = [
   './market.js?v=160082',
   './manifest.webmanifest?v=16.00.14',
   './viewport.css?v=16.00.74',
-  './top-clarity.css?v=16.00.70',
+  './top-clarity.css?v=16.00.88',
   './viewport.js?v=16.00.14',
   './style.css?v=16.00.49',
-  './app.js?v=16.00.80',
+  './app.js?v=16.00.88',
+  './i18n.js?v=160088',
   './i18n.js?v=160084',
   './scroll-guard.js?v=160074',
   './live-charts.html',
