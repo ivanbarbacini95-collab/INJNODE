@@ -2033,12 +2033,6 @@ function renderEntryAtGlance() {
   const total = number(row?.total);
   const openPrice = number(state.entrySpark.openPrice);
   const pnlToday = total > 0 && openPrice > 0 && state.price > 0 ? total * (state.price - openPrice) : 0;
-  if(total>0 && openPrice>0 && Number.isFinite(state.price) && state.price>0){
-    // Daily percent uses the same INJ opening price as the Home's P/L today.
-    // The controller throttles palette changes and shares the last actual
-    // reading with isolated INJ Node sections.
-    window.INJ_DYNAMIC_THEME?.updatePerformance((state.price-openPrice)/openPrice*100,openPrice);
-  }
   const pnl = $('entryInsightPnl');
   if (pnl) {
     pnl.className = pnlToday > 0 ? 'positive' : pnlToday < 0 ? 'negative' : 'neutral';
@@ -7744,7 +7738,7 @@ function updateInstallUi() {
 
 function registerPwa() {
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js?v=16.00.70').catch(() => {}), { once: true });
+    window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js?v=16.01.09').catch(() => {}), { once: true });
   }
   updateInstallUi();
 }
@@ -7755,11 +7749,10 @@ function applyTheme(theme, notify = false) {
     black: { label: 'Obsidian', color: '#030303' },
     light: { label: 'Chiaro', color: '#eef5ff' },
     amber: { label: 'Midnight Ember', color: '#070b11' },
-    dynamic: { label: 'Dynamic', color: '#080d12' }
+    ocean: { label: 'Ocean Aurora', color: '#07131f' }
   };
   const selected = themes[theme] ? theme : 'navy';
   document.documentElement.dataset.theme = selected;
-  window.INJ_DYNAMIC_THEME?.apply(selected);
   localStorage.setItem('inj_monitor_theme', selected);
   $('themeButton').dataset.theme = selected;
   $('themeButton').title = `Tema: ${themes[selected].label}`;
