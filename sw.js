@@ -19,13 +19,14 @@ const APP_SHELL = [
   './treasury-ownership.css?v=160095',
   './market.html',
   './comparison.html',
-  './home-vitality.css?v=1.0.0',
+  './home-vitality.css?v=1.0.1',
   './home-vitality.js?v=1.0.0',
   './ios-screen-fixes.css?v=160095',
   './ios-converter-keyboard.js?v=160095',
   './treasury-ownership.css?v=160095',
-  './comparison.css?v=160092',
-  './comparison.js?v=160092',
+  './comparison.css?v=160095',
+  './comparison-ab.css?v=160095',
+  './comparison.js?v=160095',
   './market-portal.js?v=160076',
   './market-lang.js?v=160082',
   './market.css?v=160082',
@@ -54,7 +55,7 @@ const APP_SHELL = [
   './command-center.js?v=16.00.18',
   './treasury.html',
   './treasury.css?v=16.00.39',
-  './treasury.js?v=16.00.46'
+  './treasury.js?v=16.00.95'
 ];
 
 self.addEventListener('install', (event) => {
