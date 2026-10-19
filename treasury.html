@@ -8,10 +8,10 @@
   <title>INJ NODE · Treasury</title>
   <script>
     try {
-      const savedTheme = localStorage.getItem('inj_monitor_theme');
-      const theme = ['navy','black','light','amber','dynamic'].includes(savedTheme) ? savedTheme : 'navy';
+      const savedTheme = (localStorage.getItem('inj_monitor_theme') === 'dynamic' ? 'ocean' : localStorage.getItem('inj_monitor_theme'));
+      const theme = ['navy','black','light','amber','ocean'].includes(savedTheme) ? savedTheme : 'navy';
       document.documentElement.dataset.theme = theme;
-      const themeColors = { navy:'#07121b', black:'#090b0e', light:'#f8fbff', amber:'#0a111a' };
+      const themeColors = { navy:'#07121b', black:'#090b0e', light:'#f8fbff', amber:'#0a111a', ocean:'#07131f' };
       document.querySelector('meta[name=\"theme-color\"]')?.setAttribute('content', (themeColors[theme] || '#080d12'));
     } catch (_) {}
   </script>
@@ -26,8 +26,8 @@
 
 <link rel="stylesheet" href="./ios-screen-fixes.css?v=160095">
 <link rel="stylesheet" href="./treasury-ownership.css?v=160099">
-<link rel="stylesheet" href="./dynamic-theme.css?v=160107">
-<script defer src="./dynamic-theme.js?v=160107"></script>
+<link rel="stylesheet" href="./ocean-aurora.css?v=160109">
+<script defer src="./ocean-aurora.js?v=160109"></script>
 </head>
 <body>
   <div class="treasury-shell">
