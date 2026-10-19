@@ -257,30 +257,30 @@
  function marketCapSource(ref){
   const status=$('capStockStatus'),fields=$('capManualValues');
   if(!status||!fields)return;
-  const stock=state.kind==='stock'&&!!manualPicked;
-  const automated=stock&&ref.source==='Nasdaq'&&positive(ref.cap);
-  status.hidden=!stock;
-  fields.hidden=stock&&(usCapPending||automated);
-  if(stock)status.textContent=automated?
-   t('Nasdaq · rilevazione giornaliera (non tick live).','Nasdaq · daily snapshot (not a live tick).'):
-   usCapPending?t('Recupero automatico della market cap…','Retrieving market cap automatically…'):
-   isUsEquity()?t('Fonte non disponibile: puoi inserire un dato verificato.','Source unavailable: you can enter a verified figure.'):
-    t('Questa borsa non è coperta: inserisci un dato verificato.','This exchange is not covered: enter a verified figure.');
+  fields.hidden=true;
+  status.hidden=state.kind==='crypto';
+  if(state.kind==='crypto')return;
+  status.textContent=state.kind==='stock'?
+    usCapPending?t('Recupero capitalizzazione in corso…','Fetching capitalization…'):
+    positive(ref.cap)?t('Nasdaq · rilevazione giornaliera (non tick live)','Nasdaq · daily snapshot (not live ticks)'):
+    t('Dato non disponibile: nessun inserimento manuale','Unavailable: no manual data input'):
+    indexPending?t('Calcolo capitalizzazione dei componenti…','Calculating constituent capitalization…'):
+    positive(ref.cap)?t('Stima parziale dei componenti · dato giornaliero','Partial constituents estimate · daily snapshot'):
+    indexError?t('Indice non disponibile · riprova più tardi','Index unavailable · retry later'):
+    t('Stima automatica non disponibile per questo indice','Automatic estimate not available for this index');
  }
  function currentReference(){
   if(state.kind==='crypto'){
    const q=quote(state.target.id);
    return {cap:q?.cap||NaN,name:state.target.name,symbol:state.target.symbol,manual:false,source:'CoinGecko'};
   }
-  if(isUsEquity()){
+  if(!manualPicked)return {cap:NaN,name:'',symbol:'',manual:false,source:'Unavailable'};
+  if(state.kind==='stock'){
    const cap=usMarketCaps.get(tickerKey(manualPicked.symbol));
-   if(positive(cap))return {cap,name:manualPicked.name,symbol:manualPicked.symbol,manual:false,source:'Nasdaq'};
+   return {cap:positive(cap)?cap:NaN,name:manualPicked.name,symbol:manualPicked.symbol,manual:false,source:'Nasdaq'};
   }
-  const raw=parseUserNumber($('capManualCap').value);
-  const scale=number($('capManualScale').value);
-  const cap=positive(raw)&&positive(scale)?raw*scale:NaN;
-  return {cap,name:manualPicked?.name||$('capManualName').value.trim()||t('Riferimento manuale','Manual reference'),
-   symbol:manualPicked?.symbol||(state.kind==='stock'?'STOCK':'INDEX'),manual:true};
+  const row=estimatedIndexCaps.get(manualPicked.symbol);
+  return {cap:row?.cap||NaN,name:manualPicked.name,symbol:manualPicked.symbol,manual:false,source:'IndexBasket',coverage:row};
  }
  function selectedWallet(){
   try{
