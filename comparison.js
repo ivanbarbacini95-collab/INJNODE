@@ -176,8 +176,7 @@
 
  function tickerKey(symbol){return String(symbol||'').trim().toUpperCase().replace(/\./g,'/');}
  function isUsEquity(){
-  return state.kind==='stock'&&manualPicked?.kind==='stock'&&
-   (manualPicked.market==='NASDAQ'||manualPicked.market==='NYSE');
+  return state.kind==='stock'&&manualPicked?.kind==='stock';
  }
  // Public Nasdaq screener snapshot, republished on weekdays via GitHub.
  // This is updated daily, not a live exchange tick.
@@ -418,7 +417,7 @@
     $('capManualSelected').hidden=true;
     $('capManualSuggestions').hidden=true;
     manualPicked=null;
-    usCapSequence++;usCapPending=false;
+    usCapSequence++;usCapPending=false;indexRequestSeq++;indexPending=false;
     $('capManualName').setAttribute('aria-expanded','false');
   }
   $('capTargetCryptoPanel').hidden=kind!=='crypto';
@@ -428,8 +427,9 @@
   });
   $('capManualName').placeholder=kind==='stock'?t('Apple, Nvidia, Microsoft…','Apple, Nvidia, Microsoft…'):t('S&P 500, Nasdaq-100…','S&P 500, Nasdaq-100…');
   $('capManualHint').textContent=kind==='stock'?
-   t('Inserisci la capitalizzazione totale dell’azienda e verifica la data. Per le azioni USA il dato viene recuperato automaticamente dal dataset Nasdaq giornaliero.','Enter the company market cap and verify the date. For US stocks the figure is fetched automatically from a daily Nasdaq snapshot.'):
-   t('Gli indici sono espressi in punti: inserisci la capitalizzazione complessiva dei componenti secondo una metodologia dichiarata.','Indices are quoted in points: enter the aggregate market cap of constituents using a stated methodology.');
+   t('Capitalizzazione automatica delle azioni USA · snapshot giornaliero Nasdaq.','Automatic US stock caps · Nasdaq daily snapshot.'):
+   t('Stima automatica per S&P 500 e Nasdaq-100: somma dei componenti disponibili, dato giornaliero.','Automatic S&P 500 / Nasdaq-100 estimate: available constituents, daily snapshot.');
+  if(kind==='stock')void loadUsStockCaps().then(()=>{render();if(document.activeElement===$('capManualName'))renderManualSuggestions();}).catch(()=>render());
   if(kind==='crypto')hideManualSuggestions();
   render();if(kind==='crypto')void refreshQuotes();
  }
@@ -515,7 +515,10 @@
  let manualPicked=null;
  function manualChoices(){
    const q=normSearch($('capManualName').value);
-   const pool=securityCatalog[state.kind]||[];
+   const pool=state.kind==='index'?securityCatalog.index.filter(row=>Boolean(INDEX_DATASETS[row[0]])):
+   state.kind==='stock'&&usMarketCaps.size?
+     [...usMarketCaps.keys()].map(symbol=>[symbol,symbol,'US',symbol]):
+     securityCatalog.stock.filter(row=>['NASDAQ','NYSE'].includes(row[2]));
    if(!q)return pool.slice(0,7);
    const parts=q.split(/\s+/).filter(Boolean);
    return pool.map(entry=>{
