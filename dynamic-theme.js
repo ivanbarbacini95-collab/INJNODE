@@ -85,4 +85,35 @@
   }
  });
  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&root.dataset.theme==='dynamic')apply('dynamic')});
+ // Isolated views have their own data feeds. Once per minute, reconcile the
+ // palette with a fresh INJ spot price against Home's actual 00:00 reference.
+ // Only active for Dynamic, never for ordinary themes or the main Home page.
+ const isolated=()=>root.dataset.injPage!=='index';
+ let fetching=false;
+ async function reconcileIsolated(){
+  if(!isolated()||document.hidden||root.dataset.theme!=='dynamic'||fetching)return;
+  const reading=cache(),open=Number(reading?.openPrice);
+  if(!Number.isFinite(open)||open<=0)return;
+  fetching=true;
+  try{
+   const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),6500);
+   let data;
+   try{
+    const response=await fetch('https://data-api.binance.vision/api/v3/ticker/price?symbol=INJUSDT',
+      {cache:'no-store',signal:ctrl.signal});
+    if(!response.ok)throw Error('Price unavailable');
+    data=await response.json();
+   }finally{clearTimeout(timer)}
+   const spot=Number(data?.price);
+   if(Number.isFinite(spot)&&spot>0)updatePerformance((spot-open)/open*100,open);
+  }catch(_){/* Retain last known colour, never invent a price. */}
+  finally{fetching=false}
+ }
+ if(isolated()){
+  window.addEventListener('pageshow',()=>{void reconcileIsolated()},{passive:true});
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)void reconcileIsolated()});
+  setInterval(()=>{void reconcileIsolated()},60000);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{setTimeout(()=>void reconcileIsolated(),1800)},{once:true});
+  else setTimeout(()=>void reconcileIsolated(),1800);
+ }
 })();
