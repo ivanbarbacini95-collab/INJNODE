@@ -130,7 +130,8 @@
 <link rel="stylesheet" href="./home-vitality-v2.css?v=160096">
 <link rel="stylesheet" href="./home-layout-polish.css?v=160099">
 <link rel="stylesheet" href="./home-pnl-focus.css?v=160101">
-<link rel="stylesheet" href="./node-pulse.css?v=160102">
+<link rel="stylesheet" href="./node-pulse.css?v=160103">
+<link rel="stylesheet" href="./jn-branding.css?v=160103">
 </head>
 <body class="boot-loading">
 <div aria-label="Avvio INJ Node" aria-live="polite" aria-atomic="true" class="boot-splash node-pulse-splash" id="bootSplash" role="status">
@@ -138,8 +139,6 @@
     <div aria-hidden="true" class="node-pulse-name"><strong>INJ</strong><span>NODE</span></div>
     <div aria-hidden="true" class="node-pulse-visual">
       <svg viewBox="0 0 260 60" xmlns="http://www.w3.org/2000/svg" focusable="false">
-        <path class="node-pulse-gridline" d="M6 30H254"></path>
-        <path class="node-pulse-gridline" d="M6 10H254M6 50H254" opacity=".35"></path>
         <path class="node-pulse-path" pathLength="100" d="M6 30H64L82 30L96 17L112 44L129 18L141 30H198L216 30H254"></path>
         <circle class="node-pulse-dot" cx="216" cy="30" r="3"></circle>
       </svg>
@@ -152,7 +151,7 @@
 <div class="entry-gate-shell">
 <div class="entry-home-top">
 <div aria-hidden="true" class="entry-brand">
-<svg aria-hidden="true" class="inj-node-symbol" viewbox="0 0 48 48"><path class="inj-node-symbol-orbit inj-node-symbol-orbit-a" d="M8.5 27.4A16.5 16.5 0 0 1 33.7 9.6"></path><path class="inj-node-symbol-orbit inj-node-symbol-orbit-b" d="M39.5 20.6A16.5 16.5 0 0 1 14.3 38.4"></path><path class="inj-node-symbol-n" d="M15 33V15l18 18V15"></path><circle class="inj-node-symbol-node" cx="15" cy="15" r="2.4"></circle><circle class="inj-node-symbol-node" cx="33" cy="33" r="2.4"></circle><circle class="inj-node-symbol-node inj-node-symbol-node-soft" cx="33" cy="15" r="1.65"></circle><circle class="inj-node-symbol-core" cx="24" cy="24" r="2.75"></circle></svg>
+<span class="jn-monogram" aria-hidden="true"><span class="jn-monogram-j">J</span><span class="jn-monogram-n">N</span></span>
 <div><strong>INJ</strong><span>Node</span></div>
 </div>
 <button aria-label="Apri stato rete e API" class="entry-system-pill" id="entrySystemStatusButton" type="button"><i></i><span id="entrySystemStatusText">SYSTEM · —</span><svg aria-hidden="true" viewbox="0 0 24 24"><path d="m9 6 6 6-6 6"></path></svg></button>
@@ -185,7 +184,7 @@
 <div aria-label="Control Center INJ Node" class="header-menu-panel" id="headerMenuPanel">
 <div class="menu-control-head">
 <div class="menu-control-brand">
-<svg aria-hidden="true" class="menu-node-symbol" viewbox="0 0 48 48"><path class="menu-node-orbit" d="M8.5 27.4A16.5 16.5 0 0 1 33.7 9.6M39.5 20.6A16.5 16.5 0 0 1 14.3 38.4"></path><path class="menu-node-n" d="M15 33V15l18 18V15"></path><circle cx="15" cy="15" r="2.4"></circle><circle cx="33" cy="33" r="2.4"></circle><circle cx="24" cy="24" r="2.75"></circle></svg>
+<span class="jn-monogram" aria-hidden="true"><span class="jn-monogram-j">J</span><span class="jn-monogram-n">N</span></span>
 <div><span class="menu-eyebrow">INJ NODE</span><strong class="menu-control-title">Control Center</strong></div>
 </div>
 <button aria-label="Chiudi menu" class="menu-close-button" id="menuCloseButton" title="Chiudi" type="button">×</button>
@@ -282,7 +281,7 @@
 </div>
 </div>
 </div>
-<span class="entry-kicker">CONTROL CENTER</span>
+<div class="entry-kicker home-title-brand" aria-label="INJ Node"><strong>INJ</strong><span> Node</span></div>
 <h1>Il tuo spazio Injective.</h1>
 <p class="entry-intro">Scegli il wallet, controlla i dati essenziali e apri la vista che ti serve.</p>
 <div class="entry-wallet-section">
@@ -566,7 +565,7 @@
       </button>
 
       <a class="brand header-title" href="#top" aria-label="INJ Node, torna in alto">
-        <svg class="inj-node-symbol" viewBox="0 0 48 48" aria-hidden="true"><path class="inj-node-symbol-orbit inj-node-symbol-orbit-a" d="M8.5 27.4A16.5 16.5 0 0 1 33.7 9.6"/><path class="inj-node-symbol-orbit inj-node-symbol-orbit-b" d="M39.5 20.6A16.5 16.5 0 0 1 14.3 38.4"/><path class="inj-node-symbol-n" d="M15 33V15l18 18V15"/><circle class="inj-node-symbol-node" cx="15" cy="15" r="2.4"/><circle class="inj-node-symbol-node" cx="33" cy="33" r="2.4"/><circle class="inj-node-symbol-node inj-node-symbol-node-soft" cx="33" cy="15" r="1.65"/><circle class="inj-node-symbol-core" cx="24" cy="24" r="2.75"/></svg>
+        <span class="jn-monogram" aria-hidden="true"><span class="jn-monogram-j">J</span><span class="jn-monogram-n">N</span></span>
         <span class="header-wordmark"><strong>INJ</strong><span>Node</span></span>
       </a>
 
@@ -861,7 +860,7 @@
 <dialog aria-label="Stato rete e API INJ Node" class="system-status-dialog" id="systemStatusDialog">
 <div class="system-status-shell">
 <header class="system-status-header">
-<div class="system-status-brand"><svg aria-hidden="true" class="inj-node-symbol" viewbox="0 0 48 48"><path class="inj-node-symbol-orbit inj-node-symbol-orbit-a" d="M8.5 27.4A16.5 16.5 0 0 1 33.7 9.6"></path><path class="inj-node-symbol-orbit inj-node-symbol-orbit-b" d="M39.5 20.6A16.5 16.5 0 0 1 14.3 38.4"></path><path class="inj-node-symbol-n" d="M15 33V15l18 18V15"></path><circle class="inj-node-symbol-node" cx="15" cy="15" r="2.4"></circle><circle class="inj-node-symbol-node" cx="33" cy="33" r="2.4"></circle><circle class="inj-node-symbol-node inj-node-symbol-node-soft" cx="33" cy="15" r="1.65"></circle><circle class="inj-node-symbol-core" cx="24" cy="24" r="2.75"></circle></svg><div><span>INJ NODE</span><strong>Stato rete &amp; API</strong></div></div>
+<div class="system-status-brand"><span class="jn-monogram" aria-hidden="true"><span class="jn-monogram-j">J</span><span class="jn-monogram-n">N</span></span><div><span>INJ NODE</span><strong>Stato rete &amp; API</strong></div></div>
 <button aria-label="Chiudi stato sistema" class="system-status-close" id="closeSystemStatusButton" type="button">×</button>
 </header>
 <section class="system-status-hero">
@@ -884,7 +883,7 @@
 <svg aria-hidden="true" viewbox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"></path></svg>
 </button>
 </div>
-<div aria-hidden="true" class="focus-display-brand"><svg aria-hidden="true" class="inj-node-symbol" viewbox="0 0 48 48"><path class="inj-node-symbol-orbit inj-node-symbol-orbit-a" d="M8.5 27.4A16.5 16.5 0 0 1 33.7 9.6"></path><path class="inj-node-symbol-orbit inj-node-symbol-orbit-b" d="M39.5 20.6A16.5 16.5 0 0 1 14.3 38.4"></path><path class="inj-node-symbol-n" d="M15 33V15l18 18V15"></path><circle class="inj-node-symbol-node" cx="15" cy="15" r="2.4"></circle><circle class="inj-node-symbol-node" cx="33" cy="33" r="2.4"></circle><circle class="inj-node-symbol-node inj-node-symbol-node-soft" cx="33" cy="15" r="1.65"></circle><circle class="inj-node-symbol-core" cx="24" cy="24" r="2.75"></circle></svg><span>INJ NODE</span></div>
+<div aria-hidden="true" class="focus-display-brand"><span class="jn-monogram" aria-hidden="true"><span class="jn-monogram-j">J</span><span class="jn-monogram-n">N</span></span><span>INJ NODE</span></div>
 <time aria-label="Ora locale" class="focus-display-clock" id="focusDisplayClock">--:--</time>
 <div aria-hidden="true" class="focus-display-live"><i></i><span>LIVE VIEW</span></div>
 <div class="focus-display-content">
