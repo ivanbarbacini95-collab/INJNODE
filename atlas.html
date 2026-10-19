@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="it" data-inj-page="atlas" data-theme="navy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#020708">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>INJ Atlas · INJ Node</title>
+<style>html,body{margin:0;min-height:100%;background:#020708}html[data-theme="black"],html[data-theme="black"] body{background:#000}html[data-theme="light"],html[data-theme="light"] body{background:#edf4fb}html[data-theme="amber"],html[data-theme="amber"] body{background:#05080d}</style>
+<script>
+try{
+ const theme=localStorage.getItem('inj_monitor_theme');
+ const allowed=['navy','black','light','amber'];
+ document.documentElement.dataset.theme=allowed.includes(theme)?theme:'navy';
+ document.documentElement.lang=localStorage.getItem('inj_node_language_v1')==='en'?'en':'it';
+}catch(_){}
+</script>
+<link rel="stylesheet" href="./navigation.css?v=160076">
+<link rel="stylesheet" href="./atlas.css?v=160078">
+<script defer src="./navigation.js?v=160078"></script>
+<script defer src="./atlas.js?v=160078"></script>
+</head>
+<body>
+<div class="atlas-shell">
+  <header class="atlas-header">
+    <button id="atlasBack" class="atlas-back" type="button" aria-label="Torna alla Home" title="Home">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 11 8-7 8 7"></path><path d="M6.5 10v9h11v-9M10 19v-5h4v5"></path></svg>
+    </button>
+    <div class="atlas-heading"><span>INJ NODE</span><strong>INJ ATLAS</strong><small data-t="subtitle">Architettura del capitale · 5 wallet</small></div>
+    <div class="atlas-connection" id="atlasConnection" role="status" aria-live="polite"><i></i><span id="atlasConnectionText">SYNC</span></div>
+  </header>
+
+  <main class="atlas-main">
+    <section class="atlas-overview" aria-label="Atlas overview">
+      <article><span data-t="totalManaged">TOTALE GESTITO</span><strong class="atlas-figure" id="atlasTotal">—</strong><small data-t="totalCopy">Disponibile + staking + reward</small></article>
+      <article><span data-t="staked">IN STAKING</span><strong class="atlas-figure" id="atlasStaked">—</strong><small data-t="stakedCopy">Capitale delegato</small></article>
+      <article><span data-t="rewards">REWARD DISPONIBILI</span><strong class="atlas-figure atlas-reward" id="atlasRewards">—</strong><small data-t="rewardsCopy">Reward verificati on-chain</small></article>
+    </section>
+
+    <section class="atlas-map" aria-labelledby="atlasMapTitle">
+      <div class="atlas-map-head">
+        <div><span class="atlas-overline" data-t="mapOverline">ASSET MAP · INJECTIVE</span><h1 id="atlasMapTitle" data-t="mapTitle">Le tue cinque torri</h1><p data-t="mapDescription">Altezza proporzionale ai dati del wallet. Tocca una torre per esplorarla.</p></div>
+        <div class="atlas-filters" role="group" aria-label="Seleziona la metrica">
+          <button type="button" data-atlas-mode="total" aria-pressed="true" class="active" data-t="modeTotal">Totale</button>
+          <button type="button" data-atlas-mode="staked" aria-pressed="false" data-t="modeStaked">Staking</button>
+          <button type="button" data-atlas-mode="rewards" aria-pressed="false" data-t="modeRewards">Reward</button>
+        </div>
+      </div>
+      <div class="atlas-stage">
+        <div class="atlas-stage-glow" aria-hidden="true"></div>
+        <div class="atlas-towers" id="atlasTowers" aria-label="Confronto fra i cinque wallet"></div>
+        <div class="atlas-ground" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+      </div>
+      <div class="atlas-stage-bottom">
+        <div class="atlas-legend"><span><i class="staked"></i><b data-t="legendStaked">Staking</b></span><span><i class="available"></i><b data-t="legendAvailable">Disponibile</b></span><span><i class="reward"></i><b data-t="legendRewards">Reward</b></span></div>
+        <small id="atlasLastUpdate">—</small>
+      </div>
+    </section>
+
+    <div class="atlas-lower">
+      <section class="atlas-details" aria-labelledby="atlasSelectedName">
+        <div class="atlas-panel-head"><div><span class="atlas-overline" data-t="walletDetail">DETTAGLIO WALLET</span><h2 id="atlasSelectedName">Wallet 1</h2></div><span class="atlas-pill" id="atlasSelectedState">SYNC</span></div>
+        <div class="atlas-detail-grid">
+          <div><span data-t="detailTotal">TOTALE</span><strong id="atlasDetailTotal">—</strong></div>
+          <div><span data-t="detailStaking">STAKING</span><strong id="atlasDetailStaked">—</strong></div>
+          <div><span data-t="detailAvailable">DISPONIBILE</span><strong id="atlasDetailAvailable">—</strong></div>
+          <div><span data-t="detailReward">REWARD</span><strong class="atlas-reward" id="atlasDetailRewards">—</strong></div>
+        </div>
+        <div class="atlas-details-foot"><span data-t="portfolioShare">Quota sul totale</span><strong id="atlasWalletShare">—</strong></div>
+      </section>
+      <section class="atlas-milestone" aria-label="Atlas milestones" id="atlasMilestonePanel">
+        <div class="atlas-panel-head"><div><span class="atlas-overline">ATLAS PROGRESS</span><h2 data-t="milestone">Prossimo traguardo</h2></div><span class="atlas-target-label" id="atlasTarget">—</span></div>
+        <div class="atlas-progress-track" aria-hidden="true"><span id="atlasProgress"></span></div>
+        <div class="atlas-progress-data"><strong id="atlasProgressPercent">—</strong><span id="atlasMissing">—</span></div>
+        <p data-t="milestoneNote">Traguardi calcolati sul totale reale dei cinque wallet.</p>
+      </section>
+    </div>
+    <footer class="atlas-footer"><span data-t="sourceNote">Dati pubblici on-chain. Nessun indirizzo mostrato.</span><span>INJ NODE · ATLAS</span></footer>
+  </main>
+</div>
+</body>
+</html>
