@@ -1,0 +1,83 @@
+/* INJ Node Home · P/L today emphasis v16.01.00
+   Dedicated override after Home layout styles, iPhone-first. */
+html[data-inj-page="index"] body #entryGate #entryInsights .entry-price-pnl {
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) max-content!important;
+  align-items:center!important;
+  column-gap:12px!important;
+  min-height:86px!important;
+  padding:14px 16px!important;
+}
+html[data-inj-page="index"] body #entryGate #entryInsights .entry-price-pnl > div {
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  min-width:0!important;
+  align-self:center!important;
+}
+html[data-inj-page="index"] body #entryGate #entryInsights .entry-price-pnl > div > span {
+  display:block!important;
+  font-size:clamp(11px,1.25vw,14px)!important;
+  font-weight:750!important;
+  line-height:1.25!important;
+  white-space:nowrap!important;
+  letter-spacing:.025em!important;
+  text-transform:none!important;
+  color:var(--muted-strong,var(--text,#f3f8f8))!important;
+}
+html[data-inj-page="index"] body #entryGate #entryInsights #entryInsightPnl {
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  justify-self:end!important;
+  align-self:center!important;
+  min-width:0!important;
+  width:max-content!important;
+  max-width:100%!important;
+  font-size:clamp(34px,3.2vw,48px)!important;
+  font-weight:900!important;
+  line-height:1.22!important;
+  letter-spacing:-.048em!important;
+  font-variant-numeric:tabular-nums!important;
+  white-space:nowrap!important;
+  text-align:right!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+  text-shadow:none!important;
+}
+html[data-inj-page="index"] body #entryGate #entryInsights #entryInsightPnl.positive,
+html[data-inj-page="index"] body #entryGate #entryInsights #entryInsightPnl.positive * {
+  color:var(--up,#46e8ad)!important;
+}
+html[data-inj-page="index"] body #entryGate #entryInsights #entryInsightPnl.negative,
+html[data-inj-page="index"] body #entryGate #entryInsights #entryInsightPnl.negative * {
+  color:var(--down,#ff7080)!important;
+}
+html[data-inj-page="index"] body #entryGate #entryInsights #entryInsightPnl.neutral,
+html[data-inj-page="index"] body #entryGate #entryInsights #entryInsightPnl.neutral * {
+  color:var(--text,#f3f8f8)!important;
+}
+@media (max-width:900px){
+  html[data-inj-page="index"] body #entryGate #entryInsights .entry-price-pnl {
+    grid-template-columns:minmax(0,1fr) max-content!important;
+    min-height:82px!important;
+    column-gap:8px!important;
+    padding:12px 12px!important;
+  }
+  html[data-inj-page="index"] body #entryGate #entryInsights .entry-price-pnl > div > span {
+    font-size:clamp(10px,2.65vw,12px)!important;
+    line-height:1.2!important;
+    letter-spacing:0!important;
+  }
+  html[data-inj-page="index"] body #entryGate #entryInsights #entryInsightPnl {
+    font-size:clamp(31px,8.6vw,43px)!important;
+  }
+}
+@media (max-width:360px){
+  html[data-inj-page="index"] body #entryGate #entryInsights .entry-price-pnl {
+    column-gap:5px!important;padding-inline:9px!important;
+  }
+  html[data-inj-page="index"] body #entryGate #entryInsights #entryInsightPnl {
+    font-size:clamp(27px,8vw,31px)!important;
+  }
+}
