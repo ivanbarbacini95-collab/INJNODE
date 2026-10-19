@@ -1,72 +1,64 @@
-/* INJ Node · Dynamic adaptive palette v16.01.05
-   Paint only: never touch geometry, scrolling or numeric sign semantics. */
-html[data-theme="dynamic"] {
+/* INJ Node Dynamic · restrained market-responsive theme v16.01.06
+   Never paints large saturated fills over the interface. Backgrounds and
+   content remain stable; borders, selected controls and accents respond. */
+html[data-theme="dynamic"]{
  color-scheme:dark;
- --bg:#080d12;
- --canvas:#080d12;
- --theme-canvas:#080d12;
- --theme-browser:#080d12;
- --surface:#0f171d;
- --surface-strong:#151f25;
- --surface-soft:#1c2930;
- --panel:#0f171d;
- --panel-strong:#151f25;
- --text:#f5fbfc;
- --muted:#93a6af;
- --muted-strong:#c2d0d5;
- --accent:#8fa6ad;
- --accent-soft:rgba(143,166,173,.13);
- --dynamic-rgb:143,166,173;
- --line:rgba(143,166,173,.14);
- --line-strong:rgba(143,166,173,.29);
+ --bg:#070d13;
+ --canvas:#070d13;
+ --theme-canvas:#070d13;
+ --theme-browser:#070d13;
+ --surface:#0e171d;
+ --surface-strong:#152027;
+ --surface-soft:#1e2b33;
+ --panel:#0e171d;
+ --panel-strong:#152027;
+ --text:#f4f8fa;
+ --muted:#91a4ad;
+ --muted-strong:#bdcdd4;
+ --accent:#73979f;
+ --accent-soft:rgba(115,151,159,.065);
+ --dynamic-rgb:115,151,159;
+ --line:rgba(115,151,159,.09);
+ --line-strong:rgba(115,151,159,.18);
  --up:#37e590;
  --up-soft:rgba(55,229,144,.14);
  --down:#ff627b;
  --down-soft:rgba(255,98,123,.14);
- --theme-browser:#080d12;
- --header-glow-a:rgba(143,166,173,.14);
- --header-glow-b:rgba(143,166,173,.06);
- --header-edge:rgba(143,166,173,.20);
- --page-gradient:radial-gradient(ellipse at 75% 0%,rgba(143,166,173,.08),transparent 50%),linear-gradient(155deg,#0e171d,#080d12 66%);
+ --header-glow-a:rgba(115,151,159,.07);
+ --header-glow-b:rgba(115,151,159,.025);
+ --header-edge:rgba(115,151,159,.12);
+ --page-gradient:linear-gradient(155deg,#101a20,#070d13 65%);
 }
 html[data-theme="dynamic"] body{
  color:var(--text)!important;
  background-color:var(--bg)!important;
  background-image:var(--page-gradient)!important;
 }
-html[data-theme="dynamic"] :is(.entry-gate,.entry-gate-shell,.app-shell,.treasury-shell,.rewards-shell,
- .live-page,.book-page,.cc-shell,.cap-shell,.shell){
- --dynamic-theme-active:1;
-}
-/* Scope recolouring to surfaces that already exist; do not add overlay layers. */
+/* Explicitly keep all dashboard containers neutral graphite. */
 html[data-theme="dynamic"] .entry-gate-shell:not(.first-access){
- border-color:color-mix(in srgb,var(--accent) 21%,transparent)!important;
- background:linear-gradient(145deg,color-mix(in srgb,var(--surface) 95%,var(--bg)),
-                             color-mix(in srgb,var(--surface-strong) 92%,var(--bg)))!important;
+ border-color:rgba(145,168,178,.12)!important;
+ background:linear-gradient(155deg,#0d171d,#0a1218)!important;
 }
 html[data-theme="dynamic"] #entryGate .entry-actions.entry-flat-v44 > .entry-action{
- border-color:color-mix(in srgb,var(--accent) 30%,transparent)!important;
- background:linear-gradient(135deg,color-mix(in srgb,var(--surface) 88%,var(--bg)),
-                                  color-mix(in srgb,var(--surface-strong) 94%,var(--bg)))!important;
+ border-color:color-mix(in srgb,var(--accent) 19%,rgba(137,151,159,.12))!important;
+ background:linear-gradient(135deg,#101d22,#0b171d)!important;
 }
 html[data-theme="dynamic"] :is(.entry-overview,.entry-insights,.entry-price-pnl,
- .menu-control-panel,.header-menu-panel,.treasury-card,.cap-panel,.data-card,.market-card){
- border-color:color-mix(in srgb,var(--accent) 23%,transparent);
+ .header-menu-panel,.treasury-card,.cap-panel,.data-card,.market-card){
+ border-color:color-mix(in srgb,var(--accent) 13%,rgba(156,174,184,.13));
 }
-html[data-theme="dynamic"] :is(.entry-gate,.entry-gate-shell,.entry-action,.entry-overview,
- .entry-insights,.entry-price-pnl,.header-menu-panel,.theme-picker,.treasury-shell,.treasury-card,
- .cap-panel,.live-page,.book-page,.cc-shell,.rewards-shell,.app-shell,.data-card,.market-card,
- .shell,.header,.terminal-header,.treasury-header){
- transition-property:background-color,border-color,color,box-shadow;
- transition-duration:.85s;
- transition-timing-function:ease;
+/* No blanket transitions on children: changing digits/charts must remain sharp. */
+html[data-theme="dynamic"] :is(.entry-gate-shell,.entry-action,.entry-overview,
+ .entry-insights,.entry-price-pnl,.header-menu-panel,.treasury-card,.cap-panel,
+ .data-card,.market-card){
+ transition-property:border-color,box-shadow!important;
+ transition-duration:.9s!important;
+ transition-timing-function:ease!important;
 }
-html[data-theme="dynamic"] .theme-swatch.dynamic,
-.theme-swatch.dynamic {
- background:linear-gradient(110deg,#822b43 0%,#28323b 49%,#22cb7d 100%)!important;
- border:1px solid rgba(181,204,208,.30)!important;
+.theme-swatch.dynamic{
+ background:linear-gradient(110deg,#904359 5%,#33414a 52%,#399e7e 96%)!important;
+ border:1px solid rgba(181,204,208,.24)!important;
 }
-/* A Dynamic selection must be visibly indicated even when current mood is neutral. */
 html[data-theme="dynamic"] [data-theme-choice="dynamic"]{
  border-color:var(--accent)!important;
 }
@@ -74,7 +66,7 @@ html[data-theme="dynamic"] .node-pulse-splash{
  --pulse-accent:var(--accent);
 }
 @media(prefers-reduced-motion:reduce){
- html[data-theme="dynamic"] *{
-  transition-duration:0s!important;
- }
+ html[data-theme="dynamic"] :is(.entry-gate-shell,.entry-action,.entry-overview,
+ .entry-insights,.entry-price-pnl,.header-menu-panel,.treasury-card,.cap-panel,
+ .data-card,.market-card){transition:none!important}
 }
