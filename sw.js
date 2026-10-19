@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.00.97-mobile-ab-walletshares';
+const CACHE_NAME = 'inj-node-v16.00.98-walletshare-language';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160088',
@@ -51,7 +51,7 @@ const APP_SHELL = [
   './command-center.js?v=16.00.18',
   './treasury.html',
   './treasury.css?v=16.00.39',
-  './treasury.js?v=16.00.95'
+  './treasury.js?v=16.00.98'
 ];
 
 self.addEventListener('install', (event) => {
