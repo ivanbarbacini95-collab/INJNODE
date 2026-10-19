@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.01.06-dynamic-masthead-polish';
+const CACHE_NAME = 'inj-node-v16.01.07-dynamic-trading-desk';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160088',
@@ -18,8 +18,8 @@ const APP_SHELL = [
   './home-pnl-focus.css?v=160101',
   './node-pulse.css?v=160103',
   './jn-branding.css?v=160106',
-  './dynamic-theme.css?v=160106',
-  './dynamic-theme.js?v=160106',
+  './dynamic-theme.css?v=160107',
+  './dynamic-theme.js?v=160107',
   './ios-screen-fixes.css?v=160095',
   './ios-converter-keyboard.js?v=160095',
   './treasury-ownership.css?v=160099',
