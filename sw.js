@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.00.92-auto-us-stock-cap';
+const CACHE_NAME = 'inj-node-v16.00.95-treasury-crisp';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160088',
@@ -13,6 +13,11 @@ const APP_SHELL = [
   './index.html',
   './market.html',
   './comparison.html',
+  './home-vitality.css?v=1.0.0',
+  './home-vitality.js?v=1.0.0',
+  './ios-screen-fixes.css?v=160095',
+  './ios-converter-keyboard.js?v=160095',
+  './treasury-ownership.css?v=160095',
   './comparison.css?v=160092',
   './comparison.js?v=160092',
   './market-portal.js?v=160076',
