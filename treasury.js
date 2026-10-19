@@ -1722,10 +1722,76 @@ function bindWorthInteraction() {
   document.addEventListener('visibilitychange',()=>{if(document.hidden){clearIdle();hideWorthInspector();resetTouch();}});
   stage.addEventListener('keydown',(event)=>{const samples=state.worthPlot?.samples||[];if(!samples.length||!['ArrowLeft','ArrowRight','Home','End','Escape'].includes(event.key))return;event.preventDefault();clearIdle();if(event.key==='Escape')return hideWorthInspector();let i=state.worthInspectIndex;if(event.key==='Home')i=0;else if(event.key==='End')i=samples.length-1;else if(event.key==='ArrowLeft')i=i<0?samples.length-1:i-1;else i=i<0?0:i+1;showWorthSample(i);armIdle();});
 }
+
+/* Shares of Treasury per tracked wallet, computed from the same rows used
+   by the Treasury totals. No simulated holdings and no full addresses in UI. */
+let ownershipLabelsSignature='',ownershipPctSignature='',ownershipBuilt=false,ownershipTimer=0;
+function ownershipShort(address){
+ const str=String(address||'');return str.length>14?str.slice(0,8)+'…'+str.slice(-5):str;
+}
+function ownershipSavedNames(){
+ let wallets=[];
+ try{wallets=JSON.parse(localStorage.getItem('inj_monitor_wallets_v1')||'[]')}catch(_){}
+ return new Map((Array.isArray(wallets)?wallets:[]).filter(w=>w&&w.address)
+   .map(w=>[String(w.address),String(w.label||'').trim()]));
+}
+function ownershipPercent(value,total){return total>0&&Number.isFinite(value)?Math.max(0,Math.min(100,value/total*100)):NaN}
+function renderWalletOwnership(){
+ const track=$('treasuryOwnershipTrack'),head=$('treasuryOwnershipSummary');
+ if(!track||!head)return;
+ const saved=ownershipSavedNames();
+ const active=TREASURY_ADDRESSES.map(address=>{
+  const r=state.walletRows[address];const raw=saved.get(address)||'';
+  const name=raw&&!/^wallet\s*\d+$/i.test(raw)&&raw!==address?raw:ownershipShort(address);
+  const total=r?number(r.total):NaN;
+  return {address,name,total};
+ });
+ const overall=active.every(x=>Number.isFinite(x.total))?active.reduce((n,x)=>n+x.total,0):NaN;
+ const complete=Number.isFinite(overall)&&overall>0;
+ const labelsSignature=active.map(x=>x.address+'='+x.name).join('|');
+ if(!ownershipBuilt||labelsSignature!==ownershipLabelsSignature){
+  ownershipBuilt=true;ownershipLabelsSignature=labelsSignature;ownershipPctSignature='';
+  const colors=['#6ce7c6','#8abaf7','#d3b9fa','#f0bb86','#a9db9d','#85e0ef'];
+  const frag=document.createDocumentFragment();
+  for(let i=0;i<active.length;i++){
+   const row=active[i],chip=document.createElement('div');chip.className='treasury-owner';
+   chip.style.setProperty('--owner-color',colors[i%colors.length]);
+   const dot=document.createElement('i');dot.className='treasury-owner-dot';dot.setAttribute('aria-hidden','true');
+   const title=document.createElement('span');title.className='treasury-owner-label';title.textContent=row.name;
+   const pct=document.createElement('strong');pct.className='treasury-owner-pct';pct.dataset.walletShare=row.address;pct.textContent='—';
+   const meter=document.createElement('span');meter.className='treasury-owner-meter';meter.setAttribute('aria-hidden','true');
+   const bar=document.createElement('i');bar.dataset.walletMeter=row.address;meter.append(bar);
+   chip.append(dot,title,pct,meter);frag.append(chip);
+  }
+  track.replaceChildren(frag);
+  // Animate only when there is content wider than its horizontal viewport.
+  requestAnimationFrame(()=>{
+   const windowEl=$('treasuryOwnershipWindow');
+   if(!windowEl||!track.isConnected)return;
+   const travel=Math.max(0,track.scrollWidth-windowEl.clientWidth);
+   track.style.setProperty('--treasury-owner-travel',travel+'px');
+   track.style.setProperty('--treasury-owner-duration',Math.max(24,travel/15)+'s');
+   track.style.animationPlayState=travel>3?'running':'paused';
+  });
+ }
+ const percents=active.map(x=>complete?ownershipPercent(x.total,overall):NaN);
+ const pctSignature=percents.map(v=>Number.isFinite(v)?v.toFixed(2):'—').join('|');
+ if(pctSignature!==ownershipPctSignature){
+  ownershipPctSignature=pctSignature;
+  const pctEls=track.querySelectorAll('[data-wallet-share]'),barEls=track.querySelectorAll('[data-wallet-meter]');
+  percents.forEach((pct,i)=>{
+   const display=Number.isFinite(pct)?pct.toLocaleString(document.documentElement.lang==='en'?'en-US':'it-IT',{minimumFractionDigits:2,maximumFractionDigits:2})+'%':'—';
+   if(pctEls[i])pctEls[i].textContent=display;
+   if(barEls[i])barEls[i].style.width=Number.isFinite(pct)?pct+'%':'0%';
+  });
+ }
+ head.textContent=active.length+' WALLET'+(complete?' · 100%':' · SYNC');
+}
+
 function render() {
   const data = state.data;
   setLiveValue('treasuryHeaderPrice', state.price > 0 ? money(state.price,state.price<10?4:3) : '—', state.price || NaN, true);
-  if (!data) { renderSparkline(); renderWorthSparkline(); return; }
+  if (!data) { renderWalletOwnership();renderSparkline(); renderWorthSparkline(); return; }
   const total=number(data.total),available=number(data.available),staked=number(data.staked),rewards=number(data.rewards),apr=number(data.apr),worth=total*state.price;
   const allocation=treasuryAllocationPercentages(staked,available,rewards,2);
   const stakedPct=allocation.display.staked,availablePct=allocation.display.available,rewardsPct=allocation.display.rewards;
@@ -1751,6 +1817,7 @@ function render() {
   setLiveValue('treasuryStaked',treasuryInj(staked,4),staked,true);setLiveValue('treasuryStakedWorth',state.price>0?money(staked*state.price,2):'—',state.price>0?staked*state.price:NaN,true);
   setLiveValue('treasuryStakeRatio',`${stakedPct.toFixed(2)}%`,stakedPct,true);setLiveValue('treasuryStakedPct',`${stakedPct.toFixed(2)}%`,stakedPct,true);setLiveValue('treasuryAvailablePct',`${availablePct.toFixed(2)}%`,availablePct,true);setLiveValue('treasuryRewardsPct',`${rewardsPct.toFixed(2)}%`,rewardsPct,true);
   renderAllocationPie(staked,available,rewards,total,allocation);
+  renderWalletOwnership();
   setLiveValue('treasuryApr',apr>0?`APR RETE ${apr.toFixed(3)}%`:'APR —',apr||NaN,true);
   setLiveValue('treasuryRewardHour',treasuryInj(rv.hour,5),rv.hour,true);setLiveValue('treasuryRewardDay',treasuryInj(rv.day,4),rv.day,true);setLiveValue('treasuryRewardMonth',treasuryInj(rv.month,3),rv.month,true);setLiveValue('treasuryRewardYear',treasuryInj(rv.year,2),rv.year,true);
   setLiveValue('treasuryRewardHourWorth',state.price>0?money(rv.hour*state.price,2):'—',state.price>0?rv.hour*state.price:NaN,true);setLiveValue('treasuryRewardDayWorth',state.price>0?money(rv.day*state.price,2):'—',state.price>0?rv.day*state.price:NaN,true);setLiveValue('treasuryRewardMonthWorth',state.price>0?money(rv.month*state.price,2):'—',state.price>0?rv.month*state.price:NaN,true);setLiveValue('treasuryRewardYearWorth',state.price>0?money(rv.year*state.price,2):'—',state.price>0?rv.year*state.price:NaN,true);
@@ -2090,6 +2157,7 @@ function bindTreasuryHomeReturn() {
 
 function boot() {
   try { state.currency=localStorage.getItem('inj_monitor_currency')==='EUR'?'EUR':'USD'; } catch(_) {}
+  window.addEventListener('storage',e=>{if(e.key==='inj_monitor_wallets_v1')renderWalletOwnership();});
   hydrateSnapshot();hydrateHistory();hydrateWorthHistory();bindTreasuryHomeReturn();bindSparkInteraction();bindWorthInteraction();bindGrowthRangeControls();bindWorthRangeControls();render();
   void restoreTimelineBackups().then(()=>{state.historyReady=true;render();void repairWorthHistoryAfterResume();});
   Promise.allSettled([loadPrice(),loadEurRate(),loadTreasury(true)]).finally(()=>{state.firstPaint=false;});
