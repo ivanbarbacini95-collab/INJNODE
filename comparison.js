@@ -28,15 +28,15 @@
  const translations={
   subTitle:['Confronta market cap e valore del wallet','Compare market caps and wallet value'],
   title:['Quanto potrebbe valere?','How much could it be worth?'],
-  intro:['Scegli due asset: guarda quanti X servirebbero e quanto varrebbe il tuo wallet INJ.','Choose two assets to see the required multiple and hypothetical value of your INJ wallet.'],
+  intro:['Scegli A e B: market cap e valore del wallet INJ calcolati automaticamente.','Select A and B: market caps and INJ wallet value calculated automatically.'],
   starting:['ASSET DI PARTENZA','SOURCE ASSET'],
-  sourceHeading:['Scegli una crypto','Choose a crypto'],
+  sourceHeading:['Asset A','Asset A'],
   sourceSearchLabel:['Cerca crypto per nome o simbolo','Search crypto by name or ticker'],
-  sourceCap:['MARKET CAP ATTUALE','CURRENT MARKET CAP'],
+  sourceCap:['MARKET CAP A','MARKET CAP A'],
   sourcePrice:['PREZZO ATTUALE','CURRENT PRICE'],
   sourceSupply:['OFFERTA CIRCOLANTE','CIRCULATING SUPPLY'],
   target:['MARKET CAP DI RIFERIMENTO','REFERENCE MARKET CAP'],
-  targetHeading:['Confronta con','Compare with'],
+  targetHeading:['Asset B','Asset B'],
   crypto:['Crypto','Crypto'],stock:['Azione','Stock'],index:['Indice','Index'],
   targetSearchLabel:['Cerca la crypto di riferimento','Search reference cryptocurrency'],
   manualNameLabel:['Cerca per nome o ticker','Search by name or ticker'],
@@ -44,8 +44,8 @@
   manualScale:['Unità · USD','Units · USD'],
   billions:['Miliardi (B)','Billions (B)'],trillions:['Migliaia di miliardi (T)','Trillions (T)'],
   millions:['Milioni (M)','Millions (M)'],fullUsd:['USD interi','Full USD'],
-  manualWarning:['I suggerimenti aiutano a scegliere il titolo; inserisci la capitalizzazione da una fonte verificata.','Suggestions identify the asset; enter the market cap from a verified source.'],
-  targetCap:['CAPITALIZZAZIONE DI RIFERIMENTO','REFERENCE MARKET CAP'],
+  manualWarning:['Market cap calcolata automaticamente.','Market cap calculated automatically.'],
+  targetCap:['MARKET CAP B','MARKET CAP B'],
   autoSource:['Dati crypto CoinGecko · USD','CoinGecko crypto data · USD'],
   scenario:['Scenario a pari market cap','Equal-market-cap scenario'],
   moreDetails:['Mostra i dettagli del calcolo','Show calculation details'],
@@ -64,7 +64,7 @@
   futureWallet:['VALORE IPOTETICO · USD','THEORETICAL VALUE · USD'],
   walletFutureHelp:['Se INJ raggiungesse la market cap selezionata','If INJ reached the reference market cap'],
   walletNote:['Il controvalore ipotetico si calcola quando la crypto di partenza è INJ. Il wallet non viene modificato.','The hypothetical wallet value applies when INJ is the source crypto. The wallet is never modified.'],
-  sources:['Fonti: CoinGecko per crypto, snapshot Nasdaq giornaliero per azioni USA; indici e altri mercati manuali.','Sources: CoinGecko crypto, daily Nasdaq US equities; indexes and other markets manual.']
+  sources:['CoinGecko crypto; azioni USA Nasdaq giornaliero; stime parziali per indici supportati.','CoinGecko crypto; daily Nasdaq US equities; partial supported-index estimates.']
  };
  const language=()=>{try{return localStorage.getItem('inj_node_language_v1')==='en'?'en':'it'}catch(_){return 'it'}};
  const english=()=>language()==='en';
@@ -279,7 +279,7 @@
    return {cap:positive(cap)?cap:NaN,name:manualPicked.name,symbol:manualPicked.symbol,manual:false,source:'Nasdaq'};
   }
   const row=estimatedIndexCaps.get(manualPicked.symbol);
-  return {cap:row?.cap||NaN,name:manualPicked.name,symbol:manualPicked.symbol,manual:false,source:'IndexBasket',coverage:row};
+  return {cap:row?.cap||NaN,name:manualPicked.name,symbol:manualPicked.symbol,manual:false,source:row?'IndexBasket':'Unavailable',coverage:row};
  }
  function selectedWallet(){
   try{
@@ -347,7 +347,7 @@
   $('capScenarioState').textContent=can?t('CALCOLATO','CALCULATED'):t('IN ATTESA DATI','WAITING FOR DATA');
   $('capScenarioState').classList.toggle('ready',can);
   set('capBarSourceLabel',state.source.symbol);
-  set('capBarTargetLabel',ref.manual?ref.name:state.target.symbol);
+  set('capBarTargetLabel',state.kind==='crypto'?state.target.symbol:(ref.symbol||'—'));
   set('capBarSourceValue',money(source?.cap));
   set('capBarTargetValue',money(ref.cap));
   const max=can?Math.max(source.cap,ref.cap):NaN;
