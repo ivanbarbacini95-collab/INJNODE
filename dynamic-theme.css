@@ -62,8 +62,9 @@ html[data-theme="dynamic"] :is(.entry-gate-shell,.entry-action,.entry-overview,
 html[data-theme="dynamic"] [data-theme-choice="dynamic"]{
  border-color:var(--accent)!important;
 }
+/* Wordmark identity remains consistent with the Home, independent of P/L. */
 html[data-theme="dynamic"] .node-pulse-splash{
- --pulse-accent:var(--accent);
+ --pulse-accent:#75e9d1!important;
 }
 @media(prefers-reduced-motion:reduce){
  html[data-theme="dynamic"] :is(.entry-gate-shell,.entry-action,.entry-overview,
