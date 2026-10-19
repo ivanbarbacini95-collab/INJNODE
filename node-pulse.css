@@ -116,10 +116,6 @@ html[data-inj-page="index"] body #bootSplash .node-pulse-visual svg{
   stroke-linecap:round!important;
   stroke-linejoin:round!important;
 }
-html[data-inj-page="index"] body #bootSplash .node-pulse-gridline{
-  opacity:.19!important;
-  stroke-width:1.35!important;
-}
 html[data-inj-page="index"] body #bootSplash .node-pulse-path{
   stroke-width:2.4!important;
   opacity:.89!important;
