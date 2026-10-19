@@ -29,9 +29,9 @@ const INJ_DECIMALS = 1e18;
 const USDC_DECIMALS = 1e6;
 const NATIVE_USDC_DENOM = 'erc20:0xa00c59ff5a080d2b954d0c75e46e22a0c371235a';
 
-const BOOT_SPLASH_DURATION = 2800;
-const BOOT_PROGRESS_DELAY = 280;
-const BOOT_PROGRESS_DURATION = 2180;
+// The splash lasts only until Home's first usable render (not a fake % timer).
+const BOOT_MIN_VISUAL_MS = 480;
+const BOOT_FAILSAFE_MS = 5000;
 const DIRECT_HOME_RETURN = document.documentElement.dataset.returnHome === '1';
 window.addEventListener('pageshow', () => {
   try { sessionStorage.removeItem('inj_node_return_home'); } catch (_) {}
@@ -48,38 +48,10 @@ document.documentElement.classList.toggle('mobile-efficient', MOBILE_EFFICIENCY)
 
 // v15.98.7 — Direct launch + large-monitor responsive scaling.
 
-function formatBootPercent(value) {
-  return `${Math.max(0, Math.min(100, Math.round(value))).toString().padStart(3, '0')}%`;
-}
-
-function animateBootPercent(reducedMotion = false) {
-  const output = $('bootPercent');
-  if (!output) return;
-  output.textContent = '000%';
-
-  const delay = reducedMotion ? 40 : BOOT_PROGRESS_DELAY;
-  const duration = reducedMotion ? 430 : BOOT_PROGRESS_DURATION;
-  const started = performance.now();
-
-  const frame = (now) => {
-    const elapsed = now - started;
-    if (elapsed < delay) {
-      requestAnimationFrame(frame);
-      return;
-    }
-    const progress = Math.max(0, Math.min(1, (elapsed - delay) / duration));
-    output.textContent = formatBootPercent(progress * 100);
-    if (progress < 1) requestAnimationFrame(frame);
-  };
-  requestAnimationFrame(frame);
-}
-
 function scheduleBootSplashExit() {
   const splash = $('bootSplash');
 
-  // v15.99.38 — Returning from Treasury must behave like an in-app Home handoff:
-  // never replay the INJ Node startup logo. The Treasury page sets a one-shot
-  // session flag before navigation; the <head> hides the splash before first paint.
+  // A return from another section reveals the existing Home without replaying boot.
   if (DIRECT_HOME_RETURN) {
     splash?.remove();
     requestAnimationFrame(() => {
@@ -93,31 +65,38 @@ function scheduleBootSplashExit() {
   }
 
   if (!splash) {
-    // La schermata di accesso prende il controllo PRIMA di scoprire la dashboard.
     showEntryGate();
     requestAnimationFrame(() => document.body.classList.remove('boot-loading'));
     return;
   }
 
-  const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
-  const wait = reducedMotion ? 650 : BOOT_SPLASH_DURATION;
-  animateBootPercent(Boolean(reducedMotion));
-
-  window.setTimeout(() => {
-    const percent = $('bootPercent');
-    if (percent) percent.textContent = '100%';
-
-    // Prima rendiamo visibile l'Entry Gate sotto la splash; solo nel frame
-    // successivo iniziamo il fade della splash. In questo modo non esiste
-    // alcun frame in cui la dashboard possa comparire tra le due viste.
-    showEntryGate();
-    requestAnimationFrame(() => {
-      splash.classList.add('leaving');
-      document.body.classList.remove('boot-loading');
-    });
-
-    window.setTimeout(() => splash.remove(), reducedMotion ? 300 : 560);
-  }, wait);
+  // A real app-ready signal comes after initial UI + wallet control rendering.
+  // Background price/wallet APIs load asynchronously once the Home can be used.
+  const reducedMotion = Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches);
+  const startedAt = performance.now();
+  let exitQueued = false;
+  let failsafeTimer = 0;
+  function revealHome() {
+    if (exitQueued || !splash.isConnected) return;
+    exitQueued = true;
+    window.clearTimeout(failsafeTimer);
+    const timeVisible = performance.now() - startedAt;
+    const wait = Math.max(0, (reducedMotion ? 0 : BOOT_MIN_VISUAL_MS) - timeVisible);
+    window.setTimeout(() => {
+      if (!splash.isConnected) return;
+      // Paint Home beneath the opaque splash before fading it, without an
+      // intermediate Dashboard frame or Safari compositor blur.
+      showEntryGate();
+      requestAnimationFrame(() => {
+        splash.classList.add('leaving');
+        document.body.classList.remove('boot-loading');
+      });
+      window.setTimeout(() => splash.remove(), reducedMotion ? 0 : 360);
+    }, wait);
+  }
+  window.addEventListener('inj-node:home-ready', revealHome, { once: true });
+  // If setup throws or a third-party script blocks something, avoid a stuck splash.
+  failsafeTimer = window.setTimeout(revealHome, BOOT_FAILSAFE_MS);
 }
 
 
@@ -8278,6 +8257,8 @@ async function init() {
   setDashboardCollapsed('matrix', dashboardCollapsedPreference('matrix'), false);
   renderAll();
   renderWalletControls();
+  // Home controls are now usable; do not hold the splash for network requests.
+  window.dispatchEvent(new Event('inj-node:home-ready'));
   loadEurRate();
   await loadMarket();
   void loadEntryMarketMatrixAnchors(true);
