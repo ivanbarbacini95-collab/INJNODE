@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.00.96-home-icons-off-pnl-large';
+const CACHE_NAME = 'inj-node-v16.00.97-mobile-ab-walletshares';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160088',
@@ -19,11 +19,7 @@ const APP_SHELL = [
   './treasury-ownership.css?v=160095',
   './market.html',
   './comparison.html',
-  './home-vitality.css?v=1.0.1',
   './home-vitality.js?v=1.0.0',
-  './ios-screen-fixes.css?v=160095',
-  './ios-converter-keyboard.js?v=160095',
-  './treasury-ownership.css?v=160095',
   './comparison.css?v=160095',
   './comparison-ab.css?v=160095',
   './comparison.js?v=160095',
