@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.01.14-ocean-x-catalog';
+const CACHE_NAME = 'inj-node-v16.01.15-desktop-tiles';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160088',
@@ -14,7 +14,7 @@ const APP_SHELL = [
   './',
   './index.html',
   './home-vitality.css?v=1.0.1',
-  './home-vitality.js?v=1.0.1',
+  './home-vitality.js?v=1.0.2',
   './home-vitality-v2.css?v=160096',
   './home-layout-polish.css?v=160099',
   './home-pnl-focus.css?v=160101',
@@ -28,6 +28,7 @@ const APP_SHELL = [
   './ocean-x-series.css?v=160114',
   './ocean-x-series.js?v=160114',
   './theme-catalog.css?v=160114',
+  './home-desktop-tiles.css?v=160115',
   './aqua-mirage.css?v=160113',
   './aqua-mirage.js?v=160113',
   './velvet-nebula.css?v=160112',
@@ -52,7 +53,7 @@ const APP_SHELL = [
   './top-clarity.css?v=16.00.88',
   './viewport.js?v=16.00.14',
   './style.css?v=16.00.49',
-  './app.js?v=16.01.14',
+  './app.js?v=16.01.15',
   './i18n.js?v=160114',
   './i18n.js?v=160088',
   './i18n.js?v=160084',
