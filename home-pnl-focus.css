@@ -1,43 +1,69 @@
-/* INJ Node Home · P/L today emphasis v16.01.00
-   Dedicated override after Home layout styles, iPhone-first. */
+/* INJ Node · Home P/L today — compact terminal bar v16.01.01
+   Only this Home panel is affected. No overlays, blur or viewport changes. */
 html[data-inj-page="index"] body #entryGate #entryInsights .entry-price-pnl {
-  display:grid!important;
-  grid-template-columns:minmax(0,1fr) max-content!important;
+  display:flex!important;
+  flex-direction:row!important;
+  flex-wrap:nowrap!important;
   align-items:center!important;
-  column-gap:12px!important;
-  min-height:86px!important;
-  padding:14px 16px!important;
+  justify-content:space-between!important;
+  box-sizing:border-box!important;
+  width:100%!important;
+  max-width:100%!important;
+  height:auto!important;
+  min-height:56px!important;
+  padding:9px 15px!important;
+  gap:10px!important;
+  border-radius:14px!important;
+  overflow:hidden!important;
+  background:color-mix(in srgb,var(--surface-strong,#101619) 90%,transparent)!important;
+  border:1px solid color-mix(in srgb,var(--accent,#6edec8) 21%,var(--line,#39454a))!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
 }
 html[data-inj-page="index"] body #entryGate #entryInsights .entry-price-pnl > div {
   display:flex!important;
+  flex:0 1 auto!important;
+  min-width:0!important;
+  width:auto!important;
+  max-width:none!important;
   align-items:center!important;
   justify-content:flex-start!important;
-  min-width:0!important;
   align-self:center!important;
+  text-align:left!important;
+  margin:0!important;
+  padding:0!important;
+  gap:0!important;
 }
 html[data-inj-page="index"] body #entryGate #entryInsights .entry-price-pnl > div > span {
   display:block!important;
-  font-size:clamp(11px,1.25vw,14px)!important;
-  font-weight:750!important;
+  font-size:clamp(12px,1.15vw,14px)!important;
   line-height:1.25!important;
-  white-space:nowrap!important;
-  letter-spacing:.025em!important;
+  font-weight:760!important;
+  letter-spacing:.015em!important;
+  color:var(--muted-strong,var(--text,#f1f8f7))!important;
   text-transform:none!important;
-  color:var(--muted-strong,var(--text,#f3f8f8))!important;
+  text-align:left!important;
+  white-space:nowrap!important;
+}
+html[data-inj-page="index"] body #entryGate #entryInsights .entry-price-pnl > div > small{
+  display:none!important;
 }
 html[data-inj-page="index"] body #entryGate #entryInsights #entryInsightPnl {
   display:inline-flex!important;
+  flex:0 0 auto!important;
   align-items:center!important;
   justify-content:flex-end!important;
-  justify-self:end!important;
   align-self:center!important;
+  justify-self:end!important;
+  margin:0!important;
+  padding:0!important;
+  width:auto!important;
   min-width:0!important;
-  width:max-content!important;
   max-width:100%!important;
-  font-size:clamp(34px,3.2vw,48px)!important;
+  font-size:clamp(27px,3.1vw,38px)!important;
+  line-height:1.12!important;
   font-weight:900!important;
-  line-height:1.22!important;
-  letter-spacing:-.048em!important;
+  letter-spacing:-.04em!important;
   font-variant-numeric:tabular-nums!important;
   white-space:nowrap!important;
   text-align:right!important;
@@ -45,6 +71,7 @@ html[data-inj-page="index"] body #entryGate #entryInsights #entryInsightPnl {
   text-overflow:clip!important;
   text-shadow:none!important;
 }
+/* Apply sign colors to the digit-roll child nodes as well as the host. */
 html[data-inj-page="index"] body #entryGate #entryInsights #entryInsightPnl.positive,
 html[data-inj-page="index"] body #entryGate #entryInsights #entryInsightPnl.positive * {
   color:var(--up,#46e8ad)!important;
@@ -57,27 +84,25 @@ html[data-inj-page="index"] body #entryGate #entryInsights #entryInsightPnl.neut
 html[data-inj-page="index"] body #entryGate #entryInsights #entryInsightPnl.neutral * {
   color:var(--text,#f3f8f8)!important;
 }
-@media (max-width:900px){
-  html[data-inj-page="index"] body #entryGate #entryInsights .entry-price-pnl {
-    grid-template-columns:minmax(0,1fr) max-content!important;
-    min-height:82px!important;
-    column-gap:8px!important;
-    padding:12px 12px!important;
+@media(max-width:900px){
+  html[data-inj-page="index"] body #entryGate #entryInsights .entry-price-pnl{
+    min-height:54px!important;
+    padding:8px 12px!important;
+    gap:8px!important;
   }
-  html[data-inj-page="index"] body #entryGate #entryInsights .entry-price-pnl > div > span {
-    font-size:clamp(10px,2.65vw,12px)!important;
-    line-height:1.2!important;
-    letter-spacing:0!important;
+  html[data-inj-page="index"] body #entryGate #entryInsights .entry-price-pnl > div > span{
+    font-size:clamp(11px,2.9vw,13px)!important;
   }
-  html[data-inj-page="index"] body #entryGate #entryInsights #entryInsightPnl {
-    font-size:clamp(31px,8.6vw,43px)!important;
+  html[data-inj-page="index"] body #entryGate #entryInsights #entryInsightPnl{
+    font-size:clamp(25px,7.5vw,33px)!important;
   }
 }
-@media (max-width:360px){
-  html[data-inj-page="index"] body #entryGate #entryInsights .entry-price-pnl {
-    column-gap:5px!important;padding-inline:9px!important;
+@media(max-width:370px){
+  html[data-inj-page="index"] body #entryGate #entryInsights .entry-price-pnl{
+    padding:8px 10px!important;
+    gap:6px!important;
   }
-  html[data-inj-page="index"] body #entryGate #entryInsights #entryInsightPnl {
-    font-size:clamp(27px,8vw,31px)!important;
+  html[data-inj-page="index"] body #entryGate #entryInsights #entryInsightPnl{
+    font-size:clamp(24px,7.2vw,28px)!important;
   }
 }
