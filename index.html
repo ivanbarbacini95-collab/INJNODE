@@ -21,7 +21,7 @@
 <script>
     try {
       const savedTheme = localStorage.getItem('inj_monitor_theme');
-      document.documentElement.dataset.theme = ['navy', 'black', 'light', 'amber'].includes(savedTheme) ? savedTheme : 'navy';
+      document.documentElement.dataset.theme = ['navy', 'black', 'light', 'amber', 'dynamic'].includes(savedTheme) ? savedTheme : 'navy';
       const savedUiStyle = localStorage.getItem('inj_monitor_ui_style');
       document.documentElement.dataset.uiStyle = ['elegant', 'futuristic', 'ultra'].includes(savedUiStyle) ? savedUiStyle : 'elegant';
       if (sessionStorage.getItem('inj_node_return_home') === '1') {
@@ -132,6 +132,8 @@
 <link rel="stylesheet" href="./home-pnl-focus.css?v=160101">
 <link rel="stylesheet" href="./node-pulse.css?v=160103">
 <link rel="stylesheet" href="./jn-branding.css?v=160104">
+<link rel="stylesheet" href="./dynamic-theme.css?v=160105">
+<script defer src="./dynamic-theme.js?v=160105"></script>
 </head>
 <body class="boot-loading">
 <div aria-label="Avvio INJ Node" aria-live="polite" aria-atomic="true" class="boot-splash node-pulse-splash" id="bootSplash" role="status">
@@ -238,7 +240,7 @@
 <div class="theme-control menu-theme-control" id="themeControl">
 <button aria-controls="themePicker" aria-expanded="false" aria-label="Scegli tema" class="menu-action menu-setting" id="themeButton" title="Scegli tema" type="button">
 <span aria-hidden="true" class="menu-action-icon"><svg viewbox="0 0 24 24"><path d="M12 3.5a8.5 8.5 0 1 0 0 17h1.1a1.7 1.7 0 0 0 0-3.4h-.8a1.8 1.8 0 0 1 0-3.6H15a5.5 5.5 0 0 0 0-11h-3Z"></path><circle cx="8" cy="9" r=".7"></circle><circle cx="11" cy="6.8" r=".7"></circle><circle cx="7.2" cy="13" r=".7"></circle></svg></span>
-<span class="menu-action-copy"><strong>Tema</strong><small>Aurora / Nero / Chiaro / Midnight Ember</small></span>
+<span class="menu-action-copy"><strong>Tema</strong><small>Aurora / Nero / Chiaro / Midnight Ember / Dynamic</small></span>
 <svg aria-hidden="true" class="menu-action-chevron" viewbox="0 0 24 24"><path d="m8 10 4 4 4-4"></path></svg>
 </button>
 <div aria-label="Scegli tema" class="theme-picker" id="themePicker" role="group">
@@ -246,6 +248,7 @@
 <button data-theme-choice="black" type="button"><i class="theme-swatch black"></i><span>Nero</span></button>
 <button data-theme-choice="light" type="button"><i class="theme-swatch light"></i><span>Chiaro</span></button>
 <button data-theme-choice="amber" type="button"><i class="theme-swatch amber"></i><span>Midnight Ember</span></button>
+<button data-theme-choice="dynamic" type="button"><i class="theme-swatch dynamic"></i><span>Dynamic · automatico</span></button>
 </div>
 </div>
 </div>
@@ -964,7 +967,7 @@
 </div>
 </div>
 <div aria-live="polite" class="toast" id="toast" role="status"></div>
-<script defer="" src="app.js?v=16.01.03"></script>
+<script defer="" src="app.js?v=16.01.05"></script>
 <script>
 (function(){
   function bindEntryHubs(){
