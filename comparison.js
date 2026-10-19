@@ -10,7 +10,12 @@
  const QUERY_CACHE='inj_node_comparison_recent_v1';
  const SELECTED_KEY='inj_node_comparison_selected_wallet_v1';
  const NASDAQ_URL='https://raw.githubusercontent.com/zyhe16/top-us-stock-tickers/main/tickers/all.csv';
- const usMarketCaps=new Map();
+ const usMarketCaps=new Map(), estimatedIndexCaps=new Map();
+ const INDEX_DATASETS={
+   SPX:'https://raw.githubusercontent.com/zyhe16/top-us-stock-tickers/main/tickers/sp500.csv',
+   NDX:'https://raw.githubusercontent.com/Gary-Strauss/NASDAQ100_Constituents/master/data/nasdaq100_constituents.json'
+ };
+ let indexPending=false,indexError='',indexRequestSeq=0;
  let usCapUpdated=0,usCapDownload=null,usCapPending=false,usCapFailure='',usCapSequence=0;
  const SOURCE_DEFAULT={id:'injective-protocol',name:'Injective',symbol:'INJ'};
  const TARGET_DEFAULT={id:'bitcoin',name:'Bitcoin',symbol:'BTC'};
