@@ -7738,7 +7738,7 @@ function updateInstallUi() {
 
 function registerPwa() {
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js?v=16.01.09').catch(() => {}), { once: true });
+    window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js?v=16.01.10').catch(() => {}), { once: true });
   }
   updateInstallUi();
 }
@@ -7749,7 +7749,8 @@ function applyTheme(theme, notify = false) {
     black: { label: 'Obsidian', color: '#030303' },
     light: { label: 'Chiaro', color: '#eef5ff' },
     amber: { label: 'Midnight Ember', color: '#070b11' },
-    ocean: { label: 'Ocean Aurora', color: '#07131f' }
+    ocean: { label: 'Ocean Aurora', color: '#07131f' },
+    chromatic: { label: 'Chromatic Mist', color: '#111323' }
   };
   const selected = themes[theme] ? theme : 'navy';
   document.documentElement.dataset.theme = selected;
