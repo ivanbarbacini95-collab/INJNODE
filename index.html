@@ -5,6 +5,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
 <meta content="#040b1d" name="theme-color"/>
+<style id="inj-prepaint-canvas">html,body{background-color:#020708;color-scheme:dark}html[data-theme="black"],html[data-theme="black"] body{background-color:#000}html[data-theme="light"],html[data-theme="light"] body{background-color:#eef5ff;color-scheme:light}html[data-theme="amber"],html[data-theme="amber"] body{background-color:#05080d}</style>
 
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
@@ -87,15 +88,37 @@
     backdrop-filter:none!important;-webkit-filter:none!important;filter:none!important;
     opacity:1!important;transform:none!important;transition:none!important;
   }
+  #injMarketPortal::before{
+    content:"INJ NODE";
+    position:absolute;
+    inset:0;
+    z-index:0;
+    display:grid;
+    place-items:center;
+    background:var(--page-gradient),var(--theme-canvas,var(--bg,#020708));
+    color:var(--muted-strong,var(--text,#e7f6f5));
+    font:800 clamp(14px,3vw,19px)/1.2 system-ui,-apple-system,sans-serif;
+    letter-spacing:.23em;
+    pointer-events:none;
+  }
+  #injMarketPortal.is-ready::before{display:none!important}
+  #injMarketPortal.is-ready iframe{
+    opacity:1!important;visibility:visible!important;pointer-events:auto!important;
+  }
   #injMarketPortal iframe{
+    opacity:0!important;
+    visibility:hidden!important;
+    pointer-events:none!important;
+    position:relative;
+    z-index:1;
     display:block!important;width:100%!important;height:100%!important;max-width:none!important;
     border:0!important;margin:0!important;padding:0!important;background:var(--bg,#020708)!important;
-    filter:none!important;-webkit-filter:none!important;opacity:1!important;
+    filter:none!important;-webkit-filter:none!important;
     transform:none!important;touch-action:pan-x pan-y;
   }
 </style>
-<link rel="stylesheet" href="navigation.css?v=160074">
-<script defer src="navigation.js?v=160074"></script>
+<link rel="stylesheet" href="navigation.css?v=160076">
+<script defer src="navigation.js?v=160076"></script>
 <script defer src="i18n.js?v=160072"></script>
 <script defer src="scroll-guard.js?v=160074"></script>
 </head>
@@ -939,6 +962,6 @@
 <div id="injMarketPortal" class="inj-market-portal" hidden aria-label="Mercato" role="dialog" aria-modal="true">
   <iframe id="injMarketFrame" title="Mercato" loading="eager" referrerpolicy="same-origin"></iframe>
 </div>
-<script defer src="market-portal.js?v=160074"></script>
+<script defer src="market-portal.js?v=160076"></script>
 </body>
 </html>

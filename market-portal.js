@@ -5,7 +5,19 @@
   const portal = document.getElementById('injMarketPortal');
   const frame = document.getElementById('injMarketFrame');
   if (!launcher || !portal || !frame) return;
-  frame.addEventListener('load', () => { if (frame.contentWindow) frame.contentWindow.postMessage({type:'injnode:market:language',language:window.INJ_I18N?.getLanguage?.() || localStorage.getItem('inj_node_language_v1') || 'it'},insideOrigin); });
+  frame.addEventListener('load', () => {
+    if (!open || !portal || !frame.contentWindow) return;
+    try {
+      if (!frame.contentWindow.location.pathname.endsWith('/market.html')) return;
+    } catch (_) { return; }
+    frame.contentWindow.postMessage({
+      type:'injnode:market:language',
+      language:window.INJ_I18N?.getLanguage?.() || localStorage.getItem('inj_node_language_v1') || 'it'
+    },insideOrigin);
+    requestAnimationFrame(() => {
+      if (open) portal.classList.add('is-ready');
+    });
+  });
   let open = false;
   let entryScroll = 0;
   const originalTitle = document.title;
@@ -15,11 +27,12 @@
     if (open) return;
     open = true;
     entryScroll = window.scrollY;
+    portal.classList.remove('is-ready');
     portal.hidden = false;
     portal.setAttribute('aria-label', titleFor());
     frame.title = titleFor();
     // The primary app, wallet selection and Home are untouched underneath.
-    frame.src = './market.html?v=160062&lang=' + (window.INJ_I18N?.getLanguage?.() || localStorage.getItem('inj_node_language_v1') || 'it');
+    frame.src = './market.html?v=160076&lang=' + (window.INJ_I18N?.getLanguage?.() || localStorage.getItem('inj_node_language_v1') || 'it');
     document.title = 'INJ NODE | ' + titleFor();
     if (!history.state?.injMarketPortal) {
       history.pushState({ ...(history.state || {}), injMarketPortal: true }, '', '#market');
@@ -28,6 +41,7 @@
   function conceal(fromBrowserBack = false) {
     if (!open) return;
     open = false;
+    portal.classList.remove('is-ready');
     portal.hidden = true;
     frame.src = 'about:blank'; // shuts down the old iframe streams/timers
     document.title = originalTitle;

@@ -201,3 +201,140 @@ html[data-inj-page="index"][data-inj-scroll="home"] #entryGate.entry-gate.visibl
     overscroll-behavior-y:auto!important;
   }
 }
+
+/* v16.00.76 — Fully-used viewport for Performance Timeline and INJ Converter.
+   The header remains accessible; flexible content occupies the remaining height.
+   Short/landscape screens can still scroll their content when necessary. */
+html[data-inj-page="index"] #performanceTimelineView.open,
+html[data-inj-page="index"] #converterView.open {
+  height:var(--inj-viewport-height,100dvh)!important;
+  min-height:var(--inj-viewport-height,100dvh)!important;
+  max-height:var(--inj-viewport-height,100dvh)!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  align-items:stretch!important;
+  justify-items:stretch!important;
+}
+html[data-inj-page="index"] #performanceTimelineView .performance-timeline-shell,
+html[data-inj-page="index"] #converterView .converter-view-shell {
+  display:grid!important;
+  grid-template-rows:auto minmax(0,1fr)!important;
+  width:100%!important;
+  max-width:none!important;
+  height:100%!important;
+  min-height:100%!important;
+  max-height:none!important;
+  gap:clamp(8px,1.25vh,16px)!important;
+  align-content:stretch!important;
+  box-sizing:border-box!important;
+}
+html[data-inj-page="index"] #performanceTimelineView .performance-timeline-main,
+html[data-inj-page="index"] #converterView .converter-view-main {
+  display:grid!important;
+  width:100%!important;
+  height:100%!important;
+  min-height:0!important;
+  max-height:none!important;
+  padding:0!important;
+  align-items:stretch!important;
+  justify-items:stretch!important;
+}
+html[data-inj-page="index"] #performanceTimelineView .performance-timeline-main > .entry-pnl-timeline{
+  display:grid!important;
+  grid-template-rows:auto auto minmax(0,1fr) auto!important;
+  width:100%!important;
+  height:100%!important;
+  min-height:0!important;
+  max-height:none!important;
+  margin:0!important;
+  gap:clamp(8px,1.2vh,16px)!important;
+  align-content:stretch!important;
+}
+html[data-inj-page="index"] #performanceTimelineView .entry-pnl-timeline-scroll{
+  height:100%!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+html[data-inj-page="index"] #converterView .converter-view-main > .entry-converter {
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:space-between!important;
+  width:100%!important;
+  max-width:none!important;
+  height:100%!important;
+  min-height:0!important;
+  max-height:none!important;
+  margin:0!important;
+  box-sizing:border-box!important;
+  gap:clamp(12px,2vh,34px)!important;
+  padding:clamp(15px,2.5vw,34px)!important;
+}
+html[data-inj-page="index"] #converterView .entry-converter-flow {
+  flex:1 1 auto!important;
+  align-content:center!important;
+  align-items:center!important;
+  width:100%!important;
+  min-height:0!important;
+  gap:clamp(10px,1.7vw,26px)!important;
+}
+html[data-inj-page="index"] #converterView .entry-converter-foot {
+  flex:0 0 auto!important;
+}
+@media (max-width:720px) {
+  html[data-inj-page="index"] #converterView .entry-converter-flow {
+    align-content:space-evenly!important;
+    gap:clamp(6px,1.2vh,16px)!important;
+  }
+  html[data-inj-page="index"] #converterView .entry-converter-input{
+    min-height:52px!important;
+  }
+}
+@media (max-height:620px) {
+  html[data-inj-page="index"] #performanceTimelineView .performance-timeline-shell,
+  html[data-inj-page="index"] #converterView .converter-view-shell {
+    height:auto!important;
+    min-height:100%!important;
+  }
+  html[data-inj-page="index"] #performanceTimelineView .performance-timeline-main > .entry-pnl-timeline{
+    height:auto!important;
+    min-height:320px!important;
+  }
+  html[data-inj-page="index"] #performanceTimelineView .entry-pnl-timeline-scroll{
+    height:180px!important;
+    min-height:180px!important;
+  }
+  html[data-inj-page="index"] #converterView .converter-view-main > .entry-converter{
+    height:auto!important;
+    min-height:100%!important;
+  }
+}
+/* The parent PWA remains themed while isolated section documents load. */
+.inj-section-cover {
+  position:fixed;
+  inset:0;
+  z-index:2147483599;
+  display:grid;
+  place-items:center;
+  background:var(--page-gradient),var(--theme-canvas,var(--bg,#020708));
+  pointer-events:none;
+  color:var(--muted-strong,var(--text,#e7f6f5));
+}
+.inj-section-cover .inj-section-loading-mark {
+  font:800 clamp(14px,3vw,19px)/1.2 system-ui,-apple-system,sans-serif;
+  letter-spacing:.23em;
+  opacity:.60;
+}
+.inj-content-frame:not([data-ready="true"]) {
+  opacity:0!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+.inj-content-frame[data-ready="true"] {
+  opacity:1!important;
+  visibility:visible!important;
+  pointer-events:auto!important;
+  background:var(--theme-canvas,var(--bg,#020708))!important;
+}

@@ -29,10 +29,11 @@ function home(){
  parent.postMessage({type:location.pathname.endsWith('market.html')?'injnode:market:home':'injnode:section:home'},location.origin);
 }
 // Retain the parent app while isolated sections run in their own document.
-let section=null,sectionLauncher=null;
+let section=null,sectionLauncher=null,sectionCover=null;
 function closeSection(fromHistory=false){
  if(!section)return;
  section.remove();section=null;
+ sectionCover?.remove();sectionCover=null;
  document.body.classList.remove('inj-section-open');
  if(!fromHistory && history.state?.injSection)history.back();
  sectionLauncher?.focus({preventScroll:true});
@@ -43,9 +44,28 @@ window.INJ_OPEN_SECTION=function(url){
  if(!main || section)return;
  setHeaderMenuOpen(false);
  sectionLauncher=document.activeElement;
+ sectionCover=document.createElement('div');
+ sectionCover.className='inj-section-cover';
+ sectionCover.setAttribute('aria-hidden','true');
+ sectionCover.innerHTML='<span class="inj-section-loading-mark">INJ NODE</span>';
  section=document.createElement('iframe');section.className='inj-content-frame';
- section.title='INJ Node';section.src=url;
- document.body.append(section);document.body.classList.add('inj-section-open');
+ section.title='INJ Node';
+ const currentSection=section;
+ const targetPath=new URL(url,location.href).pathname;
+ section.addEventListener('load',()=>{
+   if(section!==currentSection)return;
+   try {
+     if(currentSection.contentWindow?.location.pathname!==targetPath)return;
+   }catch(_){return;}
+   // CSS, scripts and document load have completed: never expose Safari's
+   // temporary white about:blank document before this point.
+   requestAnimationFrame(()=>{
+     if(section===currentSection)currentSection.dataset.ready='true';
+   });
+ });
+ document.body.append(sectionCover,section);
+ document.body.classList.add('inj-section-open');
+ section.src=url;
  history.pushState({...history.state,injSection:true},'', '#section');
 };
 if(main){

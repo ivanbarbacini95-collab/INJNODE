@@ -1,13 +1,13 @@
-const CACHE_NAME = 'inj-node-v16.00.74-native-scroll-restore';
+const CACHE_NAME = 'inj-node-v16.00.76-fullscreen-market-no-flash';
 const APP_SHELL = [
-  './navigation.css?v=160074',
-  './navigation.js?v=160074',
+  './navigation.css?v=160076',
+  './navigation.js?v=160076',
   './',
   './index.html',
   './market.html',
-  './market-portal.js?v=160074',
+  './market-portal.js?v=160076',
   './market-lang.js?v=160062',
-  './market.css?v=160062',
+  './market.css?v=160076',
   './market.js?v=160062',
   './manifest.webmanifest?v=16.00.14',
   './viewport.css?v=16.00.74',
