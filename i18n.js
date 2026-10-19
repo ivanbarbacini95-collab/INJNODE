@@ -34,7 +34,7 @@
     ['Prezzo medio INJ', 'Average INJ price'], ['Usato per calcolare il PnL', 'Used to calculate PnL'],
     ['Preferenze', 'Preferences'], ['Personalizza INJ Node', 'Customize INJ Node'], ['Valuta', 'Currency'],
     ['Nascondi valori', 'Hide values'], ['Mostra valori', 'Show values'], ['Tema', 'Theme'], ['Scegli tema', 'Choose theme'],
-    ['Nero', 'Black'], ['Chiaro', 'Light'], ['Reset grafici Treasury', 'Reset Treasury charts'],
+    ['Nero', 'Black'], ['Chiaro', 'Light'], ['Dynamic · automatico','Dynamic · automatic'], ['Aurora / Nero / Chiaro / Midnight Ember / Dynamic','Aurora / Black / Light / Midnight Ember / Dynamic'], ['Reset grafici Treasury', 'Reset Treasury charts'],
     ['Ricomincia lo storico da adesso', 'Restart history from now'], ['Stato rete & API', 'Network & API status'],
     ['Verifica servizi live', 'Check live services'], ['Installa INJ Node', 'Install INJ Node'],
     ['Aggiungi l’app al dispositivo', 'Add the app to this device'], ['Dati', 'Data'], ['In attesa…', 'Waiting…'],
