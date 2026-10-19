@@ -1758,9 +1758,9 @@ function renderWalletOwnership(){
    chip.style.setProperty('--owner-color',colors[i%colors.length]);
    const dot=document.createElement('i');dot.className='treasury-owner-dot';dot.setAttribute('aria-hidden','true');
    const title=document.createElement('span');title.className='treasury-owner-label';title.textContent=row.name;
-   const pct=document.createElement('strong');pct.className='treasury-owner-pct';pct.dataset.walletShare=row.address;pct.textContent='—';
+   const pct=document.createElement('strong');pct.className='treasury-owner-pct';pct.dataset.walletShare=String(i);pct.textContent='—';
    const meter=document.createElement('span');meter.className='treasury-owner-meter';meter.setAttribute('aria-hidden','true');
-   const bar=document.createElement('i');bar.dataset.walletMeter=row.address;meter.append(bar);
+   const bar=document.createElement('i');bar.dataset.walletMeter=String(i);meter.append(bar);
    chip.append(dot,title,pct,meter);frag.append(chip);
   }
   track.replaceChildren(frag);
