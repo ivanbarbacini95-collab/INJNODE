@@ -31,7 +31,7 @@
   }catch(_){}
   return null;
  }
- let currentMood='',currentStep=NaN,lastWrite=0;
+ let currentMood='',currentStep=NaN,lastWrite=0,lastSavedPercent=NaN;
  function paint(pct){
   if(root.dataset.theme!=='dynamic')return;
   const good=Number.isFinite(pct), bounded=good?Math.max(-8,Math.min(8,pct)):0;
@@ -68,8 +68,8 @@
  function updatePerformance(pct,openPrice){
   if(!Number.isFinite(pct)||!Number.isFinite(openPrice)||openPrice<=0)return;
   const now=Date.now();
-  if(now-lastWrite<2500&&Math.abs(pct-currentStep)<.25)return;
-  lastWrite=now;
+  if(lastWrite&&now-lastWrite<12000&&Number.isFinite(lastSavedPercent)&&Math.abs(pct-lastSavedPercent)<.18)return;
+  lastWrite=now;lastSavedPercent=pct;
   const x={day:dateKey(),updated:now,pct:Math.max(-25,Math.min(25,pct)),openPrice};
   try{localStorage.setItem(KEY,JSON.stringify(x))}catch(_){}
   if(root.dataset.theme==='dynamic')paint(x.pct);
