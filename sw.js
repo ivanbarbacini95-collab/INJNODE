@@ -1,6 +1,6 @@
-const CACHE_NAME = 'inj-node-v16.00.86-mobile-two-column-home';
+const CACHE_NAME = 'inj-node-v16.00.87-mobile-tile-alignment';
 const APP_SHELL = [
-  './navigation.css?v=160086',
+  './navigation.css?v=160087',
   './navigation.css?v=160080',
   './navigation.js?v=160084',
   // Standalone sections still request these legacy cache keys.
