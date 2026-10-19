@@ -95,3 +95,105 @@ button,input,select{font-size:16px}
 }
 @media(max-width:375px){.cap-heading>strong{font-size:15px}.cap-connection{font-size:8px}.cap-source-stats strong{font-size:12px}}
 @media(prefers-reduced-motion:reduce){.cap-bar-fill{transition:none!important}}
+
+
+/* v16.00.91 · Minimal comparison UX: only what is required to choose, compare,
+   and understand the selected INJ wallet. Secondary math stays optional. */
+.cap-shell{max-width:1160px!important}
+.cap-main{gap:clamp(10px,1.5vw,17px)!important}
+.cap-intro{padding-block:0!important}
+.cap-intro h1{font-size:clamp(22px,3vw,30px)!important;letter-spacing:-.04em!important;margin:2px 0 3px!important}
+.cap-intro p{font-size:12px!important;max-width:700px!important;margin:0!important}
+.cap-intro .cap-eyebrow{display:none!important}
+.cap-picker-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.cap-panel,.cap-scenario,.cap-wallet{padding:clamp(13px,1.65vw,20px)!important;border-radius:15px!important}
+.cap-panel{gap:10px!important}
+.cap-panel-title{gap:8px!important}
+.cap-panel-title h2{font-size:clamp(16px,1.7vw,19px)!important;margin:2px 0!important}
+.cap-panel-title small{font-size:9px!important}
+.cap-step{height:30px!important;width:30px!important;flex-basis:30px!important;font-size:11px!important;border-radius:10px!important}
+.cap-search-wrap{z-index:auto}
+.cap-search-row{height:49px!important;border-radius:11px!important;padding-inline:11px!important}
+.cap-search-row:focus-within{border-color:var(--accent)!important}
+.cap-search-row>input{font-size:16px!important;line-height:1.35!important;min-height:40px!important;transform:none!important;zoom:1!important}
+.cap-search-results{z-index:100!important;max-height:min(290px,42dvh)!important;overscroll-behavior-y:contain;touch-action:pan-y!important}
+.cap-search-item{font-size:13px!important;min-height:47px!important;touch-action:manipulation}
+.cap-search-message{font-size:12px!important;line-height:1.4!important}
+.cap-manual-selected{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:11px;padding:9px 11px;background:color-mix(in srgb,var(--accent) 5%,var(--panel));min-height:42px;min-width:0}
+.cap-manual-selected[hidden]{display:none!important}
+.cap-manual-selected .cap-coin-symbol{flex:0 0 auto;min-width:46px;text-align:center}
+.cap-manual-selected strong{font-size:12px!important;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cap-manual-check{margin-left:auto;color:var(--accent);font-size:12px}
+.cap-magnifier{font-size:21px;line-height:1;color:var(--muted)}
+.cap-manual-search{position:relative}
+.cap-manual-values{grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr)!important;gap:8px!important}
+.cap-manual-values input,.cap-manual-values select{width:100%;font-size:16px!important;min-width:0;min-height:48px!important;box-sizing:border-box}
+.cap-help{font-size:11px!important;line-height:1.45!important;margin:0!important}
+.cap-tabs{min-height:45px!important}
+.cap-tabs button{font-size:12px!important;min-height:37px!important}
+.cap-source-stats{display:grid!important;grid-template-columns:1fr!important;gap:0!important;margin:0!important}
+.cap-source-stats>div{padding:8px 11px!important;display:flex!important;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;background:transparent!important}
+.cap-source-stats>div:nth-child(n+2){display:none!important}
+.cap-source-stats strong{font-size:14px!important;margin:0!important}
+.cap-target-foot{display:flex!important;flex-direction:row!important;justify-content:space-between!important;align-items:center!important;flex-wrap:wrap!important;gap:6px!important;padding:9px 11px!important}
+.cap-target-foot>span{font-size:9px!important}
+.cap-target-foot>strong{font-size:clamp(14px,1.6vw,20px)!important}
+.cap-target-foot>small{width:100%;font-size:9px!important}
+.cap-scenario-head h2,.cap-wallet-head h2{font-size:clamp(17px,1.9vw,21px)!important}
+.cap-scenario-state{font-size:9px!important}
+.cap-results-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important;margin:13px 0 6px!important}
+.cap-results-grid>.cap-result-main{grid-column:auto!important}
+.cap-result{padding:clamp(11px,1.5vw,17px)!important;min-width:0!important;border-radius:12px!important}
+.cap-result>span{font-size:9px!important}
+.cap-result>strong{font-size:clamp(23px,3vw,34px)!important;letter-spacing:-.04em!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;min-width:0!important}
+.cap-result-main strong{font-size:clamp(27px,3.3vw,39px)!important}
+.cap-result>small{display:none!important}
+.cap-result-secondary{display:none!important}
+.cap-advanced{border-top:1px solid var(--line);margin-top:14px;padding-top:10px}
+.cap-advanced summary{cursor:pointer;color:var(--muted);font-weight:760;font-size:11px;list-style-position:inside;touch-action:manipulation}
+.cap-advanced[open] summary{color:var(--accent)}
+.cap-advanced .cap-compare-bars{margin-top:15px!important}
+.cap-advanced .cap-disclaimer{margin:12px 0 0!important;font-size:11px!important}
+.cap-wallet-head>div>p{margin:2px 0!important}
+.cap-wallet-head>.cap-wallet-state{font-size:9px!important}
+.cap-wallet-cards{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important;margin-top:12px!important}
+.cap-wallet-cards>div{padding:13px!important;gap:4px!important}
+.cap-wallet-cards>div:first-child{grid-column:1/-1!important;display:flex!important;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;min-height:36px;padding:8px 12px!important;border-color:transparent!important;background:transparent!important}
+.cap-wallet-cards>div:first-child>span{font-size:10px!important}
+.cap-wallet-cards>div:first-child>strong{font-size:14px!important}
+.cap-wallet-cards>div:first-child>small{display:none!important}
+.cap-wallet-cards .cap-wallet-future{grid-column:auto!important}
+.cap-wallet-cards strong{font-size:clamp(18px,2.2vw,25px)!important;white-space:nowrap!important}
+.cap-wallet-note{font-size:10px!important;max-width:800px;line-height:1.45!important;margin-top:10px!important}
+.cap-footer{font-size:10px!important;margin-top:0!important}
+.cap-home{touch-action:manipulation!important}
+@media(max-width:850px){
+ .cap-picker-grid{grid-template-columns:1fr!important}
+ .cap-panel{gap:9px!important}
+}
+@media(max-width:650px){
+ .cap-shell{padding-inline:10px}
+ .cap-main{gap:10px!important;padding-top:12px!important}
+ .cap-panel,.cap-scenario,.cap-wallet{padding:13px 12px!important}
+ .cap-intro h1{font-size:22px!important}
+ .cap-intro p{font-size:11px!important}
+ .cap-search-results{max-height:38dvh!important}
+ .cap-source-stats>div{padding:7px 10px!important}
+ .cap-results-grid{gap:7px!important;margin-top:10px!important}
+ .cap-result{padding:12px 9px!important}
+ .cap-result>strong{font-size:clamp(19px,5.2vw,26px)!important}
+ .cap-result-main strong{font-size:clamp(23px,6vw,31px)!important}
+ .cap-result>span{font-size:9px!important}
+ .cap-wallet-cards{gap:7px!important}
+ .cap-wallet-cards>div{padding:11px 8px!important}
+ .cap-wallet-cards strong{font-size:clamp(16px,4.5vw,22px)!important}
+ .cap-wallet-cards .cap-wallet-future strong{font-size:clamp(18px,5vw,24px)!important}
+ .cap-wallet-note{font-size:10px!important}
+}
+@media(max-width:360px){
+ .cap-manual-values{grid-template-columns:1fr 105px!important}
+ .cap-result>strong{font-size:19px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ .cap-search-item,.cap-results-grid,.cap-wallet-cards{transition:none!important}
+}

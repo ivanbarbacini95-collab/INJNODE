@@ -18,28 +18,29 @@
    quoteError:'',resultAge:0,results:{source:[],target:[]},language:'it'
  };
  const translations={
-  subTitle:['Confronta dimensioni di mercato e scenari di prezzo','Compare market sizes and theoretical price scenarios'],
-  title:['Quanto dovrebbe crescere?','How much would it need to grow?'],
-  intro:["Scegli una crypto e confrontala con la capitalizzazione di un'altra crypto, un'azienda o un indice.",'Choose a cryptocurrency and compare its market cap with another crypto, a company or an index.'],
+  subTitle:['Confronta market cap e valore del wallet','Compare market caps and wallet value'],
+  title:['Quanto potrebbe valere?','How much could it be worth?'],
+  intro:['Scegli due asset: guarda quanti X servirebbero e quanto varrebbe il tuo wallet INJ.','Choose two assets to see the required multiple and hypothetical value of your INJ wallet.'],
   starting:['ASSET DI PARTENZA','SOURCE ASSET'],
-  sourceHeading:['Quale crypto confrontiamo?','Which crypto are we comparing?'],
+  sourceHeading:['Scegli una crypto','Choose a crypto'],
   sourceSearchLabel:['Cerca crypto per nome o simbolo','Search crypto by name or ticker'],
   sourceCap:['MARKET CAP ATTUALE','CURRENT MARKET CAP'],
   sourcePrice:['PREZZO ATTUALE','CURRENT PRICE'],
   sourceSupply:['OFFERTA CIRCOLANTE','CIRCULATING SUPPLY'],
   target:['MARKET CAP DI RIFERIMENTO','REFERENCE MARKET CAP'],
-  targetHeading:['Con cosa la confrontiamo?','What do we compare it with?'],
+  targetHeading:['Confronta con','Compare with'],
   crypto:['Crypto','Crypto'],stock:['Azione','Stock'],index:['Indice','Index'],
   targetSearchLabel:['Cerca la crypto di riferimento','Search reference cryptocurrency'],
-  manualNameLabel:["Nome o ticker dell'azione/indice",'Company or index name / ticker'],
-  manualCapLabel:['Market cap di riferimento (USD)','Reference market cap (USD)'],
-  manualScale:['Unità','Units'],
+  manualNameLabel:['Cerca per nome o ticker','Search by name or ticker'],
+  manualCapLabel:['Capitalizzazione di riferimento','Reference capitalization'],
+  manualScale:['Unità · USD','Units · USD'],
   billions:['Miliardi (B)','Billions (B)'],trillions:['Migliaia di miliardi (T)','Trillions (T)'],
   millions:['Milioni (M)','Millions (M)'],fullUsd:['USD interi','Full USD'],
-  manualWarning:['Inserisci la market cap usando una fonte verificata. Un indice richiede una capitalizzazione aggregata definita, non il valore in punti.','Enter a market capitalization from a verified source. Indices require a defined aggregate market cap, not their points value.'],
+  manualWarning:['I suggerimenti aiutano a scegliere il titolo; inserisci la capitalizzazione da una fonte verificata.','Suggestions identify the asset; enter the market cap from a verified source.'],
   targetCap:['CAPITALIZZAZIONE DI RIFERIMENTO','REFERENCE MARKET CAP'],
   autoSource:['Dati crypto CoinGecko · USD','CoinGecko crypto data · USD'],
   scenario:['Scenario a pari market cap','Equal-market-cap scenario'],
+  moreDetails:['Mostra i dettagli del calcolo','Show calculation details'],
   ready:['ANALISI','ANALYSIS'],multiples:['MOLTIPLICATORE','MULTIPLIER'],
   multipleHelp:['Rapporto fra capitalizzazioni','Ratio of market capitalizations'],
   projectedPrice:['PREZZO TEORICO','THEORETICAL PRICE'],
@@ -100,9 +101,10 @@
   $('comparisonBack').title=t('Torna alla Home','Return Home');
   $('capSourceSearch').placeholder=t('INJ · Injective','INJ · Injective');
   $('capTargetSearch').placeholder=t('BTC · Bitcoin','BTC · Bitcoin');
-  $('capManualName').placeholder=t('Apple, Nvidia, S&P 500…','Apple, Nvidia, S&P 500…');
+  $('capManualName').placeholder=t('Apple, AAPL, S&P 500…','Apple, AAPL, S&P 500…');
   $('capManualCap').placeholder=t('es. 3000 (in miliardi)','e.g. 3000 (in billions)');
   render();
+  if(!$('capManualSuggestions').hidden)renderManualSuggestions();
  }
  async function fetchJson(url,timeoutMs=10000){
   const ctrl=new AbortController(),timeout=setTimeout(()=>ctrl.abort(),timeoutMs);
@@ -298,7 +300,16 @@
  }
  function setKind(kind){
   if(!['crypto','stock','index'].includes(kind))return;
+  const kindChanged=state.kind!==kind;
   state.kind=kind;
+  if(kindChanged){
+    $('capManualName').value='';
+    $('capManualCap').value='';
+    $('capManualSelected').hidden=true;
+    $('capManualSuggestions').hidden=true;
+    manualPicked=null;
+    $('capManualName').setAttribute('aria-expanded','false');
+  }
   $('capTargetCryptoPanel').hidden=kind!=='crypto';
   $('capTargetManualPanel').hidden=kind==='crypto';
   document.querySelectorAll('[data-target-kind]').forEach(btn=>{
@@ -308,8 +319,184 @@
   $('capManualHint').textContent=kind==='stock'?
    t('Inserisci la capitalizzazione totale dell’azienda e verifica la data. Il dato non è recuperato automaticamente.','Enter the company market cap and verify the date. This figure is not fetched automatically.'):
    t('Gli indici sono espressi in punti: inserisci la capitalizzazione complessiva dei componenti secondo una metodologia dichiarata.','Indices are quoted in points: enter the aggregate market cap of constituents using a stated methodology.');
+  if(kind==='crypto')hideManualSuggestions();
   render();if(kind==='crypto')void refreshQuotes();
  }
+
+ /* Offline type-ahead for major equities and indexes: company names and
+    ticker symbols only. No market caps are bundled or invented. Free-form
+    lookup remains available for instruments outside this catalog. */
+ const securityCatalog={
+  stock:[
+   ['AAPL','Apple','NASDAQ','iphone mac'],['MSFT','Microsoft','NASDAQ','windows azure'],
+   ['NVDA','NVIDIA','NASDAQ','nvidia ai'],['GOOGL','Alphabet (Google)','NASDAQ','google'],
+   ['AMZN','Amazon','NASDAQ','aws'],['META','Meta Platforms','NASDAQ','facebook instagram'],
+   ['TSLA','Tesla','NASDAQ','elon musk'],['BRK.B','Berkshire Hathaway','NYSE','buffett berkshire'],
+   ['AVGO','Broadcom','NASDAQ','broadcom'],['TSM','Taiwan Semiconductor','NYSE','tsmc'],
+   ['LLY','Eli Lilly','NYSE','pharma'],['WMT','Walmart','NYSE','retail'],
+   ['JPM','JPMorgan Chase','NYSE','bank'],['V','Visa','NYSE','payments'],
+   ['MA','Mastercard','NYSE','payments'],['XOM','Exxon Mobil','NYSE','energy'],
+   ['JNJ','Johnson & Johnson','NYSE','healthcare'],['ORCL','Oracle','NYSE','cloud'],
+   ['NFLX','Netflix','NASDAQ','streaming'],['COST','Costco','NASDAQ','wholesale'],
+   ['AMD','Advanced Micro Devices','NASDAQ','chips'],['PLTR','Palantir Technologies','NASDAQ','ai'],
+   ['CRM','Salesforce','NYSE','saas'],['UBER','Uber Technologies','NYSE','mobility'],
+   ['DIS','Walt Disney','NYSE','disney'],['KO','Coca-Cola','NYSE','coca cola'],
+   ['PEP','PepsiCo','NASDAQ','pepsi'],['NKE','Nike','NYSE','apparel'],
+   ['MCD','McDonald’s','NYSE','restaurants'],['BA','Boeing','NYSE','aerospace'],
+   ['INTC','Intel','NASDAQ','microchip'],['PYPL','PayPal','NASDAQ','payments'],
+   ['SHOP','Shopify','NYSE','ecommerce'],['COIN','Coinbase Global','NASDAQ','crypto exchange'],
+   ['MSTR','Strategy (MicroStrategy)','NASDAQ','bitcoin microstrategy'],
+   ['HOOD','Robinhood Markets','NASDAQ','trading'],['SQ','Block','NYSE','square'],
+   ['ARM','Arm Holdings','NASDAQ','semiconductors'],['QCOM','Qualcomm','NASDAQ','chip'],
+   ['TXN','Texas Instruments','NASDAQ','semiconductor'],['CAT','Caterpillar','NYSE','industry'],
+   ['GE','GE Aerospace','NYSE','aircraft'],['IBM','IBM','NYSE','technology'],
+   ['SAP','SAP','XETRA','germany software'],['ASML','ASML Holding','EURONEXT','semiconductors netherlands'],
+   ['MC','LVMH','EURONEXT','louis vuitton luxury'],['OR','L’Oréal','EURONEXT','loreal'],
+   ['RMS','Hermès','EURONEXT','hermes luxury'],['AIR','Airbus','EURONEXT','aircraft'],
+   ['SHEL','Shell','LSE','energy'],['AZN','AstraZeneca','LSE','pharma'],
+   ['HSBA','HSBC Holdings','LSE','bank'],['BP','BP','LSE','petroleum'],
+   ['RACE','Ferrari','NYSE','ferrari automotive'],['STLA','Stellantis','NYSE','fiat jeep'],
+   ['ENI','Eni','MIL','italia energia'],['ENEL','Enel','MIL','italia elettrica'],
+   ['ISP','Intesa Sanpaolo','MIL','italia banca'],['UCG','UniCredit','MIL','italia banca'],
+   ['G','Assicurazioni Generali','MIL','italia insurance'],['PST','Poste Italiane','MIL','italia poste'],
+   ['MONC','Moncler','MIL','italia fashion'],['TIT','Telecom Italia','MIL','tim'],
+   ['PIRC','Pirelli','MIL','italia tires'],['TRN','Terna','MIL','italia electricity'],
+   ['FINE','FinecoBank','MIL','italia finance'],['STM','STMicroelectronics','MIL','semiconductors'],
+   ['NOVN','Novartis','SIX','swiss pharma'],['NESN','Nestlé','SIX','nestle foods'],
+   ['ROG','Roche','SIX','swiss pharma'],['7203','Toyota Motor','TSE','japan automotive'],
+   ['6758','Sony Group','TSE','japan entertainment'],['9984','SoftBank Group','TSE','japan telecom'],
+   ['0700','Tencent Holdings','HKEX','china technology'],['9988','Alibaba Group','HKEX','baba ecommerce'],
+   ['BABA','Alibaba ADR','NYSE','alibaba'],['BIDU','Baidu','NASDAQ','china search'],
+   ['NVO','Novo Nordisk','NYSE','obesity pharma'],['PFE','Pfizer','NYSE','pharma'],
+   ['ABBV','AbbVie','NYSE','pharma'],['PG','Procter & Gamble','NYSE','consumer'],
+   ['ABNB','Airbnb','NASDAQ','travel'],['SPOT','Spotify','NYSE','music']
+  ],
+  index:[
+   ['SPX','S&P 500','INDEX','sp500 standard poors usa us500'],
+   ['NDX','Nasdaq-100','INDEX','nasdaq 100 us tech nas100'],
+   ['IXIC','Nasdaq Composite','INDEX','nasdaq composite technology'],
+   ['DJI','Dow Jones Industrial Average','INDEX','dow jones djia wall street'],
+   ['RUT','Russell 2000','INDEX','russell small cap'],
+   ['VIX','CBOE Volatility Index','INDEX','volatility fear vix'],
+   ['FTSEMIB','FTSE MIB','INDEX','italia borsa italiana milano it40 mib'],
+   ['DAX','DAX 40','INDEX','germany german germany40 german40'],
+   ['CAC','CAC 40','INDEX','france paris fra40'],
+   ['FTSE','FTSE 100','INDEX','uk london footsie'],
+   ['STOXX50E','EURO STOXX 50','INDEX','europe eurozone'],
+   ['SXXP','STOXX Europe 600','INDEX','europe 600'],
+   ['N225','Nikkei 225','INDEX','japan tokyo'],
+   ['TOPIX','TOPIX','INDEX','japan japan market'],
+   ['HSI','Hang Seng Index','INDEX','hong kong'],
+   ['CSI300','CSI 300','INDEX','china shanghai shenzhen'],
+   ['000001','Shanghai Composite','INDEX','shanghai china'],
+   ['NIFTY50','NIFTY 50','INDEX','india nifty'],
+   ['SENSEX','BSE Sensex','INDEX','india bombay'],
+   ['IBOV','Ibovespa','INDEX','brazil sao paulo'],
+   ['TSX','S&P/TSX Composite','INDEX','canada toronto'],
+   ['ASX200','S&P/ASX 200','INDEX','australia'],
+   ['MSCIWORLD','MSCI World','INDEX','global developed world'],
+   ['MSCIEmerging','MSCI Emerging Markets','INDEX','emerging markets'],
+   ['MSCIACWI','MSCI ACWI','INDEX','all country world'],
+   ['SMI','Swiss Market Index','INDEX','switzerland swiss']
+  ]
+ };
+ const normSearch = v=>String(v||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+ let manualPicked=null;
+ function manualChoices(){
+   const q=normSearch($('capManualName').value);
+   const pool=securityCatalog[state.kind]||[];
+   if(!q)return pool.slice(0,7);
+   const parts=q.split(/\s+/).filter(Boolean);
+   return pool.map(entry=>{
+     const [symbol,name,market,aliases]=entry;
+     const search=normSearch(symbol+' '+name+' '+market+' '+aliases);
+     if(!parts.every(part=>search.includes(part)))return {entry,score:-1};
+     const code=normSearch(symbol),title=normSearch(name);
+     const score=(code===q?1000:0)+(code.startsWith(q)?250:0)+(title.startsWith(q)?100:0)+parts.length*15;
+     return {entry,score};
+   }).filter(x=>x.score>=0).sort((a,b)=>b.score-a.score||a.entry[1].localeCompare(b.entry[1])).slice(0,9).map(x=>x.entry);
+ }
+ function hideManualSuggestions(){
+   const host=$('capManualSuggestions');
+   if(host)host.hidden=true;
+   $('capManualName')?.setAttribute('aria-expanded','false');
+ }
+ function pickManual(entry){
+   const [symbol,name,market]=entry;
+   manualPicked={symbol,name,market,kind:state.kind};
+   $('capManualName').value=symbol+' · '+name;
+   $('capManualSelected').hidden=false;
+   set('capManualTicker',symbol);
+   set('capManualSelectedName',name+' · '+market);
+   // The next symbol must never inherit a prior company's market cap.
+   $('capManualCap').value='';
+   $('capManualScale').value='1000000000';
+   hideManualSuggestions();
+   render();
+   $('capManualCap').focus({preventScroll:true});
+ }
+ function renderManualSuggestions(){
+   if(state.kind==='crypto')return hideManualSuggestions();
+   const host=$('capManualSuggestions');
+   host.replaceChildren();
+   const items=manualChoices();
+   if(!items.length){
+     const empty=document.createElement('div');
+     empty.className='cap-search-message';
+     empty.textContent=t('Nessun suggerimento. Puoi comunque inserire un nome e una market cap verificata.','No suggestions. You can still enter any name and a verified market cap.');
+     host.append(empty);
+   }
+   items.forEach((entry,index)=>{
+     const btn=document.createElement('button');
+     btn.type='button';btn.className='cap-search-item';btn.setAttribute('role','option');
+     btn.id='capManualOption'+index;
+     btn.setAttribute('aria-label',entry[1]+' '+entry[0]);
+     const ticker=document.createElement('span');ticker.textContent=entry[0];
+     const label=document.createElement('span');label.textContent=entry[1]+' · '+entry[2];
+     btn.append(ticker,label);
+     btn.addEventListener('click',()=>pickManual(entry));
+     host.append(btn);
+   });
+   host.hidden=false;
+   $('capManualName').setAttribute('aria-expanded','true');
+ }
+ function bindManualSuggestions(){
+   const input=$('capManualName');
+   const host=$('capManualSuggestions');
+   input.addEventListener('focus',renderManualSuggestions);
+   input.addEventListener('input',()=>{
+     if(manualPicked){
+       manualPicked=null;
+       $('capManualSelected').hidden=true;
+       $('capManualCap').value='';
+     }
+     renderManualSuggestions();
+   });
+   input.addEventListener('keydown',event=>{
+     if(event.key==='Escape'){hideManualSuggestions();return;}
+     if(event.key==='ArrowDown'){
+       if(host.hidden)renderManualSuggestions();
+       const first=host.querySelector('.cap-search-item');
+       if(first){event.preventDefault();first.focus({preventScroll:true});}
+     }else if(event.key==='Enter'&&!host.hidden){
+       const first=host.querySelector('.cap-search-item');
+       if(first){event.preventDefault();first.click();}
+     }
+   });
+   host.addEventListener('keydown',event=>{
+     if(!['ArrowDown','ArrowUp','Escape','Enter'].includes(event.key))return;
+     const options=[...host.querySelectorAll('.cap-search-item')];
+     const index=options.indexOf(document.activeElement);
+     if(event.key==='Escape'){event.preventDefault();hideManualSuggestions();input.focus({preventScroll:true});}
+     else if(event.key==='Enter'&&index>=0){event.preventDefault();options[index].click();}
+     else if(event.key==='ArrowDown'&&options.length){event.preventDefault();options[Math.min(index+1,options.length-1)].focus({preventScroll:true});}
+     else if(event.key==='ArrowUp'){event.preventDefault();if(index>0)options[index-1].focus({preventScroll:true});else input.focus({preventScroll:true});}
+   });
+   document.addEventListener('pointerdown',event=>{
+     if(!host.hidden && !host.contains(event.target) && !input.contains(event.target))hideManualSuggestions();
+   },{passive:true});
+ }
+
  function boot(){
   restoreQuotes();localize();setKind('crypto');render();
   $('comparisonBack').addEventListener('click',event=>{
@@ -333,6 +520,7 @@
    }
   },{passive:true});
   document.querySelectorAll('[data-target-kind]').forEach(btn=>btn.addEventListener('click',()=>setKind(btn.dataset.targetKind)));
+  bindManualSuggestions();
   for(const id of ['capManualName','capManualCap','capManualScale']){
    $(id).addEventListener('input',render);$(id).addEventListener('change',render);
   }
