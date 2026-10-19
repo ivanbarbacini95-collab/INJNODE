@@ -1725,7 +1725,7 @@ function bindWorthInteraction() {
 
 /* Shares of Treasury per tracked wallet, computed from the same rows used
    by the Treasury totals. No simulated holdings and no full addresses in UI. */
-let ownershipLabelsSignature='',ownershipPctSignature='',ownershipBuilt=false,ownershipTimer=0;
+let ownershipLabelsSignature='',ownershipPctSignature='',ownershipBuilt=false;
 function ownershipShort(address){
  const str=String(address||'');return str.length>14?str.slice(0,8)+'…'+str.slice(-5):str;
 }
@@ -1770,15 +1770,10 @@ function renderWalletOwnership(){
    chip.append(dot,title,pct,meter);frag.append(chip);
   }
   track.replaceChildren(frag);
-  // Animate only when there is content wider than its horizontal viewport.
-  requestAnimationFrame(()=>{
-   const windowEl=$('treasuryOwnershipWindow');
-   if(!windowEl||!track.isConnected)return;
-   const travel=Math.max(0,track.scrollWidth-windowEl.clientWidth);
-   track.style.setProperty('--treasury-owner-travel',travel+'px');
-   track.style.setProperty('--treasury-owner-duration',Math.max(24,travel/15)+'s');
-   track.style.animationPlayState=travel>3?'running':'paused';
-  });
+  // Native horizontal scrolling: never auto-pan. Preserve user's scrollLeft.
+  track.style.removeProperty('--treasury-owner-travel');
+  track.style.removeProperty('--treasury-owner-duration');
+  track.style.removeProperty('animation-play-state');
  }
  const percents=active.map(x=>complete?ownershipPercent(x.total,overall):NaN);
  const pctSignature=percents.map(v=>Number.isFinite(v)?v.toFixed(2):'—').join('|');
