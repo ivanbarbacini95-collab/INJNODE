@@ -20,6 +20,7 @@
     ["Convertitore INJ", "INJ Converter"],
     ["Centro di controllo", "Command Center"],
     ["Tesoreria INJ", "INJ Treasury"],
+    ["Apri Market Cap Comparison", "Open Market Cap Comparison"],
     ["Ricompense in tempo reale", "Live Rewards"],
 
     ['Apri Mercato','Open Market'], ['Apri menu','Open menu'], ['Chiudi menu','Close menu'], ['Chiudi sezione e torna alla Home','Close section and return Home'], ['Lingua', 'Language'], ['Italiano', 'Italian'], ['Inglese', 'English'], ['Interfaccia', 'Interface'],

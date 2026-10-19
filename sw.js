@@ -1,7 +1,9 @@
-const CACHE_NAME = 'inj-node-v16.00.88-ios-crisp-top-converter';
+const CACHE_NAME = 'inj-node-v16.00.90-marketcap-wallet-comparison';
 const APP_SHELL = [
+  './navigation.css?v=160090',
   './navigation.css?v=160088',
   './navigation.css?v=160080',
+  './navigation.js?v=160090',
   './navigation.js?v=160084',
   // Standalone sections still request these legacy cache keys.
   './navigation.css?v=160074',
@@ -10,6 +12,9 @@ const APP_SHELL = [
   './',
   './index.html',
   './market.html',
+  './comparison.html',
+  './comparison.css?v=160090',
+  './comparison.js?v=160090',
   './market-portal.js?v=160076',
   './market-lang.js?v=160082',
   './market.css?v=160082',
@@ -19,7 +24,8 @@ const APP_SHELL = [
   './top-clarity.css?v=16.00.88',
   './viewport.js?v=16.00.14',
   './style.css?v=16.00.49',
-  './app.js?v=16.00.88',
+  './app.js?v=16.00.90',
+  './i18n.js?v=160090',
   './i18n.js?v=160088',
   './i18n.js?v=160084',
   './scroll-guard.js?v=160074',
@@ -63,7 +69,7 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return;
 
   if (request.mode === 'navigate') {
-    const isolatedPath = ['live-charts.html', 'live-rewards.html', 'command-center.html', 'order-book.html', 'treasury.html', 'market.html'].find((name) => url.pathname.endsWith('/' + name));
+    const isolatedPath = ['live-charts.html', 'live-rewards.html', 'command-center.html', 'order-book.html', 'treasury.html', 'market.html', 'comparison.html'].find((name) => url.pathname.endsWith('/' + name));
     event.respondWith(
       fetch(request, { cache: 'no-store' })
         .then((response) => {

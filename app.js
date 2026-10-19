@@ -125,6 +125,28 @@ function selectedEntryWallet() {
   return state.wallets.find((wallet) => wallet.address === state.entrySelectedAddress) || null;
 }
 
+// v16.00.90: same-origin, read-only snapshot for Market Cap Comparison.
+// Use the Home carousel wallet when Home is active; otherwise Dashboard wallet.
+window.INJ_GET_SELECTED_WALLET_SNAPSHOT = function () {
+  const preferred = state.currentView === 'home'
+    ? (state.entrySelectedAddress || state.address)
+    : (state.address || state.entrySelectedAddress);
+  const wallet = state.wallets.find((item) => item.address === preferred);
+  if (!wallet) return null;
+  const row = state.walletSummaries[wallet.address] || null;
+  const total = Number(row?.total);
+  const updated = Number(row?.updated);
+  return {
+    address: wallet.address,
+    label: wallet.label,
+    total: row && Number.isFinite(total) && total >= 0 ? total : NaN,
+    available: Number(row?.available) || 0,
+    staked: Number(row?.staked) || 0,
+    rewards: Number(row?.rewards) || 0,
+    updated: Number.isFinite(updated) && updated > 0 ? updated : 0
+  };
+};
+
 function setEntryOnboardingStatus(message, mode = '') {
   const status = $('entryWalletStatus');
   if (!status) return;
@@ -828,6 +850,7 @@ function setEntryWalletSelection(address, { scroll = false } = {}) {
   if (!address || !state.wallets.some((wallet) => wallet.address === address)) return;
   const nextIndex = state.wallets.findIndex((wallet) => wallet.address === address);
   state.entrySelectedAddress = address;
+  try { localStorage.setItem('inj_node_comparison_selected_wallet_v1', address); } catch (_) {}
   updateEntryWalletPagination(nextIndex);
 
   const host = $('entryWallets');
@@ -8219,7 +8242,8 @@ async function init() {
     if ($('currencyValue')) $('currencyValue').textContent = state.currency === 'EUR' ? '€' : '$';
     syncPrivacyUi(localStorage.getItem('inj_monitor_privacy') === '1');
     loadSavedWallets();
-    state.entrySelectedAddress = state.wallets.find((wallet) => wallet.address === (localStorage.getItem('inj_monitor_address') || ''))?.address || state.wallets[0]?.address || '';
+    state.entrySelectedAddress = state.wallets.find((wallet) => wallet.address === (localStorage.getItem('inj_node_comparison_selected_wallet_v1') || localStorage.getItem('inj_monitor_address') || ''))?.address || state.wallets[0]?.address || '';
+    if (state.entrySelectedAddress) localStorage.setItem('inj_node_comparison_selected_wallet_v1', state.entrySelectedAddress);
     loadTargetStorage();
     loadAveragePriceStorage();
     loadMarketFrameCache();

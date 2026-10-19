@@ -1,0 +1,352 @@
+/* INJ Node · Market Cap Comparison · v16.00.90
+   CoinGecko live crypto capitalizations, manual verified noncrypto reference.
+   Same-origin parent wallet selection; no wallet credentials, no trades.
+*/
+(() => {
+ 'use strict';
+ const $ = id => document.getElementById(id);
+ const API='https://api.coingecko.com/api/v3';
+ const COIN_CACHE='inj_node_comparison_coins_v1';
+ const QUERY_CACHE='inj_node_comparison_recent_v1';
+ const SELECTED_KEY='inj_node_comparison_selected_wallet_v1';
+ const SOURCE_DEFAULT={id:'injective-protocol',name:'Injective',symbol:'INJ'};
+ const TARGET_DEFAULT={id:'bitcoin',name:'Bitcoin',symbol:'BTC'};
+ const state={
+   source:{...SOURCE_DEFAULT},target:{...TARGET_DEFAULT},kind:'crypto',
+   quotes:new Map(),lastRemote:0,busy:false,chosenWallet:null,walletSnapshotSignature:'',
+   sourceSearchTimer:0,targetSearchTimer:0,searchTicket:{source:0,target:0},
+   quoteError:'',resultAge:0,results:{source:[],target:[]},language:'it'
+ };
+ const translations={
+  subTitle:['Confronta dimensioni di mercato e scenari di prezzo','Compare market sizes and theoretical price scenarios'],
+  title:['Quanto dovrebbe crescere?','How much would it need to grow?'],
+  intro:["Scegli una crypto e confrontala con la capitalizzazione di un'altra crypto, un'azienda o un indice.",'Choose a cryptocurrency and compare its market cap with another crypto, a company or an index.'],
+  starting:['ASSET DI PARTENZA','SOURCE ASSET'],
+  sourceHeading:['Quale crypto confrontiamo?','Which crypto are we comparing?'],
+  sourceSearchLabel:['Cerca crypto per nome o simbolo','Search crypto by name or ticker'],
+  sourceCap:['MARKET CAP ATTUALE','CURRENT MARKET CAP'],
+  sourcePrice:['PREZZO ATTUALE','CURRENT PRICE'],
+  sourceSupply:['OFFERTA CIRCOLANTE','CIRCULATING SUPPLY'],
+  target:['MARKET CAP DI RIFERIMENTO','REFERENCE MARKET CAP'],
+  targetHeading:['Con cosa la confrontiamo?','What do we compare it with?'],
+  crypto:['Crypto','Crypto'],stock:['Azione','Stock'],index:['Indice','Index'],
+  targetSearchLabel:['Cerca la crypto di riferimento','Search reference cryptocurrency'],
+  manualNameLabel:["Nome o ticker dell'azione/indice",'Company or index name / ticker'],
+  manualCapLabel:['Market cap di riferimento (USD)','Reference market cap (USD)'],
+  manualScale:['Unità','Units'],
+  billions:['Miliardi (B)','Billions (B)'],trillions:['Migliaia di miliardi (T)','Trillions (T)'],
+  millions:['Milioni (M)','Millions (M)'],fullUsd:['USD interi','Full USD'],
+  manualWarning:['Inserisci la market cap usando una fonte verificata. Un indice richiede una capitalizzazione aggregata definita, non il valore in punti.','Enter a market capitalization from a verified source. Indices require a defined aggregate market cap, not their points value.'],
+  targetCap:['CAPITALIZZAZIONE DI RIFERIMENTO','REFERENCE MARKET CAP'],
+  autoSource:['Dati crypto CoinGecko · USD','CoinGecko crypto data · USD'],
+  scenario:['Scenario a pari market cap','Equal-market-cap scenario'],
+  ready:['ANALISI','ANALYSIS'],multiples:['MOLTIPLICATORE','MULTIPLIER'],
+  multipleHelp:['Rapporto fra capitalizzazioni','Ratio of market capitalizations'],
+  projectedPrice:['PREZZO TEORICO','THEORETICAL PRICE'],
+  supplyAssumption:['Offerta circolante invariata','Assuming unchanged circulating supply'],
+  priceChange:['VARIAZIONE TEORICA','THEORETICAL CHANGE'],
+  vsNow:['Rispetto al prezzo attuale','Versus current price'],
+  disclaimer:['Simulazione matematica: non prevede il prezzo futuro, non considera variazioni dell’offerta, liquidità o impatto di mercato.','Mathematical simulation, not a forecast; excludes supply changes, liquidity and market impact.'],
+  portfolioTitle:['Valore del wallet selezionato','Selected wallet value'],
+  holdings:['INJ POSSEDUTI','INJ HOLDINGS'],
+  included:['Disponibili + staking + reward','Available + staked + rewards'],
+  currentWallet:['VALORE ATTUALE · USD','CURRENT VALUE · USD'],
+  walletNowHelp:['INJ al prezzo attuale','INJ at current price'],
+  futureWallet:['VALORE IPOTETICO · USD','THEORETICAL VALUE · USD'],
+  walletFutureHelp:['Se INJ raggiungesse la market cap selezionata','If INJ reached the reference market cap'],
+  walletNote:['Il controvalore ipotetico si calcola quando la crypto di partenza è INJ. Il wallet non viene modificato.','The hypothetical wallet value applies when INJ is the source crypto. The wallet is never modified.'],
+  sources:['Fonti: CoinGecko per le crypto; valori azioni/indici inseriti dall’utente.','Sources: CoinGecko for crypto; company/index market caps supplied by you.']
+ };
+ const language=()=>{try{return localStorage.getItem('inj_node_language_v1')==='en'?'en':'it'}catch(_){return 'it'}};
+ const english=()=>language()==='en';
+ const t=(it,en)=>english()?en:it;
+ const locale=()=>english()?'en-US':'it-IT';
+ const positive=n=>typeof n==='number'&&Number.isFinite(n)&&n>0;
+ const number=n=>{if(n==null||n==='')return NaN;const v=Number(n);return Number.isFinite(v)?v:NaN};
+ const fmt=(n,digits=2)=>Number.isFinite(n)?new Intl.NumberFormat(locale(),{maximumFractionDigits:digits}).format(n):'—';
+ const money=n=>{
+  if(!Number.isFinite(n)||n<0)return '—';
+  if(n>=1e12)return '$'+fmt(n/1e12,3)+'T';
+  if(n>=1e9)return '$'+fmt(n/1e9,3)+'B';
+  if(n>=1e6)return '$'+fmt(n/1e6,3)+'M';
+  if(n>=1e3)return '$'+fmt(n,2);
+  if(n>=1)return '$'+fmt(n,4);
+  return '$'+fmt(n,8);
+ };
+ const priceMoney=n=>positive(n)?'$'+fmt(n,n<.0001?12:n<1?8:n<100?5:2):'—';
+ const set=(id,value)=>{const el=$(id);if(el&&el.textContent!==String(value))el.textContent=String(value)};
+ const assetSafe=asset=>({
+  id:String(asset.id||'').replace(/[^a-z0-9-]/gi,'').slice(0,100),
+  name:String(asset.name||'').slice(0,80),
+  symbol:String(asset.symbol||'').replace(/[^\w.]/g,'').slice(0,18).toUpperCase()
+ });
+ function parseUserNumber(raw){
+  let s=String(raw||'').replace(/[^\d.,\-]/g,'');
+  if(!s||s==='-'||s.startsWith('-'))return NaN;
+  const c=s.lastIndexOf(','),d=s.lastIndexOf('.');
+  if(c>=0&&d>=0){
+    if(c>d)s=s.replace(/\./g,'').replace(',','.');
+    else s=s.replace(/,/g,'');
+  }else if(c>=0){s=/^\d{1,3}(,\d{3})+$/.test(s)?s.replace(/,/g,''):s.replace(',','.');}
+  else if(d>=0){s=/^\d{1,3}(\.\d{3})+$/.test(s)?s.replace(/\./g,''):s;}
+  return Number(s);
+ }
+ function localize(){
+  document.documentElement.lang=language();
+  document.querySelectorAll('[data-t]').forEach(node=>{
+   const pair=translations[node.dataset.t];if(pair)node.textContent=pair[english()?1:0];
+  });
+  $('comparisonBack').setAttribute('aria-label',t('Torna alla Home','Return Home'));
+  $('comparisonBack').title=t('Torna alla Home','Return Home');
+  $('capSourceSearch').placeholder=t('INJ · Injective','INJ · Injective');
+  $('capTargetSearch').placeholder=t('BTC · Bitcoin','BTC · Bitcoin');
+  $('capManualName').placeholder=t('Apple, Nvidia, S&P 500…','Apple, Nvidia, S&P 500…');
+  $('capManualCap').placeholder=t('es. 3000 (in miliardi)','e.g. 3000 (in billions)');
+  render();
+ }
+ async function fetchJson(url,timeoutMs=10000){
+  const ctrl=new AbortController(),timeout=setTimeout(()=>ctrl.abort(),timeoutMs);
+  try{
+   const response=await fetch(url,{signal:ctrl.signal,cache:'no-store',headers:{accept:'application/json'}});
+   if(!response.ok)throw Error('CoinGecko HTTP '+response.status);
+   return await response.json();
+  }finally{clearTimeout(timeout);}
+ }
+ function normalizeMarket(row){
+  const id=String(row?.id||'').toLowerCase(),cap=number(row?.market_cap),price=number(row?.current_price),supply=number(row?.circulating_supply);
+  if(!id||!positive(cap)||!positive(price))return null;
+  return {id,cap,price,supply:positive(supply)?supply:NaN,updated:Date.now(),name:String(row?.name||id),symbol:String(row?.symbol||'').toUpperCase()};
+ }
+ function restoreQuotes(){
+  try{
+   const cache=JSON.parse(localStorage.getItem(COIN_CACHE)||'null');
+   if(!cache||!Array.isArray(cache.rows))return;
+   if(!cache.savedAt||Date.now()-cache.savedAt>12*3600000)return;
+   for(const row of cache.rows){
+    if(row&&positive(row.cap)&&positive(row.price))state.quotes.set(row.id,{...row,fromCache:true});
+   }
+  }catch(_){}
+ }
+ function persistQuotes(){
+  try{localStorage.setItem(COIN_CACHE,JSON.stringify({savedAt:Date.now(),rows:[...state.quotes.values()].slice(0,30)}));}catch(_){}
+ }
+ async function refreshQuotes(force=false){
+  if(state.busy)return;
+  const allIds=[state.source.id,'injective-protocol'];
+  if(state.kind==='crypto')allIds.push(state.target.id);
+  const ids=[...new Set(allIds)].filter(Boolean);
+  const stale=ids.some(id=>!state.quotes.has(id)||Date.now()-state.quotes.get(id).updated>100000);
+  if(!force&&!stale)return;
+  state.busy=true;
+  state.quoteError='';
+  renderStatus();
+  try{
+   const uri=API+'/coins/markets?vs_currency=usd&ids='+encodeURIComponent(ids.join(','))+'&order=market_cap_desc&per_page=20&page=1&sparkline=false';
+   const result=await fetchJson(uri);
+   if(!Array.isArray(result)||!result.length)throw Error('No CoinGecko market quotes');
+   for(const row of result){
+    const normalized=normalizeMarket(row);
+    if(normalized)state.quotes.set(normalized.id,normalized);
+   }
+   state.lastRemote=Date.now();persistQuotes();
+  }catch(error){state.quoteError=String(error?.message||error);}
+  finally{state.busy=false;render();}
+ }
+ function quote(id){return state.quotes.get(id)||null;}
+ function recentCrypto(id){const q=quote(id);return q&&Date.now()-q.updated<180000&&!q.fromCache;}
+ function renderStatus(){
+  const needed=[state.source.id,...(state.kind==='crypto'?[state.target.id]:[])];
+  const fresh=needed.every(id=>recentCrypto(id));
+  const cached=needed.some(id=>quote(id));
+  const status=$('comparisonStatus');
+  status.classList.toggle('live',fresh);
+  status.classList.toggle('cache',!fresh&&cached);
+  set('comparisonStatusText',state.busy?'SYNC':fresh?'LIVE':cached?t('SALVATO','CACHED'):t('ATTESA','WAITING'));
+ }
+ function currentReference(){
+  if(state.kind==='crypto'){
+   const q=quote(state.target.id);
+   return {cap:q?.cap||NaN,name:state.target.name,symbol:state.target.symbol,manual:false};
+  }
+  const raw=parseUserNumber($('capManualCap').value);
+  const scale=number($('capManualScale').value);
+  const cap=positive(raw)&&positive(scale)?raw*scale:NaN;
+  return {cap,name:$('capManualName').value.trim()||t('Riferimento manuale','Manual reference'),symbol:state.kind==='stock'?'STOCK':'INDEX',manual:true};
+ }
+ function selectedWallet(){
+  try{
+   if(window.parent!==window&&window.parent.location.origin===location.origin&&typeof window.parent.INJ_GET_SELECTED_WALLET_SNAPSHOT==='function'){
+    const parentData=window.parent.INJ_GET_SELECTED_WALLET_SNAPSHOT();
+    if(parentData?.address)return parentData;
+   }
+  }catch(_){}
+  let address='';
+  try{address=localStorage.getItem(SELECTED_KEY)||localStorage.getItem('inj_monitor_address')||'';}catch(_){}
+  if(!address)return null;
+  try{
+   const wallets=JSON.parse(localStorage.getItem('inj_monitor_wallets_v1')||'[]');
+   const rows=JSON.parse(localStorage.getItem('inj_monitor_summaries_v1')||'{}');
+   const wallet=Array.isArray(wallets)?wallets.find(w=>w.address===address):null;
+   const row=rows?.[address];
+   if(!wallet)return null;
+   const inj=Number(row?.total);
+   return {address,label:wallet.label||'Wallet',total:Number.isFinite(inj)&&inj>=0?inj:NaN,
+    updated:Number(row?.updated)||0,available:Number(row?.available)||0,staked:Number(row?.staked)||0,rewards:Number(row?.rewards)||0};
+  }catch(_){return null;}
+ }
+ function privacyEnabled(){try{return localStorage.getItem('inj_monitor_privacy')==='1'}catch(_){return false}}
+ function renderWallet(multiplier){
+  const wallet=selectedWallet();
+  const sourceInj=state.source.id==='injective-protocol';
+  const currentInj=quote('injective-protocol')?.price||NaN;
+  const count=number(wallet?.total);
+  const known=wallet&&Number.isFinite(count)&&count>=0&&wallet.updated>0;
+  const privateOn=privacyEnabled();
+  const now=known&&positive(currentInj)?count*currentInj:NaN;
+  const future=sourceInj&&positive(multiplier)&&Number.isFinite(now)?now*multiplier:NaN;
+  set('capWalletName',wallet?.label||t('Nessun wallet selezionato','No selected wallet'));
+  const fresh=known&&Date.now()-wallet.updated<120000;
+  set('capWalletFresh',fresh?'LIVE':known?t('DATI SALVATI','CACHED'):t('IN ATTESA','WAITING'));
+  $('capWalletFresh').classList.toggle('live',fresh);
+  set('capWalletInj',known?(privateOn?'••••':fmt(count,4)+' INJ'):'—');
+  set('capWalletNow',Number.isFinite(now)?(privateOn?'••••':money(now)):'—');
+  set('capWalletFuture',Number.isFinite(future)?(privateOn?'••••':money(future)):'—');
+  set('capWalletFutureHelp',sourceInj?t('Se INJ raggiungesse il riferimento','If INJ reached the reference cap'):t('Disponibile solo con INJ come crypto di partenza','Available when source crypto is INJ'));
+  set('capWalletNote',privateOn?t('Valori nascosti nelle preferenze Privacy.','Values hidden by Privacy settings.'):
+    !sourceInj?t('Il wallet contiene INJ: per il valore teorico seleziona Injective come crypto di partenza.','This wallet holds INJ. Select Injective as the source to see its hypothetical value.'):
+    t('Snapshot del wallet selezionato; il valore teorico riguarda solo gli INJ (staking, liquidità e reward), non eventuali altri token.','Selected wallet snapshot; this scenario values INJ holdings only (staked, liquid and rewards), not other tokens.'));
+ }
+ function render(){
+  const source=quote(state.source.id),ref=currentReference();
+  set('capSourceSymbol',state.source.symbol);set('capSourceName',state.source.name);set('capSourceId',state.source.id);
+  set('capTargetSymbol',state.target.symbol);set('capTargetName',state.target.name);set('capTargetId',state.target.id);
+  set('capSourceCap',money(source?.cap));set('capSourcePrice',priceMoney(source?.price));
+  set('capSourceSupply',positive(source?.supply)?fmt(source.supply,0)+' '+state.source.symbol:'—');
+  set('capTargetCap',money(ref.cap));
+  set('capTargetMeta',ref.manual?t('Riferimento inserito manualmente · verifica la fonte e la data','Manually entered reference · verify source and date'):
+    'CoinGecko · USD'+(recentCrypto(state.target.id)?' · LIVE':' · '+t('salvato','cached')));
+  const can=source&&positive(source.cap)&&positive(source.price)&&positive(ref.cap);
+  const multiplier=can?ref.cap/source.cap:NaN;
+  const theoretical=positive(multiplier)?source.price*multiplier:NaN;
+  const change=positive(multiplier)?(multiplier-1)*100:NaN;
+  set('capMultiple',positive(multiplier)?fmt(multiplier,multiplier<1?4:2)+'×':'—');
+  set('capProjectedPrice',priceMoney(theoretical));
+  set('capPriceChange',Number.isFinite(change)?(change>0?'+':'')+fmt(change,2)+'%':'—');
+  $('capPriceChange').className=change>0?'up':change<0?'down':'';
+  $('capScenarioState').textContent=can?t('CALCOLATO','CALCULATED'):t('IN ATTESA DATI','WAITING FOR DATA');
+  $('capScenarioState').classList.toggle('ready',can);
+  set('capBarSourceLabel',state.source.symbol);
+  set('capBarTargetLabel',ref.manual?ref.name:state.target.symbol);
+  set('capBarSourceValue',money(source?.cap));
+  set('capBarTargetValue',money(ref.cap));
+  const max=can?Math.max(source.cap,ref.cap):NaN;
+  $('capBarSource').style.width=positive(max)?Math.max(1,source.cap/max*100)+'%':'0%';
+  $('capBarTarget').style.width=positive(max)?Math.max(1,ref.cap/max*100)+'%':'0%';
+  $('capUpdatedAt').textContent=state.lastRemote?
+   t('Crypto aggiornate ','Crypto updated ')+new Date(state.lastRemote).toLocaleTimeString(locale(),{hour:'2-digit',minute:'2-digit'}):
+   t('In attesa delle quotazioni','Waiting for market quotes');
+  renderWallet(multiplier);
+  renderStatus();
+ }
+ function buildOptions(type,results){
+  const host=$(type==='source'?'capSourceResults':'capTargetResults');
+  host.replaceChildren();
+  if(!results.length){
+   const msg=document.createElement('div');msg.className='cap-search-message';msg.textContent=t('Nessun risultato trovato','No results found');host.append(msg);
+  }else for(const raw of results.slice(0,9)){
+   const item=assetSafe(raw);if(!item.id)continue;
+   const btn=document.createElement('button');
+   btn.type='button';btn.className='cap-search-item';btn.setAttribute('role','option');
+   const symbol=document.createElement('span');symbol.textContent=item.symbol;
+   const name=document.createElement('span');name.textContent=item.name;
+   btn.append(symbol,name);
+   btn.addEventListener('click',()=>{
+    if(type==='source'){state.source=item;$('capSourceSearch').value=item.symbol+' · '+item.name;}
+    else{state.target=item;$('capTargetSearch').value=item.symbol+' · '+item.name;}
+    host.hidden=true;render();void refreshQuotes(true);
+   });
+   host.append(btn);
+  }
+  host.hidden=false;
+ }
+ async function search(type,term){
+  const ticket=++state.searchTicket[type];
+  const input=$(type==='source'?'capSourceSearch':'capTargetSearch');
+  const spin=$(type==='source'?'capSourceSpin':'capTargetSpin');
+  const host=$(type==='source'?'capSourceResults':'capTargetResults');
+  if(!term.trim()||term.trim().length<2){host.hidden=true;spin.classList.remove('busy');return;}
+  spin.classList.add('busy');
+  try{
+   const response=await fetchJson(API+'/search?query='+encodeURIComponent(term.trim()),10000);
+   if(state.searchTicket[type]!==ticket)return;
+   if(input.value.trim()!==term.trim())return;
+   const cryptos=Array.isArray(response?.coins)?response.coins:[];
+   buildOptions(type,cryptos);
+  }catch(_){
+   if(state.searchTicket[type]===ticket){
+    host.replaceChildren();
+    const msg=document.createElement('div');msg.className='cap-search-message';msg.textContent=t('Ricerca non disponibile, riprova tra poco','Search unavailable. Please retry shortly.');
+    host.append(msg);host.hidden=false;
+   }
+  }finally{if(state.searchTicket[type]===ticket)spin.classList.remove('busy');}
+ }
+ function searchDebounced(type){
+  const input=$(type==='source'?'capSourceSearch':'capTargetSearch');
+  const key=type==='source'?'sourceSearchTimer':'targetSearchTimer';
+  clearTimeout(state[key]);
+  state[key]=setTimeout(()=>void search(type,input.value),350);
+ }
+ function setKind(kind){
+  if(!['crypto','stock','index'].includes(kind))return;
+  state.kind=kind;
+  $('capTargetCryptoPanel').hidden=kind!=='crypto';
+  $('capTargetManualPanel').hidden=kind==='crypto';
+  document.querySelectorAll('[data-target-kind]').forEach(btn=>{
+   const active=btn.dataset.targetKind===kind;btn.classList.toggle('active',active);btn.setAttribute('aria-pressed',String(active));
+  });
+  $('capManualName').placeholder=kind==='stock'?t('Apple, Nvidia, Microsoft…','Apple, Nvidia, Microsoft…'):t('S&P 500, Nasdaq-100…','S&P 500, Nasdaq-100…');
+  $('capManualHint').textContent=kind==='stock'?
+   t('Inserisci la capitalizzazione totale dell’azienda e verifica la data. Il dato non è recuperato automaticamente.','Enter the company market cap and verify the date. This figure is not fetched automatically.'):
+   t('Gli indici sono espressi in punti: inserisci la capitalizzazione complessiva dei componenti secondo una metodologia dichiarata.','Indices are quoted in points: enter the aggregate market cap of constituents using a stated methodology.');
+  render();if(kind==='crypto')void refreshQuotes();
+ }
+ function boot(){
+  restoreQuotes();localize();setKind('crypto');render();
+  $('comparisonBack').addEventListener('click',event=>{
+   event.preventDefault();
+   if(window.parent!==window&&window.parent.location.origin===location.origin){
+    window.parent.postMessage({type:'injnode:section:home'},location.origin);
+   }else location.assign('./index.html');
+  });
+  for(const type of ['source','target']){
+   const input=$(type==='source'?'capSourceSearch':'capTargetSearch');
+   input.addEventListener('input',()=>searchDebounced(type));
+   input.addEventListener('keydown',e=>{
+    if(e.key==='Escape'){const host=$(type==='source'?'capSourceResults':'capTargetResults');host.hidden=true;}
+    if(e.key==='Enter'){e.preventDefault();const host=$(type==='source'?'capSourceResults':'capTargetResults');const first=host.querySelector('.cap-search-item');if(!host.hidden&&first)first.click();}
+   });
+  }
+  document.addEventListener('pointerdown',e=>{
+   for(const type of ['source','target']){
+    const input=$(type==='source'?'capSourceSearch':'capTargetSearch'),host=$(type==='source'?'capSourceResults':'capTargetResults');
+    if(!host.contains(e.target)&&e.target!==input)host.hidden=true;
+   }
+  },{passive:true});
+  document.querySelectorAll('[data-target-kind]').forEach(btn=>btn.addEventListener('click',()=>setKind(btn.dataset.targetKind)));
+  for(const id of ['capManualName','capManualCap','capManualScale']){
+   $(id).addEventListener('input',render);$(id).addEventListener('change',render);
+  }
+  window.addEventListener('pageshow',()=>{render();void refreshQuotes(true);});
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden){render();void refreshQuotes();}});
+  window.addEventListener('storage',event=>{
+   if(event.key==='inj_node_language_v1')localize();
+   else if(event.key==='inj_monitor_theme')location.reload();
+   else if([SELECTED_KEY,'inj_monitor_address','inj_monitor_wallets_v1','inj_monitor_summaries_v1','inj_monitor_privacy'].includes(event.key))render();
+  });
+  setInterval(()=>{if(!document.hidden){render();void refreshQuotes();}},90000);
+  setInterval(()=>{if(!document.hidden)renderWallet((()=>{const source=quote(state.source.id),ref=currentReference();return positive(source?.cap)&&positive(ref.cap)?ref.cap/source.cap:NaN})());},4000);
+  void refreshQuotes(true);
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});
+ else boot();
+})();
