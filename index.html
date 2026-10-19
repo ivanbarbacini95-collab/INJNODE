@@ -130,23 +130,23 @@
 <link rel="stylesheet" href="./home-vitality-v2.css?v=160096">
 <link rel="stylesheet" href="./home-layout-polish.css?v=160099">
 <link rel="stylesheet" href="./home-pnl-focus.css?v=160101">
+<link rel="stylesheet" href="./node-pulse.css?v=160102">
 </head>
 <body class="boot-loading">
-<div aria-label="Avvio INJ Node" class="boot-splash" id="bootSplash" role="status">
-<div class="boot-splash-core">
-<svg aria-hidden="true" class="boot-ring" viewbox="0 0 220 220">
-<circle class="boot-ring-track" cx="110" cy="110" pathlength="100" r="96"></circle>
-<circle class="boot-ring-progress" cx="110" cy="110" pathlength="100" r="96"></circle>
-</svg>
-<div aria-hidden="true" class="boot-copy">
-<div class="boot-brand-symbol"><svg aria-hidden="true" class="inj-node-symbol" viewbox="0 0 48 48"><path class="inj-node-symbol-orbit inj-node-symbol-orbit-a" d="M8.5 27.4A16.5 16.5 0 0 1 33.7 9.6"></path><path class="inj-node-symbol-orbit inj-node-symbol-orbit-b" d="M39.5 20.6A16.5 16.5 0 0 1 14.3 38.4"></path><path class="inj-node-symbol-n" d="M15 33V15l18 18V15"></path><circle class="inj-node-symbol-node" cx="15" cy="15" r="2.4"></circle><circle class="inj-node-symbol-node" cx="33" cy="33" r="2.4"></circle><circle class="inj-node-symbol-node inj-node-symbol-node-soft" cx="33" cy="15" r="1.65"></circle><circle class="inj-node-symbol-core" cx="24" cy="24" r="2.75"></circle></svg></div>
-<div class="boot-wordmark">
-<strong>INJ</strong><span>Node</span>
-</div>
-<div class="boot-tagline"><span>THE FUTURE IS HERE</span></div>
-<div class="boot-percent" id="bootPercent">000%</div>
-</div>
-</div>
+<div aria-label="Avvio INJ Node" aria-live="polite" aria-atomic="true" class="boot-splash node-pulse-splash" id="bootSplash" role="status">
+  <div class="node-pulse-stage">
+    <div aria-hidden="true" class="node-pulse-name"><strong>INJ</strong><span>NODE</span></div>
+    <div aria-hidden="true" class="node-pulse-visual">
+      <svg viewBox="0 0 260 60" xmlns="http://www.w3.org/2000/svg" focusable="false">
+        <path class="node-pulse-gridline" d="M6 30H254"></path>
+        <path class="node-pulse-gridline" d="M6 10H254M6 50H254" opacity=".35"></path>
+        <path class="node-pulse-path" pathLength="100" d="M6 30H64L82 30L96 17L112 44L129 18L141 30H198L216 30H254"></path>
+        <circle class="node-pulse-dot" cx="216" cy="30" r="3"></circle>
+      </svg>
+    </div>
+    <div class="node-pulse-status" id="bootStatus">CONNECTING TO INJECTIVE <i class="node-pulse-indicator" aria-hidden="true"></i></div>
+  </div>
+  <div class="node-pulse-foot" aria-hidden="true">REAL-TIME INTELLIGENCE</div>
 </div>
 <section aria-hidden="true" aria-label="Seleziona modalità di accesso" class="entry-gate" id="entryGate">
 <div class="entry-gate-shell">
