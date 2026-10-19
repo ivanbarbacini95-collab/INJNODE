@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.00.98-walletshare-language';
+const CACHE_NAME = 'inj-node-v16.00.99-home-pnl-manual-ownership';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160088',
@@ -14,9 +14,10 @@ const APP_SHELL = [
   './home-vitality.css?v=1.0.1',
   './home-vitality.js?v=1.0.1',
   './home-vitality-v2.css?v=160096',
+  './home-layout-polish.css?v=160099',
   './ios-screen-fixes.css?v=160095',
   './ios-converter-keyboard.js?v=160095',
-  './treasury-ownership.css?v=160095',
+  './treasury-ownership.css?v=160099',
   './market.html',
   './comparison.html',
   './home-vitality.js?v=1.0.0',
@@ -51,7 +52,7 @@ const APP_SHELL = [
   './command-center.js?v=16.00.18',
   './treasury.html',
   './treasury.css?v=16.00.39',
-  './treasury.js?v=16.00.98'
+  './treasury.js?v=16.00.99'
 ];
 
 self.addEventListener('install', (event) => {
