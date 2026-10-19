@@ -462,3 +462,151 @@ html[data-inj-page="index"] #converterView .entry-converter-head > * {
     min-height:100%!important;
   }
 }
+
+/* INJ Node v16.00.86 — mobile Home: two clean launcher tiles per row.
+   Scope to the unlocked Home only. Desktop and first-access remain unchanged.
+   Deliberately do not alter touch-action, overflow or the page scroller. */
+@media (max-width:900px), (pointer:coarse) and (max-width:1100px) {
+  html[data-inj-page="index"] .entry-gate-shell:not(.first-access) > .entry-actions.entry-flat-v44 {
+    display:grid!important;
+    flex-direction:unset!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    grid-auto-flow:row!important;
+    grid-auto-rows:auto!important;
+    gap:9px!important;
+    width:100%!important;
+    min-width:0!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    align-content:start!important;
+    align-items:stretch!important;
+  }
+  html[data-inj-page="index"] .entry-gate-shell:not(.first-access) > .entry-actions.entry-flat-v44 > .entry-action {
+    box-sizing:border-box!important;
+    display:grid!important;
+    grid-column:auto!important;
+    grid-row:auto!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    grid-template-rows:35px minmax(0,auto)!important;
+    align-items:center!important;
+    justify-items:center!important;
+    align-content:center!important;
+    justify-content:center!important;
+    width:100%!important;
+    min-width:0!important;
+    min-height:96px!important;
+    height:auto!important;
+    max-height:none!important;
+    margin:0!important;
+    padding:12px 8px!important;
+    gap:8px!important;
+    border-radius:16px!important;
+    text-align:center!important;
+    text-decoration:none!important;
+    -webkit-tap-highlight-color:transparent;
+  }
+  html[data-inj-page="index"] .entry-gate-shell:not(.first-access) > .entry-actions.entry-flat-v44 > .entry-action > .entry-action-icon {
+    box-sizing:border-box!important;
+    display:grid!important;
+    place-items:center!important;
+    grid-column:1!important;
+    grid-row:1!important;
+    justify-self:center!important;
+    align-self:center!important;
+    width:35px!important;
+    height:35px!important;
+    min-width:35px!important;
+    min-height:35px!important;
+    margin:0!important;
+    padding:0!important;
+    border-radius:11px!important;
+    flex:0 0 35px!important;
+  }
+  html[data-inj-page="index"] .entry-gate-shell:not(.first-access) > .entry-actions.entry-flat-v44 > .entry-action > .entry-action-icon svg {
+    width:19px!important;
+    height:19px!important;
+    max-width:19px!important;
+    max-height:19px!important;
+  }
+  html[data-inj-page="index"] .entry-gate-shell:not(.first-access) > .entry-actions.entry-flat-v44 > .entry-action > span:not(.entry-action-icon) {
+    box-sizing:border-box!important;
+    display:flex!important;
+    grid-column:1!important;
+    grid-row:2!important;
+    justify-content:center!important;
+    align-items:center!important;
+    min-width:0!important;
+    width:100%!important;
+    max-width:100%!important;
+    padding:0!important;
+    margin:0!important;
+    text-align:center!important;
+  }
+  html[data-inj-page="index"] .entry-gate-shell:not(.first-access) > .entry-actions.entry-flat-v44 > .entry-action strong {
+    display:-webkit-box!important;
+    -webkit-box-orient:vertical;
+    -webkit-line-clamp:2;
+    line-clamp:2;
+    white-space:normal!important;
+    overflow:hidden!important;
+    text-overflow:clip!important;
+    overflow-wrap:anywhere!important;
+    hyphens:auto;
+    width:100%!important;
+    max-width:100%!important;
+    font-size:clamp(11px,2.85vw,13px)!important;
+    line-height:1.2!important;
+    font-weight:800!important;
+    letter-spacing:-.01em!important;
+    text-align:center!important;
+    margin:0!important;
+  }
+  html[data-inj-page="index"] .entry-gate-shell:not(.first-access) > .entry-actions.entry-flat-v44 > .entry-action > .entry-action-arrow {
+    display:none!important;
+  }
+  /* Command Center is deliberately hidden on iPhone by the existing rules;
+     make the last Treasury tile a full-width, compact closing row. */
+  html[data-inj-page="index"] .entry-gate-shell:not(.first-access) > .entry-actions.entry-flat-v44 > .entry-action-treasury:last-child {
+    grid-column:1 / -1!important;
+    grid-template-columns:35px minmax(0,1fr)!important;
+    grid-template-rows:auto!important;
+    justify-items:start!important;
+    align-content:center!important;
+    column-gap:13px!important;
+    min-height:68px!important;
+    padding:12px 16px!important;
+  }
+  html[data-inj-page="index"] .entry-gate-shell:not(.first-access) > .entry-actions.entry-flat-v44 > .entry-action-treasury:last-child > .entry-action-icon {
+    grid-column:1!important;
+    grid-row:1!important;
+  }
+  html[data-inj-page="index"] .entry-gate-shell:not(.first-access) > .entry-actions.entry-flat-v44 > .entry-action-treasury:last-child > span:not(.entry-action-icon) {
+    grid-column:2!important;
+    grid-row:1!important;
+    justify-content:flex-start!important;
+    text-align:left!important;
+    padding-right:0!important;
+  }
+  html[data-inj-page="index"] .entry-gate-shell:not(.first-access) > .entry-actions.entry-flat-v44 > .entry-action-treasury:last-child strong {
+    text-align:left!important;
+    font-size:13px!important;
+    -webkit-line-clamp:1;
+    line-clamp:1;
+  }
+}
+@media (max-width:360px) {
+  html[data-inj-page="index"] .entry-gate-shell:not(.first-access) > .entry-actions.entry-flat-v44 {
+    gap:7px!important;
+  }
+  html[data-inj-page="index"] .entry-gate-shell:not(.first-access) > .entry-actions.entry-flat-v44 > .entry-action {
+    min-height:92px!important;
+    padding:10px 6px!important;
+    gap:6px!important;
+  }
+}
+@media (prefers-reduced-motion:reduce){
+  html[data-inj-page="index"] .entry-gate-shell:not(.first-access) > .entry-actions.entry-flat-v44 > .entry-action {
+    transition:none!important;
+  }
+}
