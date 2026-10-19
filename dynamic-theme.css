@@ -1,0 +1,80 @@
+/* INJ Node · Dynamic adaptive palette v16.01.05
+   Paint only: never touch geometry, scrolling or numeric sign semantics. */
+html[data-theme="dynamic"] {
+ color-scheme:dark;
+ --bg:#080d12;
+ --canvas:#080d12;
+ --theme-canvas:#080d12;
+ --theme-browser:#080d12;
+ --surface:#0f171d;
+ --surface-strong:#151f25;
+ --surface-soft:#1c2930;
+ --panel:#0f171d;
+ --panel-strong:#151f25;
+ --text:#f5fbfc;
+ --muted:#93a6af;
+ --muted-strong:#c2d0d5;
+ --accent:#8fa6ad;
+ --accent-soft:rgba(143,166,173,.13);
+ --dynamic-rgb:143,166,173;
+ --line:rgba(143,166,173,.14);
+ --line-strong:rgba(143,166,173,.29);
+ --up:#37e590;
+ --up-soft:rgba(55,229,144,.14);
+ --down:#ff627b;
+ --down-soft:rgba(255,98,123,.14);
+ --theme-browser:#080d12;
+ --header-glow-a:rgba(143,166,173,.14);
+ --header-glow-b:rgba(143,166,173,.06);
+ --header-edge:rgba(143,166,173,.20);
+ --page-gradient:radial-gradient(ellipse at 75% 0%,rgba(143,166,173,.08),transparent 50%),linear-gradient(155deg,#0e171d,#080d12 66%);
+}
+html[data-theme="dynamic"] body{
+ color:var(--text)!important;
+ background-color:var(--bg)!important;
+ background-image:var(--page-gradient)!important;
+}
+html[data-theme="dynamic"] :is(.entry-gate,.entry-gate-shell,.app-shell,.treasury-shell,.rewards-shell,
+ .live-page,.book-page,.cc-shell,.cap-shell,.shell){
+ --dynamic-theme-active:1;
+}
+/* Scope recolouring to surfaces that already exist; do not add overlay layers. */
+html[data-theme="dynamic"] .entry-gate-shell:not(.first-access){
+ border-color:color-mix(in srgb,var(--accent) 21%,transparent)!important;
+ background:linear-gradient(145deg,color-mix(in srgb,var(--surface) 95%,var(--bg)),
+                             color-mix(in srgb,var(--surface-strong) 92%,var(--bg)))!important;
+}
+html[data-theme="dynamic"] #entryGate .entry-actions.entry-flat-v44 > .entry-action{
+ border-color:color-mix(in srgb,var(--accent) 30%,transparent)!important;
+ background:linear-gradient(135deg,color-mix(in srgb,var(--surface) 88%,var(--bg)),
+                                  color-mix(in srgb,var(--surface-strong) 94%,var(--bg)))!important;
+}
+html[data-theme="dynamic"] :is(.entry-overview,.entry-insights,.entry-price-pnl,
+ .menu-control-panel,.header-menu-panel,.treasury-card,.cap-panel,.data-card,.market-card){
+ border-color:color-mix(in srgb,var(--accent) 23%,transparent);
+}
+html[data-theme="dynamic"] :is(.entry-gate,.entry-gate-shell,.entry-action,.entry-overview,
+ .entry-insights,.entry-price-pnl,.header-menu-panel,.theme-picker,.treasury-shell,.treasury-card,
+ .cap-panel,.live-page,.book-page,.cc-shell,.rewards-shell,.app-shell,.data-card,.market-card,
+ .shell,.header,.terminal-header,.treasury-header){
+ transition-property:background-color,border-color,color,box-shadow;
+ transition-duration:.85s;
+ transition-timing-function:ease;
+}
+html[data-theme="dynamic"] .theme-swatch.dynamic,
+.theme-swatch.dynamic {
+ background:linear-gradient(110deg,#822b43 0%,#28323b 49%,#22cb7d 100%)!important;
+ border:1px solid rgba(181,204,208,.30)!important;
+}
+/* A Dynamic selection must be visibly indicated even when current mood is neutral. */
+html[data-theme="dynamic"] [data-theme-choice="dynamic"]{
+ border-color:var(--accent)!important;
+}
+html[data-theme="dynamic"] .node-pulse-splash{
+ --pulse-accent:var(--accent);
+}
+@media(prefers-reduced-motion:reduce){
+ html[data-theme="dynamic"] *{
+  transition-duration:0s!important;
+ }
+}
