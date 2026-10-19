@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.01.05-dynamic-home-headline';
+const CACHE_NAME = 'inj-node-v16.01.05b-dynamic-localized';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160088',
