@@ -38,6 +38,7 @@
     ['Ricomincia lo storico da adesso', 'Restart history from now'], ['Stato rete & API', 'Network & API status'],
     ['Verifica servizi live', 'Check live services'], ['Installa INJ Node', 'Install INJ Node'],
     ['Aggiungi l’app al dispositivo', 'Add the app to this device'], ['Dati', 'Data'], ['In attesa…', 'Waiting…'],
+    ['Il tuo spazio Injective', 'Your Injective space'],
     ['Il tuo spazio Injective.', 'Your Injective space.'],
     ['Scegli il wallet, controlla i dati essenziali e apri la vista che ti serve.', 'Choose a wallet, check the essential data and open the view you need.'],
     ['ACCOUNT SELEZIONATO', 'SELECTED ACCOUNT'], ['Seleziona un wallet', 'Select a wallet'], ['VALORE ACCOUNT', 'ACCOUNT VALUE'],
