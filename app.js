@@ -1159,13 +1159,13 @@ function renderEntryConverter() {
   const eurPerUsd = number(state.eurRate);
   const usdPerEur = eurPerUsd > 0 ? 1 / eurPerUsd : 0;
   const priceNode = $('entryConverterPrice');
-  if (priceNode) setEntryAnimatedValue('entryConverterPrice', price > 0 ? `INJ $${price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: price < 10 ? 4 : 2 })}` : 'INJ $—', price > 0 ? price : NaN);
+  if (priceNode) setEntryAnimatedValue('entryConverterPrice', price > 0 ? `INJ $${price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: price < 10 ? 4 : 2 })}` : 'INJ $—', price > 0 ? price : NaN, { directional: false, roll: false });
   const rateNode = $('entryConverterRate');
-  if (rateNode) setEntryAnimatedValue('entryConverterRate', usdPerEur > 0 ? `1 € = ${usdPerEur.toLocaleString('it-IT', { minimumFractionDigits: 4, maximumFractionDigits: 4 })} $` : '1 € = — $', usdPerEur > 0 ? usdPerEur : NaN);
+  if (rateNode) setEntryAnimatedValue('entryConverterRate', usdPerEur > 0 ? `1 € = ${usdPerEur.toLocaleString('it-IT', { minimumFractionDigits: 4, maximumFractionDigits: 4 })} $` : '1 € = — $', usdPerEur > 0 ? usdPerEur : NaN, { directional: false, roll: false });
   const meta = $('entryConverterMeta');
   if (meta) {
     const eurPrice = price > 0 && eurPerUsd > 0 ? price * eurPerUsd : 0;
-    setEntryAnimatedValue('entryConverterMeta', price > 0 ? `1 INJ = $${price.toFixed(price < 10 ? 4 : 2)}${eurPrice > 0 ? ` · €${eurPrice.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 4 })}` : ''}` : 'Prezzo INJ in attesa…', price > 0 ? price : NaN);
+    setEntryAnimatedValue('entryConverterMeta', price > 0 ? `1 INJ = $${price.toFixed(price < 10 ? 4 : 2)}${eurPrice > 0 ? ` · €${eurPrice.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 4 })}` : ''}` : 'Prezzo INJ in attesa…', price > 0 ? price : NaN, { directional: false, roll: false });
   }
 
   const fields = {

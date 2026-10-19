@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="it" data-inj-page="radar" data-theme="navy">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#020708">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>INJ Radar · INJ Node</title>
+<style>html,body{margin:0;min-height:100%;background:#020708}html[data-theme="black"],html[data-theme="black"] body{background:#000}html[data-theme="light"],html[data-theme="light"] body{background:#edf4fb}html[data-theme="amber"],html[data-theme="amber"] body{background:#05080d}</style>
+<script>try{const theme=localStorage.getItem('inj_monitor_theme');document.documentElement.dataset.theme=['navy','black','light','amber'].includes(theme)?theme:'navy';document.documentElement.lang=localStorage.getItem('inj_node_language_v1')==='en'?'en':'it'}catch(_){}</script>
+<link rel="stylesheet" href="./navigation.css?v=160080">
+<link rel="stylesheet" href="./radar.css?v=160080">
+<script defer src="./navigation.js?v=160080"></script>
+<script defer src="./radar.js?v=160080"></script>
+</head>
+<body>
+<div class="radar-shell">
+  <header class="radar-header">
+    <a class="radar-back" id="radarBack" href="./index.html" aria-label="Torna alla Home" title="Home">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 11 8-7 8 7"/><path d="M6.5 10v9h11v-9M10 19v-5h4v5"/></svg>
+    </a>
+    <div class="radar-heading"><span>INJ NODE</span><strong>INJ RADAR</strong><small data-t="subtitle">Intelligence di rete · Injective Mainnet</small></div>
+    <div class="radar-status" id="radarStatus" role="status" aria-live="polite"><i></i><span id="radarStatusText">SYNC</span></div>
+  </header>
+  <main class="radar-main">
+    <section class="radar-overview" aria-label="Network telemetry">
+      <article><span data-t="height">ULTIMO BLOCCO</span><strong id="radarHeight">—</strong><small id="radarBlockAge" data-t="waiting">In attesa della rete</small></article>
+      <article><span data-t="transactions">TX · ULTIMI 12 BLOCCHI</span><strong id="radarTransactions">—</strong><small id="radarTxWindow" data-t="actualCounts">Transazioni incluse, non stimate</small></article>
+      <article><span data-t="interval">INTERVALLO MEDIO</span><strong id="radarInterval">—</strong><small id="radarIntervalWindow" data-t="confirmedBlocks">Tra i blocchi confermati</small></article>
+    </section>
+    <section class="radar-grid">
+      <section class="radar-screen" aria-labelledby="radarScreenTitle">
+        <div class="radar-panel-head">
+          <div><span class="radar-eyebrow">NETWORK ACTIVITY</span><h1 id="radarScreenTitle" data-t="screenTitle">Attività blockchain</h1></div>
+          <span class="radar-hint" data-t="liveBlocks">Rilevamento nuovi blocchi</span>
+        </div>
+        <div class="radar-visual">
+          <div class="radar-disk" aria-hidden="true">
+            <div class="radar-circle radar-circle-a"></div><div class="radar-circle radar-circle-b"></div><div class="radar-circle radar-circle-c"></div>
+            <div class="radar-axis radar-axis-x"></div><div class="radar-axis radar-axis-y"></div>
+            <div class="radar-sweep"></div>
+            <div class="radar-core"><svg viewBox="0 0 64 64"><path d="M10 40A23 23 0 0 1 43 10M54 24A23 23 0 0 1 21 54M23 43V21l18 22V21"/><circle cx="23" cy="21" r="2"/><circle cx="41" cy="43" r="2"/></svg></div>
+            <div class="radar-pips" id="radarPips"></div>
+          </div>
+          <div class="radar-visual-caption"><span class="radar-signal"><i></i><b data-t="signal">SEGNALI ON-CHAIN</b></span><span id="radarChainId">INJECTIVE</span></div>
+        </div>
+        <div class="radar-activity">
+          <div class="radar-activity-title"><span data-t="blockActivity">TRANSAZIONI PER BLOCCO</span><small id="radarActivityScale">—</small></div>
+          <div class="radar-bars" id="radarBars" aria-label="Transazioni negli ultimi blocchi"></div>
+          <p data-t="activityNote">Le colonne rappresentano il numero effettivo di transazioni incluse nei blocchi letti.</p>
+        </div>
+      </section>
+      <section class="radar-feed" aria-labelledby="radarFeedTitle">
+        <div class="radar-panel-head">
+          <div><span class="radar-eyebrow" data-t="liveFeed">FLUSSO BLOCKCHAIN</span><h2 id="radarFeedTitle" data-t="feedTitle">Ultimi blocchi</h2></div>
+          <span class="radar-feed-live"><i></i>LIVE</span>
+        </div>
+        <div class="radar-feed-head"><span data-t="blockNumber">BLOCCO</span><span>TX</span><span data-t="blockTime">ORA</span></div>
+        <div class="radar-feed-list" id="radarFeed" aria-live="off">
+          <div class="radar-feed-placeholder" data-t="connecting">Connessione alla blockchain Injective…</div>
+        </div>
+        <div class="radar-feed-footer"><span data-t="source">Fonte: endpoint pubblici Injective LCD</span><span id="radarUpdated">—</span></div>
+      </section>
+    </section>
+    <section class="radar-insight">
+      <div><span class="radar-eyebrow" data-t="analysis">RETE · IN TEMPO REALE</span><h2 data-t="insightTitle">Densità dell'attività</h2><p data-t="insightText">Il radar visualizza esclusivamente l'attività osservata nei blocchi acquisiti. Non rappresenta ordini, rendimenti o una previsione di prezzo.</p></div>
+      <div class="radar-density"><span id="radarDensityLabel">—</span><strong id="radarDensity">—</strong><small data-t="txPerBlock">TX MEDIE / BLOCCO</small></div>
+    </section>
+    <footer class="radar-footer"><span data-t="privacy">Dati di rete pubblici · nessun wallet richiesto</span><span>INJ NODE · RADAR</span></footer>
+  </main>
+</div>
+</body>
+</html>

@@ -1,7 +1,7 @@
-const CACHE_NAME = 'inj-node-v16.00.78-atlas-live-towers';
+const CACHE_NAME = 'inj-node-v16.00.80-radar-converter-stable';
 const APP_SHELL = [
-  './navigation.css?v=160076',
-  './navigation.js?v=160078',
+  './navigation.css?v=160080',
+  './navigation.js?v=160080',
   './',
   './index.html',
   './market.html',
@@ -14,8 +14,8 @@ const APP_SHELL = [
   './top-clarity.css?v=16.00.70',
   './viewport.js?v=16.00.14',
   './style.css?v=16.00.49',
-  './app.js?v=16.00.72',
-  './i18n.js?v=160078',
+  './app.js?v=16.00.80',
+  './i18n.js?v=160080',
   './scroll-guard.js?v=160074',
   './live-charts.html',
   './live-charts.css?v=16.00.39',
@@ -32,9 +32,9 @@ const APP_SHELL = [
   './treasury.html',
   './treasury.css?v=16.00.39',
   './treasury.js?v=16.00.46',
-  './atlas.html',
-  './atlas.css?v=160078',
-  './atlas.js?v=160078'
+  './radar.html',
+  './radar.css?v=160080',
+  './radar.js?v=160080'
 ];
 
 self.addEventListener('install', (event) => {
@@ -60,7 +60,7 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return;
 
   if (request.mode === 'navigate') {
-    const isolatedPath = ['live-charts.html', 'live-rewards.html', 'command-center.html', 'order-book.html', 'treasury.html', 'market.html', 'atlas.html'].find((name) => url.pathname.endsWith('/' + name));
+    const isolatedPath = ['live-charts.html', 'live-rewards.html', 'command-center.html', 'order-book.html', 'treasury.html', 'market.html', 'radar.html'].find((name) => url.pathname.endsWith('/' + name));
     event.respondWith(
       fetch(request, { cache: 'no-store' })
         .then((response) => {

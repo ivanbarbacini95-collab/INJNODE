@@ -338,3 +338,127 @@ html[data-inj-page="index"] #converterView .entry-converter-foot {
   pointer-events:auto!important;
   background:var(--theme-canvas,var(--bg,#020708))!important;
 }
+
+/* v16.00.80 · Converter on iOS: numbers never collide with currency symbols.
+   Native input scrolls horizontally for long amounts; full form scrolls with keyboard. */
+html[data-inj-page="index"] #converterView .entry-converter,
+html[data-inj-page="index"] #converterView .entry-converter-field,
+html[data-inj-page="index"] #converterView .entry-converter-head,
+html[data-inj-page="index"] #converterView .entry-converter-foot {
+  min-width:0!important;
+}
+html[data-inj-page="index"] #converterView .entry-converter-input {
+  box-sizing:border-box!important;
+  display:flex!important;
+  align-items:center!important;
+  min-width:0!important;
+  max-width:100%!important;
+  overflow:hidden!important;
+  gap:10px!important;
+}
+html[data-inj-page="index"] #converterView .entry-converter-input input {
+  display:block!important;
+  flex:1 1 0%!important;
+  width:0!important;
+  min-width:0!important;
+  max-width:100%!important;
+  height:auto!important;
+  padding:0!important;
+  white-space:nowrap!important;
+  text-overflow:clip!important;
+  overflow-x:auto!important;
+  font-size:clamp(16px,2vw,24px)!important;
+  line-height:1.35!important;
+  box-sizing:border-box!important;
+}
+html[data-inj-page="index"] #converterView .entry-converter-input b{
+  flex:0 0 auto!important;
+  white-space:nowrap!important;
+}
+html[data-inj-page="index"] #converterView .entry-converter-foot {
+  display:flex!important;
+  flex-wrap:wrap!important;
+  align-items:flex-start!important;
+  gap:8px 14px!important;
+}
+html[data-inj-page="index"] #converterView .entry-converter-foot > *,
+html[data-inj-page="index"] #converterView .entry-converter-head > * {
+  min-width:0!important;
+  max-width:100%!important;
+  overflow-wrap:anywhere!important;
+  line-height:1.4!important;
+}
+@media (max-width:720px){
+  html[data-inj-page="index"] #converterView .entry-converter-head{
+    flex-wrap:wrap!important;
+    gap:8px!important;
+    align-items:flex-start!important;
+  }
+  html[data-inj-page="index"] #converterView .entry-converter-flow{
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
+    justify-content:space-evenly!important;
+    width:100%!important;
+    min-height:0!important;
+    gap:clamp(10px,1.4vh,17px)!important;
+  }
+  html[data-inj-page="index"] #converterView .entry-converter-field{
+    display:grid!important;
+    grid-template-rows:auto auto!important;
+    flex:0 0 auto!important;
+    min-width:0!important;
+    width:100%!important;
+    gap:5px!important;
+  }
+  html[data-inj-page="index"] #converterView .entry-converter-input{
+    flex:0 0 auto!important;
+    width:100%!important;
+    min-height:52px!important;
+    height:clamp(52px,7vh,66px)!important;
+    padding:0 12px!important;
+  }
+  html[data-inj-page="index"] #converterView .entry-converter-input input{
+    height:100%!important;
+    min-height:0!important;
+    font-size:clamp(16px,4.7vw,22px)!important;
+  }
+  html[data-inj-page="index"] #converterView .converter-view-main > .entry-converter{
+    padding:clamp(12px,2vh,19px)!important;
+    gap:clamp(10px,1.5vh,18px)!important;
+  }
+  /* Editing lets WebKit scroll the whole form instead of squeezing fields
+     into the keyboard-reduced visual viewport. */
+  html[data-inj-page="index"] #converterView:focus-within{
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    -webkit-overflow-scrolling:touch!important;
+  }
+  html[data-inj-page="index"] #converterView:focus-within .converter-view-shell,
+  html[data-inj-page="index"] #converterView:focus-within .converter-view-main{
+    height:auto!important;
+    min-height:100%!important;
+    overflow:visible!important;
+  }
+  html[data-inj-page="index"] #converterView:focus-within .converter-view-main > .entry-converter{
+    height:auto!important;
+    min-height:0!important;
+    justify-content:flex-start!important;
+  }
+  html[data-inj-page="index"] #converterView:focus-within .entry-converter-flow{
+    flex:0 0 auto!important;
+    justify-content:flex-start!important;
+  }
+}
+@media (max-height:650px){
+  html[data-inj-page="index"] #converterView .converter-view-shell,
+  html[data-inj-page="index"] #converterView .converter-view-main{
+    height:auto!important;
+    min-height:100%!important;
+    overflow:visible!important;
+  }
+  html[data-inj-page="index"] #converterView .converter-view-main > .entry-converter{
+    height:auto!important;
+    min-height:100%!important;
+  }
+}
