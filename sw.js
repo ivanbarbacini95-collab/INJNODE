@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.01.05b-dynamic-localized';
+const CACHE_NAME = 'inj-node-v16.01.05c-dynamic-masthead';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160088',
@@ -17,7 +17,7 @@ const APP_SHELL = [
   './home-layout-polish.css?v=160099',
   './home-pnl-focus.css?v=160101',
   './node-pulse.css?v=160103',
-  './jn-branding.css?v=160104',
+  './jn-branding.css?v=160105',
   './dynamic-theme.css?v=160105',
   './dynamic-theme.js?v=160105',
   './ios-screen-fixes.css?v=160095',
