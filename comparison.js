@@ -545,7 +545,7 @@
    hideManualSuggestions();
    render();
    if(state.kind==='stock')void updateUsStock();
-   else $('capManualCap').focus({preventScroll:true});
+   else void estimateIndex();
  }
  function renderManualSuggestions(){
    if(state.kind==='crypto')return hideManualSuggestions();
@@ -579,7 +579,7 @@
    input.addEventListener('input',()=>{
      if(manualPicked){
        manualPicked=null;
-       usCapSequence++;usCapPending=false;
+       usCapSequence++;usCapPending=false;indexRequestSeq++;indexPending=false;
        $('capManualSelected').hidden=true;
        $('capManualCap').value='';
      }
