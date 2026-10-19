@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.01.17-network-radar-strategy-lab';
+const CACHE_NAME = 'inj-node-v16.01.18-section-home';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160088',
@@ -32,6 +32,7 @@ const APP_SHELL = [
   './wallet-dock-transparent.css?v=160116',
   './new-tools-tiles.css?v=160117',
   './network-radar.html',
+  './section-home-access.css?v=160118',
   './strategy-lab.html',
   './aqua-mirage.css?v=160113',
   './aqua-mirage.js?v=160113',
