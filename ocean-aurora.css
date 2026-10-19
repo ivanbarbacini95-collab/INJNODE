@@ -36,7 +36,7 @@ html[data-theme="ocean"] #entryGate>.entry-gate-shell:not(.first-access){
 .ocean-aurora-atmosphere{display:none}
 html[data-theme="ocean"] .ocean-aurora-atmosphere{
  display:block;position:absolute;inset:0;z-index:-1;
- pointer-events:none;overflow:hidden;contain:paint;
+ pointer-events:none;overflow:hidden;
 }
 html[data-theme="ocean"] .ocean-aurora-field{
  position:fixed;left:50%;top:50%;
