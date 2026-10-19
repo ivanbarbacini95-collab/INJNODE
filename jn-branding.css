@@ -83,8 +83,10 @@ html[data-inj-page="index"] body #entryGate .entry-gate-shell:not(.first-access)
   -webkit-backdrop-filter:none!important;
   backdrop-filter:none!important;
 }
-html[data-inj-page="index"] body #entryGate .home-safe-heading > strong{
+html[data-inj-page="index"] body #entryGate .home-safe-heading > h1{
   display:block!important;
+  margin:0!important;
+  padding:0!important;
   color:var(--text,#f4f8f8)!important;
   font-size:clamp(19px,3vw,25px)!important;
   font-weight:860!important;
@@ -92,8 +94,10 @@ html[data-inj-page="index"] body #entryGate .home-safe-heading > strong{
   letter-spacing:-.035em!important;
   white-space:nowrap!important;
 }
-html[data-inj-page="index"] body #entryGate .home-safe-heading > span{
+html[data-inj-page="index"] body #entryGate .home-safe-heading > p{
   display:block!important;
+  margin:0!important;
+  padding:0!important;
   color:var(--muted-strong,#9cb1ba)!important;
   font-size:clamp(12px,2.6vw,15px)!important;
   font-weight:570!important;
@@ -105,8 +109,8 @@ html[data-inj-page="index"] body #entryGate .home-safe-heading > span{
   margin-bottom:8px!important;
   padding-block:0!important;
  }
- html[data-inj-page="index"] body #entryGate .home-safe-heading > strong{font-size:21px!important}
- html[data-inj-page="index"] body #entryGate .home-safe-heading > span{font-size:12px!important}
+ html[data-inj-page="index"] body #entryGate .home-safe-heading > h1{font-size:21px!important}
+ html[data-inj-page="index"] body #entryGate .home-safe-heading > p{font-size:12px!important}
 }
 /* Keep JN compact and in normal header flow; never position it over content. */
 .brand.header-title,.menu-control-brand,.system-status-brand,.focus-display-brand,.cc-brand{
