@@ -23,12 +23,9 @@
 .treasury-ownership-track{
  display:flex;align-items:center;gap:9px;min-width:max-content;width:max-content;
  padding:3px 9px;
- animation:treasury-owner-marquee var(--treasury-owner-duration,45s) linear infinite alternate;
- will-change:transform;
+ /* Native/manual horizontal scrolling only: no moving artwork. */
+ animation:none!important;transform:none!important;will-change:auto!important;
 }
-.treasury-ownership-window:hover .treasury-ownership-track,
-.treasury-ownership-window:focus-within .treasury-ownership-track,
-.treasury-ownership-window:active .treasury-ownership-track{animation-play-state:paused}
 .treasury-owner{
  display:flex;align-items:center;gap:9px;flex:0 0 auto;
  min-height:39px;padding:7px 12px;border:1px solid var(--share-line);
@@ -41,10 +38,6 @@
 .treasury-owner-meter{width:35px;height:3px;border-radius:4px;background:color-mix(in srgb,var(--accent,#78ead0) 12%,transparent);overflow:hidden}
 .treasury-owner-meter>i{display:block;height:100%;width:0;background:var(--owner-color,var(--accent,#78ead0));border-radius:4px;transition:width .5s ease}
 .treasury-ownership-loading{font-size:12px;color:var(--muted,#9db4b4)}
-@keyframes treasury-owner-marquee{
- 0%{transform:translate3d(0,0,0)}
- 100%{transform:translate3d(calc(-1 * var(--treasury-owner-travel,100px)),0,0)}
-}
 @media(max-width:700px){
  .treasury-ownership{margin:4px 0 12px;gap:7px}
  .treasury-owner{padding:7px 10px;min-height:36px}
@@ -55,3 +48,7 @@
  .treasury-ownership-track{animation:none!important;will-change:auto!important}
  .treasury-owner-meter>i{transition:none!important}
 }
+
+/* Manual drag/swipe, while preserving vertical page scrolling. */
+.treasury-ownership-window { scroll-behavior:auto!important; }
+.treasury-ownership-track {animation:none!important;transform:none!important;}
