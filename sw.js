@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.00.84-sentiment-market-ticker-quiet-prices';
+const CACHE_NAME = 'inj-node-v16.00.85-market-only';
 const APP_SHELL = [
   './navigation.css?v=160080',
   './navigation.js?v=160084',
@@ -35,10 +35,7 @@ const APP_SHELL = [
   './command-center.js?v=16.00.18',
   './treasury.html',
   './treasury.css?v=16.00.39',
-  './treasury.js?v=16.00.46',
-  './sentiment.html',
-  './sentiment.css?v=160084',
-  './sentiment.js?v=160084'
+  './treasury.js?v=16.00.46'
 ];
 
 self.addEventListener('install', (event) => {
@@ -64,7 +61,7 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return;
 
   if (request.mode === 'navigate') {
-    const isolatedPath = ['live-charts.html', 'live-rewards.html', 'command-center.html', 'order-book.html', 'treasury.html', 'market.html', 'sentiment.html'].find((name) => url.pathname.endsWith('/' + name));
+    const isolatedPath = ['live-charts.html', 'live-rewards.html', 'command-center.html', 'order-book.html', 'treasury.html', 'market.html'].find((name) => url.pathname.endsWith('/' + name));
     event.respondWith(
       fetch(request, { cache: 'no-store' })
         .then((response) => {

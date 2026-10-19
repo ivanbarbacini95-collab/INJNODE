@@ -21,8 +21,6 @@
     ["Centro di controllo", "Command Center"],
     ["Tesoreria INJ", "INJ Treasury"],
     ["Ricompense in tempo reale", "Live Rewards"],
-    ["Sentiment Crypto", "Crypto Sentiment"],
-    ["Apri Sentiment Crypto", "Open Crypto Sentiment"],
 
     ['Apri Mercato','Open Market'], ['Apri menu','Open menu'], ['Chiudi menu','Close menu'], ['Chiudi sezione e torna alla Home','Close section and return Home'], ['Lingua', 'Language'], ['Italiano', 'Italian'], ['Inglese', 'English'], ['Interfaccia', 'Interface'],
     ['PRIMO ACCESSO', 'FIRST ACCESS'], ['Collega il tuo wallet', 'Connect your wallet'],
