@@ -10,7 +10,7 @@
  const QUERY_CACHE='inj_node_comparison_recent_v1';
  const SELECTED_KEY='inj_node_comparison_selected_wallet_v1';
  const NASDAQ_URL='https://raw.githubusercontent.com/zyhe16/top-us-stock-tickers/main/tickers/all.csv';
- const usMarketCaps=new Map(), estimatedIndexCaps=new Map();
+ const usMarketCaps=new Map(),usStockNames=new Map(), estimatedIndexCaps=new Map();
  const INDEX_DATASETS={
    SPX:'https://raw.githubusercontent.com/zyhe16/top-us-stock-tickers/main/tickers/sp500.csv',
    NDX:'https://raw.githubusercontent.com/Gary-Strauss/NASDAQ100_Constituents/master/data/nasdaq100_constituents.json'
@@ -166,7 +166,7 @@
  function recentCrypto(id){const q=quote(id);return q&&Date.now()-q.updated<180000&&!q.fromCache;}
  function renderStatus(){
   const needed=[state.source.id,...(state.kind==='crypto'?[state.target.id]:[])];
-  const fresh=needed.every(id=>recentCrypto(id));
+  const fresh=state.kind==='crypto'&&needed.every(id=>recentCrypto(id));
   const cached=needed.some(id=>quote(id));
   const status=$('comparisonStatus');
   status.classList.toggle('live',fresh);
@@ -188,17 +188,18 @@
    try{
     const response=await fetch(NASDAQ_URL,{cache:'no-store',signal:abort.signal});
     if(!response.ok)throw Error('Nasdaq '+response.status);
-    const csv=await response.text(),fresh=new Map();
-    const pattern=/^([^,]+),(?:"(?:[^"]|"")*"|[^,]*),[^,]*,([^,\r\n]+)/;
+    const csv=await response.text(),fresh=new Map(),names=new Map();
+    const pattern=/^([^,]+),(?:"((?:[^"]|"")*)"|([^,]*)),[^,]*,([^,\r\n]+)/;
     for(const line of csv.split(/\r?\n/).slice(1)){
      const match=line.match(pattern);
      if(!match)continue;
-     const symbol=tickerKey(match[1]),cap=Number(match[2]);
-     if(symbol&&positive(cap))fresh.set(symbol,cap);
+     const symbol=tickerKey(match[1]),cap=Number(match[4]),name=String(match[2]||match[3]||symbol).replace(/""/g,'"');
+     if(symbol&&positive(cap)){fresh.set(symbol,cap);names.set(symbol,name);}
     }
     if(fresh.size<100)throw Error('Incomplete Nasdaq CSV');
-    usMarketCaps.clear();
+    usMarketCaps.clear();usStockNames.clear();
     for(const [symbol,cap] of fresh)usMarketCaps.set(symbol,cap);
+    for(const [symbol,name] of names)usStockNames.set(symbol,name);
     usCapUpdated=Date.now();usCapFailure='';
    }finally{clearTimeout(timer);usCapDownload=null;}
   })();
@@ -517,7 +518,7 @@
    const q=normSearch($('capManualName').value);
    const pool=state.kind==='index'?securityCatalog.index.filter(row=>Boolean(INDEX_DATASETS[row[0]])):
    state.kind==='stock'&&usMarketCaps.size?
-     [...usMarketCaps.keys()].map(symbol=>[symbol,symbol,'US',symbol]):
+     [...usMarketCaps.keys()].map(symbol=>[symbol,usStockNames.get(symbol)||symbol,'US','']):
      securityCatalog.stock.filter(row=>['NASDAQ','NYSE'].includes(row[2]));
    if(!q)return pool.slice(0,7);
    const parts=q.split(/\s+/).filter(Boolean);
