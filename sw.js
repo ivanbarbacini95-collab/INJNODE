@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.00.91-minimal-comparison-typeahead';
+const CACHE_NAME = 'inj-node-v16.00.92-auto-us-stock-cap';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160088',
@@ -13,8 +13,8 @@ const APP_SHELL = [
   './index.html',
   './market.html',
   './comparison.html',
-  './comparison.css?v=160091',
-  './comparison.js?v=160091',
+  './comparison.css?v=160092',
+  './comparison.js?v=160092',
   './market-portal.js?v=160076',
   './market-lang.js?v=160082',
   './market.css?v=160082',

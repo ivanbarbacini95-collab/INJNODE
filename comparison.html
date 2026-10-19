@@ -8,11 +8,11 @@
 <title>Market Cap Comparison · INJ Node</title>
 <style>html,body{margin:0;min-height:100%;background:#020708}html[data-theme="black"],html[data-theme="black"] body{background:#000}html[data-theme="light"],html[data-theme="light"] body{background:#eef5ff;color-scheme:light}html[data-theme="amber"],html[data-theme="amber"] body{background:#060a10}</style>
 <script>try{const theme=localStorage.getItem('inj_monitor_theme');document.documentElement.dataset.theme=['navy','black','light','amber'].includes(theme)?theme:'navy';document.documentElement.lang=localStorage.getItem('inj_node_language_v1')==='en'?'en':'it'}catch(_){}</script>
-<link rel="stylesheet" href="./comparison.css?v=160091">
+<link rel="stylesheet" href="./comparison.css?v=160092">
 <link rel="stylesheet" href="./top-clarity.css?v=16.00.90">
 <link rel="stylesheet" href="./navigation.css?v=160090">
 <script defer src="./navigation.js?v=160090"></script>
-<script defer src="./comparison.js?v=160091"></script>
+<script defer src="./comparison.js?v=160092"></script>
 </head>
 <body>
 <div class="cap-shell">
@@ -69,11 +69,12 @@
        <strong id="capManualSelectedName">—</strong>
        <span class="cap-manual-check" aria-hidden="true">✓</span>
      </div>
-     <div class="cap-manual-values">
+     <div id="capStockStatus" class="cap-stock-status" role="status" aria-live="polite" hidden></div>
+     <div class="cap-manual-values" id="capManualValues">
       <label><span class="cap-label" data-t="manualCapLabel">Capitalizzazione di riferimento</span><input id="capManualCap" class="cap-input" type="text" inputmode="decimal" autocomplete="off" placeholder="es. 3200"></label>
       <label><span class="cap-label" data-t="manualScale">Unità · USD</span><select id="capManualScale" class="cap-input"><option value="1000000000" data-t="billions">Miliardi (B)</option><option value="1000000000000" data-t="trillions">Migliaia di miliardi (T)</option><option value="1000000" data-t="millions">Milioni (M)</option><option value="1" data-t="fullUsd">USD interi</option></select></label>
      </div>
-     <p class="cap-help" id="capManualHint" data-t="manualWarning">I suggerimenti aiutano a scegliere il titolo; inserisci la capitalizzazione da una fonte verificata.</p>
+     <p class="cap-help" id="capManualHint" data-t="manualWarning">Scegli l’azione: la market cap USA viene recuperata automaticamente, mentre gli indici richiedono un riferimento verificato.</p>
     </div>
     <div class="cap-target-foot"><span data-t="targetCap">CAPITALIZZAZIONE DI RIFERIMENTO</span><strong id="capTargetCap">—</strong><small id="capTargetMeta" data-t="autoSource">Dati crypto CoinGecko · USD</small></div>
    </article>
@@ -103,7 +104,7 @@
    </div>
    <p class="cap-wallet-note" id="capWalletNote" data-t="walletNote">Il controvalore ipotetico si calcola quando la crypto di partenza è INJ. Il wallet non viene modificato.</p>
   </section>
-  <footer class="cap-footer"><span data-t="sources">Fonti: CoinGecko per le crypto; valori azioni/indici inseriti dall'utente.</span><span id="capUpdatedAt">—</span></footer>
+  <footer class="cap-footer"><span data-t="sources">Fonti: CoinGecko (crypto), Nasdaq giornaliero (azioni USA); riferimenti manuali per indici.</span><span id="capUpdatedAt">—</span></footer>
  </main>
 </div>
 </body>

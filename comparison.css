@@ -197,3 +197,17 @@ button,input,select{font-size:16px}
 @media(prefers-reduced-motion:reduce){
  .cap-search-item,.cap-results-grid,.cap-wallet-cards{transition:none!important}
 }
+
+/* 16.00.92 · Nasdaq US equities verified market-cap source and fallback */
+.cap-stock-status{
+  display:block;
+  padding:10px 12px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:var(--panel-strong);
+  color:var(--muted);
+  font-size:11px;
+  line-height:1.45;
+}
+.cap-stock-status[hidden],
+.cap-manual-values[hidden] {display:none!important}
