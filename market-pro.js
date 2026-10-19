@@ -9,7 +9,7 @@
  const modal=$('detail'),chart=$('detailChart'),buttons=$('detailRanges');
  if(!modal||!chart||!buttons)return;
  const ranges={ '1h':1,'1d':1,'7d':7,'30d':30,'90d':90,'1y':365 };
- let active=null,token=0,refresher=0,lastPaint=0;
+ let active=null,token=0,refresher=0,lastPricePaint=0,lastChartPaint=0;
  const english=()=>document.documentElement.lang==='en';
  const tr=(it,en)=>english()?en:it;
  const finite=v=>Number.isFinite(v);
@@ -160,7 +160,7 @@
  }
  function open(coin,helpers){
   if(!coin||!helpers)return;
-  token++;
+  token++;lastPricePaint=0;lastChartPaint=0;
   active={coin,helpers,range:'1h',series:[],provider:'',lastFetch:0,loading:false};
   updateTabs();
   if(!modal.open)modal.showModal();
@@ -179,14 +179,19 @@
  function priceTick(coin,timestamp){
   if(!active||active.coin.id!==coin.id||!modal.open)return;
   active.coin=coin;
-  if(timestamp-lastPaint>950){lastPaint=timestamp;const detail=$('detailPrice');if(detail)detail.textContent=active.helpers.money(coin.current_price);}
+  if(timestamp-lastPricePaint>900){
+   lastPricePaint=timestamp;
+   const detail=$('detailPrice');if(detail)detail.textContent=active.helpers.money(coin.current_price);
+   const p=active.helpers.change(coin,'24h'),label=$('detailChange');
+   if(label){label.className='detail-change '+active.helpers.tone(p);label.textContent=active.helpers.pct(p)+' · 24H'}
+  }
   if(active.range!=='1h'||!active.series.length||!active.helpers.canStream)return;
   const now=Date.now(),series=active.series;
   const last=series.at(-1);
   if(last&&now-last.t<55000)last.v=coin.current_price;
   else series.push({t:now,v:coin.current_price});
   while(series.length>2&&series[0].t<now-3600000)series.shift();
-  if(now-lastPaint>1300){lastPaint=now;draw(series,'1h');}
+  if(now-lastChartPaint>1350){lastChartPaint=now;draw(series,'1h');}
  }
  function close(){token++;clearTimer();active=null}
  function languageChange(){
