@@ -7738,7 +7738,7 @@ function updateInstallUi() {
 
 function registerPwa() {
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js?v=16.01.13').catch(() => {}), { once: true });
+    window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js?v=16.01.14').catch(() => {}), { once: true });
   }
   updateInstallUi();
 }
@@ -7752,7 +7752,11 @@ function applyTheme(theme, notify = false) {
     ocean: { label: 'Ocean Aurora', color: '#07131f' },
     chromatic: { label: 'Chromatic Mist', color: '#111323' },
     velvet: { label: 'Velvet Nebula', color: '#0a1024' },
-    aqua: { label: 'Aqua Mirage', color: '#d7e9ef' }
+    aqua: { label: 'Aqua Mirage', color: '#d7e9ef' },
+    'ocean-x-electric': { label: 'Electric Ocean', color: '#06132d' },
+    'ocean-x-ion': { label: 'Ion Storm', color: '#130c2c' },
+    'ocean-x-toxic': { label: 'Toxic Abyss', color: '#061c1d' },
+    'ocean-x-solar': { label: 'Solar Surge', color: '#1b122c' }
   };
   const selected = themes[theme] ? theme : 'navy';
   document.documentElement.dataset.theme = selected;
@@ -7766,6 +7770,9 @@ function applyTheme(theme, notify = false) {
     button.classList.toggle('active', active);
     button.setAttribute('aria-pressed', active ? 'true' : 'false');
   });
+  // Reopen the selected category while keeping the catalog compact.
+  const selectedGroup = document.querySelector('#themePicker [data-theme-choice="' + selected + '"]')?.closest('.theme-category');
+  if (selectedGroup) document.querySelectorAll('#themePicker .theme-category').forEach((group) => { group.open = group === selectedGroup; });
   if (isChartOpen()) requestAnimationFrame(renderNativeChart);
   if (notify) toast(`Tema ${themes[selected].label}`);
 }

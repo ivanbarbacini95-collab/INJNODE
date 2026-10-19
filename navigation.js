@@ -11,7 +11,7 @@ function syncSectionTheme(){
  let theme='navy';
  try{theme=localStorage.getItem('inj_monitor_theme')||theme;}catch(_){}
  if(theme==='dynamic')theme='ocean';
- if(!['navy','black','light','amber','ocean','chromatic','velvet','aqua'].includes(theme))theme='navy';
+ if(!['navy','black','light','amber','ocean','chromatic','velvet','aqua','ocean-x-electric','ocean-x-ion','ocean-x-toxic','ocean-x-solar'].includes(theme))theme='navy';
  const root=document.documentElement;root.dataset.theme=theme;
  try{
   if(parent!==window && parent.location.origin===location.origin){
