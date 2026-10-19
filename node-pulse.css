@@ -43,6 +43,10 @@ html[data-inj-page="index"] body #bootSplash.node-pulse-splash::after{
   content:none!important;display:none!important;
   filter:none!important;-webkit-filter:none!important;
 }
+/* Return from Treasury/sections must never flash the startup splash. */
+html[data-return-home="1"][data-inj-page="index"] body #bootSplash.node-pulse-splash{
+  display:none!important;
+}
 html[data-inj-page="index"] body #bootSplash.node-pulse-splash.leaving{
   opacity:0!important;
   visibility:hidden!important;
