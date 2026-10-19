@@ -1,0 +1,97 @@
+/* INJ Node · JN identity and Home title v16.01.03
+   One vector-free monogram everywhere the previous orbital brand appeared.
+   Does not change scroll geometry, sections or modal positioning. */
+html[data-inj-page="index"] .jn-monogram,
+html[data-inj-page="command-center"] .jn-monogram,
+.jn-monogram {
+  display:inline-flex!important;
+  flex:0 0 auto!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:0!important;
+  box-sizing:border-box!important;
+  position:relative!important;
+  width:36px!important;
+  height:36px!important;
+  min-width:36px!important;
+  min-height:36px!important;
+  padding:0!important;
+  margin:0!important;
+  border:1px solid color-mix(in srgb,var(--accent,#72e7d0) 22%,transparent)!important;
+  border-radius:11px!important;
+  background:#0a1519!important;
+  font:900 19px/1 -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif!important;
+  letter-spacing:-.125em!important;
+  text-shadow:none!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.045)!important;
+  vertical-align:middle!important;
+  white-space:nowrap!important;
+  transform:none!important;
+  filter:none!important;-webkit-filter:none!important;
+  -webkit-backdrop-filter:none!important;backdrop-filter:none!important;
+}
+.jn-monogram > .jn-monogram-j{
+  display:inline!important;
+  width:auto!important;height:auto!important;
+  color:#fff!important;
+  font:inherit!important;
+  letter-spacing:inherit!important;
+}
+.jn-monogram > .jn-monogram-n{
+  display:inline!important;
+  width:auto!important;height:auto!important;
+  color:#75e9d1!important;
+  font:inherit!important;
+  letter-spacing:0!important;
+}
+/* One compact identity, across Home, Settings, Dashboard, System and fullscreen. */
+.entry-brand .jn-monogram{width:32px!important;height:32px!important;min-width:32px!important;min-height:32px!important;font-size:18px!important}
+.menu-control-brand .jn-monogram{width:38px!important;height:38px!important;min-width:38px!important;min-height:38px!important;font-size:21px!important}
+.brand.header-title .jn-monogram{width:32px!important;height:32px!important;min-width:32px!important;min-height:32px!important;font-size:18px!important;margin-right:7px!important}
+.system-status-brand .jn-monogram,.focus-display-brand .jn-monogram{width:36px!important;height:36px!important;min-width:36px!important;min-height:36px!important}
+.cc-brand .jn-monogram{width:39px!important;height:39px!important;min-width:39px!important;min-height:39px!important;font-size:21px!important}
+@media(max-width:700px){
+ .menu-control-brand .jn-monogram{width:36px!important;height:36px!important;min-width:36px!important;min-height:36px!important;font-size:20px!important}
+}
+/* The centered title is part of the pre-existing, localized Home heading.
+   Attaching it to h1 keeps Your Injective space on the next line and does
+   not insert another grid item into the fragile iPhone home layout. */
+html[data-inj-page="index"] body #entryGate .entry-gate-shell:not(.first-access) > h1 {
+  text-align:center!important;
+  justify-self:center!important;
+  align-self:center!important;
+  max-width:100%!important;
+  min-width:0!important;
+  padding:0 8px!important;
+  overflow:visible!important;
+  line-height:1.15!important;
+}
+html[data-inj-page="index"] body #entryGate .entry-gate-shell:not(.first-access) > h1::before{
+  content:"INJ Node"!important;
+  display:block!important;
+  position:relative!important;
+  width:100%!important;
+  margin:0 auto 6px!important;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif!important;
+  font-size:clamp(18px,3vw,25px)!important;
+  font-weight:850!important;
+  line-height:1.2!important;
+  letter-spacing:-.035em!important;
+  text-align:center!important;
+  text-transform:none!important;
+  color:var(--text,#f6fafb)!important;
+  background:transparent!important;
+  filter:none!important;-webkit-filter:none!important;
+}
+@media(max-width:820px){
+ html[data-inj-page="index"] body #entryGate .entry-gate-shell:not(.first-access) > h1::before{
+  font-size:clamp(19px,5vw,23px)!important;
+  margin-bottom:6px!important;
+ }
+ /* Keep the existing Your Injective space text directly underneath. */
+ html[data-inj-page="index"] body #entryGate .entry-gate-shell:not(.first-access) > h1{
+  font-size:clamp(23px,5.8vw,31px)!important;
+  line-height:1.14!important;
+ }
+}
+@media(prefers-reduced-motion:reduce){.jn-monogram{transition:none!important;animation:none!important}}
