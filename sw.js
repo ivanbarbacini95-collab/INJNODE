@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.00.99-home-pnl-manual-ownership';
+const CACHE_NAME = 'inj-node-v16.01.00-pnl-focus';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160088',
@@ -15,6 +15,7 @@ const APP_SHELL = [
   './home-vitality.js?v=1.0.1',
   './home-vitality-v2.css?v=160096',
   './home-layout-polish.css?v=160099',
+  './home-pnl-focus.css?v=160100',
   './ios-screen-fixes.css?v=160095',
   './ios-converter-keyboard.js?v=160095',
   './treasury-ownership.css?v=160099',
