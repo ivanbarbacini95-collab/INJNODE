@@ -332,9 +332,10 @@
   set('capSourceCap',money(source?.cap));set('capSourcePrice',priceMoney(source?.price));
   set('capSourceSupply',positive(source?.supply)?fmt(source.supply,0)+' '+state.source.symbol:'—');
   set('capTargetCap',money(ref.cap));
-  set('capTargetMeta',ref.manual?t('Riferimento manuale · verifica fonte e data','Manual reference · check source and date'):
-    ref.source==='Nasdaq'?t('Nasdaq · rilevazione giornaliera · USD','Nasdaq · daily snapshot · USD'):
-    'CoinGecko · USD'+(recentCrypto(state.target.id)?' · LIVE':' · '+t('salvato','cached')));
+  set('capTargetMeta',ref.source==='Nasdaq'?t('Nasdaq · snapshot giornaliero · USD','Nasdaq · daily snapshot · USD'):
+     ref.source==='IndexBasket'?t('Stima '+ref.coverage.matched+'/'+ref.coverage.total+' società · giornaliero','Estimate '+ref.coverage.matched+'/'+ref.coverage.total+' constituents · daily'):
+     ref.source==='CoinGecko'?'CoinGecko · USD'+(recentCrypto(state.target.id)?' · LIVE':' · '+t('salvato','cached')):
+     t('In attesa del dato automatico','Waiting for automatic data'));
    marketCapSource(ref);
    const can=source&&positive(source.cap)&&positive(source.price)&&positive(ref.cap);
   const multiplier=can?ref.cap/source.cap:NaN;
