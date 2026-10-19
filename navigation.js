@@ -3,7 +3,9 @@
 'use strict';
 const main=!!document.getElementById('entryGate');
 // Reuse the selected palette in every standalone/embedded section.
-const themeKeys=['--bg','--surface','--surface-strong','--surface-soft','--line','--line-strong','--text','--muted','--muted-strong','--accent','--accent-soft','--up','--up-soft','--down','--down-soft','--page-gradient','--theme-canvas','--theme-canvas-soft','--theme-backdrop'];
+const themeKeys=['--bg','--surface','--surface-strong','--surface-soft','--line','--line-strong','--text','--muted','--muted-strong','--accent','--accent-soft','--up','--up-soft','--down','--down-soft','--page-gradient','--theme-canvas','--theme-canvas-soft','--theme-backdrop','--theme-browser','--panel','--panel-strong',
+ '--card-gradient','--market-gradient','--dock-gradient','--floating-surface','--dialog-gradient',
+ '--card-orb','--card-orb-alt','--card-inner-highlight','--card-shadow-accent','--shadow','--accent-ink'];
 function syncSectionTheme(){
  if(main)return;
  let theme='navy';
@@ -14,7 +16,7 @@ function syncSectionTheme(){
  try{
   if(parent!==window && parent.location.origin===location.origin){
    const css=parent.getComputedStyle(parent.document.documentElement);
-   for(const key of themeKeys){const value=css.getPropertyValue(key).trim();if(value)root.style.setProperty(key,value);}
+   for(const key of themeKeys){const value=css.getPropertyValue(key).trim();if(value)root.style.setProperty(key,value);else root.style.removeProperty(key);}
   }
  }catch(_){}
  root.style.colorScheme=theme==='light'?'light':'dark';
