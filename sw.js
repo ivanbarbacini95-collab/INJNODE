@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.01.03-jn-brand-pulse';
+const CACHE_NAME = 'inj-node-v16.01.04-home-recovery';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160088',
@@ -17,7 +17,7 @@ const APP_SHELL = [
   './home-layout-polish.css?v=160099',
   './home-pnl-focus.css?v=160101',
   './node-pulse.css?v=160103',
-  './jn-branding.css?v=160103',
+  './jn-branding.css?v=160104',
   './ios-screen-fixes.css?v=160095',
   './ios-converter-keyboard.js?v=160095',
   './treasury-ownership.css?v=160099',
