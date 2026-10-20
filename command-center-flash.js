@@ -1,0 +1,87 @@
+/* INJ Node — Flash Terminal composition.
+   Reuses the real Command Center live nodes, chart canvases and update engine.
+   Does not poll a second market/wallet feed or replace the original engine. */
+(function(){
+ 'use strict';
+ var root=document.getElementById('commandCenter');
+ var main=root&&root.querySelector('.cc-main');
+ var market=main&&main.querySelector('.cc-market-stage');
+ var controls=market&&market.querySelector('.cc-chart-tools');
+ var select=document.getElementById('ccMainRange');
+ if(!root||!main||!market||!controls||!select)return;
+ document.body.classList.add('cc-flash-terminal');
+
+ var strip=document.createElement('section');
+ strip.className='cc-flash-strip';
+ strip.setAttribute('aria-label','Indicatori rapidi del wallet selezionato');
+ var fields=[
+  {label:'STAKING',id:'ccStaked'},
+  {label:'APR NETTO',id:'ccApr'},
+  {label:'REWARD / GIORNO',id:'ccDailyReward'},
+  {label:'P/L 24H · STIMA',id:'ccDailyPnl'}
+ ];
+ fields.forEach(function(field){
+  var source=document.getElementById(field.id);
+  if(!source)return;
+  var metric=document.createElement('div');
+  metric.className='cc-flash-metric';
+  var label=document.createElement('span');
+  label.textContent=field.label;
+  var value=document.createElement('div');
+  value.className='cc-flash-value';
+  value.appendChild(source); // Same native ID: one live value, no duplicate.
+  metric.append(label,value);
+  strip.appendChild(metric);
+  if(field.id==='ccDailyPnl'){
+   source.classList.add('private');
+   try{
+    if(localStorage.getItem('inj_monitor_privacy')==='1'){
+     source.classList.add('privacy-on');
+    }
+   }catch(_){}
+  }
+ });
+ main.insertBefore(strip,main.querySelector('.cc-data-stage'));
+
+ var tf=document.createElement('div');
+ tf.className='cc-flash-timeframes';
+ tf.setAttribute('role','group');
+ tf.setAttribute('aria-label','Intervallo del grafico live');
+ var frames=[
+  ['m1','1M'],['m5','5M'],['m10','10M'],
+  ['h1','1H'],['d1','1D'],['w1','1W']
+ ];
+ var buttons=[];
+ frames.forEach(function(pair){
+  var b=document.createElement('button');
+  b.type='button';
+  b.dataset.range=pair[0];
+  b.textContent=pair[1];
+  b.title='Mostra '+pair[1]+' nel grafico';
+  b.addEventListener('click',function(){
+   if(select.value===pair[0])return;
+   select.value=pair[0];
+   select.dispatchEvent(new Event('change',{bubbles:true}));
+   syncButtons();
+  });
+  tf.appendChild(b);
+  buttons.push(b);
+ });
+ function syncButtons(){
+  var current=select.value;
+  buttons.forEach(function(b){
+   b.setAttribute('aria-pressed',String(b.dataset.range===current));
+  });
+ }
+ controls.insertBefore(tf,select);
+ select.addEventListener('change',syncButtons);
+ syncButtons();
+
+ // Existing chart update loop remains native. Let its canvas recalculate once
+ // the legacy comparison charts are removed from the visible grid.
+ try{
+  window.requestAnimationFrame(function(){
+   window.dispatchEvent(new Event('resize'));
+  });
+ }catch(_){}
+})();
