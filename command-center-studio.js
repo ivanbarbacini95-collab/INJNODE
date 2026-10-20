@@ -5,7 +5,7 @@ if(document.documentElement.dataset.injPage!=='command-center')return;
 var legacy=document.getElementById('commandCenter');
 var chartSection=legacy&&legacy.querySelector('.cc-market-stage');
 if(!legacy||!chartSection)return;
-var STORAGE='inj_node_cc_studio_presets_v1';
+var STORAGE='inj_node_cc_studio_presets_v2';
 var defs=[
  ['chart','Live Charts','Grafico INJ/USDT originale','XL'],
  ['ticker','Prezzo INJ','Prezzo live e performance 24h','L'],
@@ -26,11 +26,8 @@ var defs=[
  ['network','Stato live','Rete, feed, aggiornamento','S']
 ];
 var byId=Object.fromEntries(defs.map(function(x){return [x[0],{id:x[0],name:x[1],desc:x[2],size:x[3]}]}));
-var defaults=[
- {id:'trading',name:'Trading Desk',items:[['chart','XL'],['ticker','S'],['orderbook','M'],['market','M'],['network','S'],['pnl','M']]},
- {id:'wealth',name:'Wealth Monitor',items:[['chart','L'],['networth','M'],['rewards','M'],['staking','M'],['treasury','L'],['timeline','M'],['wallet','M']]},
- {id:'wall',name:'Wall Display',items:[['ticker','L'],['networth','L'],['chart','XL'],['rewards','M'],['daily','M'],['network','S']]}
-];
+/* A new Command Center must start with a blank canvas, not an imposed desk. */
+var defaults=[{id:'workspace',name:'Il mio workspace',items:[]}];
 function normalized(items){
  var seen=new Set();
  return (Array.isArray(items)?items:[]).slice(0,18).map(function(row){
@@ -55,7 +52,22 @@ function read(){
   return presets.length?{presets:presets,active:presets.some(function(p){return p.id===obj.active})?obj.active:presets[0].id}:null;
  }catch(_){return null}
 }
-var doc=read()||{presets:builtins,active:'trading'};
+/* Keep previous user-created presets available without carrying over the busy
+   preloaded Trading/Wealth/Wall desks. The first launch is always empty. */
+function migrateLegacy(){
+ try {
+  var old=JSON.parse(localStorage.getItem('inj_node_cc_studio_presets_v1')||'null');
+  if(!old||!Array.isArray(old.presets))return null;
+  var seen=new Set(['workspace']),saved=[];
+  old.presets.forEach(function(p){
+   var id=String(p.id||'').slice(0,64),name=String(p.name||'').trim().slice(0,38);
+   if(!id||!name||seen.has(id)||['trading','wealth','wall'].includes(id))return;
+   seen.add(id);saved.push({id:id,name:name,items:normalized(p.items)});
+  });
+  return {presets:[{id:'workspace',name:'Il mio workspace',items:[]}].concat(saved.slice(0,39)),active:'workspace'};
+ }catch(_){return null}
+}
+var doc=read()||migrateLegacy()||{presets:builtins,active:'workspace'};
 var editing=false,sidebar=false,modalMode='',dragged='',selectedCurrency='';
 var liveData={depth:null,depthAt:0,market:null,marketAt:0};
 var simValue=localStorage.getItem('inj_node_cc_studio_sim_value_v1')||'',converterValue=localStorage.getItem('inj_node_cc_studio_converter_v1')||'100';
@@ -78,13 +90,17 @@ studio.innerHTML='<header class="cc-studio-toolbar">'+
  '<select class="cc-studio-preset" id="ccStudioPreset" aria-label="Preset salvato"></select>'+
  '<span class="cc-studio-status" id="ccStudioStatus">SYNC</span>'+
  '<span class="cc-studio-spacer"></span>'+
- '<button class="cc-studio-action" data-action="duplicate" title="Salva una copia">Salva come</button>'+
- '<button class="cc-studio-action" data-action="rename" title="Rinomina il preset">Rinomina</button>'+
- '<button class="cc-studio-action" data-action="delete" title="Elimina preset">Elimina</button>'+
- '<button class="cc-studio-action primary" data-action="edit">Personalizza</button>'+
- '<button class="cc-studio-action" data-action="add" hidden>+ Moduli</button>'+
- '<button class="cc-studio-action" data-action="export" title="Esporta configurazioni">Esporta</button>'+
- '<button class="cc-studio-action" data-action="import" title="Importa configurazioni">Importa</button>'+
+ '<button class="cc-studio-action primary" data-action="add" title="Scegli quali moduli inserire">+ Moduli</button>'+
+ '<button class="cc-studio-action" data-action="edit" title="Riordina e ridimensiona i moduli">Organizza</button>'+
+ '<button class="cc-studio-action" data-action="new" title="Crea un workspace vuoto">Nuovo</button>'+
+ '<button class="cc-studio-action" data-action="duplicate" title="Salva una copia di questo preset">Salva come</button>'+
+ '<details class="cc-studio-more"><summary aria-label="Altre opzioni" title="Altre opzioni">···</summary>'+
+ '<div class="cc-studio-more-menu">'+
+ '<button class="cc-studio-action" data-action="rename">Rinomina preset</button>'+
+ '<button class="cc-studio-action" data-action="delete">Elimina preset</button>'+
+ '<button class="cc-studio-action" data-action="export">Esporta preset</button>'+
+ '<button class="cc-studio-action" data-action="import">Importa preset</button>'+
+ '</div></details>'+
  '</header>'+
  '<main class="cc-studio-stage" id="ccStudioStage"><div class="cc-studio-grid" id="ccStudioGrid"></div></main>'+
  '<footer class="cc-studio-footer"><span id="ccStudioFooter">Dati live INJ Node · dati aggregati da snapshot</span><span>INJ Node by B Capital Group</span></footer>'+
@@ -172,7 +188,12 @@ function layout(){
   if(entry.id==='chart')tile.querySelector('.cc-studio-chart-slot').append(chartSection);
  });
  if(!items.length){
-  var empty=document.createElement('div');empty.className='cc-studio-empty';empty.textContent='Workspace vuoto · premi Personalizza per aggiungere i moduli';grid.append(empty);
+  var empty=document.createElement('div');empty.className='cc-studio-empty';
+   empty.innerHTML='<div class="cc-studio-empty-glyph" aria-hidden="true">+</div>'+
+     '<h2>Il tuo Command Center, da zero.</h2>'+
+     '<p>Schermata libera. Scegli solo le informazioni che vuoi vedere.</p>'+
+     '<button type="button" data-action="add">+ Scegli il primo modulo</button>';
+   grid.append(empty);
  }
  if(!narrow){
   var rows=Math.max(5,maxRow);
@@ -184,8 +205,9 @@ function layout(){
  var sim=document.getElementById('ccStudioSim');if(sim)sim.value=simValue;
  var convert=document.getElementById('ccStudioConverter');if(convert)convert.value=converterValue;
  studio.classList.toggle('cc-studio-edit',editing);
- document.querySelector('[data-action="add"]').hidden=!editing;
- document.querySelector('[data-action="edit"]').textContent=editing?'Fine modifica':'Personalizza';
+ document.querySelector('.cc-studio-toolbar [data-action="add"]').hidden=false;
+ document.querySelector('[data-action="edit"]').textContent=editing?'Fine':'Organizza';
+  document.querySelector('[data-action="edit"]').setAttribute('aria-pressed',String(editing));
  if(typeof state!=='undefined')state.lastDraw=0;
  update();
 }
@@ -213,10 +235,10 @@ function action(action){
  if(action==='edit'){editing=!editing;if(!editing)openLibrary(false);layout();return}
  if(action==='add'){openLibrary(true);return}
  if(action==='close-library'){openLibrary(false);return}
- if(action==='rename'||action==='duplicate'){
+ if(action==='new'||action==='rename'||action==='duplicate'){
   modalMode=action;
-  document.getElementById('ccStudioModalTitle').textContent=action==='rename'?'Rinomina preset':'Salva come nuovo preset';
-  document.getElementById('ccStudioName').value=action==='rename'?p.name:p.name+' Copy';
+  document.getElementById('ccStudioModalTitle').textContent=action==='rename'?'Rinomina preset':action==='new'?'Nuovo workspace vuoto':'Salva come nuovo preset';
+  document.getElementById('ccStudioName').value=action==='rename'?p.name:action==='new'?'Nuovo workspace':p.name+' Copy';
   modal.showModal();document.getElementById('ccStudioName').focus();return;
  }
  if(action==='delete'){
@@ -235,7 +257,7 @@ function action(action){
 }
 function panelAction(event){
  var act=event.target.closest('[data-action]');
- if(act){action(act.dataset.action);return}
+ if(act){if(act.dataset.action!=='rename'&&act.dataset.action!=='delete'&&act.dataset.action!=='export'&&act.dataset.action!=='import')studio.querySelector('.cc-studio-more')?.removeAttribute('open');action(act.dataset.action);return}
  var add=event.target.closest('[data-add]');if(add&&!add.disabled){
   active().items.push({id:add.dataset.add,size:byId[add.dataset.add].size});
   if(active().items.length>18)active().items=active().items.slice(0,18);
@@ -248,7 +270,12 @@ document.getElementById('ccStudioPreset').addEventListener('change',function(eve
 document.getElementById('ccStudioForm').addEventListener('submit',function(event){
  event.preventDefault();var name=document.getElementById('ccStudioName').value.trim().slice(0,38);if(!name)return;
  if(modalMode==='rename')active().name=name;
- if(modalMode==='duplicate'){
+ if(modalMode==='new'){
+   var blankId='custom_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
+   doc.presets.push({id:blankId,name:name,items:[]});
+   doc.active=blankId;editing=false;openLibrary(false);
+  }
+  if(modalMode==='duplicate'){
   var id='custom_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
   doc.presets.push({id:id,name:name,items:normalized(active().items)});
   doc.active=id;
@@ -449,7 +476,7 @@ function tick(){
  }
  update();
 }
-displayPresets();layout();document.body.classList.add('cc-studio-ready');studio.hidden=false;
+persist();displayPresets();layout();document.body.classList.add('cc-studio-ready');studio.hidden=false;
 tick();refreshExternal();
 setInterval(tick,1300);setInterval(refreshExternal,15000);
 window.addEventListener('pageshow',function(){layout();refreshExternal()});
