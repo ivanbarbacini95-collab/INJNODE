@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.01.37-dashboard-top-origin';
+const CACHE_NAME = 'inj-node-v16.01.38-dashboard-back-baseline';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160088',
@@ -66,7 +66,7 @@ const APP_SHELL = [
   './top-clarity.css?v=16.00.88',
   './viewport.js?v=16.00.14',
   './style.css?v=16.00.49',
-  './app.js?v=16.01.37',
+  './app.js?v=16.01.38',
   './i18n.js?v=160124',
   './i18n.js?v=160117',
   './i18n.js?v=160088',
