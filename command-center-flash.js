@@ -72,9 +72,15 @@
   buttons.forEach(function(b){
    b.setAttribute('aria-pressed',String(b.dataset.range===current));
   });
+  // Keep the native draw loop on ONE visible chart; comparison canvases are
+  // excluded rather than silently rendered off-screen every 32 ms.
+  root.querySelectorAll('.cc-chart').forEach(function(card){
+   card.hidden=card.dataset.key!==current;
+  });
  }
  controls.insertBefore(tf,select);
  select.addEventListener('change',syncButtons);
+ window.addEventListener('resize',syncButtons,{passive:true});
  syncButtons();
 
  // Existing chart update loop remains native. Let its canvas recalculate once
