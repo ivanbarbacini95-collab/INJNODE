@@ -2592,7 +2592,7 @@ function enterCommandCenterFromGate() {
 
   setHeaderMenuOpen(false);
   setSearchOpen(false);
-  window.INJ_OPEN_SECTION(`./command-center.html?wallet=${encodeURIComponent(wallet.address)}&v=16.00.14`);
+  window.INJ_OPEN_SECTION(`./command-center.html?wallet=${encodeURIComponent(wallet.address)}&v=16.03.01`);
 }
 
 // v15.70 — Home launchers require a fresh gesture that actually began on the
