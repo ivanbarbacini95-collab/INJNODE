@@ -4,6 +4,8 @@ const $ = (id) => document.getElementById(id);
 const INJ_DECIMALS = 1e18;
 const YEAR_MS = 365.25 * 24 * 60 * 60 * 1000;
 const REWARD_REFRESH_MS = 1500;
+const VELOCITY_PULSE_QUANTUM = 0.00001;
+const reducedVelocityMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 const REWARD_COMPARE_TOLERANCE = 2e-8;
 const STATUS_REFRESH_MS = 15000;
 const CLAIM_DROP_EPSILON = 1e-9;
@@ -44,7 +46,8 @@ const state = {
     lastNetworkAt:0,
     online:false,
     synced:false,
-    confidence:'sync',lastClaimAt:0,preClaimReward:0
+    confidence:'sync',lastClaimAt:0,preClaimReward:0,
+    velocityCarry:0,velocityLastPaintAt:0,velocityLastFlashAt:0
   })),
   apr: 0,
   price: 0,
@@ -158,6 +161,93 @@ function saveLabel(address,label) {
   renderRows();
 }
 
+
+/* Reward Velocity is visual-only: the source of truth remains confirmedReward,
+   and the between-sync accrual estimate remains based on staked INJ × net APR.
+   Every wallet has its own pace; the labels are relative to these five wallets. */
+let expandedVelocityAddress='';
+function velocityActive(row){return Boolean(row.aprVerified && row.staked>0 && row.ratePerMs>0)}
+function velocityPeriod(row){
+  const highest=Math.max(...state.rows.map(r=>velocityActive(r)?r.ratePerMs:0),0);
+  if(!velocityActive(row)||highest<=0)return 0;
+  const ratio=Math.max(0.00001,Math.min(1,row.ratePerMs/highest));
+  return Math.max(2.4,Math.min(12,2.4/Math.sqrt(ratio)));
+}
+function velocityLevel(row){
+  if(!velocityActive(row))return copy('IN ATTESA','WAITING');
+  const highest=Math.max(...state.rows.map(r=>velocityActive(r)?r.ratePerMs:0),0);
+  const ratio=highest>0?row.ratePerMs/highest:0;
+  if(ratio>=.65)return copy('ALTA','HIGH');
+  if(ratio>=.23)return copy('MEDIA','MEDIUM');
+  return copy('BASSA','LOW');
+}
+function velocityEta(ms){
+  if(!(ms>0)||!Number.isFinite(ms))return '—';
+  const seconds=Math.max(1,Math.ceil(ms/1000));
+  const d=Math.floor(seconds/86400),h=Math.floor(seconds%86400/3600),
+        m=Math.floor(seconds%3600/60),s=seconds%60;
+  if(d)return copy(`${d} g ${h} h`,`${d}d ${h}h`);
+  if(h)return copy(`${h} h ${m} min`,`${h}h ${m}m`);
+  if(m)return copy(`${m} min ${s} s`,`${m}m ${s}s`);
+  return `${s} s`;
+}
+function updateVelocityDetails(node,row){
+  const widget=node.querySelector('.reward-velocity');
+  if(!widget)return;
+  const active=velocityActive(row);
+  widget.classList.toggle('velocity-idle',!active);
+  widget.style.setProperty('--velocity-duration', active?`${velocityPeriod(row).toFixed(2)}s`:'12s');
+  widget.style.setProperty('--velocity-phase',`-${(row.index*.87).toFixed(2)}s`);
+  const set=(selector,value)=>{const el=widget.querySelector(selector);if(el && el.textContent!==value)el.textContent=value;};
+  set('[data-velocity-title]',copy('REWARD VELOCITY · STIMA','REWARD VELOCITY · ESTIMATE'));
+  set('[data-velocity-level]',active?velocityLevel(row):row.aprVerified&&row.staked===0?copy('NESSUNO STAKING','NO STAKING'):copy('IN ATTESA','WAITING'));
+  set('[data-velocity-rate]',active?`${formatRate(row.ratePerMs*3600000,6)} INJ/${copy('ora','hour')}`:copy('Ritmo non disponibile','Rate unavailable'));
+  set('[data-velocity-hint]',expandedVelocityAddress===row.address?copy('RIDUCI','CLOSE'):copy('DETTAGLI','DETAILS'));
+  set('[data-velocity-estimate]',active?
+    copy(`+0,001 INJ stimati in ${velocityEta(.001/row.ratePerMs)}`,`+0.001 INJ estimated in ${velocityEta(.001/row.ratePerMs)}`):
+    copy('Produzione non ancora calcolabile','Production not available'));
+  set('[data-velocity-sample]',row.synced&&row.lastNetworkAt>0?
+    copy(`Ultima verifica on-chain · ${new Date(row.lastNetworkAt).toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}`,`Last on-chain verification · ${new Date(row.lastNetworkAt).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}`):
+    copy('In attesa del primo dato on-chain','Awaiting first on-chain sample'));
+  const expanded=expandedVelocityAddress===row.address;
+  const control=widget.querySelector('[data-velocity-toggle]');
+  if(control){
+    control.setAttribute('aria-expanded',String(expanded));
+    control.setAttribute('aria-label',copy(`Mostra dettagli della produzione di ${row.label}`,`Show production details for ${row.label}`));
+  }
+  const detail=widget.querySelector('.reward-velocity-detail');
+  if(detail)detail.hidden=!expanded;
+  node.classList.toggle('velocity-expanded',expanded);
+}
+function toggleVelocity(address){
+  expandedVelocityAddress=expandedVelocityAddress===address?'':address;
+  document.querySelectorAll('.reward-row').forEach(node=>{
+    const row=state.rows.find(row=>row.address===node.dataset.address);
+    if(row)updateVelocityDetails(node,row);
+  });
+}
+function tickVelocityPulse(node,row,now){
+  const elapsed=row.velocityLastPaintAt>0?now-row.velocityLastPaintAt:0;
+  row.velocityLastPaintAt=now;
+  if(!velocityActive(row)||!row.synced){
+    row.velocityCarry=0;return;
+  }
+  // Skip large gaps: backgrounding a PWA must never create a burst on resume.
+  if(elapsed<=0||elapsed>2500)return;
+  row.velocityCarry+=elapsed*row.ratePerMs;
+  if(row.velocityCarry<VELOCITY_PULSE_QUANTUM)return;
+  row.velocityCarry%=VELOCITY_PULSE_QUANTUM;
+  if(reducedVelocityMotion.matches||now-row.velocityLastFlashAt<400)return;
+  const beacon=node?.querySelector('[data-velocity-beacon]');
+  if(!beacon||typeof beacon.animate!=='function')return;
+  beacon.animate([
+    {opacity:.18,transform:'translateY(-50%) scale(.7)'},
+    {opacity:1,transform:'translateY(-50%) scale(1.95)',offset:.28},
+    {opacity:0,transform:'translateY(-50%) scale(2.7)'}
+  ],{duration:650,easing:'ease-out',iterations:1});
+  row.velocityLastFlashAt=now;
+}
+
 function renderRows() {
   const host=$('rewardsList');if(!host)return;
   const existing=new Map(Array.from(host.children).map((node)=>[node.dataset.address,node]));
@@ -177,8 +267,19 @@ function renderRows() {
             <strong data-reward>—</strong>
             <div class="reward-fiat-pair" data-fiat>—</div>
           </div>
-          <div class="reward-flow reward-runway-live" aria-hidden="true">
-            <i></i><i></i><i></i><i></i><i></i><i></i>
+          <div class="reward-velocity" data-velocity-index="${index}">
+            <button class="reward-velocity-toggle" type="button" data-velocity-toggle aria-expanded="false">
+              <span class="reward-velocity-heading"><span data-velocity-title>REWARD VELOCITY · STIMA</span><b data-velocity-level>IN ATTESA</b></span>
+              <span class="reward-velocity-track" aria-hidden="true">
+                <span class="reward-velocity-travel"><i></i><b></b></span>
+                <span class="reward-velocity-beacon" data-velocity-beacon></span>
+              </span>
+              <span class="reward-velocity-summary"><span data-velocity-rate>—</span><small data-velocity-hint>DETTAGLI</small></span>
+            </button>
+            <div class="reward-velocity-detail" hidden>
+              <span data-velocity-estimate>—</span>
+              <span data-velocity-sample>—</span>
+            </div>
           </div>
         </div>
         <div class="reward-card-stats">
@@ -187,6 +288,7 @@ function renderRows() {
           <div><span>APR</span><strong data-apr>—</strong></div>
         </div>`;
       node.querySelector('.reward-edit')?.addEventListener('click',()=>openEditor(row.address));
+       node.querySelector('[data-velocity-toggle]')?.addEventListener('click',()=>toggleVelocity(row.address));
       host.appendChild(node);
     }
     existing.delete(row.address);
@@ -196,6 +298,7 @@ function renderRows() {
     const staked=node.querySelector('[data-staked]');if(staked)staked.textContent=row.staked>0?`${formatStaked(row.staked)} INJ`:'—';
     const apr=node.querySelector('[data-apr]');if(apr)apr.textContent=row.apr>0?`${row.apr.toFixed(3)}%`:'—';
     const live=node.querySelector('.row-live b');if(live)live.textContent=row.synced?(row.confidence==='hold'?copy('VERIFICA','VERIFY'):'ON-CHAIN'):copy('SYNC','SYNC');
+     updateVelocityDetails(node,row);
   });
   existing.forEach((node)=>node.remove());
 }
@@ -247,6 +350,7 @@ function renderFrame(frameNow = 0) {
     const node=document.querySelector(`.reward-row[data-address="${row.address}"]`);
     const target=node?.querySelector('[data-reward]');
     const fiat=node?.querySelector('[data-fiat]');
+     tickVelocityPulse(node,row,wallNow);
     if(Number.isFinite(value)){
       total+=value; syncedCount++;
       setRewardLiveText(target,`${formatInj(value,8)} INJ`,value);
@@ -506,7 +610,7 @@ function startRewardRunway(){
   clearInterval(rewardRunwayTimer);
   let step=0;
   const tick=()=>{
-    document.querySelectorAll('.reward-runway-live').forEach(flow=>{
+    document.querySelectorAll('.reward-flow-total.reward-runway-live').forEach(flow=>{
       const dots=flow.querySelectorAll(':scope > i');
       dots.forEach((dot,index)=>dot.classList.toggle('runway-active',index===step));
     });
