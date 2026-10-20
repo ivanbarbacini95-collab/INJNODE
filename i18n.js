@@ -20,6 +20,8 @@
     ["Convertitore INJ", "INJ Converter"],
     ["Centro di controllo", "Command Center"],
     ["Tesoreria INJ", "INJ Treasury"],
+    ["Valore Potenziale", "Potential Value"],
+    ["Apri Valore Potenziale", "Open Potential Value"],
     ["Apri Market Cap Comparison", "Open Market Cap Comparison"],
     ["Ricompense in tempo reale", "Live Rewards"],
 
