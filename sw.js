@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.01.20-visualize-wealth';
+const CACHE_NAME = 'inj-node-v16.01.21-wealth-treasury';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160088',
@@ -16,7 +16,7 @@ const APP_SHELL = [
   './',
   './index.html',
   './home-vitality.css?v=1.0.1',
-  './home-vitality.js?v=160120',
+  './home-vitality.js?v=160121',
   './home-vitality.js?v=1.0.3',
   './home-vitality-v2.css?v=160096',
   './home-layout-polish.css?v=160099',
@@ -34,9 +34,9 @@ const APP_SHELL = [
   './home-desktop-tiles.css?v=160115',
   './wallet-dock-transparent.css?v=160116',
   './visualize-wealth.html',
-  './visualize-wealth.css?v=160120',
-  './visualize-wealth.js?v=160120',
-  './visualize-wealth-home.css?v=160120',
+  './visualize-wealth.css?v=160121',
+  './visualize-wealth.js?v=160121',
+  './visualize-wealth-home.css?v=160121',
   './aqua-mirage.css?v=160113',
   './aqua-mirage.js?v=160113',
   './velvet-nebula.css?v=160112',
