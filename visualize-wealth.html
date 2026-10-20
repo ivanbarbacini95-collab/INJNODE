@@ -9,15 +9,15 @@
 <script>
 try{const t=localStorage.getItem('inj_monitor_theme');const valid=['navy','black','light','amber','ocean','chromatic','velvet','aqua','ocean-x-electric','ocean-x-ion','ocean-x-toxic','ocean-x-solar'];document.documentElement.dataset.theme=valid.includes(t)?t:'navy'}catch(_){}
 </script>
-<link rel="stylesheet" href="./visualize-wealth.css?v=160120">
+<link rel="stylesheet" href="./visualize-wealth.css?v=160121">
 <link rel="stylesheet" href="./ocean-aurora.css?v=160109">
 <link rel="stylesheet" href="./chromatic-mist.css?v=160110">
 <link rel="stylesheet" href="./theme-harmony.css?v=160114">
 <link rel="stylesheet" href="./velvet-nebula.css?v=160112">
 <link rel="stylesheet" href="./aqua-mirage.css?v=160113">
 <link rel="stylesheet" href="./ocean-x-series.css?v=160114">
-<script defer src="./navigation.js?v=160120"></script>
-<script defer src="./visualize-wealth.js?v=160120"></script>
+<script defer src="./navigation.js?v=160121"></script>
+<script defer src="./visualize-wealth.js?v=160121"></script>
 </head>
 <body>
 <div class="wealth-shell">
@@ -37,10 +37,6 @@ try{const t=localStorage.getItem('inj_monitor_theme');const valid=['navy','black
 <div class="wealth-input-shell"><span class="wealth-currency" id="wealthCurrency">$</span><input id="wealthPrice" type="text" inputmode="decimal" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="50,00" aria-describedby="wealthPriceHelp"><span class="wealth-unit">/ INJ</span></div>
 <p id="wealthPriceHelp">Inserisci un prezzo e la simulazione si aggiorna immediatamente.</p>
 </section>
-<div class="wealth-scope" role="group" aria-label="Wallet da simulare">
-<button type="button" id="wealthScopeAll" class="active" aria-pressed="true">Tutti i wallet</button>
-<button type="button" id="wealthScopeSelected" aria-pressed="false">Wallet selezionato</button>
-</div>
 <div class="wealth-subcontext"><span id="wealthWalletLabel">—</span><span id="wealthDataStatus" class="wealth-status">SINCRONIZZAZIONE</span></div>
 <section class="wealth-results" aria-label="Valori simulati">
 <article class="wealth-result wealth-primary"><p class="wealth-result-label" id="wealthTotalLabel">NET WORTH SIMULATO</p><div class="wealth-amount" id="wealthTotal">—</div><p class="wealth-result-detail" id="wealthTotalDetail">Disponibili + staking + reward</p></article>
