@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#07121b">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <title>B Capital Group · INJ Treasury</title>
+  <title>INJ NODE · Treasury</title>
   <script>
     try {
       const savedTheme = (localStorage.getItem('inj_monitor_theme') === 'dynamic' ? 'ocean' : localStorage.getItem('inj_monitor_theme'));
@@ -16,7 +16,6 @@
     } catch (_) {}
   </script>
   <link rel="stylesheet" href="./treasury.css?v=16.00.37">
-  <link rel="stylesheet" href="./treasury-brand-header.css?v=160125">
 <script>document.addEventListener('DOMContentLoaded',()=>{const c=getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();if(c)document.querySelector('meta[name="theme-color"]')?.setAttribute('content',c)},{once:true});</script>
 <link rel="stylesheet" href="viewport.css?v=16.00.74">
 <script defer src="viewport.js?v=16.00.14"></script>
@@ -45,15 +44,13 @@
       <a class="treasury-close" id="treasuryClose" href="./index.html" aria-label="Torna alla Home" title="Home">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 11 8-7 8 7"></path><path d="M6.5 10v9h11v-9M10 19v-5h4v5"></path></svg>
       </a>
-      <div class="treasury-title treasury-brand-title" data-i18n-skip="true">
-        <strong>B Capital Group</strong>
+      <div class="treasury-title">
+        <span>INJ NODE</span>
+        <strong>Treasury</strong>
       </div>
-      <div class="treasury-market-reference treasury-brand-reference">
-        <span class="treasury-brand-section" data-i18n-skip="true">INJ Treasury</span>
-        <div class="treasury-market-inline">
-          <strong id="treasuryHeaderPrice">—</strong>
-          <span class="treasury-live sync" id="treasuryLiveBadge"><i></i>LIVE</span>
-        </div>
+      <div class="treasury-market-reference">
+        <strong id="treasuryHeaderPrice">—</strong>
+        <span class="treasury-live sync" id="treasuryLiveBadge"><i></i>LIVE</span>
       </div>
     </header>
 
