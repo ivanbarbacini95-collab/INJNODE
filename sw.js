@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.01.38-dashboard-back-baseline';
+const CACHE_NAME = 'inj-node-v16.01.39-menu-header-clear';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160088',
@@ -19,6 +19,7 @@ const APP_SHELL = [
   './scroll-edges.js?v=160128',
   './section-heading-harmony.css?v=160131',
   './unified-navigation.css?v=160138',
+  './menu-header-clear.css?v=160139',
   './section-heading-harmony.js?v=160131',
   './home-vitality.css?v=1.0.1',
   './home-vitality.js?v=160121',
