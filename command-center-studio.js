@@ -413,10 +413,10 @@ function update(){
  setSign('pnl',gain);setSign('daily',daily);setSign('priceChange',n(st.change24));
  var confidential=privateOn();
  grid.querySelectorAll('.cc-studio-tile[data-widget="validators"] .cc-studio-body, .cc-studio-tile[data-widget="timeline"] .cc-studio-body').forEach(function(el){el.classList.toggle('cc-studio-private',confidential)});
- if(confidential){grid.querySelectorAll('[data-cc-bind]').forEach(function(el){
+ grid.querySelectorAll('[data-cc-bind]').forEach(function(el){
   var safe=['price','priceChange','marketLow','marketHigh','bestBid','bestAsk','spread','marketStatus','walletStatus','lastSync','depthSource','unitSymbol','unitCode'];
-  el.classList.toggle('cc-studio-private',!safe.includes(el.dataset.ccBind));
- });}
+  el.classList.toggle('cc-studio-private',confidential&&!safe.includes(el.dataset.ccBind));
+ });
  updateLists();
 }
 async function refreshExternal(){
