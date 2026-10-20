@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.03.01-flash-terminal';
+const CACHE_NAME = 'inj-node-v16.03.02-flash-terminal';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160088',
@@ -91,7 +91,7 @@ const APP_SHELL = [
   './order-book.js?v=16.00.18',
   './command-center.html',
   './command-center-flash.css?v=160301',
-  './command-center-flash.js?v=160301',
+  './command-center-flash.js?v=160302',
   './command-center.css?v=16.00.39',
   './command-center.js?v=16.00.18',
   './treasury.html',
