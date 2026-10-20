@@ -211,3 +211,20 @@ html[data-inj-page="command-center"] .cc-statusbar .inj-brand-credit{
   font-size:9px!important;
  }
 }
+
+/* Live View is intentionally full-screen: attach the identity to its own
+   viewport bottom rather than creating an extra scrollable row. */
+html[data-inj-page="index"] #focusDisplayDialog .focus-display-shell{
+ position:relative!important;
+}
+html[data-inj-page="index"] #focusDisplayDialog .inj-liveview-credit{
+ position:absolute!important;z-index:1!important;
+ left:50%;right:auto;bottom:max(7px,env(safe-area-inset-bottom,0px));
+ width:max-content;max-width:94%;
+ padding:0 10px;
+ transform:translateX(-50%);
+ pointer-events:none;
+ font-size:clamp(9px,1vw,11px);
+ opacity:.55;
+ white-space:nowrap;
+}
