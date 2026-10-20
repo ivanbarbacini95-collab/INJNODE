@@ -39,6 +39,7 @@
 <link rel="stylesheet" href="./scroll-edges.css?v=160129">
 <link rel="stylesheet" href="./section-heading-harmony.css?v=160131">
 <link rel="stylesheet" href="./unified-navigation.css?v=160136">
+<link rel="stylesheet" href="./live-charts-open-history.css?v=160140">
 <script defer src="./section-heading-harmony.js?v=160131"></script>
 <script defer src="./scroll-edges.js?v=160128"></script>
 </head>
@@ -94,6 +95,8 @@
         <div class="chart-column">
           <div class="plot" id="plot">
             <canvas id="mainCanvas" aria-label="Grafico Live INJ USDT"></canvas>
+            <span class="chart-history-caption" id="historyViewing" hidden>STORICO · DATI LIVE ATTIVI</span>
+            <button id="returnToLive" class="chart-return-live" type="button" hidden aria-label="Torna al grafico in tempo reale"><i></i> TORNA A LIVE <span>↗</span></button>
             <div class="loading" id="chartLoading"><i></i><span>SYNC</span></div>
             <div class="chart-watermark" aria-hidden="true"><span>INJ</span><small id="watermarkRange">1 MIN</small></div>
             <div class="ema-legend" aria-hidden="true"><span class="ema12">EMA 12</span><span class="ema26">EMA 26</span><span class="ema50">EMA 50</span><span class="ema200">EMA 200</span></div>
@@ -131,7 +134,7 @@
       <span class="inj-brand-credit" data-i18n-skip="true" aria-label="INJ Node by B Capital Group"><strong>INJ Node</strong><span>by B Capital Group</span></span>
     </footer>
   </main>
-  <script src="live-charts.js?v=16.00.18" defer></script>
+  <script src="live-charts.js?v=16.00.40" defer></script>
 
 
 </body>

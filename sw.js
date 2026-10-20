@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.01.40-b-capital-intro';
+const CACHE_NAME = 'inj-node-v16.01.41-livecharts-historic-5sec-intro';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160088',
@@ -20,7 +20,8 @@ const APP_SHELL = [
   './section-heading-harmony.css?v=160131',
   './unified-navigation.css?v=160138',
   './menu-header-clear.css?v=160139',
-  './intro-b-capital.css?v=160140',
+  './intro-b-capital.css?v=160141',
+  './live-charts-open-history.css?v=160140',
   './b-capital-group-brand.png',
   './section-heading-harmony.js?v=160131',
   './home-vitality.css?v=1.0.1',
@@ -77,7 +78,7 @@ const APP_SHELL = [
   './scroll-guard.js?v=160074',
   './live-charts.html',
   './live-charts.css?v=16.00.39',
-  './live-charts.js?v=16.00.18',
+  './live-charts.js?v=16.00.40',
   './live-rewards.html',
   './live-rewards.css?v=16.00.39',
   './reward-velocity.css?v=160122',

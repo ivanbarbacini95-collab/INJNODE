@@ -23,7 +23,7 @@ const ranges = {
   w1:  { label:'1 SETTIMANA', windowMs:7*DAY,        bucketMs:4*HOUR,       source:'w1',  interval:'4h',  limit:260,  minSpan:.0030,   expand:270, relax:10000,expected:42 },
   mo1: { label:'1 MESE',      windowMs:30*DAY,       bucketMs:12*HOUR,      source:'mo1', interval:'12h', limit:260,  minSpan:.0070,   expand:310, relax:12500,expected:60 },
   y1:  { label:'1 ANNO',      windowMs:365*DAY,      bucketMs:7*DAY,        source:'y1',  interval:'1d',  limit:500,  minSpan:.0200,   expand:360, relax:16000,expected:53 },
-  all: { label:'ALL',         windowMs:20*365*DAY,   bucketMs:28*DAY,       source:'all', interval:'1w',  limit:1000, minSpan:.0400,   expand:420, relax:20000,expected:80 }
+  all: { label:'ALL',         windowMs:20*365*DAY,   bucketMs:28*DAY,       source:'all', interval:'1w',  limit:1000, minSpan:.0400,   expand:420, relax:20000,expected:261 }
 };
 
 const BOOK_WS_ENDPOINTS=[
@@ -44,6 +44,7 @@ const state = {
   loaded:Object.fromEntries(Object.values(ranges).map(cfg=>[cfg.source,false])),
   historyCache:{},
   loading:{}, scales:{}, scaleTextAt:0,
+  viewEndMs:null, drag:null, olderLoading:{}, olderExhausted:{}, olderErrorAt:{},
   lastPrice:0,targetPrice:0,visualPrice:0,lastTickAt:0,lastTickDir:0,flashUntil:0,
   colors:null,ws:null,reconnect:0,wsGeneration:0,priceWatchdog:0,depthWs:null,depthReconnect:0,stopped:false,raf:0,lastFrame:0,
   rangeEnterAt:0, geometry:null,crosshair:{active:false,x:0,y:0},
@@ -212,16 +213,18 @@ function normalizeCandles(rows,bucketMs){
   return [...map.values()].sort((a,b)=>a.t-b.t);
 }
 function aggregateCandles(rows,bucketMs){return normalizeCandles(rows,bucketMs);}
-function trimSeries(key,now=Date.now()){const cfg=ranges[key];if(!cfg)return;const arr=state.series[cfg.source]||[];const cutoff=now-cfg.windowMs-cfg.bucketMs*230;while(arr.length>2&&arr[0].t<cutoff)arr.shift();const cap=Math.max(cfg.expected+8,260);if(arr.length>cap)arr.splice(0,arr.length-cap);}
+// Keep loaded historical candles available as the user pans; live updates must not
+// delete earlier history. 25k bars/source is a conservative browser memory ceiling.
+function trimSeries(key){const cfg=ranges[key];if(!cfg)return;const arr=state.series[cfg.source]||[];const cap=25000;if(arr.length>cap)arr.splice(0,arr.length-cap);}
 function mergeLiveInto(key,raw){const cfg=ranges[key],arr=state.series[cfg.source];if(!cfg||!arr)return;const t=Math.floor(raw.t/cfg.bucketMs)*cfg.bucketMs;let last=arr[arr.length-1];if(!last||last.t<t){last={t,o:raw.o,h:raw.h,l:raw.l,c:raw.c};arr.push(last);}else if(last.t===t){last.h=Math.max(last.h,raw.h);last.l=Math.min(last.l,raw.l);last.c=raw.c;}else{const found=arr.find(c=>c.t===t);if(found){found.h=Math.max(found.h,raw.h);found.l=Math.min(found.l,raw.l);found.c=raw.c;}}trimSeries(key,raw.t);}
 function mergeTradeInto(key,price,time){const cfg=ranges[key],arr=state.series[cfg.source];if(!cfg||!arr||!state.loaded[cfg.source]||!(price>0))return;const t=Math.floor(time/cfg.bucketMs)*cfg.bucketMs;let last=arr[arr.length-1];if(!last||last.t<t){const open=last?.c>0?last.c:price;last={t,o:open,h:Math.max(open,price),l:Math.min(open,price),c:price};arr.push(last);}else if(last.t===t){last.h=Math.max(last.h,price);last.l=Math.min(last.l,price);last.c=price;}else{const found=arr.find(c=>c.t===t);if(found){found.h=Math.max(found.h,price);found.l=Math.min(found.l,price);found.c=price;}}trimSeries(key,time);}
 function applyTrade(price,time=Date.now()){if(!(price>0))return;const previous=state.targetPrice>0?state.targetPrice:(state.lastPrice>0?state.lastPrice:price);state.lastTickDir=price>previous?1:price<previous?-1:state.lastTickDir;state.lastPrice=price;state.targetPrice=price;if(!(state.visualPrice>0))state.visualPrice=price;state.lastTickAt=Date.now();state.flashUntil=performance.now()+420;for(const key of Object.keys(ranges))mergeTradeInto(key,price,time);}
 
-async function fetchKlines(interval,limit){
+async function fetchKlines(interval,limit,endTime=null){
   const bases=['https://api.binance.com','https://data-api.binance.vision','https://api1.binance.com'];
   let lastErr;
   for(const base of bases){
-    try{const url=`${base}/api/v3/klines?symbol=INJUSDT&interval=${encodeURIComponent(interval)}&limit=${limit}`;const r=await fetch(url,{cache:'no-store'});if(!r.ok)throw new Error('history '+r.status);const data=await r.json();const rows=data.map(row=>({t:+row[0],o:+row[1],h:+row[2],l:+row[3],c:+row[4]})).filter(c=>c.o>0&&c.h>0&&c.l>0&&c.c>0);if(rows.length)return rows;}catch(e){lastErr=e;}
+    try{const url=`${base}/api/v3/klines?symbol=INJUSDT&interval=${encodeURIComponent(interval)}&limit=${limit}${endTime!=null?`&endTime=${Math.floor(endTime)}`:''}`;const r=await fetch(url,{cache:'no-store'});if(!r.ok)throw new Error('history '+r.status);const data=await r.json();const rows=data.map(row=>({t:+row[0],o:+row[1],h:+row[2],l:+row[3],c:+row[4]})).filter(c=>c.o>0&&c.h>0&&c.l>0&&c.c>0);if(rows.length)return rows;}catch(e){lastErr=e;}
   }
   throw lastErr||new Error('history');
 }
@@ -427,7 +430,51 @@ function resizeCanvas(){if(!canvas)return;const r=canvas.getBoundingClientRect()
 new ResizeObserver(resizeCanvas).observe($('plot'));
 resizeCanvas();
 
-function visibleCandles(now,key,cfg){const arr=state.series[cfg.source]||[];if(!arr.length)return[];const cutoff=now-cfg.windowMs-cfg.bucketMs*3;return arr.filter(c=>c.t>=cutoff&&c.t<=now);}
+// The viewport can stay on a fixed historic timestamp while WebSocket ticks
+// continue accumulating in state.series. A null viewEndMs means follow LIVE.
+function visibleCandles(end,key,cfg){const arr=state.series[cfg.source]||[];if(!arr.length)return[];const cutoff=end-cfg.windowMs-cfg.bucketMs*2;return arr.filter(c=>c.t>=cutoff&&c.t<=end);}
+function setHistoryUi(){
+  const historical=state.viewEndMs!==null;
+  $('livePage')?.classList.toggle('history-viewing',historical);
+  $('returnToLive')?.toggleAttribute('hidden',!historical);
+  $('historyViewing')?.toggleAttribute('hidden',!historical);
+}
+function followLive(){
+  state.viewEndMs=null;state.crosshair.active=false;state.scales[state.active]=null;
+  setHistoryUi();
+}
+function historicalPanTo(endMs){
+  const cfg=ranges[state.active];if(!cfg||!state.loaded[cfg.source])return;
+  const arr=state.series[cfg.source]||[],now=Date.now();
+  const oldest=arr[0]?.t ?? now-cfg.windowMs;
+  // Permit some overscroll while another page of history is loading.
+  const minimum=oldest-cfg.windowMs*.7;
+  const next=Math.max(minimum,Math.min(now,endMs));
+  if(next>=now-Math.min(cfg.bucketMs*.45,1000)){followLive();return;}
+  state.viewEndMs=next;setHistoryUi();requestOlderHistory();
+}
+async function requestOlderHistory(){
+  const key=state.active,cfg=ranges[key],source=cfg?.source;
+  if(!cfg||!state.loaded[source]||state.olderLoading[source]||state.olderExhausted[source])return;
+  const arr=state.series[source]||[];
+  if(!arr.length||state.viewEndMs===null)return;
+  const earliest=arr[0].t;
+  if(state.viewEndMs-cfg.windowMs>earliest+cfg.windowMs*.5)return;
+  if(Date.now()-(state.olderErrorAt[source]||0)<5000)return;
+  state.olderLoading[source]=true;
+  try{
+    const rows=await fetchKlines(cfg.interval,Math.min(1000,Math.max(cfg.limit,500)),earliest-1);
+    const older=rows.filter(c=>c.t<earliest);
+    if(!older.length){state.olderExhausted[source]=true;return;}
+    // Reuse the live-updated series as it exists NOW, not the version that was
+    // present when the HTTP request began.
+    state.series[source]=normalizeCandles([...older,...(state.series[source]||[])],cfg.bucketMs);
+    // A user can request more pages by swiping again toward the earlier edge.
+    if(older.length<2)state.olderExhausted[source]=true;
+    state.scales[key]=null;
+  }catch(_){state.olderErrorAt[source]=Date.now();}
+  finally{state.olderLoading[source]=false;}
+}
 function timeframeStats(candles){if(!candles.length)return null;let hi=-Infinity,lo=Infinity;for(const c of candles){hi=Math.max(hi,c.h);lo=Math.min(lo,c.l);}const open=candles[0].o,close=candles.at(-1).c,change=open>0?(close/open-1)*100:0;return{open,high:hi,low:lo,close,change};}
 function computeScale(dt,key,cfg,candles){let lo=Infinity,hi=-Infinity;for(const c of candles){if(c.l<lo)lo=c.l;if(c.h>hi)hi=c.h;}const latest=candles.at(-1)?.c||state.lastPrice;if(!(lo<Infinity&&hi>0&&latest>0))return null;const floor=latest<10?.00005:.0005;const minSpan=Math.max(latest*cfg.minSpan,floor);let span=hi-lo;if(span<minSpan){const mid=(hi+lo)/2;lo=mid-minSpan/2;hi=mid+minSpan/2;span=minSpan;}const targetMin=lo-span*.12,targetMax=hi+span*.12;let sc=state.scales[key];if(!sc)sc=state.scales[key]={min:targetMin,max:targetMax};else{const aMin=1-Math.exp(-dt/(targetMin<sc.min?cfg.expand:cfg.relax));const aMax=1-Math.exp(-dt/(targetMax>sc.max?cfg.expand:cfg.relax));sc.min+=(targetMin-sc.min)*aMin;sc.max+=(targetMax-sc.max)*aMax;}lo=sc.min;hi=sc.max;span=Math.max(hi-lo,minSpan);const breath=Math.max(span*.075,minSpan*.10);if(latest<lo+breath){lo=latest-breath;sc.min=lo;}if(latest>hi-breath){hi=latest+breath;sc.max=hi;}return{min:lo,max:hi,span:Math.max(hi-lo,minSpan),latest};}
 function drawGuides(ctx,left,right,top,bottom){const pw=right-left,ph=bottom-top;ctx.save();ctx.lineWidth=1;ctx.strokeStyle='rgba(135,165,205,.055)';for(const f of [.25,.5,.75]){const y=top+ph*f;ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(right,y);ctx.stroke();}ctx.strokeStyle='rgba(135,165,205,.030)';for(const f of [.2,.4,.6,.8]){const x=left+pw*f;ctx.beginPath();ctx.moveTo(x,top);ctx.lineTo(x,bottom);ctx.stroke();}ctx.restore();}
@@ -455,7 +502,9 @@ function rsiValues(values,period=14){
   const out=new Array(values.length).fill(NaN);if(values.length<2)return out;let avgG=0,avgL=0;for(let i=1;i<values.length;i++){const d=values[i]-values[i-1],g=Math.max(0,d),l=Math.max(0,-d);if(i<=period){avgG+=g;avgL+=l;if(i===period){avgG/=period;avgL/=period;out[i]=avgL===0?100:100-(100/(1+avgG/avgL));}}else{avgG=(avgG*(period-1)+g)/period;avgL=(avgL*(period-1)+l)/period;out[i]=avgL===0?100:100-(100/(1+avgG/avgL));}}return out;
 }
 function indicatorBundle(key,visible,visual){
-  const cfg=ranges[key],src=(state.series[cfg.source]||[]).map(c=>({...c}));if(!src.length)return null;const last=src.at(-1);if(last&&visual>0){last.c=visual;last.h=Math.max(last.h,visual);last.l=Math.min(last.l,visual);}const closes=src.map(c=>c.c),e12=emaValues(closes,12),e26=emaValues(closes,26),e50=emaValues(closes,50),e200=emaValues(closes,200),rsi=rsiValues(closes,14),macd=e12.map((v,i)=>v-e26[i]),signal=emaValues(macd,9),hist=macd.map((v,i)=>v-signal[i]),map=new Map(src.map((c,i)=>[c.t,i]));return visible.map(c=>{const i=map.get(c.t);return i==null?null:{ema12:e12[i],ema26:e26[i],ema50:e50[i],ema200:e200[i],rsi:rsi[i],macd:macd[i],signal:signal[i],hist:hist[i]};});
+  const cfg=ranges[key],first=visible[0]?.t??0,lastAt=visible.at(-1)?.t??Infinity;
+  const src=(state.series[cfg.source]||[]).filter(c=>c.t>=first-cfg.bucketMs*210&&c.t<=lastAt).map(c=>({...c}));if(!src.length)return null;
+  const last=src.at(-1);if(last&&visual>0&&state.viewEndMs===null){last.c=visual;last.h=Math.max(last.h,visual);last.l=Math.min(last.l,visual);}const closes=src.map(c=>c.c),e12=emaValues(closes,12),e26=emaValues(closes,26),e50=emaValues(closes,50),e200=emaValues(closes,200),rsi=rsiValues(closes,14),macd=e12.map((v,i)=>v-e26[i]),signal=emaValues(macd,9),hist=macd.map((v,i)=>v-signal[i]),map=new Map(src.map((c,i)=>[c.t,i]));return visible.map(c=>{const i=map.get(c.t);return i==null?null:{ema12:e12[i],ema26:e26[i],ema50:e50[i],ema200:e200[i],rsi:rsi[i],macd:macd[i],signal:signal[i],hist:hist[i]};});
 }
 function drawSeriesLine(ctx,xs,data,key,toY,color,alpha=.52,width=.85){ctx.save();ctx.strokeStyle=hexAlpha(color,alpha);ctx.lineWidth=width;ctx.lineJoin='round';ctx.lineCap='round';ctx.beginPath();let started=false;for(let i=0;i<data.length;i++){const v=data[i]?.[key];if(!Number.isFinite(v)||!Number.isFinite(xs[i]))continue;const y=toY(v);if(!started){ctx.moveTo(xs[i],y);started=true;}else ctx.lineTo(xs[i],y);}if(started)ctx.stroke();ctx.restore();}
 function drawEmaOverlay(ctx,xs,bundle,toY){if(!state.indicatorsOn||!bundle)return;drawSeriesLine(ctx,xs,bundle,'ema200',toY,state.colors.ema200,.25,mobile?.65:.8);drawSeriesLine(ctx,xs,bundle,'ema50',toY,state.colors.ema50,.34,mobile?.68:.85);drawSeriesLine(ctx,xs,bundle,'ema26',toY,state.colors.ema26,.42,mobile?.72:.9);drawSeriesLine(ctx,xs,bundle,'ema12',toY,state.colors.ema12,.50,mobile?.75:.95);}
@@ -467,10 +516,11 @@ function drawMacdPanel(xs,bundle){const out=auxContext(macdCanvas);if(!out||!bun
 function setIndicators(on){state.indicatorsOn=!!on;try{localStorage.setItem('inj_node_indicators',state.indicatorsOn?'1':'0');}catch(_){}const page=$('livePage');page?.classList.toggle('indicators-off',!state.indicatorsOn);$('indicatorToggle')?.setAttribute('aria-pressed',String(state.indicatorsOn));requestAnimationFrame(()=>{resizeCanvas();resizeAuxCanvas(rsiCanvas);resizeAuxCanvas(macdCanvas);});}
 function drawActive(now,dt,ts){
   const key=state.active,cfg=ranges[key];if(!cfg||!state.loaded[cfg.source])return;
-  const visible=visibleCandles(now,key,cfg);if(!visible.length)return;
+  const followingLive=state.viewEndMs===null,viewEnd=followingLive?now:state.viewEndMs;
+  const visible=visibleCandles(viewEnd,key,cfg);if(!visible.length)return;
   // Keep the extra candles needed to physically travel beyond the left viewport edge.
   const rawCandles=visible;
-  const visual=state.visualPrice>0?state.visualPrice:(state.lastPrice>0?state.lastPrice:rawCandles.at(-1).c);const candles=rawCandles.slice(),rawLast=candles.at(-1);if(rawLast&&visual>0)candles[candles.length-1]={...rawLast,c:visual,h:Math.max(rawLast.h,visual),l:Math.min(rawLast.l,visual)};
+  const visual=followingLive?(state.visualPrice>0?state.visualPrice:(state.lastPrice>0?state.lastPrice:rawCandles.at(-1).c)):0;const candles=rawCandles.slice(),rawLast=candles.at(-1);if(followingLive&&rawLast&&visual>0)candles[candles.length-1]={...rawLast,c:visual,h:Math.max(rawLast.h,visual),l:Math.min(rawLast.l,visual)};
   const ctx=canvas?.getContext('2d');if(!ctx)return;resizeCanvas();const dpr=canvas._dpr||1,w=canvas._cssW||canvas.clientWidth,h=canvas._cssH||canvas.clientHeight;if(w<2||h<2)return;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
   const scale=computeScale(dt,key,cfg,candles);if(!scale)return;const{min,max,span,latest}=scale;const axisH=mobile?19:22,left=mobile?9:13,right=w-(mobile?8:12),top=mobile?9:12,bottom=h-axisH-8,plotH=Math.max(1,bottom-top),plotW=Math.max(1,right-left),toY=(p)=>bottom-Math.max(0,Math.min(1,(p-min)/span))*plotH;
   state.geometry={left,right,top,bottom,min,max,span};drawGuides(ctx,left,right,top,bottom);
@@ -484,8 +534,8 @@ function drawActive(now,dt,ts){
   for(let i=0;i<count;i++){
     const c=candles[i];
     let x;
-    if(smoothFlow){x=right-step*(.5+(now-c.t)/cfg.bucketMs);}
-    else{x=right-step*(count-i-.5);}
+    // Absolute timestamps let touch/trackpad panning work identically on all timeframes.
+    x=right-step*(.5+(viewEnd-c.t)/cfg.bucketMs);
     xs.push(x);
     const up=c.c>=c.o,color=up?state.colors.up:state.colors.down,yO=toY(c.o),rawYH=toY(c.h),rawYL=toY(c.l),rawYC=toY(c.c),isLast=i===count-1;
     if(x+bodyW/2<left||x-bodyW/2>right)continue;
@@ -495,9 +545,10 @@ function drawActive(now,dt,ts){
     ctx.save();ctx.strokeStyle=hexAlpha(color,isLast?.99:.88);ctx.lineWidth=isLast?1.25:1;ctx.beginPath();ctx.moveTo(x,yH);ctx.lineTo(x,yL);ctx.stroke();let by=Math.min(yO,yC),bh=Math.abs(yC-yO);if(bh<1.8){by=(yO+yC)/2-.9;bh=1.8;}ctx.fillStyle=hexAlpha(color,isLast?.99:.94);ctx.fillRect(x-bodyW/2,by,bodyW,bh);if(isLast){ctx.strokeStyle=hexAlpha(color,.99);ctx.lineWidth=.65;ctx.strokeRect(x-bodyW/2-.25,by-.25,bodyW+.5,bh+.5);}ctx.restore();
   }
   drawEmaOverlay(ctx,xs,bundle,toY);
-  drawRangeTags(ctx,candles,xs,toY,right,bottom);drawTimeAxis(ctx,key,candles,xs,left,right,bottom,h,now,cfg);
+  drawRangeTags(ctx,candles,xs,toY,right,bottom);drawTimeAxis(ctx,key,candles,xs,left,right,bottom,h,viewEnd,cfg);
   // v15.98.64 — Price Pulse Halo + micro Edge Tick on the active candle.
   // The marker sits on the true live close, follows it vertically and uses the latest tick direction.
+  if(followingLive){
   const last=candles.at(-1),lastX=xs.at(-1),yO=toY(last.o),rawLastYC=toY(last.c),bullish=last.c>=last.o;
   const lastStagger=Math.min(130,130),lastQ=Math.max(0,Math.min(1,(enterElapsed-lastStagger)/430)),lastGrow=1-Math.pow(1-lastQ,3),yC=yO+(rawLastYC-yO)*lastGrow;
   const flash=Math.max(0,Math.min(1,(state.flashUntil-ts)/560));
@@ -519,22 +570,62 @@ function drawActive(now,dt,ts){
   const endpointPulse=(Math.sin(ts/210)+1)/2;
   ctx.save();ctx.fillStyle=hexAlpha(signalColor,.72+endpointPulse*.28);ctx.shadowColor=hexAlpha(signalColor,.38+endpointPulse*.28);ctx.shadowBlur=3+endpointPulse*5;
   ctx.beginPath();ctx.arc(lastX,anchorY,2.25+endpointPulse*.45,0,Math.PI*2);ctx.fill();ctx.restore();
+  }
   if(state.indicatorsOn&&bundle&&ts-state.indicatorRenderAt>70){state.indicatorRenderAt=ts;drawRsiPanel(xs,bundle);drawMacdPanel(xs,bundle);}
   drawCrosshair(ctx,key,candles,xs,left,right,top,bottom,min,span);
   updateScaleText(now,min,max,span,latest);updateStats(candles);const marker=$('scaleMarker');if(marker){const pct=100-Math.max(0,Math.min(1,(latest-min)/span))*100;marker.style.top=Math.max(5,Math.min(95,pct))+'%';}
 }
 
 function setMoreOpen(open){const wrap=$('moreTimeframesToggle')?.closest('.timeframe-more-wrap');wrap?.classList.toggle('open',!!open);$('moreTimeframesToggle')?.setAttribute('aria-expanded',String(!!open));$('moreTimeframesMenu')?.setAttribute('aria-hidden',String(!open));}
-function selectRange(key){if(!ranges[key])return;setMoreOpen(false);const extra=['m30','mo1','y1','all'];$('moreTimeframesToggle')?.classList.toggle('active',extra.includes(key));if(key===state.active)return;state.active=key;state.crosshair.active=false;state.rangeEnterAt=performance.now();try{localStorage.setItem('inj_node_live_chart_range',key);}catch(_){}document.querySelectorAll('.timeframe,.timeframe-more-option').forEach(btn=>btn.classList.toggle('active',btn.dataset.range===key));setText('activeRangeLabel',ranges[key].label);setText('watermarkRange',ranges[key].label);setText('footerRange',ranges[key].label);$('terminalShell')?.setAttribute('data-range-key',key);state.scaleTextAt=0;state.indicatorRenderAt=0;if(state.loaded[ranges[key].source])setLoading('done');else{setLoading('sync');void ensureHistory(key);}}
+function selectRange(key){if(!ranges[key])return;setMoreOpen(false);const extra=['m30','mo1','y1','all'];$('moreTimeframesToggle')?.classList.toggle('active',extra.includes(key));if(key===state.active)return;state.active=key;followLive();state.crosshair.active=false;state.rangeEnterAt=performance.now();try{localStorage.setItem('inj_node_live_chart_range',key);}catch(_){}document.querySelectorAll('.timeframe,.timeframe-more-option').forEach(btn=>btn.classList.toggle('active',btn.dataset.range===key));setText('activeRangeLabel',ranges[key].label);setText('watermarkRange',ranges[key].label);setText('footerRange',ranges[key].label);$('terminalShell')?.setAttribute('data-range-key',key);state.scaleTextAt=0;state.indicatorRenderAt=0;if(state.loaded[ranges[key].source])setLoading('done');else{setLoading('sync');void ensureHistory(key);}}
 
 document.querySelectorAll('.timeframe,.timeframe-more-option').forEach(btn=>btn.addEventListener('click',()=>selectRange(btn.dataset.range)));
 function pointerPosition(e){const r=canvas.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top};}
 const crosshairPointerInside=(e)=>{if(!canvas)return false;const r=canvas.getBoundingClientRect();return e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom;};
-canvas?.addEventListener('pointerdown',(e)=>{const p=pointerPosition(e);state.crosshair={active:true,x:p.x,y:p.y};if(e.pointerType!=='mouse')canvas.setPointerCapture?.(e.pointerId);});
-canvas?.addEventListener('pointermove',(e)=>{if(!crosshairPointerInside(e)){state.crosshair.active=false;try{if(canvas.hasPointerCapture?.(e.pointerId))canvas.releasePointerCapture?.(e.pointerId);}catch(_){}return;}const p=pointerPosition(e);if(e.pointerType==='mouse'||state.crosshair.active){state.crosshair={active:true,x:p.x,y:p.y};if(e.pointerType!=='mouse'&&e.cancelable)e.preventDefault();}}, {passive:false});
-canvas?.addEventListener('pointerup',(e)=>{state.crosshair.active=false;try{if(canvas.hasPointerCapture?.(e.pointerId))canvas.releasePointerCapture?.(e.pointerId);}catch(_){}});
-canvas?.addEventListener('pointercancel',(e)=>{state.crosshair.active=false;try{if(canvas.hasPointerCapture?.(e.pointerId))canvas.releasePointerCapture?.(e.pointerId);}catch(_){}});
-canvas?.addEventListener('pointerleave',()=>{state.crosshair.active=false;});
+// Pan by dragging right to see older candles; dragging left returns toward now.
+// Pointer events keep mouse hover crosshair, touch drag, and vertical page scroll separate.
+canvas?.addEventListener('pointerdown',(e)=>{
+  if(e.button!==undefined&&e.button!==0)return;
+  const p=pointerPosition(e);
+  state.drag={id:e.pointerId,startX:p.x,startY:p.y,startEnd:state.viewEndMs??Date.now(),moved:false};
+  state.crosshair={active:true,x:p.x,y:p.y};
+  if(e.pointerType!=='mouse')canvas.setPointerCapture?.(e.pointerId);
+});
+canvas?.addEventListener('pointermove',(e)=>{
+  const p=pointerPosition(e),drag=state.drag;
+  if(drag&&drag.id===e.pointerId){
+    const dx=p.x-drag.startX,dy=p.y-drag.startY;
+    if(!drag.moved&&Math.abs(dx)>=7&&Math.abs(dx)>Math.abs(dy)*.65)drag.moved=true;
+    if(drag.moved){
+      state.crosshair.active=false;
+      const cfg=ranges[state.active];
+      const width=Math.max(1,state.geometry?.right-state.geometry?.left||canvas.clientWidth);
+      historicalPanTo(drag.startEnd-dx*cfg.windowMs/width);
+      if(e.cancelable)e.preventDefault();
+      return;
+    }
+  }
+  if(!crosshairPointerInside(e)){state.crosshair.active=false;return;}
+  if(e.pointerType==='mouse'||drag)state.crosshair={active:true,x:p.x,y:p.y};
+},{passive:false});
+function finishCanvasPointer(e){
+  if(state.drag?.id===e.pointerId)state.drag=null;
+  state.crosshair.active=false;
+  try{if(canvas?.hasPointerCapture?.(e.pointerId))canvas.releasePointerCapture?.(e.pointerId);}catch(_){}
+}
+canvas?.addEventListener('pointerup',finishCanvasPointer);
+canvas?.addEventListener('pointercancel',finishCanvasPointer);
+canvas?.addEventListener('pointerleave',()=>{if(!state.drag)state.crosshair.active=false;});
+canvas?.addEventListener('wheel',(e)=>{
+  // Horizontal trackpad swipes, or Shift + mouse wheel, scroll candle history.
+  const amount=Math.abs(e.deltaX)>2?e.deltaX:(e.shiftKey?e.deltaY:0);
+  if(!amount||!state.loaded[ranges[state.active].source])return;
+  if(e.cancelable)e.preventDefault();
+  const cfg=ranges[state.active],width=Math.max(1,state.geometry?.right-state.geometry?.left||canvas.clientWidth);
+  historicalPanTo((state.viewEndMs??Date.now())-amount*cfg.windowMs/width);
+},{passive:false});
+$('returnToLive')?.addEventListener('click',followLive);
+setHistoryUi();
 
 const focusExit=document.createElement('button');focusExit.className='focus-exit';focusExit.type='button';focusExit.textContent='EXIT FOCUS';document.body.appendChild(focusExit);
 function setFocus(on){$('livePage')?.classList.toggle('focus-mode',on);$('focusToggle')?.setAttribute('aria-pressed',String(on));requestAnimationFrame(resizeCanvas);}
