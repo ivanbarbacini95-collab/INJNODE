@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.01.27-treasury-title-artwork';
+const CACHE_NAME = 'inj-node-v16.01.28-scroll-edge-bounds';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160088',
@@ -15,6 +15,8 @@ const APP_SHELL = [
   './i18n.js?v=160072',
   './',
   './index.html',
+  './scroll-edges.css?v=160128',
+  './scroll-edges.js?v=160128',
   './home-vitality.css?v=1.0.1',
   './home-vitality.js?v=160121',
   './home-vitality.js?v=1.0.3',
@@ -61,7 +63,7 @@ const APP_SHELL = [
   './top-clarity.css?v=16.00.88',
   './viewport.js?v=16.00.14',
   './style.css?v=16.00.49',
-  './app.js?v=16.01.27',
+  './app.js?v=16.01.28',
   './i18n.js?v=160124',
   './i18n.js?v=160117',
   './i18n.js?v=160088',
