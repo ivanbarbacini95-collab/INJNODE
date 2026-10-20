@@ -31,6 +31,23 @@ en:{
 function read(k){try{return localStorage.getItem(k)}catch(_){return null}}
 function lang(){return read('inj_node_language_v1')==='en'?'en':'it'}
 function curr(){return read('inj_monitor_currency')==='EUR'?'EUR':'USD'}
+function eurPerUsd(){
+ // Same exchange rate used by Home and Settings (USD -> EUR).
+ const rate=Number(read('inj_monitor_eur_rate'));
+ return Number.isFinite(rate)&&rate>0&&rate<10?rate:NaN;
+}
+function convertedPrice(value,from,to){
+ if(from===to)return value;
+ const rate=eurPerUsd();
+ if(!Number.isFinite(value)||!Number.isFinite(rate))return NaN;
+ return from==='USD'?value*rate:value/rate;
+}
+function formatPriceInput(value){
+ if(!Number.isFinite(value)||value<0)return '';
+ return new Intl.NumberFormat(lang()==='en'?'en-US':'it-IT',{
+  useGrouping:false,maximumFractionDigits:10
+ }).format(value);
+}
 function parsePrice(input){
  const s=String(input||'').trim().replace(/[\s\u00a0\u202f€$]/g,'');
  if(!s||!/^[\d.,]+$/.test(s))return NaN;
@@ -82,10 +99,19 @@ function translate(){
 function render(){
  const t=dict[lang()],unit=curr();translate();
  if(previousCurrency!==unit){
+  const former=previousCurrency;
+  const oldPrice=former?parsePrice($('wealthPrice').value):NaN;
+  let nextValue=read(PREFIX+unit.toLowerCase()+'_v1')||'';
+  if(former&&Number.isFinite(oldPrice)){
+   // Retain the SAME hypothetical price: never relabel USD as EUR.
+   const converted=convertedPrice(oldPrice,former,unit);
+   nextValue=Number.isFinite(converted)?formatPriceInput(converted):'';
+   if(nextValue){
+    try{localStorage.setItem(PREFIX+unit.toLowerCase()+'_v1',nextValue)}catch(_){}
+   }
+  }
   previousCurrency=unit;
-  $('wealthCurrency').textContent=unit==='EUR'?'€':'$';
-  $('wealthPrice').value=read(PREFIX+unit.toLowerCase()+'_v1')||'';
- }
+  $('wealthCurrency').textContent=unit==='EUR'?'€':'
  const price=parsePrice($('wealthPrice').value);
  const all=getRows(),wallet=all.rows.find(r=>r.address===all.selected);
  const complete=ready(wallet);
@@ -114,6 +140,47 @@ $('visualizeWealthBack').addEventListener('click',()=>{
  else location.href='./index.html';
 });
 window.addEventListener('storage',render);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)render()});
+render();
+setInterval(()=>{if(!document.hidden)render()},2000);
+})();;
+  $('wealthPrice').value=nextValue;
+ }
+ $('wealthPriceLabel').textContent=t.price+' · '+unit;
+ const price=parsePrice($('wealthPrice').value);
+ const all=getRows(),wallet=all.rows.find(r=>r.address===all.selected);
+ const complete=ready(wallet);
+ const total=complete?wallet.total:NaN;
+ const staked=complete?wallet.staked:NaN;
+ const oldest=complete?wallet.updated:0;
+ const privateOn=read('inj_monitor_privacy')==='1';
+ const status=privateOn?t.privacy:complete?(Date.now()-oldest<120000?t.recent:t.saved):wallet?t.incomplete:t.waiting;
+ $('wealthDataStatus').textContent=status;
+ $('wealthWalletLabel').textContent=wallet?(lang()==='en'?'Selected wallet · ':'Wallet selezionato · ')+wallet.label:(all.rows.length?t.noSelected:t.noWallet);
+ const valid=complete&&Number.isFinite(price);
+ const visible=valid&&!privateOn;
+ $('wealthTotal').textContent=privateOn?'••••••':visible?money(total*price):'—';
+ $('wealthStaked').textContent=privateOn?'••••••':visible?money(staked*price):'—';
+ $('wealthTotalDetail').textContent=privateOn?t.privacyNote:complete?fmtQty(total)+' INJ · '+t.totalBase:wallet?t.totalBase+' · '+t.incomplete:(all.rows.length?t.noSelected:t.noWallet);
+ $('wealthStakedDetail').textContent=privateOn?t.privacyNote:complete?fmtQty(staked)+' INJ · '+t.stakeBase:t.stakeBase;
+ $('wealthPriceHelp').textContent=$('wealthPrice').value&&!Number.isFinite(price)?t.invalid:t.help;
+}
+$('wealthPrice').addEventListener('input',()=>{
+ const key=PREFIX+curr().toLowerCase()+'_v1';
+ try{if($('wealthPrice').value)localStorage.setItem(key,$('wealthPrice').value);else localStorage.removeItem(key)}catch(_){}
+ render();
+});
+$('visualizeWealthBack').addEventListener('click',()=>{
+ if(parent!==window)parent.postMessage({type:'injnode:section:home'},location.origin);
+ else location.href='./index.html';
+});
+window.addEventListener('storage',(event)=>{
+ // Currency switches in the parent Home reach this embedded page via storage.
+ if(!event.key || ['inj_monitor_currency','inj_monitor_eur_rate',
+    'inj_monitor_privacy','inj_node_language_v1',
+    'inj_monitor_wallets_v1','inj_monitor_summaries_v1',
+    'inj_monitor_address','inj_node_comparison_selected_wallet_v1'].includes(event.key))render();
+});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)render()});
 render();
 setInterval(()=>{if(!document.hidden)render()},2000);
