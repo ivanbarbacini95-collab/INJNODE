@@ -53,8 +53,9 @@ try {
 <link rel="stylesheet" href="./unified-navigation.css?v=160136">
 <script defer src="./section-heading-harmony.js?v=160131"></script>
 <script defer src="./scroll-edges.js?v=160128"></script>
+<link rel="stylesheet" href="./command-center-flash.css?v=160301">
 </head>
-<body>
+<body class="cc-flash-terminal">
 <main class="cc-shell" id="commandCenter">
   <header class="cc-topbar">
     <div class="cc-brand">
@@ -180,6 +181,7 @@ try {
 <dialog class="cc-dialog" id="ccLevelsDialog"><form id="ccLevelsForm"><header><h2>Livelli personali</h2><button aria-label="Chiudi" data-close="ccLevelsDialog" type="button">×</button></header><p>Prezzi INJ / USDT. Le soglie vengono salvate per questo wallet; lascia vuoto per rimuoverle.</p><label>Livello 1<input id="ccLevel1" inputmode="decimal" min="0.000001" placeholder="Es. 7.50" step="any" type="number"/></label><label>Livello 2<input id="ccLevel2" inputmode="decimal" min="0.000001" placeholder="Es. 10.00" step="any" type="number"/></label><p>Il prezzo medio appare sul grafico quando rientra nella scala visibile. Gli avvisi funzionano mentre il Command Centre è aperto.</p><button type="submit">Salva livelli</button></form></dialog>
 <dialog class="cc-dialog" id="ccEventsDialog"><header><h2>Eventi della sessione</h2><button aria-label="Chiudi" data-close="ccEventsDialog" type="button">×</button></header><ol id="ccEventList"><li>Nessun evento</li></ol></dialog>
 <script defer src="command-center.js?v=16.00.18"></script>
+<script defer src="./command-center-flash.js?v=160301"></script>
 
 
 </body>
