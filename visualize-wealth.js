@@ -1,10 +1,11 @@
-/* Visualize the wealth — selected Home wallet only, read-only simulator. */
+/* Valore Potenziale / Potential Value — selected Home wallet only, read-only simulator. */
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
 const PREFIX='inj_node_visualize_wealth_price_';
 let previousCurrency='';
 const dict={
 it:{
+ title:'Valore Potenziale',eyebrow:'SIMULATORE',
  kicker:'IL TUO PATRIMONIO, A QUALSIASI PREZZO',
  desc:'Immagina un prezzo per INJ e scopri quanto varrebbe il tuo patrimonio.',
  price:'PREZZO IPOTETICO DI 1 INJ',help:'Inserisci un prezzo e la simulazione si aggiorna immediatamente.',
@@ -16,6 +17,7 @@ it:{
  privacyNote:'I valori sono nascosti dalle impostazioni Privacy.', invalid:'Prezzo non valido'
 },
 en:{
+ title:'Potential Value',eyebrow:'SIMULATOR',
  kicker:'YOUR WEALTH, AT ANY PRICE',
  desc:'Enter a hypothetical INJ price and visualize what your holdings could be worth.',
  price:'HYPOTHETICAL PRICE OF 1 INJ',help:'Enter a price to update the simulation instantly.',
@@ -70,10 +72,12 @@ function ready(row){return row&&row.updated>0&&Number.isFinite(row.total)&&Numbe
 function translate(){
  const t=dict[lang()];document.documentElement.lang=lang();
  const texts={
+  wealthPageTitle:t.title,wealthMainTitle:t.title,wealthEyebrow:t.eyebrow,
   wealthKicker:t.kicker,wealthDescription:t.desc,wealthPriceLabel:t.price,
   wealthTotalLabel:t.total,wealthStakedLabel:t.stake,wealthFootnote:t.note
  };
  for(const [id,str] of Object.entries(texts))$(id).textContent=str;
+ document.title=t.title+' · INJ Node';
 }
 function render(){
  const t=dict[lang()],unit=curr();translate();
