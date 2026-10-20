@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.01.21-wealth-treasury';
+const CACHE_NAME = 'inj-node-v16.01.22-reward-velocity';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160088',
@@ -72,7 +72,8 @@ const APP_SHELL = [
   './live-charts.js?v=16.00.18',
   './live-rewards.html',
   './live-rewards.css?v=16.00.39',
-  './live-rewards.js?v=16.00.46',
+  './reward-velocity.css?v=160122',
+  './live-rewards.js?v=160122',
   './order-book.html',
   './order-book.css?v=16.00.39',
   './order-book.js?v=16.00.18',
