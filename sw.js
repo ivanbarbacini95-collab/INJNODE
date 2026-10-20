@@ -1,8 +1,9 @@
-const CACHE_NAME = 'inj-node-v16.01.18-section-home';
+const CACHE_NAME = 'inj-node-v16.01.19-remove-tools';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160088',
   './navigation.css?v=160080',
+  './navigation.js?v=160119',
   './navigation.js?v=160117',
   './navigation.js?v=160110',
   './navigation.js?v=160109',
@@ -30,10 +31,6 @@ const APP_SHELL = [
   './theme-catalog.css?v=160114',
   './home-desktop-tiles.css?v=160115',
   './wallet-dock-transparent.css?v=160116',
-  './new-tools-tiles.css?v=160117',
-  './network-radar.html',
-  './section-home-access.css?v=160118',
-  './strategy-lab.html',
   './aqua-mirage.css?v=160113',
   './aqua-mirage.js?v=160113',
   './velvet-nebula.css?v=160112',
@@ -59,6 +56,7 @@ const APP_SHELL = [
   './viewport.js?v=16.00.14',
   './style.css?v=16.00.49',
   './app.js?v=16.01.17',
+  './i18n.js?v=160119',
   './i18n.js?v=160117',
   './i18n.js?v=160088',
   './i18n.js?v=160084',

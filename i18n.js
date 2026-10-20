@@ -19,7 +19,6 @@
     ["Cronologia rendimenti", "Performance Timeline"],
     ["Convertitore INJ", "INJ Converter"],
     ["Centro di controllo", "Command Center"],
-    ["Apri INJ Network Radar", "Open INJ Network Radar"], ["Apri INJ Strategy Lab", "Open INJ Strategy Lab"],
     ["Tesoreria INJ", "INJ Treasury"],
     ["Apri Market Cap Comparison", "Open Market Cap Comparison"],
     ["Ricompense in tempo reale", "Live Rewards"],
