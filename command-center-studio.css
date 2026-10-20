@@ -106,3 +106,13 @@ body.cc-studio-ready>#commandCenter{display:none!important}
  .cc-studio-footer{flex-wrap:wrap}
 }
 @media(max-width:450px){.cc-studio-toolbar{column-gap:5px}.cc-studio-brand{min-width:65px}.cc-studio-brand strong{font-size:.62rem}.cc-studio-back{width:27px}.cc-studio-preset{min-width:95px}.cc-studio-action[data-action="duplicate"],.cc-studio-action[data-action="delete"]{display:none}.cc-studio-chart-slot .cc-chart-tools #ccLevelsButton{display:none}}
+
+/* Keep presets and editing tools accessible on narrower desktop windows. */
+@media(min-width:800px) and (max-width:1450px){
+ .cc-studio-toolbar{flex-wrap:wrap;row-gap:3px;padding-top:8px;padding-bottom:8px}
+ .cc-studio-action{height:29px}
+ .cc-studio-status{font-size:.58rem}
+}
+@media(prefers-reduced-motion:reduce){
+ .cc-studio-tile,.cc-studio-action{transition:none!important}
+}
