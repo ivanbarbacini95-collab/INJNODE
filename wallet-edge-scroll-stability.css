@@ -37,3 +37,5 @@ html[data-inj-page="index"][data-inj-scroll="dashboard"] body > .app-shell{
   height:auto!important;
   min-height:100dvh!important;
 }
+
+/* v16.01.44: source fade rule eliminated from style.css as well, not just overridden. */
