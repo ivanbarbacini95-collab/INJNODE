@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.01.25-treasury-brand-refresh';
+const CACHE_NAME = 'inj-node-v16.01.26-home-treasury-brand-restore';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160088',
@@ -36,7 +36,7 @@ const APP_SHELL = [
   './visualize-wealth.html',
   './visualize-wealth.css?v=160121',
   './visualize-wealth.js?v=160124',
-  './visualize-wealth-home.css?v=160123',
+  './visualize-wealth-home.css?v=160126',
   './aqua-mirage.css?v=160113',
   './aqua-mirage.js?v=160113',
   './velvet-nebula.css?v=160112',
@@ -61,7 +61,7 @@ const APP_SHELL = [
   './top-clarity.css?v=16.00.88',
   './viewport.js?v=16.00.14',
   './style.css?v=16.00.49',
-  './app.js?v=16.01.25',
+  './app.js?v=16.01.26',
   './i18n.js?v=160124',
   './i18n.js?v=160117',
   './i18n.js?v=160088',
@@ -81,7 +81,6 @@ const APP_SHELL = [
   './command-center.css?v=16.00.39',
   './command-center.js?v=16.00.18',
   './treasury.html',
-  './treasury-brand-header.css?v=160125',
   './treasury.css?v=16.00.39',
   './treasury.js?v=16.00.99'
 ];
