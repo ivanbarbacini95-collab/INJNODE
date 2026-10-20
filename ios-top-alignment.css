@@ -82,7 +82,7 @@
   /* Terminal remains compact: its price column stays centered by
      dashboard-livecharts-top.css, including on narrow phones. */
   html[data-inj-page="live-charts"] .terminal-header{
-    min-height:calc(var(--inj-control-inset) + 70px)!important;
+    min-height:max(82px,calc(var(--inj-control-inset) + 44px))!important;
   }
   html[data-inj-page="live-charts"] .terminal-header .brand.inj-location-brand{
     display:flex!important;
