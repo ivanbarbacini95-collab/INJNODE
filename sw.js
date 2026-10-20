@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.01.22-reward-velocity';
+const CACHE_NAME = 'inj-node-v16.01.23-wealth-link-polish';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160088',
@@ -36,7 +36,7 @@ const APP_SHELL = [
   './visualize-wealth.html',
   './visualize-wealth.css?v=160121',
   './visualize-wealth.js?v=160121',
-  './visualize-wealth-home.css?v=160121',
+  './visualize-wealth-home.css?v=160123',
   './aqua-mirage.css?v=160113',
   './aqua-mirage.js?v=160113',
   './velvet-nebula.css?v=160112',
