@@ -1,30 +1,30 @@
-/* Visualize the wealth — selected-wallet and multiwallet read-only simulator. */
+/* Visualize the wealth — selected Home wallet only, read-only simulator. */
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
 const PREFIX='inj_node_visualize_wealth_price_';
-let scope='all',previousCurrency='';
+let previousCurrency='';
 const dict={
 it:{
  kicker:'IL TUO PATRIMONIO, A QUALSIASI PREZZO',
  desc:'Immagina un prezzo per INJ e scopri quanto varrebbe il tuo patrimonio.',
  price:'PREZZO IPOTETICO DI 1 INJ',help:'Inserisci un prezzo e la simulazione si aggiorna immediatamente.',
- all:'Tutti i wallet',selected:'Wallet selezionato',total:'NET WORTH SIMULATO',stake:'SOLO STAKING',
+ total:'NET WORTH SIMULATO',stake:'SOLO STAKING',
  totalBase:'Disponibili + staking + reward',stakeBase:'Solo INJ effettivamente delegati',
  note:'Simulazione indicativa: valorizza esclusivamente gli INJ, senza stimare altri token, commissioni o imposte.',
  noWallet:'Nessun wallet salvato',noSelected:'Nessun wallet selezionato',incomplete:'DATI INCOMPLETI',
  waiting:'IN ATTESA',saved:'DATI SALVATI',recent:'DATI AGGIORNATI',privacy:'PRIVACY ATTIVA',
- privacyNote:'I valori sono nascosti dalle impostazioni Privacy.', managed:'Totale gestito',invalid:'Prezzo non valido'
+ privacyNote:'I valori sono nascosti dalle impostazioni Privacy.', invalid:'Prezzo non valido'
 },
 en:{
  kicker:'YOUR WEALTH, AT ANY PRICE',
  desc:'Enter a hypothetical INJ price and visualize what your holdings could be worth.',
  price:'HYPOTHETICAL PRICE OF 1 INJ',help:'Enter a price to update the simulation instantly.',
- all:'All wallets',selected:'Selected wallet',total:'SIMULATED NET WORTH',stake:'STAKING ONLY',
+ total:'SIMULATED NET WORTH',stake:'STAKING ONLY',
  totalBase:'Available + staked + rewards',stakeBase:'Delegated INJ only',
  note:'Illustrative simulation: values INJ only, excluding other tokens, fees and taxes.',
  noWallet:'No saved wallets',noSelected:'No selected wallet',incomplete:'INCOMPLETE DATA',
  waiting:'WAITING',saved:'CACHED DATA',recent:'UPDATED DATA',privacy:'PRIVACY ON',
- privacyNote:'Values are hidden by your Privacy settings.',managed:'Total managed',invalid:'Invalid price'
+ privacyNote:'Values are hidden by your Privacy settings.',invalid:'Invalid price'
 }};
 function read(k){try{return localStorage.getItem(k)}catch(_){return null}}
 function lang(){return read('inj_node_language_v1')==='en'?'en':'it'}
@@ -70,14 +70,10 @@ function ready(row){return row&&row.updated>0&&Number.isFinite(row.total)&&Numbe
 function translate(){
  const t=dict[lang()];document.documentElement.lang=lang();
  const texts={
-  wealthKicker:t.kicker,wealthDescription:t.desc,wealthPriceLabel:t.price,wealthScopeAll:t.all,
-  wealthScopeSelected:t.selected,wealthTotalLabel:t.total,wealthStakedLabel:t.stake,wealthFootnote:t.note
+  wealthKicker:t.kicker,wealthDescription:t.desc,wealthPriceLabel:t.price,
+  wealthTotalLabel:t.total,wealthStakedLabel:t.stake,wealthFootnote:t.note
  };
  for(const [id,str] of Object.entries(texts))$(id).textContent=str;
- $('wealthScopeAll').classList.toggle('active',scope==='all');
- $('wealthScopeSelected').classList.toggle('active',scope==='selected');
- $('wealthScopeAll').setAttribute('aria-pressed',String(scope==='all'));
- $('wealthScopeSelected').setAttribute('aria-pressed',String(scope==='selected'));
 }
 function render(){
  const t=dict[lang()],unit=curr();translate();
@@ -88,20 +84,19 @@ function render(){
  }
  const price=parsePrice($('wealthPrice').value);
  const all=getRows(),wallet=all.rows.find(r=>r.address===all.selected);
- const active=scope==='all'?all.rows:(wallet?[wallet]:[]);
- const complete=active.length>0&&active.every(ready);
- const total=complete?active.reduce((sum,row)=>sum+row.total,0):NaN;
- const staked=complete?active.reduce((sum,row)=>sum+row.staked,0):NaN;
- const oldest=complete?Math.min(...active.map(row=>row.updated)):0;
+ const complete=ready(wallet);
+ const total=complete?wallet.total:NaN;
+ const staked=complete?wallet.staked:NaN;
+ const oldest=complete?wallet.updated:0;
  const privateOn=read('inj_monitor_privacy')==='1';
- const status=privateOn?t.privacy:complete?(Date.now()-oldest<120000?t.recent:t.saved):active.length?t.incomplete:t.waiting;
+ const status=privateOn?t.privacy:complete?(Date.now()-oldest<120000?t.recent:t.saved):wallet?t.incomplete:t.waiting;
  $('wealthDataStatus').textContent=status;
- $('wealthWalletLabel').textContent=scope==='all'?t.managed+' · '+all.rows.length+' wallet':wallet?.label||t.noSelected;
+ $('wealthWalletLabel').textContent=wallet?(lang()==='en'?'Selected wallet · ':'Wallet selezionato · ')+wallet.label:(all.rows.length?t.noSelected:t.noWallet);
  const valid=complete&&Number.isFinite(price);
  const visible=valid&&!privateOn;
  $('wealthTotal').textContent=privateOn?'••••••':visible?money(total*price):'—';
  $('wealthStaked').textContent=privateOn?'••••••':visible?money(staked*price):'—';
- $('wealthTotalDetail').textContent=privateOn?t.privacyNote:complete?fmtQty(total)+' INJ · '+t.totalBase:all.rows.length?t.totalBase+' · '+t.incomplete:t.noWallet;
+ $('wealthTotalDetail').textContent=privateOn?t.privacyNote:complete?fmtQty(total)+' INJ · '+t.totalBase:wallet?t.totalBase+' · '+t.incomplete:(all.rows.length?t.noSelected:t.noWallet);
  $('wealthStakedDetail').textContent=privateOn?t.privacyNote:complete?fmtQty(staked)+' INJ · '+t.stakeBase:t.stakeBase;
  $('wealthPriceHelp').textContent=$('wealthPrice').value&&!Number.isFinite(price)?t.invalid:t.help;
 }
@@ -110,8 +105,6 @@ $('wealthPrice').addEventListener('input',()=>{
  try{if($('wealthPrice').value)localStorage.setItem(key,$('wealthPrice').value);else localStorage.removeItem(key)}catch(_){}
  render();
 });
-$('wealthScopeAll').addEventListener('click',()=>{scope='all';render()});
-$('wealthScopeSelected').addEventListener('click',()=>{scope='selected';render()});
 $('visualizeWealthBack').addEventListener('click',()=>{
  if(parent!==window)parent.postMessage({type:'injnode:section:home'},location.origin);
  else location.href='./index.html';
