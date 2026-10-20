@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.01.23-wealth-link-polish';
+const CACHE_NAME = 'inj-node-v16.01.24-potential-value-i18n';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160088',
@@ -35,7 +35,7 @@ const APP_SHELL = [
   './wallet-dock-transparent.css?v=160116',
   './visualize-wealth.html',
   './visualize-wealth.css?v=160121',
-  './visualize-wealth.js?v=160121',
+  './visualize-wealth.js?v=160124',
   './visualize-wealth-home.css?v=160123',
   './aqua-mirage.css?v=160113',
   './aqua-mirage.js?v=160113',
@@ -62,7 +62,7 @@ const APP_SHELL = [
   './viewport.js?v=16.00.14',
   './style.css?v=16.00.49',
   './app.js?v=16.01.17',
-  './i18n.js?v=160119',
+  './i18n.js?v=160124',
   './i18n.js?v=160117',
   './i18n.js?v=160088',
   './i18n.js?v=160084',
