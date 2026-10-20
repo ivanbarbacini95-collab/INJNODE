@@ -73,7 +73,7 @@ window.INJ_OPEN_SECTION=function(url){
 };
 if(main){
  document.addEventListener('click',event=>{
-  const link=event.target.closest('#entryTreasuryButton,#entryLiveRewardsButton,#entryComparisonButton');
+  const link=event.target.closest('#entryTreasuryButton,#entryLiveRewardsButton,#entryComparisonButton,#entryVisualizeWealthButton');
   if(!link || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey)return;
   event.preventDefault();event.stopImmediatePropagation();window.INJ_OPEN_SECTION(link.href);
  },true);

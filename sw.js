@@ -1,8 +1,9 @@
-const CACHE_NAME = 'inj-node-v16.01.19-remove-tools';
+const CACHE_NAME = 'inj-node-v16.01.20-visualize-wealth';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160088',
   './navigation.css?v=160080',
+  './navigation.js?v=160120',
   './navigation.js?v=160119',
   './navigation.js?v=160117',
   './navigation.js?v=160110',
@@ -15,6 +16,7 @@ const APP_SHELL = [
   './',
   './index.html',
   './home-vitality.css?v=1.0.1',
+  './home-vitality.js?v=160120',
   './home-vitality.js?v=1.0.3',
   './home-vitality-v2.css?v=160096',
   './home-layout-polish.css?v=160099',
@@ -31,6 +33,10 @@ const APP_SHELL = [
   './theme-catalog.css?v=160114',
   './home-desktop-tiles.css?v=160115',
   './wallet-dock-transparent.css?v=160116',
+  './visualize-wealth.html',
+  './visualize-wealth.css?v=160120',
+  './visualize-wealth.js?v=160120',
+  './visualize-wealth-home.css?v=160120',
   './aqua-mirage.css?v=160113',
   './aqua-mirage.js?v=160113',
   './velvet-nebula.css?v=160112',
@@ -101,7 +107,7 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return;
 
   if (request.mode === 'navigate') {
-    const isolatedPath = ['live-charts.html', 'live-rewards.html', 'command-center.html', 'order-book.html', 'treasury.html', 'market.html', 'comparison.html'].find((name) => url.pathname.endsWith('/' + name));
+    const isolatedPath = ['live-charts.html', 'live-rewards.html', 'command-center.html', 'order-book.html', 'treasury.html', 'market.html', 'comparison.html', 'visualize-wealth.html'].find((name) => url.pathname.endsWith('/' + name));
     event.respondWith(
       fetch(request, { cache: 'no-store' })
         .then((response) => {

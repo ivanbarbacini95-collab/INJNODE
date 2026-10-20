@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="it" data-inj-page="visualize-wealth" data-theme="navy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#020708">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<title>Visualize the wealth · INJ Node</title>
+<script>
+try{const t=localStorage.getItem('inj_monitor_theme');const valid=['navy','black','light','amber','ocean','chromatic','velvet','aqua','ocean-x-electric','ocean-x-ion','ocean-x-toxic','ocean-x-solar'];document.documentElement.dataset.theme=valid.includes(t)?t:'navy'}catch(_){}
+</script>
+<link rel="stylesheet" href="./visualize-wealth.css?v=160120">
+<link rel="stylesheet" href="./ocean-aurora.css?v=160109">
+<link rel="stylesheet" href="./chromatic-mist.css?v=160110">
+<link rel="stylesheet" href="./theme-harmony.css?v=160114">
+<link rel="stylesheet" href="./velvet-nebula.css?v=160112">
+<link rel="stylesheet" href="./aqua-mirage.css?v=160113">
+<link rel="stylesheet" href="./ocean-x-series.css?v=160114">
+<script defer src="./navigation.js?v=160120"></script>
+<script defer src="./visualize-wealth.js?v=160120"></script>
+</head>
+<body>
+<div class="wealth-shell">
+<header class="wealth-header">
+<button class="wealth-home" id="visualizeWealthBack" type="button" aria-label="Torna alla Home" title="Home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 11 8-7 8 7M6.5 10v9h11v-9M10 19v-5h4v5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+<div class="wealth-heading"><span>INJ NODE</span><strong>Visualize the wealth</strong></div>
+<span class="wealth-eyebrow">SIMULATOR</span>
+</header>
+<main class="wealth-main">
+<div class="wealth-intro">
+<p class="wealth-kicker" id="wealthKicker">IL TUO PATRIMONIO, A QUALSIASI PREZZO</p>
+<h1>Visualize the wealth</h1>
+<p class="wealth-description" id="wealthDescription">Immagina un prezzo per INJ e scopri quanto varrebbe il tuo patrimonio.</p>
+</div>
+<section class="wealth-control" aria-label="Prezzo ipotetico">
+<label for="wealthPrice" id="wealthPriceLabel">PREZZO IPOTETICO DI 1 INJ</label>
+<div class="wealth-input-shell"><span class="wealth-currency" id="wealthCurrency">$</span><input id="wealthPrice" type="text" inputmode="decimal" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="50,00" aria-describedby="wealthPriceHelp"><span class="wealth-unit">/ INJ</span></div>
+<p id="wealthPriceHelp">Inserisci un prezzo e la simulazione si aggiorna immediatamente.</p>
+</section>
+<div class="wealth-scope" role="group" aria-label="Wallet da simulare">
+<button type="button" id="wealthScopeAll" class="active" aria-pressed="true">Tutti i wallet</button>
+<button type="button" id="wealthScopeSelected" aria-pressed="false">Wallet selezionato</button>
+</div>
+<div class="wealth-subcontext"><span id="wealthWalletLabel">—</span><span id="wealthDataStatus" class="wealth-status">SINCRONIZZAZIONE</span></div>
+<section class="wealth-results" aria-label="Valori simulati">
+<article class="wealth-result wealth-primary"><p class="wealth-result-label" id="wealthTotalLabel">NET WORTH SIMULATO</p><div class="wealth-amount" id="wealthTotal">—</div><p class="wealth-result-detail" id="wealthTotalDetail">Disponibili + staking + reward</p></article>
+<div class="wealth-divider" aria-hidden="true"></div>
+<article class="wealth-result wealth-secondary"><p class="wealth-result-label" id="wealthStakedLabel">SOLO STAKING</p><div class="wealth-amount" id="wealthStaked">—</div><p class="wealth-result-detail" id="wealthStakedDetail">Solo INJ effettivamente delegati</p></article>
+</section>
+<p class="wealth-footnote" id="wealthFootnote">Simulazione indicativa: valorizza esclusivamente gli INJ, senza stimare altri token, commissioni o imposte.</p>
+</main>
+</div>
+</body>
+</html>
