@@ -34,7 +34,7 @@
     ['Azioni rapide', 'Quick actions'], ['Wallet e strumenti', 'Wallet and tools'], ['Gestisci account', 'Manage accounts'],
     ['Aggiorna', 'Refresh'], ['Sincronizza dati', 'Sync data'], ['Dati personali', 'Personal data'],
     ['Prezzo medio INJ', 'Average INJ price'], ['Usato per calcolare il PnL', 'Used to calculate PnL'],
-    ['Preferenze', 'Preferences'], ['Personalizza INJ Node', 'Customize INJ Node'], ['Valuta', 'Currency'],
+    ['Preferenze', 'Preferences'], ['Avanzate', 'Advanced'], ['Valuta, privacy, tema e lingua', 'Currency, privacy, theme and language'], ['Storico, rete e installazione', 'History, network and installation'], ['Personalizza INJ Node', 'Customize INJ Node'], ['Valuta', 'Currency'],
     ['Nascondi valori', 'Hide values'], ['Mostra valori', 'Show values'], ['Tema', 'Theme'], ['Scegli tema', 'Choose theme'],
     ['Nero', 'Black'], ['Chiaro', 'Light'], ['Ocean Aurora · fluido','Ocean Aurora · fluid'], ['12 temi disponibili','12 themes available'], ['Chromatic Mist · multicolore','Chromatic Mist · multicolor'], ['Velvet Nebula · profondo','Velvet Nebula · deep'], ['Aqua Mirage · cristallino','Aqua Mirage · crystalline'], ['Essenziali','Essentials'], ['Reset grafici Treasury', 'Reset Treasury charts'],
     ['Ricomincia lo storico da adesso', 'Restart history from now'], ['Stato rete & API', 'Network & API status'],
