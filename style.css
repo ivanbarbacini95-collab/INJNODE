@@ -7028,18 +7028,7 @@ body.dashboard-entering .aggregate-strip:where(:not(.app-shell, .app-shell *)){ 
 }
 /* Subtle fade at the right edge hints that more wallets can be swiped. */
 .entry-wallet-section:where(:not(.app-shell, .app-shell *)){ position: relative; }
-.entry-wallet-section:where(:not(.app-shell, .app-shell *))::after{
-  content: "";
-  position: absolute;
-  z-index: 2;
-  right: 0;
-  bottom: 8px;
-  width: 30px;
-  height: 66px;
-  pointer-events: none;
-  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--theme-canvas) 88%, transparent));
-  opacity: .72;
-}
+.entry-wallet-section:where(:not(.app-shell, .app-shell *))::after{content:none!important;display:none!important;pointer-events:none!important}
 .entry-wallet-section:has(.entry-wallet-row:only-child):where(:not(.app-shell, .app-shell *))::after,
 .entry-wallet-section:has(.entry-wallet-empty):where(:not(.app-shell, .app-shell *))::after{ opacity: 0; }
 @media  (max-width: 620px) {.entry-wallets:where(:not(.app-shell, .app-shell *)){
@@ -8612,10 +8601,7 @@ body.entry-live-launch .app-shell:where(:not(.app-shell, .app-shell *)){
   height: 29px;
   right: 7px;
 }
-.entry-gate-shell:not(.first-access) .entry-wallet-section:where(:not(.app-shell, .app-shell *))::after{
-  height: 52px;
-  bottom: 5px;
-}
+.entry-gate-shell:not(.first-access) .entry-wallet-section:where(:not(.app-shell, .app-shell *))::after{content:none!important;display:none!important;pointer-events:none!important}
 /* 2 — account preview: keep the v15.64 card language, only restore its order. */
 .entry-gate-shell:not(.first-access) > .entry-overview:where(:not(.app-shell, .app-shell *)){
   order: 2;
@@ -10398,10 +10384,7 @@ body.menu-overlay-open .entry-gate-shell:not(.first-access):where(:not(.app-shel
 .entry-gate-shell:not(.first-access) .entry-wallet:where(:not(.app-shell, .app-shell *)){
   transition: border-color .18s ease, background .18s ease, transform .22s ease, opacity .22s ease, box-shadow .18s ease !important;
 }
-.entry-gate-shell:not(.first-access) .entry-wallet-section:where(:not(.app-shell, .app-shell *))::after{
-  width: 18px;
-  opacity: .38;
-}
+.entry-gate-shell:not(.first-access) .entry-wallet-section:where(:not(.app-shell, .app-shell *))::after{content:none!important;display:none!important;pointer-events:none!important}
 @media  (min-width: 621px) and (max-width: 899px) {.entry-gate-shell:not(.first-access) .entry-wallets:where(:not(.app-shell, .app-shell *)){
     --entry-wallet-card-width: min(45vw, 310px);
   }}
@@ -21551,18 +21534,7 @@ body.dashboard-entering .aggregate-strip:where(.app-shell, .app-shell *){ animat
 }
 /* Subtle fade at the right edge hints that more wallets can be swiped. */
 .entry-wallet-section:where(.app-shell, .app-shell *){ position: relative; }
-.entry-wallet-section:where(.app-shell, .app-shell *)::after{
-  content: "";
-  position: absolute;
-  z-index: 2;
-  right: 0;
-  bottom: 8px;
-  width: 30px;
-  height: 66px;
-  pointer-events: none;
-  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--theme-canvas) 88%, transparent));
-  opacity: .72;
-}
+.entry-wallet-section:where(.app-shell, .app-shell *)::after{content:none!important;display:none!important;pointer-events:none!important}
 .entry-wallet-section:has(.entry-wallet-row:only-child):where(.app-shell, .app-shell *)::after,
 .entry-wallet-section:has(.entry-wallet-empty):where(.app-shell, .app-shell *)::after{ opacity: 0; }
 @media  (max-width: 620px) {.entry-wallets:where(.app-shell, .app-shell *){
@@ -23135,10 +23107,7 @@ body.entry-live-launch .app-shell:where(.app-shell, .app-shell *){
   height: 29px;
   right: 7px;
 }
-.entry-gate-shell:not(.first-access) .entry-wallet-section:where(.app-shell, .app-shell *)::after{
-  height: 52px;
-  bottom: 5px;
-}
+.entry-gate-shell:not(.first-access) .entry-wallet-section:where(.app-shell, .app-shell *)::after{content:none!important;display:none!important;pointer-events:none!important}
 /* 2 — account preview: keep the v15.64 card language, only restore its order. */
 .entry-gate-shell:not(.first-access) > .entry-overview:where(.app-shell, .app-shell *){
   order: 2;
@@ -24928,10 +24897,7 @@ body.menu-overlay-open .entry-gate-shell:not(.first-access):where(.app-shell, .a
 .entry-gate-shell:not(.first-access) .entry-wallet:where(.app-shell, .app-shell *){
   transition: border-color .18s ease, background .18s ease, transform .22s ease, opacity .22s ease, box-shadow .18s ease !important;
 }
-.entry-gate-shell:not(.first-access) .entry-wallet-section:where(.app-shell, .app-shell *)::after{
-  width: 18px;
-  opacity: .38;
-}
+.entry-gate-shell:not(.first-access) .entry-wallet-section:where(.app-shell, .app-shell *)::after{content:none!important;display:none!important;pointer-events:none!important}
 @media  (min-width: 621px) and (max-width: 899px) {.entry-gate-shell:not(.first-access) .entry-wallets:where(.app-shell, .app-shell *){
     --entry-wallet-card-width: min(45vw, 310px);
   }}

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.01.43-wallet-edge-dashboard-native-scroll';
+const CACHE_NAME = 'inj-node-v16.01.44-source-wallet-shadow-fix';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160088',
@@ -70,7 +70,7 @@ const APP_SHELL = [
   './viewport.css?v=16.00.74',
   './top-clarity.css?v=16.00.88',
   './viewport.js?v=16.00.14',
-  './style.css?v=16.00.49',
+  './style.css?v=16.01.44',
   './app.js?v=16.01.38',
   './i18n.js?v=160124',
   './i18n.js?v=160117',
