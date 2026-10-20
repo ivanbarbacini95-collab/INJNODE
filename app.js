@@ -2178,6 +2178,34 @@ function pulseDashboardReveal() {
   });
 }
 
+// v16.01.37 — Safely trim an unexpected document-flow offset on Safari PWA.
+// Always prefer the CSS normal-flow fix. This runs only after Home has closed,
+// and only if the Dashboard shell still begins significantly below document zero.
+// A negative margin preserves native document scrolling, unlike position:absolute.
+let dashboardTopCheckFrame = 0;
+function reconcileDashboardTopOrigin() {
+  if (dashboardTopCheckFrame) return;
+  dashboardTopCheckFrame = requestAnimationFrame(() => {
+    dashboardTopCheckFrame = 0;
+    const body = document.body;
+    const gate = document.getElementById('entryGate');
+    if (!body.classList.contains('dashboard-scroll-ready') ||
+        body.classList.contains('entry-gate-open') ||
+        body.classList.contains('dashboard-home-return') ||
+        body.classList.contains('entry-live-launch') ||
+        (gate?.classList.contains('visible') && gate.getAttribute('aria-hidden') === 'false')) return;
+    const shell = document.querySelector('body > .app-shell');
+    if (!shell || !shell.getClientRects().length) return;
+    const previous = Number.parseFloat(body.style.getPropertyValue('--inj-dashboard-leading-space')) || 0;
+    // Document-relative offset, stable even if Safari restores an old scrollY.
+    const originalTop = shell.getBoundingClientRect().top + (window.scrollY || 0) + previous;
+    const trim = Number.isFinite(originalTop) && originalTop > 18 && originalTop < 480
+      ? Math.round(originalTop) : 0;
+    if (Math.abs(previous - trim) >= 1)
+      body.style.setProperty('--inj-dashboard-leading-space', trim + 'px');
+  });
+}
+
 // v16.00.16 — Dashboard scroll self-heal.
 // iOS/WebKit can occasionally restore the Dashboard while a transient Home/menu
 // overflow lock is still present. Reconcile only stale locks; real open overlays
@@ -2220,6 +2248,7 @@ function healDashboardScrollState({ force = false } = {}) {
 
   body.classList.add('dashboard-scroll-ready');
   root.classList.remove('drawer-open');
+  reconcileDashboardTopOrigin();
 
   // Defensive cleanup for an interrupted transition / bfcache restore.
   for (const node of [body, root, document.scrollingElement]) {
@@ -2242,6 +2271,7 @@ function showEntryGate({ modeReturn = false } = {}) {
   const gate = $('entryGate');
   if (!gate) return;
   document.body.classList.remove('dashboard-scroll-ready');
+  document.body.style.removeProperty('--inj-dashboard-leading-space');
   state.currentView = 'home';
   renderEntryGate();
   loadEntrySparkline(false);
