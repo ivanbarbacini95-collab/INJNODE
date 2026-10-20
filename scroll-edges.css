@@ -1,0 +1,105 @@
+/* INJ Node 16.01.28 — edge-contained native scroll on every theme/page.
+   No fixed scroll container, no background blur, no gesture interference. */
+html,body{
+  overscroll-behavior-y:none!important;
+  overscroll-behavior-x:none!important;
+}
+html,body,#entryGate,.treasury-shell,.rewards-shell,.live-page,.book-page,.cc-shell,
+#converterView,#performanceTimelineView,.converter-view-main,.performance-timeline-main,
+.shell,.inj-content-frame,.header-menu-panel,.entry-wallets,.entry-pnl-timeline-scroll{
+  overscroll-behavior-y:none!important;
+  -ms-overflow-style:none!important;
+  scrollbar-width:none!important;
+}
+/* Hide visual scroll rails but preserve native touch, wheel, trackpad and keyboard scroll. */
+html,html body,html body *{
+  scrollbar-width:none!important;
+}
+html::-webkit-scrollbar,body::-webkit-scrollbar,
+html body *::-webkit-scrollbar{
+  display:none!important;width:0!important;height:0!important;
+}
+/* Override the previous Home/Dashboard rule that deliberately enabled bounce. */
+html[data-inj-page="index"][data-inj-scroll="home"],
+html[data-inj-page="index"][data-inj-scroll="home"] body,
+html[data-inj-page="index"][data-inj-scroll="dashboard"],
+html[data-inj-page="index"][data-inj-scroll="dashboard"] body,
+html[data-inj-page="index"][data-inj-scroll="home"] #entryGate.entry-gate.visible{
+  overscroll-behavior-y:none!important;
+}
+html[data-inj-page="index"][data-inj-scroll="home"] #entryGate.entry-gate.visible
+ :is(.entry-wallets,.entry-pnl-timeline-scroll){
+  overscroll-behavior-y:none!important;
+}
+/* Home signature, placed after the final B Capital Group launcher. */
+html[data-inj-page="index"] #entryGate .entry-gate-shell > .inj-home-signature{
+  display:flex!important;
+  align-items:center;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:5px;
+  width:100%;
+  margin:0!important;
+  padding:20px 14px max(24px,env(safe-area-inset-bottom))!important;
+  box-sizing:border-box;
+  color:var(--muted-strong,var(--text));
+  font-size:clamp(11px,2.7vw,13px);
+  font-weight:650;
+  line-height:1.4;
+  letter-spacing:.045em;
+  text-align:center;
+  opacity:.76;
+  border:0;
+  background:transparent;
+}
+html[data-inj-page="index"] #entryGate .inj-home-signature strong{
+  font-size:inherit;
+  font-weight:850;
+  color:var(--text);
+  letter-spacing:.02em;
+}
+html[data-inj-page="index"] #entryGate .inj-home-signature span{
+  color:color-mix(in srgb,var(--accent) 55%,var(--muted-strong));
+}
+html[data-inj-page="index"] #entryGate .entry-gate-shell.first-access > .inj-home-signature{
+  display:none!important;
+}
+/* Alternative to a side rail: unobtrusive horizontal position indicator.
+   Render only on the active Home and never over a modal/section. */
+html[data-inj-page="index"] #injScrollProgress{
+  position:fixed;
+  z-index:12;
+  left:50%;
+  bottom:calc(12px + env(safe-area-inset-bottom,0px));
+  transform:translate3d(-50%,0,0);
+  width:74px;height:2px;
+  border-radius:99px;
+  overflow:hidden;
+  background:color-mix(in srgb,var(--accent) 17%,transparent);
+  box-shadow:none;
+  pointer-events:none;
+  opacity:.8;
+  transition:opacity .18s ease;
+}
+html[data-inj-page="index"] #injScrollProgress i{
+  display:block;
+  width:100%;height:100%;
+  background:var(--accent,#72e7db);
+  border-radius:inherit;
+  transform-origin:left center;
+  transform:scaleX(var(--inj-reading-progress,0));
+  will-change:transform;
+}
+html[data-inj-page="index"] #injScrollProgress[hidden],
+html[data-inj-page="index"] body.inj-section-open #injScrollProgress,
+html[data-inj-page="index"] body.menu-overlay-open #injScrollProgress,
+html[data-inj-page="index"] body:has(#converterView.open,#performanceTimelineView.open,.inj-market-portal:not([hidden])) #injScrollProgress{
+  display:none!important;
+}
+@media(min-width:900px){
+ html[data-inj-page="index"] #injScrollProgress{bottom:14px;opacity:.55}
+}
+@media(prefers-reduced-motion:reduce){
+ html[data-inj-page="index"] #injScrollProgress,
+ html[data-inj-page="index"] #injScrollProgress i{transition:none!important}
+}
