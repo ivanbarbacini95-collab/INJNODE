@@ -218,3 +218,17 @@ html[data-inj-page="index"] #focusDisplayDialog .focus-display-live > i{
   font-size:13px!important;
  }
 }
+
+/* Market keeps its accessible h1 and Top 200 descriptor. */
+html[data-inj-market] .shell > .header .brand.inj-location-title > h1.inj-location-section{
+ display:flex!important;flex-wrap:nowrap!important;align-items:baseline!important;
+ justify-content:flex-start!important;gap:7px!important;
+ margin:0!important;padding:0!important;width:auto!important;min-width:0!important;
+ font-size:clamp(10px,.9vw,12px)!important;line-height:1.35!important;
+ font-weight:850!important;letter-spacing:.055em!important;white-space:nowrap!important;
+ color:var(--accent)!important;
+}
+html[data-inj-market] .brand.inj-location-title > h1.inj-location-section > em{
+ font-size:clamp(8px,.65vw,10px)!important;letter-spacing:0!important;
+ font-weight:850!important;white-space:nowrap!important;
+}
