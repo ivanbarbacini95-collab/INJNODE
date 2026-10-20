@@ -1,13 +1,15 @@
-/* INJ Node v16.01.28 — Stop only gestures that pull past a real page boundary.
+/* INJ Node v16.01.43 — Stop only gestures that pull past a real page boundary.
    Never take ownership of regular scrolling, wallet carousels or pinch zoom. */
 (() => {
   'use strict';
   const root=document.documentElement;
   const isIOS= /iPad|iPhone|iPod/.test(navigator.userAgent) ||
     (navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
-  // CSS overscroll containment covers modern browsers and desktop trackpads.
-  // The iOS touch fallback prevents document rubber-banding in Safari PWAs.
-  if(isIOS){
+  // iOS Home and Dashboard must use Safari's native document scrolling.
+  // A capture-phase preventDefault sometimes classified a valid downward
+  // swipe as a boundary gesture after a mode return and froze the page.
+  // Keep the overscroll fallback only on standalone screens.
+  if(isIOS && root.dataset.injPage!=='index'){
     let lastX=0,lastY=0,tracking=false;
     const reset=()=>{tracking=false;};
     const canScrollY=(target,dy)=>{

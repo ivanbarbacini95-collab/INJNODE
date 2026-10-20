@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.01.42-intro-single-artwork';
+const CACHE_NAME = 'inj-node-v16.01.43-wallet-edge-dashboard-native-scroll';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160088',
@@ -16,7 +16,8 @@ const APP_SHELL = [
   './',
   './index.html',
   './scroll-edges.css?v=160129',
-  './scroll-edges.js?v=160128',
+  './scroll-edges.js?v=160143',
+  './wallet-edge-scroll-stability.css?v=160143',
   './section-heading-harmony.css?v=160131',
   './unified-navigation.css?v=160138',
   './menu-header-clear.css?v=160139',
