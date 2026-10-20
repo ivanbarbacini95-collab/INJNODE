@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#020708">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
-<title>Visualize the wealth · INJ Node</title>
+<title>Valore Potenziale · INJ Node</title>
 <script>
 try{const t=localStorage.getItem('inj_monitor_theme');const valid=['navy','black','light','amber','ocean','chromatic','velvet','aqua','ocean-x-electric','ocean-x-ion','ocean-x-toxic','ocean-x-solar'];document.documentElement.dataset.theme=valid.includes(t)?t:'navy'}catch(_){}
 </script>
@@ -17,19 +17,19 @@ try{const t=localStorage.getItem('inj_monitor_theme');const valid=['navy','black
 <link rel="stylesheet" href="./aqua-mirage.css?v=160113">
 <link rel="stylesheet" href="./ocean-x-series.css?v=160114">
 <script defer src="./navigation.js?v=160121"></script>
-<script defer src="./visualize-wealth.js?v=160121"></script>
+<script defer src="./visualize-wealth.js?v=160124"></script>
 </head>
 <body>
 <div class="wealth-shell">
 <header class="wealth-header">
 <button class="wealth-home" id="visualizeWealthBack" type="button" aria-label="Torna alla Home" title="Home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 11 8-7 8 7M6.5 10v9h11v-9M10 19v-5h4v5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-<div class="wealth-heading"><span>INJ NODE</span><strong>Visualize the wealth</strong></div>
-<span class="wealth-eyebrow">SIMULATOR</span>
+<div class="wealth-heading"><span>INJ NODE</span><strong id="wealthPageTitle">Valore Potenziale</strong></div>
+<span class="wealth-eyebrow" id="wealthEyebrow">SIMULATORE</span>
 </header>
 <main class="wealth-main">
 <div class="wealth-intro">
 <p class="wealth-kicker" id="wealthKicker">IL TUO PATRIMONIO, A QUALSIASI PREZZO</p>
-<h1>Visualize the wealth</h1>
+<h1 id="wealthMainTitle">Valore Potenziale</h1>
 <p class="wealth-description" id="wealthDescription">Immagina un prezzo per INJ e scopri quanto varrebbe il tuo patrimonio.</p>
 </div>
 <section class="wealth-control" aria-label="Prezzo ipotetico">
