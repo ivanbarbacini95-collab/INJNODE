@@ -487,10 +487,12 @@ html[data-inj-page="index"] #converterView .entry-converter-head > * {
     align-items:stretch!important;
     align-content:start!important;
   }
-  /* Old stylesheet explicitly forces Command Center visible below 1100px.
-     Keep that desktop-only destination out of the phone layout. */
+  /* Command Center Studio now provides a responsive stacked mobile view. */
   html[data-inj-page="index"] .entry-gate-shell:not(.first-access) > .entry-actions.entry-flat-v44 > #entryCommandCenterButton.entry-action-commandcenter {
-    display:none!important;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:center!important;
+    justify-content:center!important;
   }
   html[data-inj-page="index"] .entry-gate-shell:not(.first-access) > .entry-actions.entry-flat-v44 > :is(#entryDashboardButton,#entryLiveButton,#entryLiveChartsButton,#entryOrderBookButton,#entryPerformanceButton,#entryConverterButton,#entryMarketButton,#entryLiveRewardsButton,#entryTreasuryButton) {
     display:flex!important;
