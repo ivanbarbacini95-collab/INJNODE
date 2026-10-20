@@ -2178,15 +2178,28 @@ function pulseDashboardReveal() {
   });
 }
 
-// v16.01.37 — Safely trim an unexpected document-flow offset on Safari PWA.
-// Always prefer the CSS normal-flow fix. This runs only after Home has closed,
-// and only if the Dashboard shell still begins significantly below document zero.
-// A negative margin preserves native document scrolling, unlike position:absolute.
+// v16.01.38 — Compare the *visible back button* with the Home menu
+// baseline. Measuring only .app-shell missed large space inside its header.
+// Keep the Dashboard in native document flow: a bounded negative margin
+// corrects a WebKit/PWA layout offset without locking scroll or zoom.
 let dashboardTopCheckFrame = 0;
+let dashboardHomeNavigationTop = null;
+function rememberDashboardHomeNavigationTop() {
+  const gate = document.getElementById('entryGate');
+  const homeButton = document.getElementById('entryMenuButton');
+  if (!gate?.classList.contains('visible') || !homeButton) return;
+  const rect = homeButton.getBoundingClientRect();
+  const top = rect.top + (window.scrollY || 0);
+  // An absolute Home button is measurable even when the Home was scrolled.
+  // Ignore outliers from an open drawer or a fixed/immersive overlay.
+  if (rect.height >= 24 && Number.isFinite(top) && top >= 35 && top <= 155)
+    dashboardHomeNavigationTop = Math.round(top);
+}
 function reconcileDashboardTopOrigin() {
   if (dashboardTopCheckFrame) return;
   dashboardTopCheckFrame = requestAnimationFrame(() => {
     dashboardTopCheckFrame = 0;
+    if (!matchMedia('(max-width:900px)').matches) return;
     const body = document.body;
     const gate = document.getElementById('entryGate');
     if (!body.classList.contains('dashboard-scroll-ready') ||
@@ -2195,13 +2208,22 @@ function reconcileDashboardTopOrigin() {
         body.classList.contains('entry-live-launch') ||
         (gate?.classList.contains('visible') && gate.getAttribute('aria-hidden') === 'false')) return;
     const shell = document.querySelector('body > .app-shell');
-    if (!shell || !shell.getClientRects().length) return;
+    const back = document.getElementById('dashboardHomeButton');
+    const header = shell?.querySelector(':scope > .topbar');
+    if (!shell || !header || !back || !back.getClientRects().length) return;
+
     const previous = Number.parseFloat(body.style.getPropertyValue('--inj-dashboard-leading-space')) || 0;
-    // Document-relative offset, stable even if Safari restores an old scrollY.
-    const originalTop = shell.getBoundingClientRect().top + (window.scrollY || 0) + previous;
-    const trim = Number.isFinite(originalTop) && originalTop > 18 && originalTop < 480
-      ? Math.round(originalTop) : 0;
-    if (Math.abs(previous - trim) >= 1)
+    const pad = Number.parseFloat(getComputedStyle(header).paddingTop) || 0;
+    // Keep clear of the iPhone status bar. The Home button is the most
+    // accurate target; use a bounded safe-area fallback after a cold restore.
+    const fallbackTop = Math.max(60, Math.min(110, pad + 7));
+    const targetTop = dashboardHomeNavigationTop ?? fallbackTop;
+    // Compensate for the margin applied on the previous measurement.
+    const originalButtonTop = back.getBoundingClientRect().top + (window.scrollY || 0) + previous;
+    if (!Number.isFinite(originalButtonTop)) return;
+    const excess = originalButtonTop - targetTop;
+    const trim = excess > 14 && excess < 430 ? Math.round(excess) : 0;
+    if (Math.abs(previous - trim) > 1)
       body.style.setProperty('--inj-dashboard-leading-space', trim + 'px');
   });
 }
@@ -2272,6 +2294,7 @@ function showEntryGate({ modeReturn = false } = {}) {
   if (!gate) return;
   document.body.classList.remove('dashboard-scroll-ready');
   document.body.style.removeProperty('--inj-dashboard-leading-space');
+  dashboardHomeNavigationTop = null;
   state.currentView = 'home';
   renderEntryGate();
   loadEntrySparkline(false);
@@ -2325,6 +2348,7 @@ function activateEntrySelection() {
 
 function enterDashboardFromGate() {
   if (state.currentView !== 'home' || !modeLaunchAllowed()) return;
+  rememberDashboardHomeNavigationTop();
   activateEntrySelection();
 
   // v16.00.40 — Dashboard owns the native document scroller as soon as the
