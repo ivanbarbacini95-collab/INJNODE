@@ -149,6 +149,8 @@
 <link rel="stylesheet" href="./visualize-wealth-home.css?v=160127">
 
 <link rel="stylesheet" href="./scroll-edges.css?v=160129">
+<link rel="stylesheet" href="./section-heading-harmony.css?v=160130">
+<script defer src="./section-heading-harmony.js?v=160130"></script>
 <script defer src="./scroll-edges.js?v=160128"></script>
 </head>
 <body class="boot-loading">
@@ -169,7 +171,7 @@
 <div class="entry-gate-shell">
 <div class="entry-home-top">
 <div aria-hidden="true" class="entry-brand">
-<span class="jn-monogram" aria-hidden="true"><span class="jn-monogram-j">J</span><span class="jn-monogram-n">N</span></span>
+
 <div><strong>INJ</strong><span>Node</span></div>
 </div>
 <button aria-label="Apri stato rete e API" class="entry-system-pill" id="entrySystemStatusButton" type="button"><i></i><span id="entrySystemStatusText">SYSTEM · —</span><svg aria-hidden="true" viewbox="0 0 24 24"><path d="m9 6 6 6-6 6"></path></svg></button>
@@ -202,7 +204,7 @@
 <div aria-label="Control Center INJ Node" class="header-menu-panel" id="headerMenuPanel">
 <div class="menu-control-head">
 <div class="menu-control-brand">
-<span class="jn-monogram" aria-hidden="true"><span class="jn-monogram-j">J</span><span class="jn-monogram-n">N</span></span>
+
 <div><span class="menu-eyebrow">INJ NODE</span><strong class="menu-control-title">Control Center</strong></div>
 </div>
 <button aria-label="Chiudi menu" class="menu-close-button" id="menuCloseButton" title="Chiudi" type="button">×</button>
@@ -494,11 +496,10 @@
       <button class="performance-timeline-close" id="closePerformanceTimelineButton" type="button" aria-label="Torna alla Home" title="Home">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 11 8-7 8 7"></path><path d="M6.5 10v9h11v-9M10 19v-5h4v5"></path></svg>
       </button>
-      <div class="performance-timeline-title">
-        <span>INJ NODE</span>
-        <strong>Cronologia rendimenti</strong>
-        <small>P/L giornaliero · sessione 00:00 → 00:00</small>
-      </div>
+      <div class="performance-timeline-title inj-location-title" data-i18n-skip="true">
+  <strong class="inj-location-name">INJ Node</strong>
+  <span class="inj-location-section" data-inj-section-name="performance">Cronologia rendimenti</span>
+</div>
       <span class="performance-timeline-live"><i></i>LIVE</span>
     </header>
     <main class="performance-timeline-main">
@@ -558,11 +559,10 @@
       <button class="converter-view-close" id="closeConverterButton" type="button" aria-label="Torna alla Home" title="Home">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 11 8-7 8 7"></path><path d="M6.5 10v9h11v-9M10 19v-5h4v5"></path></svg>
       </button>
-      <div class="converter-view-title">
-        <span>INJ NODE</span>
-        <strong>Convertitore INJ</strong>
-        <small>EUR ↔ USD ↔ INJ · conversione live</small>
-      </div>
+      <div class="converter-view-title inj-location-title" data-i18n-skip="true">
+  <strong class="inj-location-name">INJ Node</strong>
+  <span class="inj-location-section" data-inj-section-name="converter">Convertitore INJ</span>
+</div>
       <span class="converter-view-live"><i></i>LIVE</span>
     </header>
     <main class="converter-view-main">
@@ -619,10 +619,10 @@
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 11 8-7 8 7"/><path d="M6.5 10v9h11v-9M10 19v-5h4v5"/></svg>
       </button>
 
-      <a class="brand header-title" href="#top" aria-label="INJ Node, torna in alto">
-        <span class="jn-monogram" aria-hidden="true"><span class="jn-monogram-j">J</span><span class="jn-monogram-n">N</span></span>
-        <span class="header-wordmark"><strong>INJ</strong><span>Node</span></span>
-      </a>
+      <a class="brand header-title inj-location-brand" href="#top" aria-label="INJ Node Dashboard, torna in alto" data-i18n-skip="true">
+  <strong class="inj-location-name">INJ Node</strong>
+  <span class="inj-location-section" data-inj-section-name="dashboard">Dashboard</span>
+</a>
 
       <div class="header-right" id="dashboardHeaderActions">
         <div class="connection header-status-dot" id="connectionStatus" role="status" aria-live="polite" title="Stato connessione">
@@ -915,7 +915,7 @@
 <dialog aria-label="Stato rete e API INJ Node" class="system-status-dialog" id="systemStatusDialog">
 <div class="system-status-shell">
 <header class="system-status-header">
-<div class="system-status-brand"><span class="jn-monogram" aria-hidden="true"><span class="jn-monogram-j">J</span><span class="jn-monogram-n">N</span></span><div><span>INJ NODE</span><strong>Stato rete &amp; API</strong></div></div>
+<div class="system-status-brand"><div><span>INJ NODE</span><strong>Stato rete &amp; API</strong></div></div>
 <button aria-label="Chiudi stato sistema" class="system-status-close" id="closeSystemStatusButton" type="button">×</button>
 </header>
 <section class="system-status-hero">
@@ -938,7 +938,7 @@
 <svg aria-hidden="true" viewbox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"></path></svg>
 </button>
 </div>
-<div aria-hidden="true" class="focus-display-brand"><span class="jn-monogram" aria-hidden="true"><span class="jn-monogram-j">J</span><span class="jn-monogram-n">N</span></span><span>INJ NODE</span></div>
+
 <time aria-label="Ora locale" class="focus-display-clock" id="focusDisplayClock">--:--</time>
 <div aria-hidden="true" class="focus-display-live"><i></i><span>LIVE VIEW</span></div>
 <div class="focus-display-content">
@@ -1017,7 +1017,7 @@
 </div>
 </div>
 <div aria-live="polite" class="toast" id="toast" role="status"></div>
-<script defer="" src="app.js?v=16.01.29"></script>
+<script defer="" src="app.js?v=16.01.30"></script>
 <script>
 (function(){
   function bindEntryHubs(){
