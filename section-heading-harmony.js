@@ -52,6 +52,15 @@
    window.addEventListener('pageshow',refresh,{passive:true});
    window.addEventListener('injnode:languagechange',refresh);
    window.addEventListener('storage',e=>{if(e.key==='inj_node_language_v1')refresh()});
+   // Home becomes visible after wallet/bootstrap checks. Measure at that moment.
+   if(root.dataset.injPage==='index'){
+     const gate=document.getElementById('entryGate');
+     const shell=gate?.querySelector('.entry-gate-shell');
+     const observer=new MutationObserver(refresh);
+     if(gate)observer.observe(gate,{attributes:true,attributeFilter:['class','aria-hidden']});
+     if(shell)observer.observe(shell,{attributes:true,attributeFilter:['class']});
+     observer.observe(root,{attributes:true,attributeFilter:['data-theme']});
+   }
    // Font loading may shift the optical center after first paint.
    document.fonts?.ready?.then(refresh).catch(()=>{});
  }
