@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.01.30-headings';
+const CACHE_NAME = 'inj-node-v16.01.31-headings-final';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160088',
@@ -17,8 +17,8 @@ const APP_SHELL = [
   './index.html',
   './scroll-edges.css?v=160129',
   './scroll-edges.js?v=160128',
-  './section-heading-harmony.css?v=160130',
-  './section-heading-harmony.js?v=160130',
+  './section-heading-harmony.css?v=160131',
+  './section-heading-harmony.js?v=160131',
   './home-vitality.css?v=1.0.1',
   './home-vitality.js?v=160121',
   './home-vitality.js?v=1.0.3',
@@ -65,7 +65,7 @@ const APP_SHELL = [
   './top-clarity.css?v=16.00.88',
   './viewport.js?v=16.00.14',
   './style.css?v=16.00.49',
-  './app.js?v=16.01.30',
+  './app.js?v=16.01.31',
   './i18n.js?v=160124',
   './i18n.js?v=160117',
   './i18n.js?v=160088',
