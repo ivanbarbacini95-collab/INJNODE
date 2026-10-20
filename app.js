@@ -2563,8 +2563,12 @@ function closeConverterToHome() {
 
 
 function commandCenterDesktopAllowed() {
-  // Studio workspace has a responsive mobile layout as well as desktop grid.
-  return true;
+  // Command Center is intentionally PC-only. iPhone/iPad/Android stay blocked
+  // even in landscape; wide Windows/macOS/Linux desktops remain allowed.
+  const ua = String(navigator.userAgent || '');
+  const appleTouchTablet = /Macintosh/i.test(ua) && Number(navigator.maxTouchPoints || 0) > 1;
+  const mobileDevice = /Android|iPhone|iPad|iPod|Mobile/i.test(ua) || appleTouchTablet;
+  return !mobileDevice && window.matchMedia('(min-width: 1100px)').matches;
 }
 
 function homeCommandCenterAllowed() {
@@ -2588,7 +2592,7 @@ function enterCommandCenterFromGate() {
 
   setHeaderMenuOpen(false);
   setSearchOpen(false);
-  window.INJ_OPEN_SECTION(`./command-center.html?wallet=${encodeURIComponent(wallet.address)}&v=16.02.01`);
+  window.INJ_OPEN_SECTION(`./command-center.html?wallet=${encodeURIComponent(wallet.address)}&v=16.00.14`);
 }
 
 // v15.70 — Home launchers require a fresh gesture that actually began on the
