@@ -1,6 +1,6 @@
-const CACHE_NAME = 'inj-node-v16.01.51-wealth-currency-polish';
+const CACHE_NAME = 'inj-node-v16.02.01-command-center-studio';
 const APP_SHELL = [
-  './navigation.css?v=160090',
+  './navigation.css?v=160201',
   './navigation.css?v=160088',
   './navigation.css?v=160080',
   './navigation.js?v=160120',
@@ -72,7 +72,7 @@ const APP_SHELL = [
   './top-clarity.css?v=16.00.88',
   './viewport.js?v=16.00.14',
   './style.css?v=16.01.44',
-  './app.js?v=16.01.49',
+  './app.js?v=16.02.01',
   './i18n.js?v=160145',
   './i18n.js?v=160117',
   './i18n.js?v=160088',
@@ -89,6 +89,8 @@ const APP_SHELL = [
   './order-book.css?v=16.00.39',
   './order-book.js?v=16.00.18',
   './command-center.html',
+  './command-center-studio.css?v=160201',
+  './command-center-studio.js?v=160201',
   './command-center.css?v=16.00.39',
   './command-center.js?v=16.00.18',
   './treasury.html',
