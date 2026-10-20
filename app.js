@@ -2346,14 +2346,29 @@ function enterDashboardFromGate() {
   document.body.classList.remove('drawer-open', 'menu-overlay-open', 'chart-overlay-open');
   document.documentElement.classList.remove('drawer-open');
 
-  // Normalize the native scroll before revealing Dashboard, never 380ms later.
+  // Lock the first Dashboard paint at the top. Keep scroll behavior instant
+  // through the Home exit transition, then restore it without a visible jump.
   const scroller = document.scrollingElement || document.documentElement;
-  const formerScrollBehavior = scroller.style.scrollBehavior;
+  const previousScrollBehavior = scroller.style.scrollBehavior;
+  const previousAnchor = scroller.style.overflowAnchor;
   scroller.style.scrollBehavior = 'auto';
-  scroller.scrollTop = 0;
-  window.scrollTo(0, 0);
-  scroller.style.scrollBehavior = formerScrollBehavior;
+  scroller.style.overflowAnchor = 'none';
   document.body.style.removeProperty('--inj-dashboard-leading-space');
+  scroller.scrollTop = 0;
+  document.body.scrollTop = 0;
+  window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  const keepDashboardAtTop = () => {
+    if (state.currentView !== 'dashboard') return;
+    scroller.scrollTop = 0;
+    document.body.scrollTop = 0;
+  };
+  requestAnimationFrame(keepDashboardAtTop);
+  window.setTimeout(keepDashboardAtTop, 70);
+  window.setTimeout(() => {
+    if (state.currentView === 'dashboard') keepDashboardAtTop();
+    scroller.style.scrollBehavior = previousScrollBehavior;
+    scroller.style.overflowAnchor = previousAnchor;
+  }, 400);
   state.currentView = 'dashboard';
   document.body.classList.add('dashboard-scroll-ready');
   pulseDashboardReveal();
