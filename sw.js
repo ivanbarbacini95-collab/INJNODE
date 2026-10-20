@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.01.48-utc-chart-dashboard-top';
+const CACHE_NAME = 'inj-node-v16.01.49-utc-home-smooth-dashboard';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160088',
@@ -72,7 +72,7 @@ const APP_SHELL = [
   './top-clarity.css?v=16.00.88',
   './viewport.js?v=16.00.14',
   './style.css?v=16.01.44',
-  './app.js?v=16.01.46',
+  './app.js?v=16.01.49',
   './i18n.js?v=160145',
   './i18n.js?v=160117',
   './i18n.js?v=160088',
