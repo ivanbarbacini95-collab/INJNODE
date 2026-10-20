@@ -2307,11 +2307,23 @@ function closeEntryGate({ revealDashboard = true } = {}) {
   gate.classList.add('leaving');
 
   window.setTimeout(() => {
+    if (revealDashboard && state.currentView === 'dashboard') {
+      // Home is a fixed foreground panel. Unlock the document, then fix its
+      // scroll origin in this SAME task, before hiding the foreground panel.
+      // No scroll correction is allowed after the Dashboard is visible.
+      document.body.classList.remove('entry-gate-open');
+      const scroller = document.scrollingElement || document.documentElement;
+      scroller.scrollTop = 0;
+      document.body.scrollTop = 0;
+      window.scrollTo(0, 0);
+    } else {
+      document.body.classList.remove('entry-gate-open');
+    }
     gate.classList.remove('visible', 'leaving');
     gate.setAttribute('aria-hidden', 'true');
-    document.body.classList.remove('entry-gate-open');
     if (revealDashboard) {
       healDashboardScrollState({ force: true });
+      updateDashboardSectionNavigator(true);
     }
 
     if (revealDashboard || !$('focusDisplayDialog')?.hidden || !$('pulseViewDialog')?.hidden || !$('liveChartsDialog')?.hidden) {
@@ -2346,41 +2358,16 @@ function enterDashboardFromGate() {
   document.body.classList.remove('drawer-open', 'menu-overlay-open', 'chart-overlay-open');
   document.documentElement.classList.remove('drawer-open');
 
-  // Lock the first Dashboard paint at the top. Keep scroll behavior instant
-  // through the Home exit transition, then restore it without a visible jump.
+  // The fullscreen Home is fixed and remains on top while the page's
+  // normal document scroller is prepared. Do not schedule scrollTo after
+  // reveal; that causes a visible mid-page jump on iPhone Safari/PWA.
   const scroller = document.scrollingElement || document.documentElement;
-  const previousScrollBehavior = scroller.style.scrollBehavior;
-  const previousAnchor = scroller.style.overflowAnchor;
-  scroller.style.scrollBehavior = 'auto';
-  scroller.style.overflowAnchor = 'none';
-  document.body.style.removeProperty('--inj-dashboard-leading-space');
   scroller.scrollTop = 0;
   document.body.scrollTop = 0;
-  window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-  const keepDashboardAtTop = () => {
-    if (state.currentView !== 'dashboard') return;
-    scroller.scrollTop = 0;
-    document.body.scrollTop = 0;
-  };
-  requestAnimationFrame(keepDashboardAtTop);
-  window.setTimeout(keepDashboardAtTop, 70);
-  window.setTimeout(() => {
-    if (state.currentView === 'dashboard') keepDashboardAtTop();
-    scroller.style.scrollBehavior = previousScrollBehavior;
-    scroller.style.overflowAnchor = previousAnchor;
-  }, 400);
+  document.body.style.removeProperty('--inj-dashboard-leading-space');
   state.currentView = 'dashboard';
   document.body.classList.add('dashboard-scroll-ready');
-  pulseDashboardReveal();
   closeEntryGate({ revealDashboard: true });
-  requestAnimationFrame(() => {
-    healDashboardScrollState({ force: true });
-    updateDashboardSectionNavigator(true);
-  });
-  // Reconcile again after the Home transition and after Safari/PWA resumes.
-  window.setTimeout(() => healDashboardScrollState({ force: true }), 180);
-  window.setTimeout(() => healDashboardScrollState({ force: true }), 430);
-  window.setTimeout(() => healDashboardScrollState({ force: true }), 920);
 }
 
 function parkEntryGateUnderImmersive() {
@@ -8345,6 +8332,20 @@ async function init() {
   // active wallet is reconciled every few seconds and the five-wallet summary
   // follows closely without waiting for a minute-long mobile cooldown.
   setInterval(() => { if (!document.hidden) maintainMarketRealtime(); }, 2_500);
+  // UTC intraday sessions must restart even if no exchange tick arrives at
+  // 00:00. Rehydrate during the day to fill gaps after iOS sleep/offline.
+  setInterval(() => {
+    const gate = $('entryGate');
+    if (document.hidden || state.currentView !== 'home' ||
+        !gate?.classList.contains('visible') || state.entrySpark.loading) return;
+    const today = entryMarketDayBounds().start;
+    if (number(state.entrySpark.dayStart) !== today) {
+      resetEntryPriceSession(today);
+      void loadEntrySparkline(true);
+    } else if (Date.now() - number(state.entrySpark.loadedAt) >= 180_000) {
+      void loadEntrySparkline(false);
+    }
+  }, 15_000);
   setInterval(() => { if (!document.hidden) loadMarketTimeframes(false); }, 15 * 60_000);
   setInterval(() => { if (!document.hidden) void loadEntryMarketMatrixAnchors(false); }, 2 * 60_000);
   const summaryEvery = MOBILE_EFFICIENCY ? 15_000 : 10_000;
