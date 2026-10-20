@@ -238,8 +238,14 @@ html[data-inj-page="index"] body:not(.boot-loading) > #bootSplash {
     justify-self:end!important;align-self:center!important;
     gap:6px!important;
   }
-  html[data-inj-page="order-book"] .book-topbar .group-label span,
-  html[data-inj-page="order-book"] .book-topbar .top-actions > .status {
+  html[data-inj-page="order-book"] .book-topbar .group-label span{
+    display:none!important;
+  }
+  /* Retain the real-time state dot, but save space by omitting its tiny word. */
+  html[data-inj-page="order-book"] .book-topbar .top-actions > .status{
+    display:flex!important;align-items:center!important;
+  }
+  html[data-inj-page="order-book"] .book-topbar .top-actions > .status b{
     display:none!important;
   }
   /* Full-screen Command Center: keep header visible without a second scroll
