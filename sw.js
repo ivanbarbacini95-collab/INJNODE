@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.02.03-command-center-studio';
+const CACHE_NAME = 'inj-node-v16.02.04-clean-command-center';
 const APP_SHELL = [
   './navigation.css?v=160201',
   './navigation.css?v=160088',
@@ -19,6 +19,7 @@ const APP_SHELL = [
   './scroll-edges.js?v=160143',
   './wallet-edge-scroll-stability.css?v=160143',
   './menu-accordion.css?v=160145',
+  './home-mobile-launcher-fix.css?v=160204',
   './section-heading-harmony.css?v=160131',
   './unified-navigation.css?v=160138',
   './menu-header-clear.css?v=160139',
@@ -89,8 +90,8 @@ const APP_SHELL = [
   './order-book.css?v=16.00.39',
   './order-book.js?v=16.00.18',
   './command-center.html',
-  './command-center-studio.css?v=160202',
-  './command-center-studio.js?v=160203',
+  './command-center-studio.css?v=160204',
+  './command-center-studio.js?v=160204',
   './command-center.css?v=16.00.39',
   './command-center.js?v=16.00.18',
   './treasury.html',
