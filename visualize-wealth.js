@@ -32,7 +32,7 @@ function read(k){try{return localStorage.getItem(k)}catch(_){return null}}
 function lang(){return read('inj_node_language_v1')==='en'?'en':'it'}
 function curr(){return read('inj_monitor_currency')==='EUR'?'EUR':'USD'}
 function eurPerUsd(){
- // Same exchange rate used by Home and Settings (USD -> EUR).
+ // Shared market rate in INJ Node: one USD is this many EUR.
  const rate=Number(read('inj_monitor_eur_rate'));
  return Number.isFinite(rate)&&rate>0&&rate<10?rate:NaN;
 }
@@ -103,7 +103,7 @@ function render(){
   const oldPrice=former?parsePrice($('wealthPrice').value):NaN;
   let nextValue=read(PREFIX+unit.toLowerCase()+'_v1')||'';
   if(former&&Number.isFinite(oldPrice)){
-   // Retain the SAME hypothetical price: never relabel USD as EUR.
+   // Convert the entered scenario; never simply relabel USD as EUR.
    const converted=convertedPrice(oldPrice,former,unit);
    nextValue=Number.isFinite(converted)?formatPriceInput(converted):'';
    if(nextValue){
@@ -111,39 +111,7 @@ function render(){
    }
   }
   previousCurrency=unit;
-  $('wealthCurrency').textContent=unit==='EUR'?'€':'
- const price=parsePrice($('wealthPrice').value);
- const all=getRows(),wallet=all.rows.find(r=>r.address===all.selected);
- const complete=ready(wallet);
- const total=complete?wallet.total:NaN;
- const staked=complete?wallet.staked:NaN;
- const oldest=complete?wallet.updated:0;
- const privateOn=read('inj_monitor_privacy')==='1';
- const status=privateOn?t.privacy:complete?(Date.now()-oldest<120000?t.recent:t.saved):wallet?t.incomplete:t.waiting;
- $('wealthDataStatus').textContent=status;
- $('wealthWalletLabel').textContent=wallet?(lang()==='en'?'Selected wallet · ':'Wallet selezionato · ')+wallet.label:(all.rows.length?t.noSelected:t.noWallet);
- const valid=complete&&Number.isFinite(price);
- const visible=valid&&!privateOn;
- $('wealthTotal').textContent=privateOn?'••••••':visible?money(total*price):'—';
- $('wealthStaked').textContent=privateOn?'••••••':visible?money(staked*price):'—';
- $('wealthTotalDetail').textContent=privateOn?t.privacyNote:complete?fmtQty(total)+' INJ · '+t.totalBase:wallet?t.totalBase+' · '+t.incomplete:(all.rows.length?t.noSelected:t.noWallet);
- $('wealthStakedDetail').textContent=privateOn?t.privacyNote:complete?fmtQty(staked)+' INJ · '+t.stakeBase:t.stakeBase;
- $('wealthPriceHelp').textContent=$('wealthPrice').value&&!Number.isFinite(price)?t.invalid:t.help;
-}
-$('wealthPrice').addEventListener('input',()=>{
- const key=PREFIX+curr().toLowerCase()+'_v1';
- try{if($('wealthPrice').value)localStorage.setItem(key,$('wealthPrice').value);else localStorage.removeItem(key)}catch(_){}
- render();
-});
-$('visualizeWealthBack').addEventListener('click',()=>{
- if(parent!==window)parent.postMessage({type:'injnode:section:home'},location.origin);
- else location.href='./index.html';
-});
-window.addEventListener('storage',render);
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)render()});
-render();
-setInterval(()=>{if(!document.hidden)render()},2000);
-})();;
+  $('wealthCurrency').textContent=unit==='EUR'?'€':'$';
   $('wealthPrice').value=nextValue;
  }
  $('wealthPriceLabel').textContent=t.price+' · '+unit;
@@ -175,8 +143,7 @@ $('visualizeWealthBack').addEventListener('click',()=>{
  else location.href='./index.html';
 });
 window.addEventListener('storage',(event)=>{
- // Currency switches in the parent Home reach this embedded page via storage.
- if(!event.key || ['inj_monitor_currency','inj_monitor_eur_rate',
+ if(!event.key||['inj_monitor_currency','inj_monitor_eur_rate',
     'inj_monitor_privacy','inj_node_language_v1',
     'inj_monitor_wallets_v1','inj_monitor_summaries_v1',
     'inj_monitor_address','inj_node_comparison_selected_wallet_v1'].includes(event.key))render();
