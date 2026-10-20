@@ -71,6 +71,11 @@
   window.addEventListener('pageshow',schedule,{passive:true});
   window.addEventListener('popstate',schedule,{passive:true});
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)schedule();});
-  new MutationObserver(schedule).observe(document.body||root,{attributes:true,attributeFilter:['class','aria-hidden'],subtree:true,childList:true});
+  const observer=new MutationObserver(schedule);
+  observer.observe(document.body,{attributes:true,attributeFilter:['class']});
+  const gate=document.getElementById('entryGate');
+  const gateShell=gate?.querySelector('.entry-gate-shell');
+  if(gate)observer.observe(gate,{attributes:true,attributeFilter:['class','aria-hidden']});
+  if(gateShell)observer.observe(gateShell,{attributes:true,attributeFilter:['class']});
   schedule();
 })();
