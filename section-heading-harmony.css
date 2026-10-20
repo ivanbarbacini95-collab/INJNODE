@@ -170,7 +170,7 @@ html[data-inj-page="index"] #focusDisplayDialog .focus-display-live > i{
  }
  html[data-inj-page="live-charts"] .terminal-header .brand.inj-location-brand{
   position:absolute!important;
-  top:5px!important;left:44px!important;
+  top:calc(var(--inj-control-inset,8px) + 4px)!important;left:44px!important;
   width:115px!important;height:auto!important;
   z-index:3!important;
  }
