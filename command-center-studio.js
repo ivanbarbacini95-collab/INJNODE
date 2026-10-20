@@ -96,6 +96,8 @@ studio.innerHTML='<header class="cc-studio-toolbar">'+
  '<button class="cc-studio-action" data-action="duplicate" title="Salva una copia di questo preset">Salva come</button>'+
  '<details class="cc-studio-more"><summary aria-label="Altre opzioni" title="Altre opzioni">···</summary>'+
  '<div class="cc-studio-more-menu">'+
+ '<button class="cc-studio-action" data-action="edit">Organizza moduli</button>'+ 
+ '<button class="cc-studio-action" data-action="new">Nuovo workspace vuoto</button>'+ 
  '<button class="cc-studio-action" data-action="rename">Rinomina preset</button>'+
  '<button class="cc-studio-action" data-action="delete">Elimina preset</button>'+
  '<button class="cc-studio-action" data-action="export">Esporta preset</button>'+
@@ -257,7 +259,7 @@ function action(action){
 }
 function panelAction(event){
  var act=event.target.closest('[data-action]');
- if(act){if(act.dataset.action!=='rename'&&act.dataset.action!=='delete'&&act.dataset.action!=='export'&&act.dataset.action!=='import')studio.querySelector('.cc-studio-more')?.removeAttribute('open');action(act.dataset.action);return}
+ if(act){studio.querySelector('.cc-studio-more')?.removeAttribute('open');action(act.dataset.action);return}
  var add=event.target.closest('[data-add]');if(add&&!add.disabled){
   active().items.push({id:add.dataset.add,size:byId[add.dataset.add].size});
   if(active().items.length>18)active().items=active().items.slice(0,18);
