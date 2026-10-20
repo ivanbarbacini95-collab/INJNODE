@@ -72,6 +72,15 @@ const fromWei = (value) => number(value) / INJ_DECIMALS;
 const shortAddress = (address) => address ? `${address.slice(0,9)}…${address.slice(-7)}` : '—';
 const lang = () => { try { return localStorage.getItem('inj_node_language_v1') === 'en' ? 'en' : 'it'; } catch (_) { return 'it'; } };
 const copy = (it, en) => lang() === 'en' ? en : it;
+function updateVelocityIntro(){
+  const kicker=$('rewardsKicker');
+  if(kicker)kicker.textContent=copy('5 WALLET GESTITI','5 MANAGED WALLETS');
+  const intro=$('rewardVelocityIntro');
+  if(intro)intro.textContent=copy(
+    'I reward partono da un dato verificato on-chain e scorrono secondo staking e APR netto di ciascun wallet. Le scie Reward Velocity mostrano una velocità stimata, non transazioni della rete; toccale per i dettagli. Il saldo disponibile resta escluso.',
+    'Rewards start from verified on-chain data and accrue at each wallet’s net validator APR. Reward Velocity trails visualize estimated accrual, not blockchain transfers. Tap a trail for details. Available balances are excluded.'
+  );
+}
 const formatInj = (value, digits = 8) => number(value).toLocaleString(lang()==='en'?'en-US':'it-IT',{minimumFractionDigits:digits,maximumFractionDigits:digits,useGrouping:true});
 const formatRate = (value, digits = 6) => number(value).toLocaleString(lang()==='en'?'en-US':'it-IT',{minimumFractionDigits:digits,maximumFractionDigits:digits,useGrouping:true});
 
@@ -213,7 +222,9 @@ function updateVelocityDetails(node,row){
   const control=widget.querySelector('[data-velocity-toggle]');
   if(control){
     control.setAttribute('aria-expanded',String(expanded));
-    control.setAttribute('aria-label',copy(`Mostra dettagli della produzione di ${row.label}`,`Show production details for ${row.label}`));
+    control.setAttribute('aria-label',expanded?
+      copy(`Riduci i dettagli della produzione di ${row.label}`,`Hide production details for ${row.label}`):
+      copy(`Mostra dettagli della produzione di ${row.label}`,`Show production details for ${row.label}`));
   }
   const detail=widget.querySelector('.reward-velocity-detail');
   if(detail)detail.hidden=!expanded;
@@ -268,7 +279,7 @@ function renderRows() {
             <div class="reward-fiat-pair" data-fiat>—</div>
           </div>
           <div class="reward-velocity" data-velocity-index="${index}">
-            <button class="reward-velocity-toggle" type="button" data-velocity-toggle aria-expanded="false">
+            <button class="reward-velocity-toggle" type="button" data-velocity-toggle aria-expanded="false" aria-controls="rewardVelocityDetail-${index}">
               <span class="reward-velocity-heading"><span data-velocity-title>REWARD VELOCITY · STIMA</span><b data-velocity-level>IN ATTESA</b></span>
               <span class="reward-velocity-track" aria-hidden="true">
                 <span class="reward-velocity-travel"><i></i><b></b></span>
@@ -276,7 +287,7 @@ function renderRows() {
               </span>
               <span class="reward-velocity-summary"><span data-velocity-rate>—</span><small data-velocity-hint>DETTAGLI</small></span>
             </button>
-            <div class="reward-velocity-detail" hidden>
+            <div class="reward-velocity-detail" id="rewardVelocityDetail-${index}" hidden>
               <span data-velocity-estimate>—</span>
               <span data-velocity-sample>—</span>
             </div>
@@ -622,7 +633,7 @@ function startRewardRunway(){
 
 function boot(){
   try{state.currency=localStorage.getItem('inj_monitor_currency')==='EUR'?'EUR':'USD'}catch(_){}
-  readLabels();renderRows();bindEditor();bindHomeReturn();startRewardRunway();requestAnimationFrame(renderFrame);
+  readLabels();updateVelocityIntro();renderRows();bindEditor();bindHomeReturn();startRewardRunway();requestAnimationFrame(renderFrame);
   // Prima otteniamo staking + APR specifico dei validator, poi il reward verificato. In questo modo
   // il PRIMO numero mostrato e' gia' esatto e parte subito alla velocita' corretta.
   // Reward e staking partono in parallelo: un LCD/validator lento non può bloccare Live Reward.
@@ -636,7 +647,7 @@ function boot(){
   window.addEventListener('online',()=>resumeLiveRewardData(true));
   window.addEventListener('focus',()=>{if(!document.hidden)resumeLiveRewardData(false)},{passive:true});
   window.addEventListener('pageshow',()=>{if(!document.hidden)resumeLiveRewardData(false)});
-  window.addEventListener('storage',(event)=>{if([LABELS_KEY,SAVED_WALLETS_KEY,'inj_monitor_currency','inj_node_language_v1'].includes(event.key)){if(event.key==='inj_monitor_currency'){state.currency=localStorage.getItem('inj_monitor_currency')==='EUR'?'EUR':'USD';updateHeaderPrice();}readLabels();renderRows();}});
-  window.addEventListener('injnode:languagechange',()=>{renderRows();if(state.lastSync&&$('rewardsUpdated'))$('rewardsUpdated').textContent=`${copy('Aggiornato','Updated')} ${new Date(state.lastSync).toLocaleTimeString(lang()==='en'?'en-US':'it-IT',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}`;});
+  window.addEventListener('storage',(event)=>{if([LABELS_KEY,SAVED_WALLETS_KEY,'inj_monitor_currency','inj_node_language_v1'].includes(event.key)){if(event.key==='inj_monitor_currency'){state.currency=localStorage.getItem('inj_monitor_currency')==='EUR'?'EUR':'USD';updateHeaderPrice();}readLabels();updateVelocityIntro();renderRows();}});
+  window.addEventListener('injnode:languagechange',()=>{updateVelocityIntro();renderRows();if(state.lastSync&&$('rewardsUpdated'))$('rewardsUpdated').textContent=`${copy('Aggiornato','Updated')} ${new Date(state.lastSync).toLocaleTimeString(lang()==='en'?'en-US':'it-IT',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}`;});
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
