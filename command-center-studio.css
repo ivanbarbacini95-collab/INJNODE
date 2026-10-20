@@ -116,3 +116,130 @@ body.cc-studio-ready>#commandCenter{display:none!important}
 @media(prefers-reduced-motion:reduce){
  .cc-studio-tile,.cc-studio-action{transition:none!important}
 }
+
+/* v16.02.04 - Clean-slate Command Center: the workspace is blank until
+   the owner adds modules. Keep the toolbar focused on add / organize / save. */
+html[data-inj-page="command-center"] .cc-studio-toolbar{isolation:isolate}
+html[data-inj-page="command-center"] .cc-studio-spacer{flex:1 1 auto}
+html[data-inj-page="command-center"] .cc-studio-toolbar > .cc-studio-action.primary{
+  background:color-mix(in srgb,var(--accent,#88dfe1) 17%,transparent);
+  border:1px solid color-mix(in srgb,var(--accent,#88dfe1) 38%,transparent);
+}
+html[data-inj-page="command-center"] .cc-studio-more{
+  position:relative;flex:0 0 auto;margin-left:2px;z-index:25;
+}
+html[data-inj-page="command-center"] .cc-studio-more summary{
+  list-style:none;display:grid;place-items:center;cursor:pointer;
+  height:34px;min-width:34px;border-radius:9px;font-size:22px;line-height:1;
+  color:var(--text,#fff);user-select:none;
+}
+html[data-inj-page="command-center"] .cc-studio-more summary::-webkit-details-marker{display:none}
+html[data-inj-page="command-center"] .cc-studio-more summary:hover,
+html[data-inj-page="command-center"] .cc-studio-more[open] summary{
+  background:color-mix(in srgb,var(--accent) 12%,transparent)
+}
+html[data-inj-page="command-center"] .cc-studio-more-menu{
+  position:absolute;top:calc(100% + 7px);right:0;z-index:30;
+  width:190px;display:grid;gap:3px;padding:7px;
+  background:var(--bg,#0b121a);
+  border:1px solid color-mix(in srgb,var(--text) 15%,transparent);
+  border-radius:12px;box-shadow:0 20px 42px #0005;
+}
+html[data-inj-page="command-center"] .cc-studio-more-menu .cc-studio-action{
+  width:100%;text-align:left;display:flex;align-items:center;justify-content:flex-start;
+}
+html[data-inj-page="command-center"] .cc-studio-more-menu [data-action="new"],
+html[data-inj-page="command-center"] .cc-studio-more-menu [data-action="edit"]{display:none}
+html[data-inj-page="command-center"] .cc-studio-empty{
+  grid-column:1/-1;width:100%;min-height:100%;padding:36px 18px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:0;text-align:center;color:var(--studio-muted);
+}
+html[data-inj-page="command-center"] .cc-studio-empty-glyph{
+  width:62px;height:62px;border-radius:50%;display:grid;place-items:center;
+  border:1px solid color-mix(in srgb,var(--accent) 30%,transparent);
+  background:color-mix(in srgb,var(--accent) 4%,transparent);
+  color:var(--accent);font-size:30px;font-weight:300;margin:0 0 22px;
+}
+html[data-inj-page="command-center"] .cc-studio-empty h2{
+  margin:0;color:var(--text);font-size:clamp(1.1rem,2vw,1.55rem);
+  font-weight:800;letter-spacing:-.025em;
+}
+html[data-inj-page="command-center"] .cc-studio-empty p{
+  max-width:360px;margin:12px 0 22px;font-size:clamp(.75rem,1vw,.88rem);
+  line-height:1.65;color:var(--studio-muted);
+}
+html[data-inj-page="command-center"] .cc-studio-empty button{
+  border:1px solid color-mix(in srgb,var(--accent) 50%,transparent);
+  background:color-mix(in srgb,var(--accent) 15%,transparent);
+  color:var(--text);border-radius:12px;padding:13px 22px;
+  font:750 .85rem Inter,system-ui,sans-serif;cursor:pointer;
+}
+html[data-inj-page="command-center"] .cc-studio-empty button:focus-visible,
+html[data-inj-page="command-center"] .cc-studio-more summary:focus-visible{
+  outline:2px solid var(--accent);outline-offset:3px
+}
+html[data-inj-page="command-center"] .cc-studio-empty button:hover{
+  background:color-mix(in srgb,var(--accent) 24%,transparent);
+}
+/* One uncluttered mobile toolbar: first row = location, second row = actions. */
+@media(max-width:799px){
+ html[data-inj-page="command-center"] .cc-studio-toolbar{
+  display:grid!important;grid-template-columns:repeat(12,minmax(0,1fr))!important;
+  grid-template-rows:auto auto!important;align-items:center!important;
+  gap:7px 6px!important;
+  padding:max(10px,env(safe-area-inset-top,0px)) 12px 10px!important;
+  min-height:0!important;z-index:20!important;
+ }
+ html[data-inj-page="command-center"] .cc-studio-back{
+  grid-column:1/2!important;grid-row:1!important;
+  width:30px!important;height:33px!important;justify-self:start;
+ }
+ html[data-inj-page="command-center"] .cc-studio-brand{
+  grid-column:2/12!important;grid-row:1!important;
+  min-width:0!important;padding-left:5px;
+ }
+ html[data-inj-page="command-center"] .cc-studio-more{
+  grid-column:12/13!important;grid-row:1!important;
+  justify-self:end!important;margin:0!important;
+ }
+ html[data-inj-page="command-center"] .cc-studio-preset{
+  grid-column:1/6!important;grid-row:2!important;
+  display:block!important;width:100%!important;max-width:none!important;
+  min-width:0!important;padding:8px 17px 8px 4px!important;
+  font-size:.73rem!important;min-height:34px!important;
+ }
+ html[data-inj-page="command-center"] .cc-studio-toolbar > .cc-studio-action[data-action="add"]{
+  grid-column:6/10!important;grid-row:2!important;
+  display:flex!important;align-items:center;justify-content:center;
+  min-width:0!important;width:100%!important;height:34px!important;
+  font-size:.7rem!important;padding:0 5px!important;
+ }
+ html[data-inj-page="command-center"] .cc-studio-toolbar > .cc-studio-action[data-action="duplicate"]{
+  grid-column:10/13!important;grid-row:2!important;
+  display:flex!important;align-items:center;justify-content:center;
+  min-width:0!important;width:100%!important;height:34px!important;
+  font-size:.63rem!important;padding:0 2px!important;
+ }
+ html[data-inj-page="command-center"] .cc-studio-toolbar > .cc-studio-action[data-action="edit"],
+ html[data-inj-page="command-center"] .cc-studio-toolbar > .cc-studio-action[data-action="new"],
+ html[data-inj-page="command-center"] .cc-studio-divider,
+ html[data-inj-page="command-center"] .cc-studio-spacer,
+ html[data-inj-page="command-center"] .cc-studio-status{display:none!important}
+ html[data-inj-page="command-center"] .cc-studio-more-menu [data-action="edit"],
+ html[data-inj-page="command-center"] .cc-studio-more-menu [data-action="new"]{display:flex!important}
+ html[data-inj-page="command-center"] .cc-studio-stage{
+  min-height:calc(100svh - 150px);padding:12px!important;
+ }
+ html[data-inj-page="command-center"] .cc-studio-empty{
+  min-height:calc(100svh - 220px);padding:32px 15px;
+ }
+ html[data-inj-page="command-center"] .cc-studio-grid{min-height:inherit}
+ html[data-inj-page="command-center"] .cc-studio-more-menu{width:188px}
+}
+@media(max-width:360px){
+ html[data-inj-page="command-center"] .cc-studio-toolbar{
+  padding-left:9px!important;padding-right:9px!important;column-gap:4px!important;
+ }
+ html[data-inj-page="command-center"] .cc-studio-toolbar > .cc-studio-action[data-action="duplicate"]{font-size:.6rem!important}
+}
