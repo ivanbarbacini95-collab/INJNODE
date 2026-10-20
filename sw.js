@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.01.46-intro-clean';
+const CACHE_NAME = 'inj-node-v16.01.47-home-scroll-indicator-removed';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160088',
