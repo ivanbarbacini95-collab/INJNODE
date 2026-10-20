@@ -29,9 +29,10 @@ const INJ_DECIMALS = 1e18;
 const USDC_DECIMALS = 1e6;
 const NATIVE_USDC_DENOM = 'erc20:0xa00c59ff5a080d2b954d0c75e46e22a0c371235a';
 
-// The splash lasts only until Home's first usable render (not a fake % timer).
-const BOOT_MIN_VISUAL_MS = 1480;
-const BOOT_FAILSAFE_MS = 5000;
+// Branded intro approved at 6.5s. Keep Home init asynchronous underneath it.
+// Returning from a section continues to bypass the splash entirely.
+const BOOT_MIN_VISUAL_MS = 6500;
+const BOOT_FAILSAFE_MS = 8500;
 const DIRECT_HOME_RETURN = document.documentElement.dataset.returnHome === '1';
 window.addEventListener('pageshow', () => {
   try { sessionStorage.removeItem('inj_node_return_home'); } catch (_) {}

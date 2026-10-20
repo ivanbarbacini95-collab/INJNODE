@@ -1,0 +1,91 @@
+/* INJ Node x B Capital Group · approved 6.5 s intro.
+   Original transparent gold branding, with staggered letter reveal.
+   Only affects Home boot splash, never Dashboard or any other section. */
+html[data-inj-page="index"] body #bootSplash.node-pulse-splash .node-pulse-stage {
+  top:-7dvh!important; /* breathing room for the brand signature below */
+}
+html[data-inj-page="index"] body #bootSplash .node-capital-brand{
+  position:absolute!important;
+  z-index:2!important;
+  left:8px!important;
+  right:8px!important;
+  bottom:max(58px,calc(env(safe-area-inset-bottom) + 49px))!important;
+  width:min(calc(100% - 16px),395px)!important;
+  aspect-ratio:668/199!important;
+  height:auto!important;
+  margin:0 auto!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  pointer-events:none!important;
+  isolation:isolate!important;
+  filter:drop-shadow(0 0 12px rgba(228,163,70,.08))!important;
+}
+html[data-inj-page="index"] body #bootSplash .node-capital-brand img{
+  position:absolute!important;
+  inset:0!important;
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  object-fit:contain!important;
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  user-select:none!important;
+  -webkit-user-drag:none!important;
+  backface-visibility:hidden!important;
+  -webkit-backface-visibility:hidden!important;
+}
+html[data-inj-page="index"] body #bootSplash .node-capital-monogram{
+  clip-path:inset(22% 69.5% 1% 5%)!important;
+  animation:jn-capital-monogram .65s 1.45s cubic-bezier(.15,.8,.2,1) both!important;
+  transform-origin:20% 55%!important;
+}
+html[data-inj-page="index"] body #bootSplash .node-capital-name{
+  clip-path:inset(34% 9% 32% 30%);
+  animation:jn-capital-typing 1.55s 2.02s steps(13,end) both!important;
+}
+html[data-inj-page="index"] body #bootSplash .node-capital-tagline{
+  clip-path:inset(68% 0 11% 29%)!important;
+  animation:jn-capital-subline .65s 3.86s ease-out both!important;
+}
+@keyframes jn-capital-monogram{
+  from{opacity:0;transform:translateY(9px) scale(.97)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+@keyframes jn-capital-typing{
+  from{opacity:1;clip-path:inset(34% 70% 32% 30%)}
+  to{opacity:1;clip-path:inset(34% 9% 32% 30%)}
+}
+@keyframes jn-capital-subline{
+  from{opacity:0;transform:translateY(5px)}
+  to{opacity:1;transform:translateY(0)}
+}
+@media(max-width:430px){
+  html[data-inj-page="index"] body #bootSplash .node-capital-brand{
+    left:3px!important;right:3px!important;
+    width:min(calc(100% - 6px),395px)!important;
+    bottom:max(55px,calc(env(safe-area-inset-bottom) + 45px))!important;
+  }
+}
+@media(max-height:480px) and (orientation:landscape){
+  html[data-inj-page="index"] body #bootSplash .node-pulse-stage{top:-2dvh!important}
+  html[data-inj-page="index"] body #bootSplash .node-capital-brand{
+    width:min(44vw,250px)!important;
+    left:auto!important;
+    right:10px!important;
+    bottom:max(15px,env(safe-area-inset-bottom))!important;
+    margin:0!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  html[data-inj-page="index"] body #bootSplash .node-capital-brand img{
+    animation:none!important;
+    opacity:1!important;
+    transform:none!important;
+  }
+  html[data-inj-page="index"] body #bootSplash .node-capital-name{
+    clip-path:inset(34% 9% 32% 30%)!important;
+  }
+}

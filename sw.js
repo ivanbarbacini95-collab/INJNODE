@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.01.39-menu-header-clear';
+const CACHE_NAME = 'inj-node-v16.01.40-b-capital-intro';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160088',
@@ -20,6 +20,8 @@ const APP_SHELL = [
   './section-heading-harmony.css?v=160131',
   './unified-navigation.css?v=160138',
   './menu-header-clear.css?v=160139',
+  './intro-b-capital.css?v=160140',
+  './b-capital-group-brand.png',
   './section-heading-harmony.js?v=160131',
   './home-vitality.css?v=1.0.1',
   './home-vitality.js?v=160121',
