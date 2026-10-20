@@ -154,6 +154,7 @@
 <link rel="stylesheet" href="./menu-header-clear.css?v=160139">
 <link rel="stylesheet" href="./intro-b-capital.css?v=160142">
 <link rel="stylesheet" href="./wallet-edge-scroll-stability.css?v=160143">
+<link rel="stylesheet" href="./menu-accordion.css?v=160145">
 <script defer src="./section-heading-harmony.js?v=160131"></script>
 <script defer src="./scroll-edges.js?v=160143"></script>
 </head>
@@ -249,9 +250,15 @@
 <div class="menu-average-input"><span>$</span><input aria-label="Prezzo medio di acquisto INJ in dollari" id="averageBuyPrice" inputmode="decimal" min="0" placeholder="0,00" step="0.0001" type="number"/></div>
 </div>
 </section>
-<section aria-label="Preferenze" class="menu-section">
-<div class="menu-section-heading"><span>Preferenze</span><small>Personalizza INJ Node</small></div>
-<div class="menu-settings-grid">
+<!-- v16.01.45: Settings groups share native accessible disclosure behavior. -->
+<details class="menu-accordion menu-accordion-preferences" id="menuPreferencesAccordion" name="inj-settings-accordion">
+  <summary class="menu-accordion-trigger">
+    <span aria-hidden="true" class="menu-accordion-symbol"><svg viewBox="0 0 24 24"><path d="M4 7h16M7 12h10M9 17h6"></path><circle cx="9" cy="7" r="2"></circle><circle cx="15" cy="12" r="2"></circle><circle cx="12" cy="17" r="2"></circle></svg></span>
+    <span class="menu-accordion-copy"><strong>Preferenze</strong><small>Valuta, privacy, tema e lingua</small></span>
+    <svg aria-hidden="true" class="menu-accordion-caret" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"></path></svg>
+  </summary>
+  <div class="menu-accordion-content">
+    <div class="menu-settings-grid">
 <button aria-label="Cambia valuta" class="menu-action menu-setting" id="currencyButton" title="Cambia valuta" type="button">
 <span aria-hidden="true" class="menu-action-icon"><svg viewbox="0 0 24 24"><circle cx="12" cy="12" r="8"></circle><path d="M15.5 8.7c-.8-.6-1.9-.9-3.2-.9-1.8 0-3 .8-3 2 0 3.2 6.1 1.5 6.1 4.5 0 1.2-1.2 2-3.1 2-1.5 0-2.7-.4-3.7-1.1M12 5.8v12.4"></path></svg></span>
 <span class="menu-action-copy"><strong>Valuta</strong><small>USD / EUR</small></span>
@@ -304,8 +311,7 @@
 </div>
 </div>
 </div>
-</section>
-<div class="menu-language-card" id="languageControl" aria-label="Lingua interfaccia">
+    <div class="menu-language-card" id="languageControl" aria-label="Lingua interfaccia">
   <span aria-hidden="true" class="menu-action-icon menu-language-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"></circle><path d="M4 12h16M12 4c2.4 2.2 3.6 4.9 3.6 8S14.4 17.8 12 20M12 4c-2.4 2.2-3.6 4.9-3.6 8s1.2 5.8 3.6 8"></path></svg></span>
   <span class="menu-language-copy"><strong>Lingua</strong><small>Interfaccia</small></span>
   <div class="menu-language-options" role="group" aria-label="Lingua">
@@ -314,7 +320,16 @@
   </div>
   <span class="menu-language-value" id="languageValue">IT</span>
 </div>
-<button aria-label="Resetta storico grafici Treasury" class="menu-action menu-treasury-reset-card" id="treasuryResetMenuButton" title="Reset grafici Treasury" type="button">
+  </div>
+</details>
+<details class="menu-accordion menu-accordion-advanced" id="menuAdvancedAccordion" name="inj-settings-accordion">
+  <summary class="menu-accordion-trigger">
+    <span aria-hidden="true" class="menu-accordion-symbol"><svg viewBox="0 0 24 24"><path d="M12 3v3m0 12v3M4.2 7.5l2.6 1.5m10.4 6 2.6 1.5M3 12h3m12 0h3M4.2 16.5l2.6-1.5m10.4-6 2.6-1.5"></path><circle cx="12" cy="12" r="4"></circle></svg></span>
+    <span class="menu-accordion-copy"><strong>Avanzate</strong><small>Storico, rete e installazione</small></span>
+    <svg aria-hidden="true" class="menu-accordion-caret" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"></path></svg>
+  </summary>
+  <div class="menu-accordion-content menu-accordion-advanced-content">
+    <button aria-label="Resetta storico grafici Treasury" class="menu-action menu-treasury-reset-card" id="treasuryResetMenuButton" title="Reset grafici Treasury" type="button">
 <span aria-hidden="true" class="menu-action-icon"><svg viewbox="0 0 24 24"><path d="M5 7h14M9 7V5h6v2M8 10v7M12 10v7M16 10v7M7 7l1 13h8l1-13"></path></svg></span>
 <span class="menu-action-copy"><strong>Reset grafici Treasury</strong><small>Ricomincia lo storico da adesso</small></span>
 <svg aria-hidden="true" class="menu-action-chevron menu-action-forward" viewbox="0 0 24 24"><path d="m10 7 5 5-5 5"></path></svg>
@@ -330,6 +345,8 @@
 <span class="menu-action-copy"><strong>Installa INJ Node</strong><small id="installAppHint">Aggiungi l’app al dispositivo</small></span>
 <svg aria-hidden="true" class="menu-action-chevron menu-action-forward" viewbox="0 0 24 24"><path d="m10 7 5 5-5 5"></path></svg>
 </button>
+  </div>
+</details>
 <div class="menu-meta">
 <span>Wallet</span><b id="lastUpdate">—</b>
 <span>Dati</span><b id="menuDataFreshness">In attesa…</b>
