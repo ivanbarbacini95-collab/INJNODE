@@ -62,7 +62,7 @@ var simValue=localStorage.getItem('inj_node_cc_studio_sim_value_v1')||'',convert
 function persist(){try{localStorage.setItem(STORAGE,JSON.stringify(doc))}catch(_){}}
 function active(){return doc.presets.find(function(p){return p.id===doc.active})||doc.presets[0]}
 function currency(){try{return localStorage.getItem('inj_monitor_currency')==='EUR'?'EUR':'USD'}catch(_){return 'USD'}}
-function fx(){var x=Number(localStorage.getItem('inj_monitor_eur_rate'));var fallback=typeof state!=='undefined'?Number(state.eur):NaN;return x>0&&x<10?x:fallback>0&&fallback<10?fallback:NaN}
+function fx(){var x=Number(localStorage.getItem('inj_monitor_eur_rate'));var fallback=typeof state!=='undefined'?Number(state.eur):NaN;return x>0&&x<10?x:fallback>0&&fallback<10&&Math.abs(fallback-1)>.00001?fallback:NaN}
 function n(v){var x=Number(v);return Number.isFinite(x)?x:0}
 function fmt(v,d){return new Intl.NumberFormat('it-IT',{maximumFractionDigits:d===undefined?4:d}).format(n(v))}
 function money(usd,decimals){var eur=currency()==='EUR';var rate=eur?fx():1;if(!(rate>0))return '—';return new Intl.NumberFormat(eur?'it-IT':'en-US',{style:'currency',currency:eur?'EUR':'USD',maximumFractionDigits:decimals===undefined?2:decimals,minimumFractionDigits:2}).format(n(usd)*rate)}
@@ -411,7 +411,9 @@ function update(){
  set('lastSync',stamp?new Date(stamp).toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'}):'—');
  var status=document.getElementById('ccStudioStatus');status.textContent=marketFresh?'MERCATO LIVE':'MERCATO IN ATTESA';
  setSign('pnl',gain);setSign('daily',daily);setSign('priceChange',n(st.change24));
- if(privateOn()){grid.querySelectorAll('[data-cc-bind]').forEach(function(el){
+ var confidential=privateOn();
+ grid.querySelectorAll('.cc-studio-tile[data-widget="validators"] .cc-studio-body, .cc-studio-tile[data-widget="timeline"] .cc-studio-body').forEach(function(el){el.classList.toggle('cc-studio-private',confidential)});
+ if(confidential){grid.querySelectorAll('[data-cc-bind]').forEach(function(el){
   var safe=['price','priceChange','marketLow','marketHigh','bestBid','bestAsk','spread','marketStatus','walletStatus','lastSync','depthSource','unitSymbol','unitCode'];
   el.classList.toggle('cc-studio-private',!safe.includes(el.dataset.ccBind));
  });}
