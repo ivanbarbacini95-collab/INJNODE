@@ -7738,7 +7738,7 @@ function updateInstallUi() {
 
 function registerPwa() {
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js?v=16.01.26',{updateViaCache:'none'}).then(registration=>registration.update()).catch(() => {}), { once: true });
+    window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js?v=16.01.27',{updateViaCache:'none'}).then(registration=>registration.update()).catch(() => {}), { once: true });
   }
   updateInstallUi();
 }
