@@ -80,7 +80,12 @@ function parsePrice(input){
 }
 function num(n){const v=Number(n);return n===null||n===undefined||!Number.isFinite(v)||v<0?NaN:v}
 function fmtQty(n){return new Intl.NumberFormat(lang()==='en'?'en-US':'it-IT',{maximumFractionDigits:4}).format(n)}
-function money(n){return new Intl.NumberFormat(lang()==='en'?'en-US':'it-IT',{style:'currency',currency:curr(),minimumFractionDigits:2,maximumFractionDigits:2}).format(n)}
+function money(n){
+ const currency=curr();
+ return new Intl.NumberFormat(currency==='EUR'?'it-IT':'en-US',{
+  style:'currency',currency,minimumFractionDigits:2,maximumFractionDigits:2
+ }).format(n);
+}
 function getRows(){
  let wallets=[],summaries={};
  try{wallets=JSON.parse(read('inj_monitor_wallets_v1')||'[]');summaries=JSON.parse(read('inj_monitor_summaries_v1')||'{}')}catch(_){}
