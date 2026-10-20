@@ -23,10 +23,7 @@ button,input{font:inherit;color:inherit}button{cursor:pointer}button:focus-visib
 .wealth-input-shell input{border:0;background:transparent;outline:none!important;box-shadow:none!important;min-width:0;width:calc(100% - 110px);max-width:390px;text-align:center;font-size:clamp(37px,7vw,75px);font-weight:850;letter-spacing:-.065em;line-height:1.2;font-variant-numeric:tabular-nums;appearance:none;border-radius:0;padding:0}
 .wealth-input-shell input::placeholder{color:var(--muted);opacity:.55}.wealth-unit{color:var(--muted);font-weight:750;font-size:13px;align-self:flex-end;margin-bottom:13px}
 .wealth-control>p{margin:11px 0 0;color:var(--muted);font-size:12px}
-.wealth-scope{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;margin:29px auto 12px}
-.wealth-scope button{border:1px solid var(--line);border-radius:999px;padding:9px 18px;background:transparent;color:var(--muted);font-size:12px;font-weight:750;touch-action:manipulation}
-.wealth-scope button.active{color:var(--text);background:var(--accent-soft,var(--panel));border-color:var(--accent)}
-.wealth-subcontext{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:6px 12px;text-align:center;min-height:27px;font-size:12px;color:var(--muted)}
+.wealth-subcontext{margin-top:29px;display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:6px 12px;text-align:center;min-height:27px;font-size:12px;color:var(--muted)}
 .wealth-status{font-size:10px;letter-spacing:.075em;font-weight:800;color:var(--accent)}
 .wealth-results{width:100%;margin:clamp(22px,4vh,40px) auto 0;text-align:center}
 .wealth-result{padding:clamp(17px,3vh,28px) 0}.wealth-result-label{font-size:11px;color:var(--muted);font-weight:800;letter-spacing:.15em;margin:0 0 10px}
@@ -38,12 +35,12 @@ button,input{font:inherit;color:inherit}button{cursor:pointer}button:focus-visib
 @media(max-width:750px),(pointer:coarse) and (max-width:1100px){
 .wealth-header{padding-top:max(65px,calc(env(safe-area-inset-top,0px) + 15px));min-height:125px}
 .wealth-eyebrow{display:none}.wealth-main{padding-top:27px}.wealth-control{margin-top:27px}
-.wealth-scope{margin-top:23px}.wealth-results{margin-top:18px}.wealth-result{padding:22px 0}
+.wealth-subcontext{margin-top:23px}.wealth-results{margin-top:18px}.wealth-result{padding:22px 0}
 }
 @media(max-width:390px){
 .wealth-shell{padding-inline:12px}.wealth-input-shell{gap:4px}
 .wealth-input-shell input{width:calc(100% - 80px);font-size:clamp(33px,10vw,48px)}
-.wealth-currency{font-size:28px}.wealth-unit{font-size:11px}.wealth-scope button{padding-inline:11px}
+.wealth-currency{font-size:28px}.wealth-unit{font-size:11px}
 .wealth-primary .wealth-amount{font-size:clamp(32px,9vw,45px)}.wealth-secondary .wealth-amount{font-size:clamp(29px,8vw,40px)}
 }
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
