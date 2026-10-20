@@ -113,3 +113,14 @@ html[data-inj-page="index"] body #entryGate #entryTreasuryButton strong{
  html[data-inj-page="index"] body #entryGate
  #entryTreasuryButton .inj-tile-scene *{animation:none!important}
 }
+
+/* v16.01.23 — The Wealth launcher is an anchor unlike most Home buttons.
+   Remove browser default link underline across all themes and input states. */
+html[data-inj-page="index"] body #entryGate #entryVisualizeWealthButton,
+html[data-inj-page="index"] body #entryGate #entryVisualizeWealthButton:is(:link,:visited,:hover,:active,:focus-visible),
+html[data-inj-page="index"] body #entryGate #entryVisualizeWealthButton > span:not(.entry-action-icon):not(.inj-tile-scene),
+html[data-inj-page="index"] body #entryGate #entryVisualizeWealthButton strong{
+  text-decoration:none!important;
+  text-decoration-line:none!important;
+  -webkit-text-decoration:none!important;
+}
