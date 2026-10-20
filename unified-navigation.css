@@ -469,7 +469,7 @@ html[data-inj-page="index"] body:not(.boot-loading) > #bootSplash {
   clear:both!important;
   height:auto!important;
   min-height:100dvh!important;
-  margin-top:calc(-1 * var(--inj-dashboard-leading-space,0px))!important;
+  margin-top:calc(0px - var(--inj-dashboard-leading-space,0px))!important;
   padding-top:0!important;
   transform:none!important;
   -webkit-transform:none!important;
