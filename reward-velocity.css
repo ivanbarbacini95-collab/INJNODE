@@ -135,3 +135,10 @@ html[data-inj-page="live-rewards"] .reward-row.velocity-expanded .reward-velocit
   }
   html[data-inj-page="live-rewards"] .reward-velocity-beacon{opacity:.22}
 }
+
+/* Color identity follows the wallet container too (expanded-card outline). */
+html[data-inj-page="live-rewards"] .reward-row:nth-child(1){--velocity-color:color-mix(in srgb,var(--accent,#78ead0) 38%,#3be5ad)}
+html[data-inj-page="live-rewards"] .reward-row:nth-child(2){--velocity-color:color-mix(in srgb,var(--accent,#78ead0) 36%,#74b8ff)}
+html[data-inj-page="live-rewards"] .reward-row:nth-child(3){--velocity-color:color-mix(in srgb,var(--accent,#78ead0) 36%,#bd9aff)}
+html[data-inj-page="live-rewards"] .reward-row:nth-child(4){--velocity-color:color-mix(in srgb,var(--accent,#78ead0) 35%,#ffc575)}
+html[data-inj-page="live-rewards"] .reward-row:nth-child(5){--velocity-color:color-mix(in srgb,var(--accent,#78ead0) 36%,#ff93bb)}
