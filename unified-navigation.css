@@ -422,3 +422,63 @@ html[data-inj-page="index"] body:not(.boot-loading) > #bootSplash {
 }
 /* Desktop layout and the fixed Command Center remain unchanged beyond
    the existing section identity styling. */
+
+
+/* v16.01.37 — Dashboard document-origin repair.
+   Home, splash, and parked section hosts precede .app-shell in the DOM.
+   During Dashboard mode they MUST NOT reserve even one pixel of flow height.
+   Keep .app-shell in normal flow: turning it absolute breaks iPhone touch-scroll
+   boundary detection and can make long Dashboard pages unscrollable. */
+@media(max-width:900px){
+ html[data-inj-page="index"] body.dashboard-scroll-ready:not(.entry-gate-open):not(.dashboard-home-return):not(.entry-live-launch):not(.focus-display-open):not(.pulse-view-open):not(.live-charts-open){
+  display:block!important;
+  margin-top:0!important;
+  padding-top:0!important;
+ }
+ html[data-inj-page="index"] body.dashboard-scroll-ready:not(.entry-gate-open):not(.dashboard-home-return):not(.entry-live-launch)
+   > #bootSplash,
+ html[data-inj-page="index"] body.dashboard-scroll-ready:not(.entry-gate-open):not(.dashboard-home-return):not(.entry-live-launch)
+   > #entryGate,
+ html[data-inj-page="index"] body.dashboard-scroll-ready:not(.entry-gate-open):not(.dashboard-home-return):not(.entry-live-launch)
+   > #injHomeBrandFooter,
+ html[data-inj-page="index"] body.dashboard-scroll-ready:not(.entry-gate-open):not(.dashboard-home-return):not(.entry-live-launch)
+   > #injScrollProgress,
+ html[data-inj-page="index"] body.dashboard-scroll-ready:not(.entry-gate-open):not(.dashboard-home-return):not(.entry-live-launch)
+   > #performanceTimelineView:not(.open),
+ html[data-inj-page="index"] body.dashboard-scroll-ready:not(.entry-gate-open):not(.dashboard-home-return):not(.entry-live-launch)
+   > #converterView:not(.open){
+  display:none!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+  height:0!important;
+  min-height:0!important;
+  max-height:0!important;
+  margin:0!important;
+  padding:0!important;
+ }
+ html[data-inj-page="index"] body.dashboard-scroll-ready:not(.entry-gate-open):not(.dashboard-home-return):not(.entry-live-launch)
+   > .app-shell{
+  display:block!important;
+  position:relative!important;
+  inset:auto!important;
+  top:0!important;
+  left:auto!important;
+  right:auto!important;
+  bottom:auto!important;
+  float:none!important;
+  clear:both!important;
+  height:auto!important;
+  min-height:100dvh!important;
+  margin-top:calc(-1 * var(--inj-dashboard-leading-space,0px))!important;
+  padding-top:0!important;
+  transform:none!important;
+  -webkit-transform:none!important;
+ }
+ html[data-inj-page="index"] body.dashboard-scroll-ready:not(.entry-gate-open):not(.dashboard-home-return):not(.entry-live-launch)
+   > .app-shell > .topbar {
+  margin-top:0!important;
+  top:0!important;
+  transform:none!important;
+  -webkit-transform:none!important;
+ }
+}
