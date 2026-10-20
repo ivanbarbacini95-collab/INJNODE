@@ -186,7 +186,7 @@ function layout(){
  studio.classList.toggle('cc-studio-edit',editing);
  document.querySelector('[data-action="add"]').hidden=!editing;
  document.querySelector('[data-action="edit"]').textContent=editing?'Fine modifica':'Personalizza';
- setTimeout(function(){window.dispatchEvent(new Event('resize'))},35);
+ if(typeof state!=='undefined')state.lastDraw=0;
  update();
 }
 function drawCatalog(){
