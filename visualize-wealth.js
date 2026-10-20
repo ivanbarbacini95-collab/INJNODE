@@ -2,7 +2,9 @@
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
 const PREFIX='inj_node_visualize_wealth_price_';
+const SCENARIO='inj_node_visualize_wealth_scenario_v2';
 let previousCurrency='';
+let waitingForRate=false;
 const dict={
 it:{
  title:'Valore Potenziale',eyebrow:'SIMULATORE',
@@ -47,6 +49,23 @@ function formatPriceInput(value){
  return new Intl.NumberFormat(lang()==='en'?'en-US':'it-IT',{
   useGrouping:false,maximumFractionDigits:10
  }).format(value);
+}
+function savedScenario(){
+ try{
+  const data=JSON.parse(read(SCENARIO)||'null');
+  if(data && ['EUR','USD'].includes(data.currency)){
+   const price=Number(data.price);
+   if(Number.isFinite(price)&&price>=0&&price<=1e12)return {currency:data.currency,price};
+  }
+ }catch(_){}
+ return null;
+}
+function saveScenario(value,currency){
+ try{
+  const price=parsePrice(value);
+  if(Number.isFinite(price))localStorage.setItem(SCENARIO,JSON.stringify({currency,price}));
+  else localStorage.removeItem(SCENARIO);
+ }catch(_){}
 }
 function parsePrice(input){
  const s=String(input||'').trim().replace(/[\s\u00a0\u202f€$]/g,'');
@@ -98,21 +117,29 @@ function translate(){
 }
 function render(){
  const t=dict[lang()],unit=curr();translate();
- if(previousCurrency!==unit){
-  const former=previousCurrency;
-  const oldPrice=former?parsePrice($('wealthPrice').value):NaN;
+ if(previousCurrency!==unit||waitingForRate){
+  const prior=previousCurrency;
+  const existing=prior?parsePrice($('wealthPrice').value):NaN;
+  const scenario=savedScenario();
+  const source=prior&&Number.isFinite(existing)
+   ?{price:existing,currency:prior}:scenario;
   let nextValue=read(PREFIX+unit.toLowerCase()+'_v1')||'';
-  if(former&&Number.isFinite(oldPrice)){
-   // Convert the entered scenario; never simply relabel USD as EUR.
-   const converted=convertedPrice(oldPrice,former,unit);
-   nextValue=Number.isFinite(converted)?formatPriceInput(converted):'';
-   if(nextValue){
+  waitingForRate=false;
+  if(source){
+   const equivalent=convertedPrice(source.price,source.currency,unit);
+   if(Number.isFinite(equivalent)){
+    nextValue=formatPriceInput(equivalent);
     try{localStorage.setItem(PREFIX+unit.toLowerCase()+'_v1',nextValue)}catch(_){}
+   }else{
+    // Never mislabel a cached USD amount as EUR if the FX rate is missing.
+    nextValue='';
+    waitingForRate=true;
    }
   }
   previousCurrency=unit;
   $('wealthCurrency').textContent=unit==='EUR'?'€':'$';
   $('wealthPrice').value=nextValue;
+  if(nextValue&&source&&source.currency!==unit)saveScenario(nextValue,unit);
  }
  $('wealthPriceLabel').textContent=t.price+' · '+unit;
  const price=parsePrice($('wealthPrice').value);
@@ -131,11 +158,15 @@ function render(){
  $('wealthStaked').textContent=privateOn?'••••••':visible?money(staked*price):'—';
  $('wealthTotalDetail').textContent=privateOn?t.privacyNote:complete?fmtQty(total)+' INJ · '+t.totalBase:wallet?t.totalBase+' · '+t.incomplete:(all.rows.length?t.noSelected:t.noWallet);
  $('wealthStakedDetail').textContent=privateOn?t.privacyNote:complete?fmtQty(staked)+' INJ · '+t.stakeBase:t.stakeBase;
- $('wealthPriceHelp').textContent=$('wealthPrice').value&&!Number.isFinite(price)?t.invalid:t.help;
+ $('wealthPriceHelp').textContent=waitingForRate
+  ?(lang()==='en'?'Waiting for the EUR/USD exchange rate, or enter a price manually.':'In attesa del cambio EUR/USD, oppure inserisci un prezzo manualmente.')
+  :$('wealthPrice').value&&!Number.isFinite(price)?t.invalid:t.help;
 }
 $('wealthPrice').addEventListener('input',()=>{
  const key=PREFIX+curr().toLowerCase()+'_v1';
  try{if($('wealthPrice').value)localStorage.setItem(key,$('wealthPrice').value);else localStorage.removeItem(key)}catch(_){}
+ waitingForRate=false;
+ saveScenario($('wealthPrice').value,curr());
  render();
 });
 $('visualizeWealthBack').addEventListener('click',()=>{
