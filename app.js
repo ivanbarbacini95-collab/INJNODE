@@ -1304,11 +1304,19 @@ function entryPnlTimelineStorageKey() {
   return 'inj_node_daily_pnl_timeline_v1';
 }
 
+// Historical P/L days recorded at a local midnight are assigned their
+// original calendar date on upgrade; subsequent candles use UTC midnight.
+function normalizeEntryPnlDayStart(dayStart) {
+  const value = number(dayStart);
+  if (!(value > 0) || value % 86_400_000 === 0) return value;
+  const localDate = new Date(value);
+  return Date.UTC(localDate.getFullYear(), localDate.getMonth(), localDate.getDate());
+}
 function entryPnlTimelineDayLabel(dayStart, compact = false) {
   const date = new Date(number(dayStart));
   return date.toLocaleDateString('it-IT', compact
-    ? { day: '2-digit', month: 'short' }
-    : { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' });
+    ? { day: '2-digit', month: 'short', timeZone: 'UTC' }
+    : { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' });
 }
 
 function readEntryPnlTimeline(address) {
@@ -1318,7 +1326,7 @@ function readEntryPnlTimeline(address) {
     const rows = Array.isArray(all?.[address]) ? all[address] : [];
     return rows
       .map((row) => ({
-        dayStart: number(row?.dayStart),
+        dayStart: normalizeEntryPnlDayStart(row?.dayStart),
         openPrice: number(row?.openPrice),
         closePrice: number(row?.closePrice),
         baseTotal: number(row?.baseTotal),
@@ -1378,7 +1386,7 @@ function ensureEntryPnlTimelineRow() {
     timeline.inspectDay = 0;
   }
 
-  const bounds = entryLocalDayBounds();
+  const bounds = entryMarketDayBounds();
   const today = bounds.start;
   let current = timeline.rows.find((item) => number(item.dayStart) === today);
 
@@ -1493,18 +1501,18 @@ function updateEntryPnlTimelineTodayHero(current = null) {
   }
 
   if (rollover) {
-    const bounds = entryLocalDayBounds();
+    const bounds = entryMarketDayBounds();
     const remaining = Math.max(0, bounds.end - Date.now());
     const hours = Math.floor(remaining / 3_600_000);
     const minutes = Math.floor((remaining % 3_600_000) / 60_000);
-    rollover.textContent = `Chiude 00:00 · ${String(hours).padStart(2, '0')}h ${String(minutes).padStart(2, '0')}m`;
+    rollover.textContent = `Chiude 00:00 UTC · ${String(hours).padStart(2, '0')}h ${String(minutes).padStart(2, '0')}m`;
   }
 }
 
 function scheduleEntryPnlTimelineMidnightRollover() {
   const timeline = state.entryPnlTimeline;
   if (timeline.rolloverTimer) return;
-  const bounds = entryLocalDayBounds();
+  const bounds = entryMarketDayBounds();
   timeline.rolloverAt = bounds.end;
   const delay = Math.max(500, bounds.end - Date.now() + 350);
   timeline.rolloverTimer = window.setTimeout(async () => {
@@ -1512,7 +1520,7 @@ function scheduleEntryPnlTimelineMidnightRollover() {
     timeline.rolloverAt = 0;
     // Freeze yesterday exactly as the last known session value, then hydrate
     // the new local day opening price and create the fresh LIVE candle.
-    const newBounds = entryLocalDayBounds();
+    const newBounds = entryMarketDayBounds();
     timeline.rows.forEach((row) => {
       if (row.live && number(row.dayStart) < newBounds.start) row.live = false;
     });
@@ -1851,15 +1859,14 @@ function updateEntryPnlTimelineLive(forcePaint = false) {
   scheduleEntryPnlTimelineScale();
 }
 
-function entryLocalDayBounds(timestamp = Date.now()) {
-  const startDate = new Date(timestamp);
-  startDate.setHours(0, 0, 0, 0);
-  const endDate = new Date(startDate);
-  endDate.setDate(endDate.getDate() + 1);
-  return { start: startDate.getTime(), end: endDate.getTime() };
+// INJ/USDT trades 24/7; one daily session is midnight-to-midnight UTC.
+function entryMarketDayBounds(timestamp = Date.now()) {
+  const date = new Date(timestamp);
+  const start = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+  return { start, end: start + 86_400_000 };
 }
 
-function resetEntryPriceSession(dayStart = entryLocalDayBounds().start) {
+function resetEntryPriceSession(dayStart = entryMarketDayBounds().start) {
   state.entrySpark.points = [];
   state.entrySpark.loadedAt = 0;
   state.entrySpark.dayStart = dayStart;
@@ -1871,7 +1878,7 @@ function resetEntryPriceSession(dayStart = entryLocalDayBounds().start) {
 }
 
 function entrySparkPath(points) {
-  const bounds = entryLocalDayBounds();
+  const bounds = entryMarketDayBounds();
   const dayStart = number(state.entrySpark.dayStart) || bounds.start;
   const dayEnd = bounds.start === dayStart ? bounds.end : dayStart + 86_400_000;
   const rows = Array.isArray(points)
@@ -1879,7 +1886,16 @@ function entrySparkPath(points) {
         .filter((row) => number(row?.price) > 0 && number(row?.t) >= dayStart && number(row?.t) <= dayEnd)
         .sort((a, b) => number(a.t) - number(b.t))
     : [];
-  if (rows.length < 2) return { line: '', area: '', direction: 0, last: null };
+  if (rows.length < 2) {
+    if (!rows.length) return { line: '', area: '', direction: 0, last: null };
+    // At the exact start of a new day, show the real opening dot; the
+    // historical curve will grow from it as the exchange receives candles.
+    const row = rows[0];
+    const x = Math.max(0, Math.min(320, ((number(row.t) - dayStart) / (dayEnd - dayStart)) * 320));
+    const y = 75;
+    return { line: `M${x.toFixed(2)} ${y}`, area: '', direction: number(row.price) - number(state.entrySpark.openPrice),
+      last: [x, y], samples: [{ x, y, t: number(row.t), price: number(row.price) }], width: 320, height: 150 };
+  }
 
   // v15.83 — stronger mobile Y autoscale with protected top/bottom breathing room.
   // The true intraday low/high always define the scale, then a dynamic margin
@@ -1925,7 +1941,7 @@ function entrySparkPath(points) {
 
 function entrySparkTimeLabel(timestamp) {
   const date = new Date(number(timestamp));
-  return date.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+  return date.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });
 }
 
 function hideEntrySparkInspector() {
@@ -2086,7 +2102,7 @@ function renderEntryAtGlance() {
 }
 
 async function loadEntrySparkline(force = false) {
-  const bounds = entryLocalDayBounds();
+  const bounds = entryMarketDayBounds();
   const sameDay = number(state.entrySpark.dayStart) === bounds.start;
   if (!sameDay) resetEntryPriceSession(bounds.start);
   if (state.entrySpark.loading) return;
@@ -2099,19 +2115,30 @@ async function loadEntrySparkline(force = false) {
   renderEntryAtGlance();
   try {
     const end = Date.now();
-    const data = await fetchJson(`https://api.binance.com/api/v3/klines?symbol=INJUSDT&interval=3m&startTime=${Math.floor(bounds.start)}&endTime=${Math.floor(end)}&limit=500`, 9000);
-    const rows = Array.isArray(data) ? data.filter((row) => number(row?.[4]) > 0) : [];
+    const data = await fetchJson(`https://api.binance.com/api/v3/klines?symbol=INJUSDT&interval=3m&startTime=${bounds.start}&endTime=${end}&limit=500`, 9000);
+    // A pending request must not redraw yesterday after midnight UTC.
+    if (entryMarketDayBounds().start !== bounds.start) return;
+    const rows = Array.isArray(data) ? data.filter((row) => number(row?.[4]) > 0 && number(row?.[0]) < end) : [];
     if (rows.length) {
       const openPrice = number(rows[0]?.[1]);
       state.entrySpark.dayStart = bounds.start;
       state.entrySpark.openPrice = openPrice > 0 ? openPrice : number(rows[0]?.[4]);
       const points = [{ t: bounds.start, price: state.entrySpark.openPrice, live: false }];
       rows.forEach((row) => {
-        const t = Math.min(end, number(row?.[6]) || number(row?.[0]) || end);
+        const closeAt = number(row?.[6]);
+        // Binance reports the end of an unfinished candle in the future;
+        // never plot historical values beyond the current real timestamp.
+        const t = Math.min(end, closeAt > 0 ? closeAt : number(row?.[0]));
         const price = number(row?.[4]);
-        if (price > 0) points.push({ t, price, live: false });
+        if (price > 0 && t > bounds.start && t > number(points.at(-1)?.t)) {
+          points.push({ t, price, live: false });
+        }
       });
-      if (state.price > 0) points.push({ t: end, price: state.price, live: true });
+      const current = number(state.price) > 0 ? number(state.price) : number(rows.at(-1)?.[4]);
+      if (current > 0) {
+        if (points.at(-1)?.t === end) points.pop();
+        points.push({ t: end, price: current, live: true });
+      }
       state.entrySpark.points = points;
       state.entrySpark.lastLiveSampleAt = end;
       state.entrySpark.loadedAt = end;
@@ -2120,8 +2147,13 @@ async function loadEntrySparkline(force = false) {
     console.warn('Grafico Price Home non disponibile', error);
   } finally {
     state.entrySpark.loading = false;
-    renderEntryAtGlance();
-    renderEntryPnlTimeline();
+    if (entryMarketDayBounds().start !== bounds.start) {
+      resetEntryPriceSession(entryMarketDayBounds().start);
+      void loadEntrySparkline(true);
+    } else {
+      renderEntryAtGlance();
+      renderEntryPnlTimeline();
+    }
   }
 }
 
@@ -2179,55 +2211,8 @@ function pulseDashboardReveal() {
   });
 }
 
-// v16.01.38 — Compare the *visible back button* with the Home menu
-// baseline. Measuring only .app-shell missed large space inside its header.
-// Keep the Dashboard in native document flow: a bounded negative margin
-// corrects a WebKit/PWA layout offset without locking scroll or zoom.
-let dashboardTopCheckFrame = 0;
-let dashboardHomeNavigationTop = null;
-function rememberDashboardHomeNavigationTop() {
-  const gate = document.getElementById('entryGate');
-  const homeButton = document.getElementById('entryMenuButton');
-  if (!gate?.classList.contains('visible') || !homeButton) return;
-  const rect = homeButton.getBoundingClientRect();
-  const top = rect.top + (window.scrollY || 0);
-  // An absolute Home button is measurable even when the Home was scrolled.
-  // Ignore outliers from an open drawer or a fixed/immersive overlay.
-  if (rect.height >= 24 && Number.isFinite(top) && top >= 35 && top <= 155)
-    dashboardHomeNavigationTop = Math.round(top);
-}
-function reconcileDashboardTopOrigin() {
-  if (dashboardTopCheckFrame) return;
-  dashboardTopCheckFrame = requestAnimationFrame(() => {
-    dashboardTopCheckFrame = 0;
-    if (!matchMedia('(max-width:900px)').matches) return;
-    const body = document.body;
-    const gate = document.getElementById('entryGate');
-    if (!body.classList.contains('dashboard-scroll-ready') ||
-        body.classList.contains('entry-gate-open') ||
-        body.classList.contains('dashboard-home-return') ||
-        body.classList.contains('entry-live-launch') ||
-        (gate?.classList.contains('visible') && gate.getAttribute('aria-hidden') === 'false')) return;
-    const shell = document.querySelector('body > .app-shell');
-    const back = document.getElementById('dashboardHomeButton');
-    const header = shell?.querySelector(':scope > .topbar');
-    if (!shell || !header || !back || !back.getClientRects().length) return;
-
-    const previous = Number.parseFloat(body.style.getPropertyValue('--inj-dashboard-leading-space')) || 0;
-    const pad = Number.parseFloat(getComputedStyle(header).paddingTop) || 0;
-    // Keep clear of the iPhone status bar. The Home button is the most
-    // accurate target; use a bounded safe-area fallback after a cold restore.
-    const fallbackTop = Math.max(60, Math.min(110, pad + 7));
-    const targetTop = dashboardHomeNavigationTop ?? fallbackTop;
-    // Compensate for the margin applied on the previous measurement.
-    const originalButtonTop = back.getBoundingClientRect().top + (window.scrollY || 0) + previous;
-    if (!Number.isFinite(originalButtonTop)) return;
-    const excess = originalButtonTop - targetTop;
-    const trim = excess > 14 && excess < 430 ? Math.round(excess) : 0;
-    if (Math.abs(previous - trim) > 1)
-      body.style.setProperty('--inj-dashboard-leading-space', trim + 'px');
-  });
-}
+// The canonical header inset replaces the old post-paint top measurement.
+// The Dashboard stays in normal document flow at a stable scroll origin.
 
 // v16.00.16 — Dashboard scroll self-heal.
 // iOS/WebKit can occasionally restore the Dashboard while a transient Home/menu
@@ -2271,7 +2256,9 @@ function healDashboardScrollState({ force = false } = {}) {
 
   body.classList.add('dashboard-scroll-ready');
   root.classList.remove('drawer-open');
-  reconcileDashboardTopOrigin();
+  // Header baseline comes solely from the shared responsive CSS.
+  // Do not apply a new negative margin after the Dashboard has painted.
+  body.style.removeProperty('--inj-dashboard-leading-space');
 
   // Defensive cleanup for an interrupted transition / bfcache restore.
   for (const node of [body, root, document.scrollingElement]) {
@@ -2295,7 +2282,6 @@ function showEntryGate({ modeReturn = false } = {}) {
   if (!gate) return;
   document.body.classList.remove('dashboard-scroll-ready');
   document.body.style.removeProperty('--inj-dashboard-leading-space');
-  dashboardHomeNavigationTop = null;
   state.currentView = 'home';
   renderEntryGate();
   loadEntrySparkline(false);
@@ -2325,7 +2311,6 @@ function closeEntryGate({ revealDashboard = true } = {}) {
     gate.setAttribute('aria-hidden', 'true');
     document.body.classList.remove('entry-gate-open');
     if (revealDashboard) {
-      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
       healDashboardScrollState({ force: true });
     }
 
@@ -2349,7 +2334,6 @@ function activateEntrySelection() {
 
 function enterDashboardFromGate() {
   if (state.currentView !== 'home' || !modeLaunchAllowed()) return;
-  rememberDashboardHomeNavigationTop();
   activateEntrySelection();
 
   // v16.00.40 — Dashboard owns the native document scroller as soon as the
@@ -2362,6 +2346,14 @@ function enterDashboardFromGate() {
   document.body.classList.remove('drawer-open', 'menu-overlay-open', 'chart-overlay-open');
   document.documentElement.classList.remove('drawer-open');
 
+  // Normalize the native scroll before revealing Dashboard, never 380ms later.
+  const scroller = document.scrollingElement || document.documentElement;
+  const formerScrollBehavior = scroller.style.scrollBehavior;
+  scroller.style.scrollBehavior = 'auto';
+  scroller.scrollTop = 0;
+  window.scrollTo(0, 0);
+  scroller.style.scrollBehavior = formerScrollBehavior;
+  document.body.style.removeProperty('--inj-dashboard-leading-space');
   state.currentView = 'dashboard';
   document.body.classList.add('dashboard-scroll-ready');
   pulseDashboardReveal();
@@ -4487,7 +4479,7 @@ function updateMarket(next) {
   // frame without manufacturing extra historical samples.
   if ($('entryGate')?.classList.contains('visible')) {
     const now = Date.now();
-    const bounds = entryLocalDayBounds(now);
+    const bounds = entryMarketDayBounds(now);
     if (number(state.entrySpark.dayStart) !== bounds.start) {
       resetEntryPriceSession(bounds.start);
       void loadEntrySparkline(true);
