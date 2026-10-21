@@ -8,6 +8,7 @@ let walletScope=read('inj_node_visualize_wealth_scope_v2')==='all'?'all':'select
 let spotUsd=NaN;
 let nextSpotCheck=0;
 let spotLoading=false;
+let manualPriceTouched=false;
 const missingWalletRequests=new Map();
 const multiAprCache=new Map();
 let waitingForRate=false;
@@ -386,6 +387,8 @@ function translate(){
 }
 function render(){
  const t=dict[lang()],unit=curr();translate();
+ const all=getRows();
+ refreshSpotPrice();
  if(previousCurrency!==unit||waitingForRate){
   const prior=previousCurrency;
   const existing=prior?parsePrice($('wealthPrice').value):NaN;
@@ -411,16 +414,25 @@ function render(){
   if(nextValue&&source&&source.currency!==unit)saveScenario(nextValue,unit);
  }
  $('wealthPriceLabel').textContent=t.price+' · '+unit;
+ if(!manualPriceTouched && !$('wealthPrice').value && !savedScenario() && all.priceUsd>0){
+  const spotEquivalent=convertedPrice(all.priceUsd,'USD',unit);
+  if(Number.isFinite(spotEquivalent))$('wealthPrice').value=formatPriceInput(spotEquivalent);
+ }
  const price=parsePrice($('wealthPrice').value);
- const all=getRows();
- if(walletScope==='all')syncMissingWallets(all.rows);
+ syncMissingWallets(walletScope==='all'?all.rows:all.rows.filter(row=>row.address===all.selected));
  const wallet=walletScope==='all'?aggregateWallets(all.rows):all.rows.find(r=>r.address===all.selected);
- $('wealthScopeText').textContent=walletScope==='all'?(lang()==='en'?'ALL · ':'TUTTI · ')+all.rows.length:(lang()==='en'?'SINGLE':'SINGOLO');
- $('wealthScopeToggle').setAttribute('aria-pressed',String(walletScope==='all'));
- $('wealthScopeToggle').dataset.scope=walletScope;
- $('wealthScopeToggle').title=walletScope==='all'?t.scopeSelected:t.scopeAll;
- $('wealthScopeToggle').setAttribute('aria-label',(walletScope==='all'?t.scopeAll:t.scopeSelected)+(walletScope==='all'?' · '+all.rows.length:''));
- $('wealthScopeToggle').disabled=all.rows.length===0;
+ const selectedButton=$('wealthScopeSelected');
+ const allButton=$('wealthScopeAll');
+ selectedButton.textContent=t.selectedTab;
+ allButton.textContent=t.allTab;
+ for(const [button,scope] of [[selectedButton,'selected'],[allButton,'all']]){
+  const active=walletScope===scope;
+  button.classList.toggle('is-active',active);
+  button.setAttribute('aria-pressed',String(active));
+  button.disabled=all.rows.length===0;
+ }
+ selectedButton.setAttribute('aria-label',t.scopeSelected);
+ allButton.setAttribute('aria-label',t.scopeAll+' · '+all.rows.length);
  const complete=ready(wallet);
  const total=complete?wallet.total:NaN;
  const staked=complete?wallet.staked:NaN;
@@ -441,8 +453,16 @@ function render(){
   ?(lang()==='en'?'Waiting for the EUR/USD exchange rate, or enter a price manually.':'In attesa del cambio EUR/USD, oppure inserisci un prezzo manualmente.')
   :$('wealthPrice').value&&!Number.isFinite(price)?t.invalid:t.help;
 }
-$('wealthScopeToggle').addEventListener('click',()=>{walletScope=walletScope==='selected'?'all':'selected';try{localStorage.setItem('inj_node_visualize_wealth_scope_v1',walletScope)}catch(_){}render()});
+function selectScope(scope){
+ if(scope!=='selected'&&scope!=='all')return;
+ walletScope=scope;
+ try{localStorage.setItem('inj_node_visualize_wealth_scope_v2',scope)}catch(_){}
+ render();
+}
+$('wealthScopeSelected').addEventListener('click',()=>selectScope('selected'));
+$('wealthScopeAll').addEventListener('click',()=>selectScope('all'));
 $('wealthPrice').addEventListener('input',()=>{
+ manualPriceTouched=true;
  const key=PREFIX+curr().toLowerCase()+'_v1';
  try{if($('wealthPrice').value)localStorage.setItem(key,$('wealthPrice').value);else localStorage.removeItem(key)}catch(_){}
  waitingForRate=false;
