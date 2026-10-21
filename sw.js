@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.04.01-intelligence';
+const CACHE_NAME = 'inj-node-v16.04.02-intelligence-data-check';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160088',
@@ -63,7 +63,7 @@ const APP_SHELL = [
   './treasury-ownership.css?v=160099',
   './market.html',
   './market-intelligence.css?v=160401',
-  './market-intelligence.js?v=160401',
+  './market-intelligence.js?v=160402',
   './market-dominance.css?v=160324',
   './market-dominance.js?v=160324',
   './comparison.html',
@@ -71,10 +71,10 @@ const APP_SHELL = [
   './comparison.css?v=160095',
   './comparison-ab.css?v=160095',
   './comparison.js?v=160095',
-  './market-portal.js?v=160108',
+  './market-portal.js?v=160402',
   './market-lang.js?v=160082',
   './market.css?v=160082',
-  './market.js?v=160108',
+  './market.js?v=160402',
   './market-pro.css?v=160108',
   './market-pro.js?v=160108',
   './manifest.webmanifest?v=16.00.14',

@@ -7,8 +7,34 @@ if(!$('injIntelRoot'))return;
 const API='https://api.coingecko.com/api/v3';
 const LCD=['https://sentry.lcd.injective.network:443','https://lcd.injective.network','https://1rpc.io/inj-lcd'];
 const ID='injective-protocol', DAY=86400000, WINDOW={1:DAY,7:7*DAY,30:30*DAY,365:365*DAY};
-const HISTORY={dominance:'injnode_inj_dominance_history_v1',staking:'inj_node_intel_staking_v1',burn:'inj_node_intel_burn_v1'};
+const HISTORY={dominance:'inj_node_intel_dom_verified_v2',staking:'inj_node_intel_staking_v1',burn:'inj_node_intel_burn_v1'};
 const MEM='inj_node_intel_market_snapshot_v1';
+const CHAIN_MEM='inj_node_intel_chain_snapshot_v2',CHART_MEM='inj_node_intel_chart_cache_v2';
+const retryAfterFailure=45000;
+const dataStamp=()=>new Date().toLocaleTimeString(en()?'en-US':'it-IT');
+function marketFromExisting(){
+ try{
+  const state=window.INJ_MARKET_READONLY_SNAPSHOT?.();
+  if(!state)return false;
+  const old=market||{coins:{},global:null};
+  let changed=false;
+  const coins={...old.coins};
+  for(const c of [state.injective,state.bitcoin,state.ethereum]){
+   if(c&&c.id&&pos(c.current_price)){
+    if(!coins[c.id]||state.updated>marketAt){coins[c.id]=c;changed=true}
+   }
+  }
+  const global=state.global?.total_market_cap?.usd?state.global:old.global;
+  if(!market&&Object.keys(coins).length)changed=true;
+  if(changed||global!==old.global){
+   market={coins,global};
+   if(Number.isFinite(state.updated)&&state.updated>0)marketAt=Math.max(marketAt,state.updated);
+   return true;
+  }
+ }catch(_){}
+ return false;
+}
+
 const RATE=180000, CHAIN_RATE=300000;
 const read=k=>{try{return localStorage.getItem(k)}catch(_){return null}};
 const save=(k,v)=>{try{localStorage.setItem(k,typeof v==='string'?v:JSON.stringify(v))}catch(_){}};
@@ -39,6 +65,15 @@ try{
  const old=JSON.parse(read(MEM)||'null');
  if(old?.data&&now()-old.at<3600000){market=old.data;marketAt=old.at;}
 }catch(_){}
+try{
+ const cached=JSON.parse(read(CHAIN_MEM)||'null');
+ if(cached?.at&&now()-cached.at<DAY&&cached.data){
+  for(const name of ['bonded','ratio','validators','burn','tvl']){
+   const v=Number(cached.data[name]);if(Number.isFinite(v)&&v>=0)chain[name]=v;
+  }
+  chainAt=cached.at;
+ }
+}catch(_){}
 function append(kind,item){
  const a=dataHistory[kind];
  const last=a.at(-1);
@@ -50,7 +85,7 @@ function append(kind,item){
 function normalizedBurn(j){
  // Older and newer indexer versions use different response fields. Do not
  // guess scale for ambiguous numbers: convert only documented atomic nINJ.
- const raw=j?.total_burnt??j?.totalBurnt??j?.total_inj_burnt;
+ const raw=j?.total_burnt??j?.totalBurnt??j?.total_inj_burnt??j?.totalInjBurnt??j?.data?.total_inj_burnt;
  if(typeof raw!=='string'||!/^\d+$/.test(raw))return NaN;
  const value=Number(raw)/1e18;
  return Number.isFinite(value)&&value>1&&value<1e9?value:NaN;
@@ -93,33 +128,46 @@ function updateBar(){
  text('injIntelTVL',compact(chain.tvl));
  $('injIntelDaily')?.classList.toggle('is-down',Number(coin?.price_change_percentage_24h)<0);
  const last=Math.max(marketAt,chainAt);
- text('injIntelUpdate',last?tr('Dati aggiornati · ','Data updated · ')+time(last):tr('In attesa dei dati','Waiting for data'));
+ text('injIntelUpdate',last?(now()-last>RATE*2?tr('Ultima rilevazione salvata · ','Last saved reading · '):tr('Ultima sincronizzazione · ','Last sync · '))+time(last):tr('In attesa dei dati dalle fonti','Waiting for data providers'));
  text('injIntelSource',tr('Mercato CoinGecko · Rete Injective · DeFiLlama','CoinGecko market · Injective network · DefiLlama'));
- text('injIntelBurnStatus',Number.isFinite(chain.burn)?tr('Aste di burn · totale cumulativo','Burn auctions · cumulative total'):tr('Fonte burn non disponibile','Burn source unavailable'));
- // Record observations ONLY when two real measurements exist simultaneously.
- if(Number.isFinite(dom)&&dom>0&&dom<100){
-  append('dominance',{t:now(),d:dom,i:Number(coin.market_cap),g:global});
- }
+ text('injIntelBurnStatus',Number.isFinite(chain.burn)?tr('Aste di burn · totale cumulativo','Burn auctions · cumulative total'):tr('Burn non disponibile dall’API · consulta la fonte ufficiale','Burn API unavailable · see official source'));
 }
 async function loadMarket(force=false){
  if(fetching||(marketAt&&!force&&now()-marketAt<RATE))return;
  fetching=true;errors.market='';
+ // Market's existing Top 200 feed acts as a complementary live, verified source.
+ marketFromExisting();
  try{
-  const [coins,g]=await Promise.all([
+  const results=await Promise.allSettled([
    fetchJson(API+'/coins/markets?vs_currency=usd&ids=injective-protocol%2Cbitcoin%2Cethereum&order=market_cap_desc&per_page=3&page=1&sparkline=false&price_change_percentage=1h%2C24h%2C7d%2C30d'),
    fetchJson(API+'/global')
   ]);
-  if(!Array.isArray(coins)||!coins.some(c=>c.id===ID)||!pos(g?.data?.total_market_cap?.usd))throw Error('Incomplete CoinGecko data');
-  const byId=Object.fromEntries(coins.filter(c=>['injective-protocol','bitcoin','ethereum'].includes(c.id)).map(c=>[c.id,c]));
-  market={coins:byId,global:g.data};marketAt=now();liveLast=now();
+  const coins=results[0].status==='fulfilled'&&Array.isArray(results[0].value)?results[0].value:[];
+  const g=results[1].status==='fulfilled'?results[1].value?.data:null;
+  if(!coins.length&&!g?.total_market_cap?.usd)throw Error('Market providers unavailable');
+  const byId={...(market?.coins||{})};
+  for(const c of coins)if(['injective-protocol','bitcoin','ethereum'].includes(c.id)&&pos(c.current_price))byId[c.id]=c;
+  market={coins:byId,global:g?.total_market_cap?.usd?g:market?.global||null};
+  marketAt=now();liveLast=marketAt;
   save(MEM,{at:marketAt,data:market});
- }catch(e){errors.market=String(e?.message||e)}finally{fetching=false;updateBar();if(metric==='dominance')renderChart()}
+  const coin=currentINJ(),global=pos(market?.global?.total_market_cap?.usd);
+  if(coins.some(c=>c.id===ID)&&pos(coin?.market_cap)&&global){
+   const d=coin.market_cap/global*100;
+   if(d>0&&d<100)append('dominance',{t:marketAt,d,i:Number(coin.market_cap),g:global});
+  }
+ }catch(e){
+  errors.market=String(e?.message||e);
+  marketFromExisting();
+  // Do not pretend a stale cache is a fresh dominance measurement.
+  if(!marketAt)marketAt=now()-RATE+retryAfterFailure;
+ }finally{fetching=false;updateBar();if(metric==='dominance')renderChart()}
 }
 async function loadChain(force=false){
  if(fetchingChain||(chainAt&&!force&&now()-chainAt<CHAIN_RATE))return;
  fetchingChain=true;errors.chain='';
  const settled=await Promise.allSettled([
-  Promise.all([getLCD('/cosmos/staking/v1beta1/pool'),getLCD('/cosmos/bank/v1beta1/supply/inj')]),
+  getLCD('/cosmos/staking/v1beta1/pool'),
+   getLCD('/cosmos/bank/v1beta1/supply/inj'),
   getLCD('/cosmos/staking/v1beta1/validators?pagination.limit=1&status=BOND_STATUS_BONDED'),
   fetchJson('https://api.llama.fi/v2/chains',10000),
   (async()=>{
@@ -133,27 +181,34 @@ async function loadChain(force=false){
    throw Error('Burn statistics unavailable');
   })()
  ]);
+ let success=false;
  if(settled[0].status==='fulfilled'){
-  const [pool,supply]=settled[0].value;
-  const bonded=Number(pool?.pool?.bonded_tokens)/1e18;
-  const total=Number(supply?.amount?.amount)/1e18;
-  if(Number.isFinite(bonded)&&bonded>=0&&Number.isFinite(total)&&total>=bonded&&total>0){
-   chain.bonded=bonded;chain.ratio=bonded/total*100;append('staking',{t:now(),v:chain.ratio});
-  }
+  const bonded=Number(settled[0].value?.pool?.bonded_tokens)/1e18;
+  if(Number.isFinite(bonded)&&bonded>0&&bonded<2e8){chain.bonded=bonded;success=true}
  }
  if(settled[1].status==='fulfilled'){
-  const v=Number(settled[1].value?.pagination?.total);
-  if(Number.isFinite(v)&&v>0&&v<1000)chain.validators=v;
+  const supply=Number(settled[1].value?.amount?.amount)/1e18;
+  if(Number.isFinite(supply)&&supply>=chain.bonded&&supply<2e8&&supply>0){
+   chain.ratio=chain.bonded/supply*100;success=true;
+   append('staking',{t:now(),v:chain.ratio});
+  }
  }
  if(settled[2].status==='fulfilled'){
-  const a=settled[2].value;
-  if(Array.isArray(a)){const match=a.find(x=>String(x.name||'').toLowerCase()==='injective');const value=Number(match?.tvl);if(Number.isFinite(value)&&value>=0)chain.tvl=value}
+  const v=Number(settled[2].value?.pagination?.total);
+  if(Number.isFinite(v)&&v>0&&v<1000){chain.validators=v;success=true}
  }
  if(settled[3].status==='fulfilled'){
-  const burn=normalizedBurn(settled[3].value);
-  if(Number.isFinite(burn)){chain.burn=burn;append('burn',{t:now(),v:burn})}
+  const a=settled[3].value;
+  if(Array.isArray(a)){const match=a.find(x=>String(x.name||'').toLowerCase()==='injective');const value=Number(match?.tvl);if(Number.isFinite(value)&&value>=0){chain.tvl=value;success=true}}
  }
- chainAt=now();fetchingChain=false;updateBar();
+ if(settled[4].status==='fulfilled'){
+  const burn=normalizedBurn(settled[4].value);
+  if(Number.isFinite(burn)){chain.burn=burn;append('burn',{t:now(),v:burn});success=true}
+ }
+ if(success){
+  chainAt=now();save(CHAIN_MEM,{at:chainAt,data:Object.fromEntries(Object.entries(chain).filter(([k,v])=>Number.isFinite(v)))});
+ }else chainAt=now()-CHAIN_RATE+retryAfterFailure;
+ fetchingChain=false;updateBar();
  if(metric==='staking'||metric==='burn')renderChart();
 }
 function viewSwitch(value){
@@ -196,10 +251,34 @@ function renderChart(){
  const data=metricPoints().filter(p=>Number.isFinite(p.t)&&Number.isFinite(p.v)).sort((a,b)=>a.t-b.t);
  plotted=data;svg.replaceChildren();
  if(data.length<2){
-  svg.hidden=true;note.hidden=false;note.textContent=chartLoading?tr('Caricamento grafico reale…','Loading actual market data…'):
-   data.length===1?tr('Prima rilevazione acquisita. La curva crescerà con i nuovi dati.','First reading recorded. The line will grow as more data arrives.'):
-   (metric==='staking'||metric==='burn'||metric==='dominance'?tr('In attesa di rilevazioni reali. Non vengono inventati dati storici.','Waiting for actual observations. No historical data is fabricated.'):tr('Storico non disponibile per questo periodo.','History unavailable for this timeframe.'));
-  inspect.textContent=data.length?time(data[0].t)+' · '+fmt(data[0].v,5):'—';
+  note.hidden=false;note.replaceChildren();
+  if(data.length===1){
+   svg.hidden=false;const ns='http://www.w3.org/2000/svg';
+   const line=document.createElementNS(ns,'line'),dot=document.createElementNS(ns,'circle');
+   for(const [k,v]of Object.entries({x1:69,x2:820,y1:180,y2:180,class:'inj-mi-grid'}))line.setAttribute(k,String(v));
+   for(const [k,v]of Object.entries({cx:450,cy:180,r:6,fill:'var(--accent)',stroke:'var(--bg)','stroke-width':2}))dot.setAttribute(k,String(v));
+   svg.append(line,dot);
+   inspect.textContent=time(data[0].t)+' · '+displayPoint(data[0]);
+   note.textContent=tr('Prima rilevazione reale. La curva crescerà con le prossime misurazioni.','First real reading. More measurements will build the curve.');
+   return;
+  }
+  svg.hidden=true;
+  let label=chartLoading?tr('Caricamento grafico reale…','Loading real data…'):
+   metric==='burn'?tr('Lo storico dei burn non è disponibile dalle API consultate.','Burn history is not available from queried APIs.'):
+   metric==='staking'?tr('In attesa delle rilevazioni dello staking on-chain.','Waiting for on-chain staking readings.'):
+   metric==='dominance'?tr('In attesa di capitalizzazione INJ e mercato globale.','Waiting for INJ and total-market capitalization.'):
+   tr('Storico non disponibile dalle fonti di mercato.','History unavailable from market providers.');
+  const current=currentINJ();
+  if(metric==='price'&&pos(current?.current_price))label+=' '+tr('Prezzo attuale rilevato: ','Observed current price: ')+usd(current.current_price)+'.';
+  if(metric==='relative'&&pos(current?.current_price))label+=' '+tr('Il confronto 7G/30G è mostrato in Relative Strength.','The 7D/30D comparison appears in Relative Strength.');
+  note.textContent=label;
+  if(metric==='burn'){
+   const link=document.createElement('a');link.href='https://injective.com/inj';link.target='_blank';link.rel='noopener noreferrer';
+   link.textContent=tr('Statistiche ufficiali Injective ↗','Official Injective statistics ↗');
+   link.style.cssText='display:block;margin-top:12px;color:var(--accent);font-weight:750;text-decoration:underline;';
+   note.append(link);
+  }
+  inspect.textContent=chartLoading?tr('Sincronizzazione…','Syncing…'):'—';
   return;
  }
  svg.hidden=false;note.hidden=true;
@@ -251,6 +330,52 @@ function cleanChart(payload,id){
  return rows.filter(row=>Array.isArray(row)&&Number.isFinite(row[0])&&Number.isFinite(row[1])&&row[1]>0)
   .map(([t,v])=>({t,v,label:id})).sort((a,b)=>a.t-b.t);
 }
+
+function rememberChart(label,period,series,provider){
+ let all={};try{all=JSON.parse(read(CHART_MEM)||'{}')||{}}catch(_){}
+ all[label+':'+period]={at:now(),data:series.slice(-1200),provider};
+ save(CHART_MEM,all);
+}
+function recoveredChart(label,period){
+ try{
+  const saved=JSON.parse(read(CHART_MEM)||'{}')?.[label+':'+period];
+  if(saved?.at>now()-7*DAY&&Array.isArray(saved.data)&&saved.data.length>1){
+   return {data:saved.data.filter(p=>Number.isFinite(p.t)&&Number.isFinite(p.v)),provider:saved.provider||'Cache'};
+  }
+ }catch(_){}
+ return null;
+}
+async function binanceCandles(id,period){
+ const pairs={'injective-protocol':'INJUSDT',bitcoin:'BTCUSDT',ethereum:'ETHUSDT'};
+ const pair=pairs[id];if(!pair)throw Error('Unsupported Binance market');
+ const durations={1:['5m',300],7:['1h',170],30:['4h',185],365:['1d',366]};
+ const [interval,limit]=durations[period];
+ const raw=await fetchJson('https://data-api.binance.vision/api/v3/klines?symbol='+pair+'&interval='+interval+'&limit='+limit,12000);
+ if(!Array.isArray(raw))throw Error('No Binance candles');
+ const minTime=now()-period*DAY;
+ const data=raw.map(c=>({t:Number(c?.[0]),v:Number(c?.[4]),label:id==='injective-protocol'?'INJ':id==='bitcoin'?'BTC':'ETH'}))
+  .filter(c=>Number.isFinite(c.t)&&Number.isFinite(c.v)&&c.v>0&&c.t>=minTime-12*3600000);
+ if(data.length<2)throw Error('Insufficient Binance candles');
+ return data;
+}
+async function historical(id,period){
+ const ticker=id==='injective-protocol'?'INJ':id==='bitcoin'?'BTC':'ETH';
+ try{
+  const data=await binanceCandles(id,period);
+  return {data,provider:'Binance '+ticker+'/USDT'};
+ }catch(binanceError){
+  const payload=await fetchJson(API+'/coins/'+id+'/market_chart?vs_currency=usd&days='+period,14000);
+  const data=cleanChart(payload,ticker);
+  if(data.length<2)throw Error('Both Binance and CoinGecko history unavailable');
+  return {data,provider:'CoinGecko '+ticker+'/USD'};
+ }
+}
+function displayPoint(p){
+ if(!p)return '—';
+ if(metric==='price')return usd(p.v);
+ if(metric==='burn')return fmt(p.v,2)+' INJ';
+ return percent(p.v,4);
+}
 function nearest(arr,t,maxDiff){
  let low=0,high=arr.length-1;
  while(low<high){const middle=(low+high)>>1;if(arr[middle].t<t)low=middle+1;else high=middle}
@@ -259,33 +384,42 @@ function nearest(arr,t,maxDiff){
  return p&&Math.abs(p.t-t)<=maxDiff?p:null;
 }
 async function loadChart(force=false){
- if(!['price','relative'].includes(metric)){chart=[];chartProvider=tr('Rilevazioni salvate su questo dispositivo','Observations saved on this device');chartLoading=false;renderChart();return}
- if(chartLoading)return;
+ if(!['price','relative'].includes(metric)){
+  chart=[];chartProvider=tr('Rilevazioni verificate salvate sul dispositivo','Verified readings stored on this device');chartLoading=false;renderChart();return;
+ }
+ if(chartLoading&&!force)return;
  const generation=++serial,localMetric=metric,localDays=days;
+ const cached=recoveredChart(localMetric,localDays);
+ if(cached){chart=cached.data;chartProvider=cached.provider+' · '+tr('ultimo storico salvato','last saved history');}
  chartLoading=true;renderChart();
- const marketId=[ID,...(localMetric==='relative'?['bitcoin','ethereum']:[])];
  try{
-  const responses=await Promise.all(marketId.map(id=>fetchJson(API+'/coins/'+id+'/market_chart?vs_currency=usd&days='+localDays)));
+  const ids=localMetric==='relative'?[ID,'bitcoin','ethereum']:[ID];
+  const responses=await Promise.all(ids.map(id=>historical(id,localDays)));
   if(generation!==serial)return;
-  const inj=cleanChart(responses[0],'INJ');
-  if(inj.length<2)throw Error('Empty INJ price history');
-  if(localMetric==='price')chart=inj;
+  const inj=responses[0].data;
+  if(inj.length<2)throw Error('No INJ chart observations');
+  let result;
+  if(localMetric==='price')result=inj;
   else{
-   const btc=cleanChart(responses[1],'BTC'),eth=cleanChart(responses[2],'ETH');
-   if(btc.length<2||eth.length<2)throw Error('Missing comparator data');
-   const maxDiff=localDays===1?20*60000:localDays<=30?3*3600000:3*DAY;
+   const btc=responses[1].data,eth=responses[2].data;
+   const maxDiff=localDays===1?20*60000:localDays<=30?6*3600000:3*DAY;
    const aligned=inj.map(p=>{const b=nearest(btc,p.t,maxDiff),e=nearest(eth,p.t,maxDiff);return b&&e?{p,b,e}:null}).filter(Boolean);
-   if(aligned.length<2)throw Error('Insufficient aligned history');
+   if(aligned.length<2)throw Error('No aligned historic comparison');
    const first=aligned[0];
-   chart=aligned.flatMap(x=>[
+   result=aligned.flatMap(x=>[
     {t:x.p.t,v:(x.p.v/first.p.v-1)*100,label:'INJ'},
     {t:x.p.t,v:(x.b.v/first.b.v-1)*100,label:'BTC'},
     {t:x.p.t,v:(x.e.v/first.e.v-1)*100,label:'ETH'}
    ]);
   }
-  chartAt=now();chartProvider=tr('CoinGecko · storico reale','CoinGecko · actual history');
- }catch(e){if(generation===serial){chart=[];chartProvider=tr('Storico CoinGecko non disponibile','CoinGecko history unavailable')}}
- finally{if(generation===serial){chartLoading=false;renderChart()}}
+  chart=result;chartAt=now();chartProvider=[...new Set(responses.map(r=>r.provider))].join(' · ');
+  rememberChart(localMetric,localDays,result,chartProvider);
+ }catch(e){
+  if(generation===serial){
+   if(!chart.length){chart=[];chartProvider=tr('Storico non disponibile da Binance/CoinGecko','History unavailable from Binance/CoinGecko');}
+   errors.chart=String(e?.message||e);
+  }
+ }finally{if(generation===serial){chartLoading=false;renderChart()}}
 }
 function pickMetric(m){if(!['price','relative','dominance','staking','burn'].includes(m))return;
  metric=m;chart=[];serial++;chartLoading=false;save('inj_node_intel_metric_v1',metric);void loadChart();}
@@ -328,6 +462,6 @@ window.addEventListener('storage',e=>{if(e.key==='inj_node_language_v1')updateTr
 window.addEventListener('pageshow',()=>{updateTranslation();void loadMarket();void loadChain()});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){void loadMarket();void loadChain();if(['price','relative'].includes(metric)&&now()-chartAt>RATE)void loadChart()}});
 viewSwitch(view);updateTranslation();void Promise.all([loadMarket(),loadChain()]);void loadChart();
-setInterval(()=>{if(!document.hidden){void loadMarket();void loadChain()}},60000);
+setInterval(()=>{if(!document.hidden){if(marketFromExisting())updateBar();void loadMarket();void loadChain()}},60000);
 setInterval(()=>{if(!document.hidden&&['price','relative'].includes(metric)&&now()-chartAt>RATE&&!chartLoading)void loadChart()},RATE);
 })();

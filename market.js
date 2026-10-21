@@ -181,4 +181,12 @@ function startStreams(){
  }
  updateConnectionStatus();
 }
+// Shared read-only observation: this does not trigger additional network calls.
+window.INJ_MARKET_READONLY_SNAPSHOT=()=>({
+ injective:state.coins.find(c=>c.id==='injective-protocol')||null,
+ bitcoin:state.coins.find(c=>c.id==='bitcoin')||null,
+ ethereum:state.coins.find(c=>c.id==='ethereum')||null,
+ global:state.globalData||null,
+ updated:Math.max(state.last||0,state.globalAt||0)
+});
 window.marketOnLanguageChange=()=>{if(state.coins.length){render();summary();renderGlobal();updateConnectionStatus();window.MARKET_PRO?.languageChange?.()}else{const placeholder=$('rows').querySelector('.empty');if(placeholder)placeholder.textContent=t('loading');$('status').textContent=t('connectingCg');$('foot').textContent=t('provider');}};$('rows').addEventListener('click',e=>{const el=e.target.closest('[data-id]')||e.target.closest('tr[data-coin]');if(el)detail(el.dataset.id||el.dataset.coin)});$('rows').addEventListener('keydown',e=>{if(e.key!=='Enter'&&e.key!==' ')return;const row=e.target.closest('tr[data-coin]');if(!row)return;e.preventDefault();detail(row.dataset.coin)});$('closeDetail').onclick=()=>{$('detail').close();state.selected=null;window.MARKET_PRO?.close?.()};$('detail').addEventListener('close',()=>{state.selected=null;window.MARKET_PRO?.close?.()});$('search').oninput=render;$('scope').onchange=render;$('direction').onchange=render;document.querySelectorAll('[data-sort]').forEach(b=>b.onclick=()=>{if(state.sort===b.dataset.sort)state.desc=!state.desc;else{state.sort=b.dataset.sort;state.desc=state.sort!=='market_cap_rank'&&state.sort!=='name'}render()});$('currency').onclick=()=>{state.currency=state.currency==='usd'?'eur':'usd';state.previousPercentages.clear();state.scrollDirections.clear();$('currency').textContent=state.currency.toUpperCase()+' '+sym();renderGlobal();load(true);global()};$('refresh').onclick=()=>{load(true);global()};load(true);global();setInterval(()=>load(),90000);setInterval(()=>{if(!document.hidden)global()},300000);document.addEventListener('visibilitychange',()=>{if(document.hidden){stopStreams()}else{if(Date.now()-state.last>90000)load();else startStreams()}});})();
