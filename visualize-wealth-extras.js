@@ -50,7 +50,7 @@ function money(amount,ccy){
 }
 function rewardMoney(amount){
  const decimals=amount>0&&amount<.01?4:2;
- return new Intl.NumberFormat(language()==='en'?'en-US':'it-IT',{
+ return new Intl.NumberFormat('en-US',{
   style:'currency',currency:'USD',minimumFractionDigits:decimals,maximumFractionDigits:decimals
  }).format(amount);
 }
