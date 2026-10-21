@@ -24,7 +24,16 @@ const ranges = {
   m10:{ms:10*60_000,bucket:10_000,source:'s1',canvas:'ccCanvas10m',card:'.cc-chart-10m',ids:['cc10Top','cc10Mid','cc10Bottom','cc10Marker'],changeId:'cc10Change',minSpan:.00010,maxCandles:60},
   h1:{ms:HOUR,bucket:60_000,source:'m1',canvas:'ccCanvas1h',card:'.cc-chart-1h',ids:['cc1hTop','cc1hMid','cc1hBottom','cc1hMarker'],changeId:'cc1hChange',minSpan:.00022,maxCandles:60},
   d1:{ms:DAY,bucket:30*60_000,source:'m30',canvas:'ccCanvas1d',card:'.cc-chart-1d',ids:['cc1dTop','cc1dMid','cc1dBottom','cc1dMarker'],changeId:'cc1dChange',minSpan:.0013,maxCandles:48},
-  w1:{ms:7*DAY,bucket:4*HOUR,source:'h4',canvas:'ccCanvas1w',card:'.cc-chart-1w',ids:['cc1wTop','cc1wMid','cc1wBottom','cc1wMarker'],changeId:'cc1wChange',minSpan:.0030,maxCandles:42}
+  w1:{ms:7*DAY,bucket:4*HOUR,source:'h4',canvas:'ccCanvas1w',card:'.cc-chart-1w',ids:['cc1wTop','cc1wMid','cc1wBottom','cc1wMarker'],changeId:'cc1wChange',minSpan:.0030,maxCandles:42},
+  // Long windows use their own actual exchange OHLC data, requested on demand.
+  // All-history begins at INJ/USDT's first trading day (21 October 2020).
+  h3:{ms:3*HOUR,bucket:3*60_000,source:'histH3',canvas:'ccCanvasHistory',card:'.cc-chart-history',ids:['ccHistTop','ccHistMid','ccHistBottom','ccHistMarker'],changeId:'ccHistChange',minSpan:.0003,maxCandles:60,interval:'1m',limit:190},
+  h6:{ms:6*HOUR,bucket:6*60_000,source:'histH6',canvas:'ccCanvasHistory',card:'.cc-chart-history',ids:['ccHistTop','ccHistMid','ccHistBottom','ccHistMarker'],changeId:'ccHistChange',minSpan:.0005,maxCandles:60,interval:'5m',limit:80},
+  h12:{ms:12*HOUR,bucket:12*60_000,source:'histH12',canvas:'ccCanvasHistory',card:'.cc-chart-history',ids:['ccHistTop','ccHistMid','ccHistBottom','ccHistMarker'],changeId:'ccHistChange',minSpan:.0007,maxCandles:60,interval:'5m',limit:150},
+  d3:{ms:3*DAY,bucket:HOUR,source:'histD3',canvas:'ccCanvasHistory',card:'.cc-chart-history',ids:['ccHistTop','ccHistMid','ccHistBottom','ccHistMarker'],changeId:'ccHistChange',minSpan:.002,maxCandles:72,interval:'1h',limit:80},
+  mo1:{ms:30*DAY,bucket:12*HOUR,source:'histMO1',canvas:'ccCanvasHistory',card:'.cc-chart-history',ids:['ccHistTop','ccHistMid','ccHistBottom','ccHistMarker'],changeId:'ccHistChange',minSpan:.007,maxCandles:60,interval:'4h',limit:190},
+  y1:{ms:365*DAY,bucket:7*DAY,source:'histY1',canvas:'ccCanvasHistory',card:'.cc-chart-history',ids:['ccHistTop','ccHistMid','ccHistBottom','ccHistMarker'],changeId:'ccHistChange',minSpan:.025,maxCandles:54,interval:'1d',limit:380,weekOffset:3*DAY},
+  all:{ms:Date.now()-Date.UTC(2020,9,21,4,0),bucket:7*DAY,source:'histALL',canvas:'ccCanvasHistory',card:'.cc-chart-history',ids:['ccHistTop','ccHistMid','ccHistBottom','ccHistMarker'],changeId:'ccHistChange',minSpan:.05,maxCandles:380,interval:'1w',limit:1000,weekOffset:3*DAY}
 };
 const state = {
   address:'',walletLabel:'Wallet',available:0,staked:0,rewards:0,total:0,apr:0,networkApr:0,commission:0,validators:[],avgPrice:0,
@@ -229,6 +238,37 @@ function maintainCommandRealtime(){
   if(state.stopped||document.hidden||navigator.onLine===false)return;
   const ws=state.ws,open=ws&&ws.readyState===WebSocket.OPEN,connecting=ws&&ws.readyState===WebSocket.CONNECTING,age=state.lastMarketTick?Date.now()-state.lastMarketTick:Infinity;
   if(!open&&!connecting)connectMarket(false);else if(open&&age>8000)connectMarket(true);
+}
+// Long-range candles are loaded only when requested. Reuse one canvas so the
+// Flash Terminal stays light even with the complete INJ trading history.
+const extendedHistoryCache = Object.create(null);
+const extendedHistoryLoading = Object.create(null);
+async function loadExtendedHistory(key) {
+  const cfg = ranges[key];
+  if (!cfg?.interval) return;
+  const cached = extendedHistoryCache[key];
+  const ttl = key === 'all' || key === 'y1' ? 10*60_000 : 2*60_000;
+  if (cached && Date.now()-cached < ttl && state.series[cfg.source]?.length) return;
+  if (extendedHistoryLoading[key]) return extendedHistoryLoading[key];
+  const card = $('ccHistoryChart');
+  const status = card?.querySelector('.cc-chart-feed');
+  if (tactical.main === key && status) status.textContent='CARICAMENTO STORICO';
+  extendedHistoryLoading[key] = (async () => {
+    try {
+      const rows = await fetchKlines(cfg.interval, cfg.limit);
+      if (!rows.length) throw new Error('Dati storici assenti');
+      state.series[cfg.source] = rows;
+      extendedHistoryCache[key] = Date.now();
+      state.scales[key] = null;
+      state.chartEnterAt = performance.now();
+      if (tactical.main === key && status) status.textContent='STORICO REALE · LIVE';
+    } catch (e) {
+      if (tactical.main === key && status) status.textContent='STORICO NON DISPONIBILE';
+    } finally {
+      delete extendedHistoryLoading[key];
+    }
+  })();
+  return extendedHistoryLoading[key];
 }
 function chartSource(key){const cfg=ranges[key];return cfg?state.series[cfg.source]||[]:[]}
 function buildCandles(rows,start,bucketMs,now,lastPrice,maxCandles){
