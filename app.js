@@ -158,6 +158,25 @@ window.INJ_GET_ALL_WALLET_SNAPSHOTS = function () {
   });
 };
 
+
+// One read-only source for Potential Value: exactly the wallets and selection
+// currently managed by Dashboard/Home, plus the current INJ market quote.
+// Keep the simulator independent from unrelated Comparison selection storage.
+window.INJ_GET_POTENTIAL_VALUE_SNAPSHOT = function () {
+  const wallets = window.INJ_GET_ALL_WALLET_SNAPSHOTS();
+  const selected = window.INJ_GET_SELECTED_WALLET_SNAPSHOT();
+  const selectedAddress = selected?.address ||
+    (state.currentView === 'home' ? state.entrySelectedAddress : state.address) ||
+    state.wallets[0]?.address || '';
+  const priceUsd = number(state.price) || number(state.marketRawPrice);
+  return {
+    selectedAddress,
+    wallets,
+    priceUsd: priceUsd > 0 ? priceUsd : 0,
+    eurPerUsd: number(state.eurRate) > 0 ? number(state.eurRate) : 0
+  };
+};
+
 function setEntryOnboardingStatus(message, mode = '') {
   const status = $('entryWalletStatus');
   if (!status) return;
@@ -3712,7 +3731,7 @@ async function refreshWalletSummaries(force = false) {
     while (cursor < addresses.length) {
       const address = addresses[cursor++];
       try {
-        state.walletSummaries[address] = await loadWalletSummary(address);
+        state.walletSummaries[address] = { ...state.walletSummaries[address], ...(await loadWalletSummary(address)) };
         saveWalletSummaries();
         if (!MOBILE_EFFICIENCY) {
           renderAggregate();
