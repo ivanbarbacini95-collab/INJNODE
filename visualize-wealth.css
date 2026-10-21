@@ -78,5 +78,6 @@ button,input{font:inherit;color:inherit}button{cursor:pointer}button:focus-visib
  .wealth-yield-item>strong{font-size:clamp(14px,4vw,17px)}
 }
 
-.wealth-scope-toggle{margin-left:auto;border:1px solid var(--line);border-radius:24px;padding:9px 12px;background:var(--accent-soft);color:var(--accent);font-size:10px;font-weight:800;white-space:nowrap}
-@media(max-width:520px){.wealth-header{gap:8px}.wealth-scope-toggle{font-size:9px;padding:8px}.wealth-heading strong{font-size:16px}}
+html[data-inj-page="visualize-wealth"] .wealth-header > #wealthScopeToggle{grid-column:3!important;grid-row:1!important;position:relative!important;z-index:8!important;justify-self:end!important;align-self:center!important;pointer-events:auto!important;margin:0!important;min-width:77px;max-width:100%;border:1px solid var(--line);border-radius:24px;padding:9px 12px;background:var(--accent-soft);color:var(--accent);font-size:10px;font-weight:800;white-space:nowrap;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+html[data-inj-page="visualize-wealth"] #wealthScopeToggle[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--bg);box-shadow:0 0 0 2px var(--accent-soft)}
+@media(max-width:520px){.wealth-header{gap:8px}#wealthScopeToggle{font-size:10px;padding:8px 10px}.wealth-heading strong{font-size:16px}}
