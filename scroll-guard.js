@@ -48,7 +48,7 @@
     // When that time has passed, release ONLY this obsolete Home underlay.
     const dashboardRequested = has(body, 'dashboard-scroll-ready');
     const abandonedGateFade = dashboardRequested && has(gate, 'visible') &&
-      has(gate, 'leaving') && gate?.getAttribute('aria-hidden') === 'false';
+      gate?.getAttribute('aria-hidden') === 'false' && !menuOpen && !overlayOpen;
     if (abandonedGateFade) {
       if (!gateFadeBeganAt) gateFadeBeganAt = Date.now();
       const remaining = GATE_FADE_RECOVERY_MS - (Date.now() - gateFadeBeganAt);
@@ -82,7 +82,9 @@
     }
     let next = '';
     if (!menuOpen && !overlayOpen) {
-      if (dashboard) next = 'dashboard';
+      // Do not hand scrolling from Home to Dashboard while the Home element
+      // is still visible: switching CSS owners mid-fade can deadlock WebKit.
+      if (dashboard && !gateVisible) next = 'dashboard';
       else if (gateVisible && has(body, 'entry-gate-open')) next = 'home';
     }
     if (root.dataset.injScroll !== next) {
@@ -123,7 +125,22 @@
     document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
     refresh();
   }
-  window.INJ_SCROLL_GUARD = { refresh };
+  window.INJ_SCROLL_GUARD = {
+    refresh,
+    status() {
+      const body = document.body;
+      const doc = document.scrollingElement || root;
+      return {
+        mode: root.dataset.injScroll || '',
+        dashboardRequested: !!body?.classList.contains('dashboard-scroll-ready'),
+        homeVisible: !!document.getElementById('entryGate')?.classList.contains('visible'),
+        rootOverflowY: getComputedStyle(root).overflowY,
+        bodyOverflowY: body ? getComputedStyle(body).overflowY : '',
+        scrollTop: doc.scrollTop,
+        scrollRange: Math.max(0, doc.scrollHeight - doc.clientHeight)
+      };
+    }
+  };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once:true });
   else init();
 })();
