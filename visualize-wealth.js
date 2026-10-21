@@ -4,7 +4,8 @@ const $=id=>document.getElementById(id);
 const PREFIX='inj_node_visualize_wealth_price_';
 const SCENARIO='inj_node_visualize_wealth_scenario_v2';
 let previousCurrency='';
-let walletScope='selected';
+let walletScope=read('inj_node_visualize_wealth_scope_v1')==='all'?'all':'selected';
+const missingWalletRequests=new Map();
 const multiAprCache=new Map();
 let waitingForRate=false;
 let aprGeneration=0;
@@ -249,20 +250,68 @@ function renderYield(wallet,complete,price,hidden){
 }
 function aggregateWallets(rows){
  if(!rows.length)return null;
- const complete=rows.every(ready);
- const staked=rows.reduce((sum,r)=>sum+(ready(r)?r.staked:0),0);
- const total=rows.reduce((sum,r)=>sum+(ready(r)?r.total:0),0);
- const weighted=rows.reduce((sum,r)=>{
+ const readyRows=rows.filter(ready);
+ const complete=readyRows.length===rows.length;
+ // An unsynchronised account must never blank out the accounts already
+ // available. Show a clearly labelled partial total while catching up.
+ const staked=readyRows.reduce((sum,r)=>sum+r.staked,0);
+ const total=readyRows.reduce((sum,r)=>sum+r.total,0);
+ const weighted=readyRows.reduce((sum,r)=>{
   const cached=multiAprCache.get(r.address);
   const apr=cached?.updated?cached.value:r.personalApr;
   return sum+(r.staked>0&&Number.isFinite(apr)?r.staked*apr:0);
  },0);
- const aprReady=rows.every(r=>r.staked<=0||Number.isFinite(multiAprCache.get(r.address)?.updated?multiAprCache.get(r.address).value:r.personalApr));
- return {address:'__all__',label:'All wallets',total:complete?total:NaN,staked:complete?staked:NaN,
-  updated:complete?Math.min(...rows.map(r=>r.updated)):0,
-  personalApr:aprReady&&staked>0?weighted/staked:staked===0?0:NaN,
-  allLive:rows.every(r=>r.staked<=0||(multiAprCache.get(r.address)?.updated>0&&Date.now()-multiAprCache.get(r.address).updated<10*60_000)),
+ const aprReady=readyRows.every(r=>r.staked<=0||Number.isFinite(multiAprCache.get(r.address)?.updated?multiAprCache.get(r.address).value:r.personalApr));
+ return {address:'__all__',label:'All wallets',
+  total:readyRows.length?total:NaN,staked:readyRows.length?staked:NaN,
+  updated:readyRows.length?Math.min(...readyRows.map(r=>r.updated)):0,
+  partial:!complete,readyCount:readyRows.length,walletCount:rows.length,
+  personalApr:aprReady&&readyRows.length&&staked>0?weighted/staked:readyRows.length&&staked===0?0:NaN,
+  allLive:complete&&readyRows.every(r=>r.staked<=0||(multiAprCache.get(r.address)?.updated>0&&Date.now()-multiAprCache.get(r.address).updated<10*60_000)),
   members:rows};
+}
+async function recoverMissingWallet(row){
+ const address=row?.address;
+ if(!address||ready(row))return;
+ const prior=missingWalletRequests.get(address);
+ if(prior && (prior.loading||Date.now()<prior.retryAt))return;
+ const pending={loading:true,retryAt:Date.now()+45000};
+ missingWalletRequests.set(address,pending);
+ try{
+  const [bank,delegations,rewards]=await Promise.all([
+   chainJson('/cosmos/bank/v1beta1/balances/'+encodeURIComponent(address)),
+   chainJson('/cosmos/staking/v1beta1/delegations/'+encodeURIComponent(address)),
+   chainJson('/cosmos/distribution/v1beta1/delegators/'+encodeURIComponent(address)+'/rewards')
+  ]);
+  const units=1e18;
+  const available=(bank?.balances||[]).filter(x=>x?.denom==='inj').reduce((sum,x)=>sum+Number(x.amount||0)/units,0);
+  const staked=(delegations?.delegation_responses||[]).reduce((sum,x)=>sum+Number(x?.balance?.amount||0)/units,0);
+  const reward=(rewards?.total||[]).filter(x=>x?.denom==='inj').reduce((sum,x)=>sum+Number(x.amount||0)/units,0);
+  if(![available,staked,reward].every(Number.isFinite))throw Error('Incomplete wallet amounts');
+  // Merge against the freshest shared cache, never replace other accounts.
+  const summaries=JSON.parse(read('inj_monitor_summaries_v1')||'{}');
+  if((Number(summaries[address]?.updated)||0)<Date.now()-10000){
+   summaries[address]={...summaries[address],available,staked,rewards:reward,total:available+staked+reward,updated:Date.now()};
+   localStorage.setItem('inj_monitor_summaries_v1',JSON.stringify(summaries));
+  }
+ }catch(_){
+  pending.retryAt=Date.now()+45000;
+ }finally{
+  pending.loading=false;
+  render();
+ }
+}
+function syncMissingWallets(rows){
+ const waiting=rows.filter(r=>!ready(r)&&!missingWalletRequests.get(r.address)?.loading);
+ // Two requests at most, avoiding network congestion on iPhone/PWA.
+ let busy=[...missingWalletRequests.values()].filter(x=>x.loading).length;
+ for(const row of waiting){
+  if(busy>=2)break;
+  const previous=missingWalletRequests.get(row.address);
+  if(previous&&Date.now()<previous.retryAt)continue;
+  busy++;
+  void recoverMissingWallet(row);
+ }
 }
 function syncMultiApr(wallet){
  if(!wallet?.members)return;
@@ -318,30 +367,33 @@ function render(){
  $('wealthPriceLabel').textContent=t.price+' · '+unit;
  const price=parsePrice($('wealthPrice').value);
  const all=getRows();
+ if(walletScope==='all')syncMissingWallets(all.rows);
  const wallet=walletScope==='all'?aggregateWallets(all.rows):all.rows.find(r=>r.address===all.selected);
- $('wealthScopeToggle').textContent=walletScope==='all'?t.scopeAll:t.scopeSelected;
+ $('wealthScopeToggle').textContent=walletScope==='all'?t.scopeAll+' · '+all.rows.length:t.scopeSelected;
  $('wealthScopeToggle').setAttribute('aria-pressed',String(walletScope==='all'));
  $('wealthScopeToggle').title=walletScope==='all'?t.scopeSelected:t.scopeAll;
+ $('wealthScopeToggle').setAttribute('aria-label',(walletScope==='all'?t.scopeAll:t.scopeSelected)+(walletScope==='all'?' · '+all.rows.length:''));
  const complete=ready(wallet);
  const total=complete?wallet.total:NaN;
  const staked=complete?wallet.staked:NaN;
  const oldest=complete?wallet.updated:0;
  const privateOn=read('inj_monitor_privacy')==='1';
- const status=privateOn?t.privacy:complete?(Date.now()-oldest<120000?t.recent:t.saved):wallet?t.incomplete:t.waiting;
+ const partial=walletScope==='all'&&Boolean(wallet?.partial);
+ const status=privateOn?t.privacy:partial?wallet.readyCount+'/'+wallet.walletCount+' '+(lang()==='en'?'SYNCED':'SINCRONIZZATI'):complete?(Date.now()-oldest<120000?t.recent:t.saved):wallet?t.incomplete:t.waiting;
  $('wealthDataStatus').textContent=status;
  $('wealthWalletLabel').textContent=walletScope==='all'?(t.allWallets+' · '+all.rows.length+' '+t.walletCount):(wallet?(lang()==='en'?'Selected wallet · ':'Wallet selezionato · ')+wallet.label:(all.rows.length?t.noSelected:t.noWallet));
  const valid=complete&&Number.isFinite(price);
  const visible=valid&&!privateOn;
  $('wealthTotal').textContent=privateOn?'••••••':visible?money(total*price):'—';
  $('wealthStaked').textContent=privateOn?'••••••':visible?money(staked*price):'—';
- $('wealthTotalDetail').textContent=privateOn?t.privacyNote:complete?fmtQty(total)+' INJ · '+t.totalBase:wallet?t.totalBase+' · '+t.incomplete:(all.rows.length?t.noSelected:t.noWallet);
- $('wealthStakedDetail').textContent=privateOn?t.privacyNote:complete?fmtQty(staked)+' INJ · '+t.stakeBase:t.stakeBase;
+ $('wealthTotalDetail').textContent=privateOn?t.privacyNote:complete?fmtQty(total)+' INJ · '+t.totalBase+(partial?' · '+wallet.readyCount+'/'+wallet.walletCount+' '+t.walletCount:''):wallet?t.totalBase+' · '+t.incomplete:(all.rows.length?t.noSelected:t.noWallet);
+ $('wealthStakedDetail').textContent=privateOn?t.privacyNote:complete?fmtQty(staked)+' INJ · '+t.stakeBase+(partial?' · '+wallet.readyCount+'/'+wallet.walletCount+' '+t.walletCount:''):t.stakeBase;
  renderYield(wallet,complete,price,privateOn);
  $('wealthPriceHelp').textContent=waitingForRate
   ?(lang()==='en'?'Waiting for the EUR/USD exchange rate, or enter a price manually.':'In attesa del cambio EUR/USD, oppure inserisci un prezzo manualmente.')
   :$('wealthPrice').value&&!Number.isFinite(price)?t.invalid:t.help;
 }
-$('wealthScopeToggle').addEventListener('click',()=>{walletScope=walletScope==='selected'?'all':'selected';render()});
+$('wealthScopeToggle').addEventListener('click',()=>{walletScope=walletScope==='selected'?'all':'selected';try{localStorage.setItem('inj_node_visualize_wealth_scope_v1',walletScope)}catch(_){}render()});
 $('wealthPrice').addEventListener('input',()=>{
  const key=PREFIX+curr().toLowerCase()+'_v1';
  try{if($('wealthPrice').value)localStorage.setItem(key,$('wealthPrice').value);else localStorage.removeItem(key)}catch(_){}
