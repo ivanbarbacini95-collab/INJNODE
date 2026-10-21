@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.03.05-dashboard-scroll-resume';
+const CACHE_NAME = 'inj-node-v16.03.06-single-native-scroll-owner';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160088',
@@ -18,6 +18,7 @@ const APP_SHELL = [
   './scroll-edges.css?v=160129',
   './scroll-edges.js?v=160143',
   './wallet-edge-scroll-stability.css?v=160143',
+  './dashboard-native-scroll.css?v=160306',
   './menu-accordion.css?v=160145',
   './home-mobile-launcher-fix.css?v=160204',
   './section-heading-harmony.css?v=160131',
@@ -78,7 +79,7 @@ const APP_SHELL = [
   './i18n.js?v=160117',
   './i18n.js?v=160088',
   './i18n.js?v=160084',
-  './scroll-guard.js?v=160305',
+  './scroll-guard.js?v=160306',
   './live-charts.html',
   './live-charts.css?v=16.00.39',
   './live-charts.js?v=16.00.40',
