@@ -160,38 +160,140 @@
 <script defer src="./scroll-edges.js?v=160143"></script>
 
 <style id="inj-dashboard-chart-stability">
-/* v16.03.03 — Terminale Dashboard: header fermo durante gli aggiornamenti live. */
-#chartDialog .market-terminal-quote{
-  display:grid;
-  grid-auto-rows:max-content;
-  justify-items:end;
-  align-content:center;
-  row-gap:3px;
-  min-width:118px;
-  flex-shrink:0;
-  font-variant-numeric:tabular-nums;
-  font-feature-settings:"tnum" 1;
+/* v16.03.04 — Dashboard chart: centered, visually static and iPhone notch-safe. */
+#chartDialog .market-terminal-header{
+  box-sizing:border-box!important;
+  position:relative!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(126px,auto) minmax(0,1fr)!important;
+  grid-template-rows:auto!important;
+  align-items:center!important;
+  justify-items:stretch!important;
+  column-gap:8px!important;
+  height:auto!important;
+  min-height:100px!important;
+  width:100%!important;
+  margin:0!important;
+  padding:max(24px,calc(env(safe-area-inset-top,0px) + 16px)) clamp(12px,2.6vw,24px) 14px!important;
+  overflow:visible!important;
+  transform:none!important;
+  -webkit-transform:none!important;
+  filter:none!important;
+  -webkit-filter:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
 }
-#chartDialog #chartHeaderPrice,
-#chartDialog #chartHeaderChange{
-  display:block;
-  width:100%;
-  min-height:1.2em;
-  margin:0;
-  line-height:1.2;
-  text-align:right;
-  white-space:nowrap;
-  font-variant-numeric:tabular-nums;
-  font-feature-settings:"tnum" 1;
-  animation:none!important;
+#chartDialog .market-terminal-header .market-terminal-identity{
+  grid-column:1!important;
+  grid-row:1!important;
+  justify-self:start!important;
+  align-self:center!important;
+  position:relative!important;
+  min-width:0!important;
+  max-width:100%!important;
+  margin:0!important;
   transform:none!important;
 }
+#chartDialog .market-terminal-header .market-terminal-quote{
+  grid-column:2!important;
+  grid-row:1!important;
+  justify-self:center!important;
+  align-self:center!important;
+  position:relative!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:center!important;
+  align-items:center!important;
+  gap:3px!important;
+  box-sizing:border-box!important;
+  width:clamp(126px,26vw,210px)!important;
+  min-width:0!important;
+  max-width:100%!important;
+  height:auto!important;
+  padding:0!important;
+  margin:0!important;
+  text-align:center!important;
+  transform:none!important;
+  -webkit-transform:none!important;
+  filter:none!important;
+  -webkit-filter:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+#chartDialog .market-terminal-header .chart-dialog-close{
+  grid-column:3!important;
+  grid-row:1!important;
+  justify-self:end!important;
+  align-self:center!important;
+  position:relative!important;
+  inset:auto!important;
+  top:auto!important;
+  right:auto!important;
+  bottom:auto!important;
+  left:auto!important;
+  margin:0!important;
+  z-index:3!important;
+  transform:none!important;
+  -webkit-transform:none!important;
+}
+#chartDialog .market-terminal-header #chartHeaderPrice,
+#chartDialog .market-terminal-header #chartHeaderChange{
+  position:relative!important;
+  display:block!important;
+  box-sizing:border-box!important;
+  width:100%!important;
+  height:auto!important;
+  min-height:1.2em!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+  white-space:nowrap!important;
+  text-align:center!important;
+  line-height:1.16!important;
+  font-variant-numeric:tabular-nums!important;
+  font-feature-settings:"tnum" 1!important;
+  animation:none!important;
+  transition:none!important;
+  transform:none!important;
+  -webkit-transform:none!important;
+  filter:none!important;
+  -webkit-filter:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  text-shadow:none!important;
+  will-change:auto!important;
+}
+#chartDialog .market-terminal-header #chartHeaderPrice{
+  font-size:clamp(22px,3vw,30px)!important;
+  font-weight:800!important;
+  letter-spacing:-.025em!important;
+}
+#chartDialog .market-terminal-header #chartHeaderChange{font-size:clamp(10px,1.7vw,12px)!important;}
+#chartDialog #chartHeaderPrice *,
+#chartDialog #chartHeaderChange *,
 #chartDialog .native-chart-line,
 #chartDialog .native-chart-live-dot{
   animation:none!important;
+  transition:none!important;
 }
-@media(max-width:480px){
-  #chartDialog .market-terminal-quote{min-width:100px;row-gap:2px;}
+@media(max-width:650px){
+  #chartDialog .market-terminal-header{
+    grid-template-columns:minmax(0,1fr) 126px minmax(0,1fr)!important;
+    column-gap:5px!important;
+    padding:max(24px,calc(env(safe-area-inset-top,0px) + 18px)) 12px 12px!important;
+    min-height:106px!important;
+  }
+  #chartDialog .market-terminal-header .market-terminal-quote{width:126px!important;gap:2px!important;}
+  #chartDialog .market-terminal-header #chartHeaderPrice{font-size:clamp(20px,5.8vw,24px)!important;}
+  #chartDialog .market-terminal-header #chartHeaderChange{font-size:10px!important;}
+  #chartDialog .market-terminal-header .market-terminal-identity .market-terminal-kicker,
+  #chartDialog .market-terminal-header .market-terminal-identity .market-terminal-live{display:none!important;}
+  #chartDialog .market-terminal-header .market-terminal-identity h2{
+    font-size:clamp(10px,2.75vw,12px)!important;
+    white-space:nowrap!important;
+    letter-spacing:0!important;
+  }
 }
 </style>
 </head>
@@ -1077,7 +1179,7 @@
 </div>
 </div>
 <div aria-live="polite" class="toast" id="toast" role="status"></div>
-<script defer="" src="app.js?v=16.03.03"></script>
+<script defer="" src="app.js?v=16.03.04"></script>
 <script>
 (function(){
   function bindEntryHubs(){
