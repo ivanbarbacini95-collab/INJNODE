@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.05.01-market-summary';
+const CACHE_NAME = 'inj-node-v16.05.02-chart-scroll-rewards';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160088',
@@ -48,7 +48,7 @@ const APP_SHELL = [
   './home-desktop-tiles.css?v=160115',
   './wallet-dock-transparent.css?v=160116',
   './visualize-wealth.html',
-  './visualize-wealth.css?v=160318',
+  './visualize-wealth.css?v=160502',
   './visualize-wealth.js?v=160318',
   './visualize-wealth-extras.css?v=160319',
   './visualize-wealth-extras.js?v=160319',
@@ -94,17 +94,17 @@ const APP_SHELL = [
   './live-charts.css?v=16.00.39',
   './live-charts.js?v=16.00.40',
   './live-rewards.html',
-  './live-rewards.css?v=16.00.39',
+  './live-rewards.css?v=16.05.02',
   './reward-velocity.css?v=160122',
-  './live-rewards.js?v=160122',
+  './live-rewards.js?v=160502',
   './order-book.html',
   './order-book.css?v=16.00.39',
   './order-book.js?v=16.00.18',
   './command-center.html',
   './command-center-flash.css?v=160307',
-  './command-center-flash.js?v=160307',
+  './command-center-flash.js?v=160502',
   './command-center.css?v=16.00.39',
-  './command-center.js?v=16.03.07',
+  './command-center.js?v=16.05.02',
   './treasury.html',
   './treasury.css?v=16.00.39',
   './treasury.js?v=16.00.99'
