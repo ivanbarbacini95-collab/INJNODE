@@ -9,15 +9,15 @@
 <script>
 try{const t=localStorage.getItem('inj_monitor_theme');const valid=['navy','black','light','amber','ocean','chromatic','velvet','aqua','ocean-x-electric','ocean-x-ion','ocean-x-toxic','ocean-x-solar'];document.documentElement.dataset.theme=valid.includes(t)?t:'navy'}catch(_){}
 </script>
-<link rel="stylesheet" href="./visualize-wealth.css?v=160156">
+<link rel="stylesheet" href="./visualize-wealth.css?v=160318">
 <link rel="stylesheet" href="./ocean-aurora.css?v=160109">
 <link rel="stylesheet" href="./chromatic-mist.css?v=160110">
 <link rel="stylesheet" href="./theme-harmony.css?v=160114">
 <link rel="stylesheet" href="./velvet-nebula.css?v=160112">
 <link rel="stylesheet" href="./aqua-mirage.css?v=160113">
 <link rel="stylesheet" href="./ocean-x-series.css?v=160114">
-<script defer src="./navigation.js?v=160157"></script>
-<script defer src="./visualize-wealth.js?v=160157"></script>
+<script defer src="./navigation.js?v=160121"></script>
+<script defer src="./visualize-wealth.js?v=160318"></script>
 <link rel="stylesheet" href="./scroll-edges.css?v=160129">
 <link rel="stylesheet" href="./section-heading-harmony.css?v=160131">
 <link rel="stylesheet" href="./unified-navigation.css?v=160136">
@@ -29,10 +29,7 @@ try{const t=localStorage.getItem('inj_monitor_theme');const valid=['navy','black
 <header class="wealth-header">
 <button class="wealth-home" id="visualizeWealthBack" type="button" aria-label="Torna alla Home" title="Home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 11 8-7 8 7M6.5 10v9h11v-9M10 19v-5h4v5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
 <div class="wealth-heading inj-location-title" data-i18n-skip="true"><strong class="inj-location-name">INJ Node</strong><span class="inj-location-section" data-inj-section-name="visualize-wealth" id="wealthPageTitle">Valore Potenziale</span></div>
-<div class="wealth-scope-tabs" role="group" aria-label="Seleziona i wallet della simulazione">
-<button id="wealthScopeSelected" type="button" aria-pressed="true" class="is-active">Selezionato</button>
-<button id="wealthScopeAll" type="button" aria-pressed="false">All Wallets</button>
-</div>
+<span class="wealth-eyebrow" id="wealthEyebrow">SIMULATORE</span>
 </header>
 <main class="wealth-main">
 <div class="wealth-intro">
@@ -50,20 +47,6 @@ try{const t=localStorage.getItem('inj_monitor_theme');const valid=['navy','black
 <article class="wealth-result wealth-primary"><p class="wealth-result-label" id="wealthTotalLabel">NET WORTH SIMULATO</p><div class="wealth-amount" id="wealthTotal">—</div><p class="wealth-result-detail" id="wealthTotalDetail">Disponibili + staking + reward</p></article>
 <div class="wealth-divider" aria-hidden="true"></div>
 <article class="wealth-result wealth-secondary"><p class="wealth-result-label" id="wealthStakedLabel">SOLO STAKING</p><div class="wealth-amount" id="wealthStaked">—</div><p class="wealth-result-detail" id="wealthStakedDetail">Solo INJ effettivamente delegati</p></article>
-</section>
-<section class="wealth-yield" aria-labelledby="wealthYieldTitle">
-  <div class="wealth-yield-head">
-    <h2 id="wealthYieldTitle">RENDIMENTO STAKING STIMATO · USD</h2>
-    <span class="wealth-yield-apr" id="wealthYieldApr" aria-live="polite">APR NETTO · —</span>
-  </div>
-  <div class="wealth-yield-grid">
-    <div class="wealth-yield-item"><span>1H</span><strong id="wealthYield1h">—</strong></div>
-    <div class="wealth-yield-item"><span>1D</span><strong id="wealthYield1d">—</strong></div>
-    <div class="wealth-yield-item"><span>1S</span><strong id="wealthYield1w">—</strong></div>
-    <div class="wealth-yield-item"><span>1M</span><strong id="wealthYield1m">—</strong></div>
-    <div class="wealth-yield-item"><span>1Y</span><strong id="wealthYield1y">—</strong></div>
-  </div>
-  <p class="wealth-yield-note" id="wealthYieldNote">Proiezione al prezzo ipotetico e APR netto aggiornato; senza compound.</p>
 </section>
 <p class="wealth-footnote" id="wealthFootnote">Simulazione indicativa: valorizza esclusivamente gli INJ, senza stimare altri token, commissioni o imposte.</p>
 </main>
