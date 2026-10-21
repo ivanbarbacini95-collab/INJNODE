@@ -37,6 +37,7 @@ body.dashboard-scroll-ready:not(.entry-gate-open):not(.inj-section-open)
   height:auto!important;
   min-height:100dvh!important;
   max-height:none!important;
+  overflow-x:clip!important;
   overflow-y:visible!important;
   touch-action:auto!important;
 }
