@@ -105,6 +105,33 @@ function getRows(){
   const s=summaries?.[address]||{};
   rows.set(address,{address,label:String(w?.label||'Wallet'),total:num(s.total),staked:num(s.staked),updated:Number(s.updated)||0,personalApr:cachedApr(s.personalApr)});
  }
+ // Treat the parent as the canonical source for ALL wallets in the app.
+ // A saved localStorage list alone can lag behind Home after renames/removals.
+ try{
+  if(window.parent!==window&&window.parent.location.origin===location.origin
+    &&typeof window.parent.INJ_GET_ALL_WALLET_SNAPSHOTS==='function'){
+   const snapshots=window.parent.INJ_GET_ALL_WALLET_SNAPSHOTS();
+   if(Array.isArray(snapshots)&&snapshots.length){
+    const liveAddresses=new Set(snapshots.map(p=>String(p?.address||'').toLowerCase()));
+    for(const address of rows.keys())if(!liveAddresses.has(address))rows.delete(address);
+    for(const p of snapshots){
+     const address=String(p?.address||'').trim().toLowerCase();
+     if(!/^inj1[a-z0-9]{30,}$/.test(address))continue;
+     const old=rows.get(address);
+     const updated=Number(p.updated)||0;
+     const freshTotal=num(p.total),freshStake=num(p.staked);
+     const validLive=updated>0&&Number.isFinite(freshTotal)&&Number.isFinite(freshStake)&&freshStake<=freshTotal+1e-5;
+     if(!old){
+      rows.set(address,{address,label:String(p.label||'Wallet'),total:validLive?freshTotal:NaN,
+       staked:validLive?freshStake:NaN,updated:validLive?updated:0,personalApr:cachedApr(p.personalApr)});
+     }else if(validLive && (updated>=old.updated || !ready(old))){
+      rows.set(address,{address,label:String(p.label||old.label),total:freshTotal,
+       staked:freshStake,updated,personalApr:Number.isFinite(cachedApr(p.personalApr))?cachedApr(p.personalApr):old.personalApr});
+     }
+    }
+   }
+  }
+ }catch(_){}
  let selected=String(read('inj_node_comparison_selected_wallet_v1')||read('inj_monitor_address')||'').toLowerCase();
  try{
   if(window.parent!==window&&window.parent.location.origin===location.origin&&typeof window.parent.INJ_GET_SELECTED_WALLET_SNAPSHOT==='function'){
@@ -374,6 +401,7 @@ function render(){
  $('wealthScopeToggle').dataset.scope=walletScope;
  $('wealthScopeToggle').title=walletScope==='all'?t.scopeSelected:t.scopeAll;
  $('wealthScopeToggle').setAttribute('aria-label',(walletScope==='all'?t.scopeAll:t.scopeSelected)+(walletScope==='all'?' · '+all.rows.length:''));
+ $('wealthScopeToggle').disabled=all.rows.length===0;
  const complete=ready(wallet);
  const total=complete?wallet.total:NaN;
  const staked=complete?wallet.staked:NaN;
