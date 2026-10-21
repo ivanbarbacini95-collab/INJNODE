@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.05.02-chart-scroll-rewards';
+const CACHE_NAME = 'inj-node-v16.05.03-chart-scroll-rewards';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160088',
@@ -104,7 +104,7 @@ const APP_SHELL = [
   './command-center-flash.css?v=160307',
   './command-center-flash.js?v=160502',
   './command-center.css?v=16.00.39',
-  './command-center.js?v=16.05.02',
+  './command-center.js?v=16.05.03',
   './treasury.html',
   './treasury.css?v=16.00.39',
   './treasury.js?v=16.00.99'
