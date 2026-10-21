@@ -275,6 +275,18 @@ function refreshApr(rows){
   });
  }
 }
+// Public read-only snapshot for the growth simulator. Reuse the identical
+// selected-wallet and net-APR logic displayed by this panel.
+window.INJ_POTENTIAL_COMPOUND_DATA=()=>{
+ const state=wallets();
+ return {
+  selected:state.selected?.address||null,
+  rows:state.rows.map(row=>({
+   address:row.address,label:row.label,staked:row.staked,
+   apr:effectiveApr(row),updated:row.updated
+  }))
+ };
+};
 $('wealthPrice')?.addEventListener('input',render);
 window.addEventListener('storage',event=>{
  if(!event.key||['inj_monitor_summaries_v1','inj_monitor_wallets_v1',
