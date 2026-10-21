@@ -185,16 +185,24 @@ function getRows(){
  if(!rows.some(row=>row.address===selected))selected=rows[0]?.address||'';
  const marketPrice=num(snapshot?.priceUsd);
  if(marketPrice>0)spotUsd=marketPrice;
- return {rows,selected,priceUsd:marketPrice>0?marketPrice:spotUsd,source:snapshot?'dashboard':'cache'};
+ return {rows,selected,priceUsd:marketPrice>0?marketPrice:spotUsd,source:snapshot?.wallets?.length?'dashboard':'cache'};
 }
 function refreshSpotPrice(){
  if(document.hidden||spotUsd>0||spotLoading||Date.now()<nextSpotCheck)return;
  spotLoading=true;nextSpotCheck=Date.now()+60_000;
- apiJson('https://api.binance.com/api/v3/ticker/price?symbol=INJUSDT')
-  .then(data=>{
+ (async()=>{
+  // Availability can differ by region; Binance is not the only price source.
+  try{
+   const data=await apiJson('https://api.binance.com/api/v3/ticker/price?symbol=INJUSDT');
    const price=num(data?.price);
+   if(price>0){spotUsd=price;render();return;}
+  }catch(_){}
+  try{
+   const data=await apiJson('https://api.coingecko.com/api/v3/simple/price?ids=injective-protocol&vs_currencies=usd');
+   const price=num(data?.['injective-protocol']?.usd);
    if(price>0){spotUsd=price;render();}
-  }).catch(()=>{}).finally(()=>{spotLoading=false;});
+  }catch(_){}
+ })().finally(()=>{spotLoading=false;});
 }
 // APR is expressed in percent, as in Dashboard. Never infer it from wallet balances.
 function cachedApr(value){
@@ -475,7 +483,7 @@ function render(){
  const privateOn=read('inj_monitor_privacy')==='1';
  const partial=walletScope==='all'&&Boolean(wallet?.partial);
  const status=privateOn?t.privacy:partial?wallet.readyCount+'/'+wallet.walletCount+' '+(lang()==='en'?'SYNCED':'SINCRONIZZATI'):complete?(Date.now()-oldest<120000?t.recent:t.saved):wallet?t.incomplete:t.waiting;
- $('wealthDataStatus').textContent=status;
+ $('wealthDataStatus').textContent=privateOn?status:status+' · '+(all.source==='dashboard'?'DASHBOARD':'CACHE');
  $('wealthWalletLabel').textContent=walletScope==='all'?(t.allWallets+' · '+all.rows.length+' '+t.walletCount):(wallet?(lang()==='en'?'Selected wallet · ':'Wallet selezionato · ')+wallet.label:(all.rows.length?t.noSelected:t.noWallet));
  const valid=complete&&Number.isFinite(price);
  const visible=valid&&!privateOn;
