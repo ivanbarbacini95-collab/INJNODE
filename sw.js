@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.03.24-market-dominance';
+const CACHE_NAME = 'inj-node-v16.04.01-intelligence';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160088',
@@ -62,6 +62,8 @@ const APP_SHELL = [
   './ios-converter-keyboard.js?v=160095',
   './treasury-ownership.css?v=160099',
   './market.html',
+  './market-intelligence.css?v=160401',
+  './market-intelligence.js?v=160401',
   './market-dominance.css?v=160324',
   './market-dominance.js?v=160324',
   './comparison.html',
