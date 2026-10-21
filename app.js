@@ -6542,24 +6542,8 @@ function renderMarket() {
   setBlinkOnlyElement(amount, state.price > 0 ? usdt(state.changeAmount, 4) : '— USDT', state.price > 0 ? state.changeAmount : NaN);
   amount.className = state.changeAmount > 0 ? 'positive' : state.changeAmount < 0 ? 'negative' : '';
 
-  // Il terminale aperto ha un unico writer (renderNativeChartSummary).
-  // Evita effetti numerici concorrenti e cambi di layout nel suo header.
-  if (!isChartOpen()) {
-    const terminalPrice = $('chartHeaderPrice');
-    const terminalChange = $('chartHeaderChange');
-    if (terminalPrice) {
-      setBlinkOnlyElement(
-        terminalPrice,
-        state.price > 0 ? `${state.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: state.price < 10 ? 4 : 2 })}` : '$—',
-        state.price > 0 ? state.price : NaN,
-        { flash: false }
-      );
-    }
-    if (terminalChange) {
-      setBlinkOnlyElement(terminalChange, state.price > 0 ? `${next > 0 ? '+' : ''}${next.toFixed(2)}% · 24H` : '—', state.price > 0 ? next : NaN, { flash: false });
-      terminalChange.className = next > 0 ? 'positive' : next < 0 ? 'negative' : 'neutral';
-    }
-  }
+  // Il popup usa un solo renderer, senza contatori animati o timer concorrenti.
+  // renderNativeChartSummary aggiorna esclusivamente il testo del prezzo live.
   renderMarketTimeframes();
   if (isFocusDisplayActive()) renderFocusDisplay();
   if (isPulseViewActive()) renderPulseView();
@@ -7258,10 +7242,18 @@ function renderNativeChartSummary() {
   const high = values.length ? Math.max(number(chart.max), ...values) : number(chart.max);
   const perf = nativeChartPerformance(current, open);
 
-  // Non riscrivere nodi identici: evita reflow e micro-lampeggi nel top.
+  // Aggiorna solo testo semplice: niente animazioni per cifra o glitch degli span.
   const setStableText = (id, value) => {
     const element = $(id);
-    if (element && element.textContent !== value) element.textContent = value;
+    if (!element) return;
+    if (element._verticalRollTimer) clearTimeout(element._verticalRollTimer);
+    if (element._digitColorTimer) clearTimeout(element._digitColorTimer);
+    element._verticalRollTimer = null;
+    element._digitColorTimer = null;
+    element._verticalRollPending = null;
+    element._verticalRollTarget = null;
+    element.classList.remove('number-roll-host');
+    if (element.children.length || element.textContent !== value) element.textContent = value;
   };
   setStableText('nativeChartOpen', nativeChartPrice(open));
   setStableText('nativeChartLow', nativeChartPrice(low));
