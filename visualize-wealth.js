@@ -126,7 +126,7 @@ function walletSnapshotScore(snapshot){
  if(!Array.isArray(snapshot?.wallets))return -1;
  return snapshot.wallets.reduce((score,row)=>{
   const total=Number(row?.total),staked=Number(row?.staked);
-  return score+(Number(row?.updated)>0&&Number.isFinite(total)&&Number.isFinite(staked)&&staked<=total+1e-5?1:0);
+  return score+(Number.isFinite(total)&&Number.isFinite(staked)&&total>=0&&staked>=0&&staked<=total+1e-5?1:0);
  },0);
 }
 function dashboardSnapshot(){
@@ -152,9 +152,9 @@ function normalizeWallet(entry,cached){
  const address=String(entry?.address||'').trim().toLowerCase();
  if(!validWalletAddress(address))return null;
  const total=num(entry?.total),staked=num(entry?.staked),updated=Number(entry?.updated)||0;
- const validLive=updated>0&&Number.isFinite(total)&&Number.isFinite(staked)&&staked<=total+1e-5;
+ const validLive=Number.isFinite(total)&&Number.isFinite(staked)&&total>=0&&staked>=0&&staked<=total+1e-5;
  const cachedTotal=num(cached?.total),cachedStaked=num(cached?.staked),cachedUpdated=Number(cached?.updated)||0;
- const cachedValid=cachedUpdated>0&&Number.isFinite(cachedTotal)&&Number.isFinite(cachedStaked)&&cachedStaked<=cachedTotal+1e-5;
+ const cachedValid=Number.isFinite(cachedTotal)&&Number.isFinite(cachedStaked)&&cachedTotal>=0&&cachedStaked>=0&&cachedStaked<=cachedTotal+1e-5;
  const useLive=validLive&&(!cachedValid||updated>=cachedUpdated);
  const source=useLive?entry:cachedValid?cached:null;
  return {
@@ -407,7 +407,7 @@ function syncMultiApr(wallet){
   }).catch(()=>{entry.nextAt=Date.now()+35_000}).finally(()=>{entry.busy=false;render()});
  }
 }
-function ready(row){return row&&row.updated>0&&Number.isFinite(row.total)&&Number.isFinite(row.staked)&&row.staked<=row.total+1e-5}
+function ready(row){return !!row&&Number.isFinite(row.total)&&Number.isFinite(row.staked)&&row.total>=0&&row.staked>=0&&row.staked<=row.total+1e-5}
 function translate(){
  const t=dict[lang()];document.documentElement.lang=lang();
  const texts={
