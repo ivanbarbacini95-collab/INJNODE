@@ -48,8 +48,11 @@
  tf.setAttribute('role','group');
  tf.setAttribute('aria-label','Intervallo del grafico live');
  var frames=[
-  ['m1','1M'],['m5','5M'],['m10','10M'],
-  ['h1','1H'],['d1','1D'],['w1','1W']
+  ['m1','1m','1 minuto'],['m5','5m','5 minuti'],['m10','10m','10 minuti'],
+  ['h1','1H','1 ora'],['h3','3H','3 ore'],['h6','6H','6 ore'],
+  ['h12','12H','12 ore'],['d1','1G','1 giorno'],['d3','3G','3 giorni'],
+  ['w1','1S','1 settimana'],['mo1','1M','1 mese'],
+  ['y1','1A','1 anno'],['all','TUTTO','Dal 21 ottobre 2020']
  ];
  var buttons=[];
  frames.forEach(function(pair){
@@ -57,7 +60,8 @@
   b.type='button';
   b.dataset.range=pair[0];
   b.textContent=pair[1];
-  b.title='Mostra '+pair[1]+' nel grafico';
+  b.title='Mostra storico: '+pair[2];
+  b.setAttribute('aria-label','Grafico '+pair[2]);
   b.addEventListener('click',function(){
    if(select.value===pair[0])return;
    select.value=pair[0];
