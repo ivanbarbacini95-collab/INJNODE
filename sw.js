@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.03.19-multi-wallet-income';
+const CACHE_NAME = 'inj-node-v16.03.21-staking-growth';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160088',
@@ -51,6 +51,8 @@ const APP_SHELL = [
   './visualize-wealth.js?v=160318',
   './visualize-wealth-extras.css?v=160319',
   './visualize-wealth-extras.js?v=160319',
+  './visualize-wealth-growth.css?v=160321',
+  './visualize-wealth-growth.js?v=160321',
   './visualize-wealth-home.css?v=160127',
   './aqua-mirage.css?v=160113',
   './aqua-mirage.js?v=160113',
