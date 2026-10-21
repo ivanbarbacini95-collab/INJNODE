@@ -13,6 +13,7 @@
 const $ = id => document.getElementById(id);
 const HOUR = 60 * 60_000;
 const DAY = 24 * HOUR;
+const INJ_HISTORY_ORIGIN = Date.UTC(2020,0,1); // Before the first listed INJ/USDT candle.
 const INJ_DECIMALS = 1e18;
 const LCD_ENDPOINTS = ['https://sentry.lcd.injective.network:443','https://lcd.injective.network','https://1rpc.io/inj-lcd'];
 const APR_ENDPOINT = 'https://api.ui.injective.network/api/v1/cache/stats/apr';
@@ -31,9 +32,9 @@ const ranges = {
   h6:{ms:6*HOUR,bucket:6*60_000,source:'histH6',canvas:'ccCanvasHistory',card:'.cc-chart-history',ids:['ccHistTop','ccHistMid','ccHistBottom','ccHistMarker'],changeId:'ccHistChange',minSpan:.0005,maxCandles:60,interval:'5m',limit:80},
   h12:{ms:12*HOUR,bucket:12*60_000,source:'histH12',canvas:'ccCanvasHistory',card:'.cc-chart-history',ids:['ccHistTop','ccHistMid','ccHistBottom','ccHistMarker'],changeId:'ccHistChange',minSpan:.0007,maxCandles:60,interval:'5m',limit:150},
   d3:{ms:3*DAY,bucket:HOUR,source:'histD3',canvas:'ccCanvasHistory',card:'.cc-chart-history',ids:['ccHistTop','ccHistMid','ccHistBottom','ccHistMarker'],changeId:'ccHistChange',minSpan:.002,maxCandles:72,interval:'1h',limit:80},
-  mo1:{ms:30*DAY,bucket:12*HOUR,source:'histMO1',canvas:'ccCanvasHistory',card:'.cc-chart-history',ids:['ccHistTop','ccHistMid','ccHistBottom','ccHistMarker'],changeId:'ccHistChange',minSpan:.007,maxCandles:60,interval:'4h',limit:190},
+  mo1:{ms:30*DAY,bucket:12*HOUR,source:'histMO1',canvas:'ccCanvasHistory',card:'.cc-chart-history',ids:['ccHistTop','ccHistMid','ccHistBottom','ccHistMarker'],changeId:'ccHistChange',minSpan:.007,maxCandles:60,interval:'4h',limit:220},
   y1:{ms:365*DAY,bucket:7*DAY,source:'histY1',canvas:'ccCanvasHistory',card:'.cc-chart-history',ids:['ccHistTop','ccHistMid','ccHistBottom','ccHistMarker'],changeId:'ccHistChange',minSpan:.025,maxCandles:54,interval:'1d',limit:380,weekOffset:3*DAY},
-  all:{ms:Date.now()-Date.UTC(2020,9,21,4,0),bucket:7*DAY,source:'histALL',canvas:'ccCanvasHistory',card:'.cc-chart-history',ids:['ccHistTop','ccHistMid','ccHistBottom','ccHistMarker'],changeId:'ccHistChange',minSpan:.05,maxCandles:380,interval:'1w',limit:1000,weekOffset:3*DAY}
+  all:{ms:Date.now()-INJ_HISTORY_ORIGIN,bucket:7*DAY,source:'histALL',canvas:'ccCanvasHistory',card:'.cc-chart-history',ids:['ccHistTop','ccHistMid','ccHistBottom','ccHistMarker'],changeId:'ccHistChange',minSpan:.05,maxCandles:450,interval:'1w',limit:1000,weekOffset:3*DAY}
 };
 const state = {
   address:'',walletLabel:'Wallet',available:0,staked:0,rewards:0,total:0,apr:0,networkApr:0,commission:0,validators:[],avgPrice:0,
@@ -166,9 +167,21 @@ async function refreshWallet(){
   }catch(_){setText('ccWalletState','CACHE');setDot('ccDataDot','bad');setText('ccApiState','RETRY');setDot('ccApiDot','bad')}
   finally{state.walletLoading=false;renderWallet();renderValidators();renderSystem()}
 }
-async function fetchKlines(interval,limit){
-  const bases=['https://api.binance.com','https://data-api.binance.vision','https://api1.binance.com'];let err;
-  for(const base of bases){try{const d=await fetchJson(`${base}/api/v3/klines?symbol=INJUSDT&interval=${interval}&limit=${limit}`,9000);const rows=d.map(r=>({t:n(r[0]),o:n(r[1]),h:n(r[2]),l:n(r[3]),c:n(r[4])})).filter(r=>r.o>0&&r.h>0&&r.l>0&&r.c>0);if(rows.length)return rows}catch(e){err=e}}
+async function fetchKlines(interval,limit,startTime) {
+  const bases=['https://api.binance.com','https://data-api.binance.vision','https://api1.binance.com'];
+  const params=new URLSearchParams({symbol:'INJUSDT',interval,limit:String(limit)});
+  if(Number.isFinite(startTime)&&startTime>=0)params.set('startTime',String(Math.floor(startTime)));
+  let err;
+  for(const base of bases) {
+    try {
+      const data=await fetchJson(base+'/api/v3/klines?'+params.toString(),9000);
+      if(!Array.isArray(data))throw new Error('Invalid market data');
+      const rows=data.map(r=>({t:Number(r[0]),o:Number(r[1]),h:Number(r[2]),l:Number(r[3]),c:Number(r[4])}))
+        .filter(r=>Number.isFinite(r.t)&&r.o>0&&r.h>0&&r.l>0&&r.c>0)
+        .sort((a,b)=>a.t-b.t);
+      if(rows.length)return rows;
+    }catch(e){err=e}
+  }
   throw err||new Error('market history');
 }
 async function loadMarketHistory(){
@@ -243,30 +256,34 @@ function maintainCommandRealtime(){
 // Flash Terminal stays light even with the complete INJ trading history.
 const extendedHistoryCache = Object.create(null);
 const extendedHistoryLoading = Object.create(null);
+const extendedHistoryErrors = Object.create(null);
 async function loadExtendedHistory(key) {
-  const cfg = ranges[key];
-  if (!cfg?.interval) return;
-  const cached = extendedHistoryCache[key];
-  const ttl = key === 'all' || key === 'y1' ? 10*60_000 : 2*60_000;
-  if (cached && Date.now()-cached < ttl && state.series[cfg.source]?.length) return;
-  if (extendedHistoryLoading[key]) return extendedHistoryLoading[key];
-  const card = $('ccHistoryChart');
-  const status = card?.querySelector('.cc-chart-feed');
-  if (tactical.main === key && status) status.textContent='CARICAMENTO STORICO';
-  extendedHistoryLoading[key] = (async () => {
-    try {
-      const rows = await fetchKlines(cfg.interval, cfg.limit);
-      if (!rows.length) throw new Error('Dati storici assenti');
-      state.series[cfg.source] = rows;
-      extendedHistoryCache[key] = Date.now();
-      state.scales[key] = null;
-      state.chartEnterAt = performance.now();
-      if (tactical.main === key && status) status.textContent='STORICO REALE · LIVE';
-    } catch (e) {
-      if (tactical.main === key && status) status.textContent='STORICO NON DISPONIBILE';
-    } finally {
-      delete extendedHistoryLoading[key];
-    }
+  const cfg=ranges[key];
+  if(!cfg?.interval)return;
+  const ttl=key==='all'||key==='y1'?10*60_000:2*60_000;
+  if(extendedHistoryCache[key]&&Date.now()-extendedHistoryCache[key]<ttl&&state.series[cfg.source]?.length)return;
+  if(extendedHistoryLoading[key])return extendedHistoryLoading[key];
+  const card=$('ccHistoryChart'),status=card?.querySelector('.cc-chart-feed');
+  if(tactical.main===key&&status)status.textContent='CARICAMENTO STORICO';
+  delete extendedHistoryErrors[key];
+  extendedHistoryLoading[key]=(async()=>{
+    try{
+      // Request actual data for this timeframe. The ALL query starts before
+      // listing so no older INJ/USDT quotes are silently cut from the plot.
+      const from=key==='all'?INJ_HISTORY_ORIGIN:Date.now()-cfg.ms-cfg.bucket;
+      const rows=await fetchKlines(cfg.interval,cfg.limit,from);
+      if(!rows.length)throw Error('No candles available');
+      if(key==='all'&&rows.length===cfg.limit)throw Error('Historical data may be truncated');
+      state.series[cfg.source]=rows;
+      extendedHistoryCache[key]=Date.now();
+      state.scales[key]=null;
+      state.chartEnterAt=performance.now();
+      if(tactical.main===key&&status)status.textContent='STORICO REALE · LIVE';
+    }catch(e){
+      extendedHistoryErrors[key]=String(e?.message||'Unavailable');
+      state.series[cfg.source]=[];
+      if(tactical.main===key&&status)status.textContent='STORICO NON DISPONIBILE';
+    }finally{delete extendedHistoryLoading[key]}
   })();
   return extendedHistoryLoading[key];
 }
@@ -309,7 +326,7 @@ function drawChart(key,now,dt){
   now=marketFresh()?now:(state.lastMarketTick||state.historyAt||now);
   const src=chartSource(key),start=now-cfg.ms;
   const rows=src.filter(r=>r&&r.t<=now&&r.t>=start-cfg.bucket&&r.c>0);
-  if(!rows.length){const {w,h}=resizeCanvas(c);c.getContext('2d').clearRect(0,0,c.width,c.height);updateTimeframeChange(cfg,0,0);card.querySelector('.cc-time-axis span').textContent='In attesa di storico reale';return;}
+  if(!rows.length){resizeCanvas(c);const ctx=c.getContext('2d');ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,c.width,c.height);updateTimeframeChange(cfg,0,0);card.querySelector('.cc-time-axis span').textContent=extendedHistoryErrors[key]?'Storico non disponibile · riprova':extendedHistoryLoading[key]?'Caricamento dati del periodo…':'In attesa di storico reale';return;}
   const candles=buildCandles(rows,start,cfg.bucket,now,state.visual,cfg.maxCandles,cfg.weekOffset||0);
   const allPrices=candles.flatMap(c=>[c.h,c.l]);
   let rawMin=Math.min(...allPrices),rawMax=Math.max(...allPrices);
@@ -520,13 +537,28 @@ function selectMain(key){if(!ranges[key])return;
    button.dataset.promote=key;
    button.setAttribute('aria-label','Grafico '+captions[key]);
    const name=button.querySelector('strong');
-   if(name)name.textContent=key==='all'?'INJ / USDT · DAL 2020':captions[key];
+   if(name)name.textContent=key==='all'?'INJ / USDT · TUTTO':captions[key];
   }
  }
- const old=tactical.main;const i=tactical.small.indexOf(key);if(i>=0)tactical.small[i]=old;tactical.main=key;$('ccMainRange').value=key;const shown=[key,...tactical.small];document.querySelectorAll('.cc-chart').forEach(card=>{const k=card.dataset.key;card.hidden=!shown.includes(k);card.classList.toggle('cc-primary',k===key);card.style.gridRow=k===key?'':String(tactical.small.indexOf(k)+1);if(matchMedia('(max-width:600px)').matches&&k!==key)card.style.gridRow=String(tactical.small.indexOf(k)+2);card.querySelector('button').setAttribute('aria-pressed',String(k===key));});state.scales[key]=null;state.lastDraw=0;
+ // Shared history canvas: never leave the old period visible during a new load.
+  if(cfg.interval&&ranges[tactical.main]?.interval&&tactical.main!==key){const canvas=$('ccCanvasHistory');if(canvas){const ctx=canvas.getContext('2d');ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,canvas.width,canvas.height)}}
+  const old=tactical.main;const i=tactical.small.indexOf(key);if(i>=0)tactical.small[i]=old;tactical.main=key;$('ccMainRange').value=key;const shown=[key,...tactical.small];document.querySelectorAll('.cc-chart').forEach(card=>{const k=card.dataset.key;card.hidden=!shown.includes(k);card.classList.toggle('cc-primary',k===key);card.style.gridRow=k===key?'':String(tactical.small.indexOf(k)+1);if(matchMedia('(max-width:600px)').matches&&k!==key)card.style.gridRow=String(tactical.small.indexOf(k)+2);card.querySelector('button').setAttribute('aria-pressed',String(k===key));});state.scales[key]=null;state.lastDraw=0;
  if(cfg.interval) void loadExtendedHistory(key);
 }
-function updateChartMeta(card,cfg,rows,now){const full=rows[0].t<=now-cfg.ms+cfg.bucket*1.5;const axis=card.querySelector('.cc-time-axis');const fmt=t=>new Date(t).toLocaleString('it-IT',cfg.ms>=365*DAY?{month:'short',year:'numeric'}:cfg.ms>=DAY?{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}:{hour:'2-digit',minute:'2-digit',...(cfg.ms<=600000?{second:'2-digit'}:{})});const times=axis.querySelectorAll('time');const a=fmt(Math.max(rows[0].t,now-cfg.ms)),b=fmt(now);if(times[0].textContent!==a)times[0].textContent=a;if(times[1].textContent!==b)times[1].textContent=b;const label=cfg.source==='histALL'?'Storico INJ/USDT · dal 21/10/2020':full?'':'Storico parziale';if(axis.querySelector('span').textContent!==label)axis.querySelector('span').textContent=label;}
+function updateChartMeta(card,cfg,rows,now){
+  const axis=card.querySelector('.cc-time-axis');
+  const first=rows[0].t;
+  const full=cfg.source==='histALL'?rows.length>0:first<=now-cfg.ms+cfg.bucket*1.5;
+  const long=cfg.ms>=30*DAY;
+  const fmt=t=>new Date(t).toLocaleString('it-IT',long?{month:'short',year:'numeric'}:cfg.ms>=DAY?{day:'2-digit',month:'2-digit',hour:'2-digit'}:{hour:'2-digit',minute:'2-digit',...(cfg.ms<=600000?{second:'2-digit'}:{})});
+  const times=axis.querySelectorAll('time');
+  const a=cfg.source==='histALL'?new Date(first).toLocaleDateString('it-IT'):fmt(Math.max(first,now-cfg.ms));
+  const b=fmt(now);
+  if(times[0].textContent!==a)times[0].textContent=a;
+  if(times[1].textContent!==b)times[1].textContent=b;
+  const label=cfg.source==='histALL'?'INJ/USDT · dal primo dato disponibile':full?'':'Storico parziale';
+  if(axis.querySelector('span').textContent!==label)axis.querySelector('span').textContent=label;
+}
 function drawLevels(ctx,min,span,left,right,bottom,ph){const marks=[...(!privacy&&state.avgPrice>0?[{p:state.avgPrice,label:'PREZZO MEDIO'}]:[]),...tactical.levels.map((p,i)=>({p,label:'LIVELLO '+(i+1)}))];ctx.save();ctx.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();ctx.fillStyle=ctx.strokeStyle;ctx.font='11px system-ui';ctx.setLineDash([5,5]);for(const mark of marks){if(mark.p<min||mark.p>min+span)continue;const y=candleY(mark.p,min,span,bottom,ph);ctx.globalAlpha=.55;ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(right,y);ctx.stroke();ctx.globalAlpha=.95;ctx.fillText(mark.label+' '+priceText(mark.p),left+5,Math.max(14,y-5));}ctx.restore();}
 function renderTactical(){const p=state.price;if(!(p>0))return;let positives=0,total=0;for(const cfg of Object.values(ranges)){const rows=state.series[cfg.source]||[];const start=Date.now()-cfg.ms;const first=rows.find(r=>r.t>=start-cfg.bucket);if(!first||first.t>start+cfg.bucket*1.5)continue;total++;if(p>first.o)positives++;}setText('ccConsensus',total?`${positives} / ${total}`:'—');setText('ccLowDistance',state.low24>0?`${((p/state.low24-1)*100).toFixed(2)}% sopra`:'—');setText('ccHighDistance',state.high24>0?`${Math.max(0,(state.high24/p-1)*100).toFixed(2)}% al massimo`:'—');setText('ccLevelSummary',tactical.levels.length?tactical.levels.map((v,i)=>`L${i+1} ${priceText(v)} · ${pct((v/p-1)*100)}`).join(' / '):'Livelli personali · non impostati');for(const id of ['ccTotalPnl','ccTotalPnlPct','ccDailyPnl','ccDailyPnlPct','ccChange24']){const el=$(id);if(!el)continue;const base=id.startsWith('ccTotal')?state.avgPrice:state.open24;el.classList.toggle('positive',base>0&&p>base);el.classList.toggle('negative',base>0&&p<base);}}
 function initTactical(){try{const saved=JSON.parse(localStorage.getItem('inj_node_cc_levels_'+state.address)||'[]');tactical.levels=Array.isArray(saved)?saved.map(Number).filter(x=>Number.isFinite(x)&&x>0).slice(0,2):[];}catch(_){}selectMain('h1');$('ccMainRange').addEventListener('change',e=>selectMain(e.target.value));document.querySelectorAll('[data-promote]').forEach(b=>b.addEventListener('click',()=>selectMain(b.dataset.promote)));$('ccLevelsButton').addEventListener('click',()=>{['ccLevel1','ccLevel2'].forEach((id,i)=>$(id).value=tactical.levels[i]||'');$('ccLevelsDialog').showModal();});$('ccEventsButton').addEventListener('click',()=>$('ccEventsDialog').showModal());document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>$(b.dataset.close).close()));$('ccLevelsForm').addEventListener('submit',e=>{e.preventDefault();tactical.levels=['ccLevel1','ccLevel2'].map(id=>Number($(id).value)).filter(x=>Number.isFinite(x)&&x>0);try{localStorage.setItem('inj_node_cc_levels_'+state.address,JSON.stringify(tactical.levels));}catch(_){}$('ccLevelsDialog').close();renderTactical();});const wake=()=>{document.body.classList.remove('cc-idle');clearTimeout(tactical.idleTimer);if(tactical.observing)tactical.idleTimer=setTimeout(()=>{if(!document.querySelector('dialog[open]')&&!document.querySelector('.cc-chart-tools :focus'))document.body.classList.add('cc-idle');},6000);};$('ccObserve').addEventListener('click',()=>{tactical.observing=!tactical.observing;document.body.classList.toggle('cc-observing',tactical.observing);$('ccObserve').setAttribute('aria-pressed',String(tactical.observing));$('ccObserve').textContent=tactical.observing?'Osservazione attiva':'Osservazione';$('ccObserve').blur();wake();});['pointermove','pointerdown','keydown','focusin'].forEach(type=>document.addEventListener(type,wake,{passive:true}));window.addEventListener('resize',()=>selectMain(tactical.main),{passive:true});}
