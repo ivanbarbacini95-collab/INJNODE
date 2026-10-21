@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.03.06-single-native-scroll-owner';
+const CACHE_NAME = 'inj-node-v16.03.07-command-center-history';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160088',
@@ -91,10 +91,10 @@ const APP_SHELL = [
   './order-book.css?v=16.00.39',
   './order-book.js?v=16.00.18',
   './command-center.html',
-  './command-center-flash.css?v=160301',
-  './command-center-flash.js?v=160302',
+  './command-center-flash.css?v=160307',
+  './command-center-flash.js?v=160307',
   './command-center.css?v=16.00.39',
-  './command-center.js?v=16.00.18',
+  './command-center.js?v=16.03.07',
   './treasury.html',
   './treasury.css?v=16.00.39',
   './treasury.js?v=16.00.99'
