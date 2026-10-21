@@ -43,17 +43,6 @@ function closeSection(fromHistory=false){
  // Section iframe is gone: hand the native scroll surface back to Home.
  window.INJ_SCROLL_GUARD?.refresh();
 }
-// Safari PWA safety net: hand the current Dashboard data to isolated
-// Potential Value through same-origin messages, not only direct parent access.
-function sendWealthSnapshot(target){
- if(!target)return;
- try{
-  const snapshot=window.INJ_GET_POTENTIAL_VALUE_SNAPSHOT?.();
-  if(snapshot && Array.isArray(snapshot.wallets)){
-   target.postMessage({type:'injnode:wealth:snapshot',snapshot,at:Date.now()},location.origin);
-  }
- }catch(_){}
-}
 window.INJ_OPEN_SECTION=function(url){
  if(!main || section)return;
  setHeaderMenuOpen(false);
@@ -73,7 +62,6 @@ window.INJ_OPEN_SECTION=function(url){
    }catch(_){return;}
    // CSS, scripts and document load have completed: never expose Safari's
    // temporary white about:blank document before this point.
-   if(targetPath.endsWith('/visualize-wealth.html'))sendWealthSnapshot(currentSection.contentWindow);
    requestAnimationFrame(()=>{
      if(section===currentSection)currentSection.dataset.ready='true';
    });
@@ -92,10 +80,6 @@ if(main){
  window.addEventListener('message',event=>{
   if(event.origin!==location.origin)return;
   const fromSection=event.source===section?.contentWindow;
-  if(fromSection && event.data?.type==='injnode:wealth:request'){
-   sendWealthSnapshot(event.source);
-   return;
-  }
   if(fromSection && event.data?.type==='injnode:section:home')closeSection();
  });
  window.addEventListener('popstate',()=>{if(section && !history.state?.injSection)closeSection(true);});
