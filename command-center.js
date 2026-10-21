@@ -287,7 +287,12 @@ async function loadExtendedHistory(key) {
       const from=rangeStart(key)-cfg.bucket;
       const rows=await fetchKlines(cfg.interval,cfg.limit,from);
       if(!rows.length)throw Error('No candles available');
-      if(key==='all'&&rows.length===cfg.limit)throw Error('Historical data may be truncated');
+      if(key==='all'){
+        if(rows.length===cfg.limit)throw Error('Historical data may be truncated');
+        // INJ/USDT began trading on 21 October 2020. A newer starting
+        // candle would make the ALL option indistinguishable from partial views.
+        if(rows[0].t>Date.UTC(2020,10,1))throw Error('Earliest 2020 listing candles missing');
+      }
       state.series[cfg.source]=rows;
       extendedHistoryCache[key]=Date.now();
       state.scales[key]=null;
@@ -387,7 +392,7 @@ function drawChart(key,now,dt){
   [1/3,2/3].forEach(f=>{const x=left+pw*f;ctx.beginPath();ctx.moveTo(x,top);ctx.lineTo(x,bottom);ctx.stroke()});
 
   const candleCount=Math.max(1,candles.length);
-  const stepX=pw/Math.max(1,cfg.maxCandles);
+  const stepX=pw/Math.max(1,cfg.interval?candles.length:cfg.maxCandles);
   const smoothFlow=key==='m1'||key==='m5'||key==='m10';
   const minBody=smoothFlow?2.2:2.6;
   const bodyW=Math.max(minBody,Math.min(28,stepX*(smoothFlow?.74:.70)));
