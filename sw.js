@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.03.11-centered-yields';
+const CACHE_NAME = 'inj-node-v16.03.12-wallet-toggle-repair';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160088',
@@ -47,8 +47,8 @@ const APP_SHELL = [
   './home-desktop-tiles.css?v=160115',
   './wallet-dock-transparent.css?v=160116',
   './visualize-wealth.html',
-  './visualize-wealth.css?v=160152',
-  './visualize-wealth.js?v=160151',
+  './visualize-wealth.css?v=160153',
+  './visualize-wealth.js?v=160153',
   './visualize-wealth-home.css?v=160127',
   './aqua-mirage.css?v=160113',
   './aqua-mirage.js?v=160113',
