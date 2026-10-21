@@ -1,0 +1,34 @@
+/* INJ Intelligence · compact market snapshot, no graphs or lower panels. */
+html[data-inj-market] #injIntelligenceMain{
+ width:100%;padding-bottom:8px;
+}
+html[data-inj-market] .inj-mi-snapshot{
+ display:grid;grid-template-columns:repeat(5,minmax(0,1fr));
+ column-gap:22px;row-gap:20px;
+ margin:18px 0 8px;padding:24px 2px 26px;
+}
+html[data-inj-market] .inj-mi-snapshot article{
+ min-width:0;align-self:start;
+}
+html[data-inj-market] .inj-mi-snapshot article strong{
+ font-size:clamp(19px,2.3vw,31px);
+ overflow-wrap:anywhere;word-break:normal;
+}
+html[data-inj-market] .inj-mi-hero{
+ padding:9px 2px 7px;
+}
+@media(max-width:1180px){
+ html[data-inj-market] .inj-mi-snapshot{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:700px){
+ html[data-inj-market] .inj-mi-snapshot{
+  grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 16px;
+  padding:22px 1px 26px;
+ }
+ html[data-inj-market] .inj-mi-snapshot article:last-child{
+  grid-column:span 2;
+ }
+ html[data-inj-market] .inj-mi-snapshot article strong{
+  font-size:clamp(21px,5.4vw,30px);
+ }
+}

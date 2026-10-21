@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.04.21-market-visibility-intro';
+const CACHE_NAME = 'inj-node-v16.05.01-market-summary';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160088',
@@ -64,7 +64,8 @@ const APP_SHELL = [
   './treasury-ownership.css?v=160099',
   './market.html',
   './market-intelligence.css?v=160421',
-  './market-intelligence.js?v=160421',
+  './market-intelligence-summary.js?v=160501',
+  './market-intelligence-summary.css?v=160501',
   './market-dominance.css?v=160324',
   './market-dominance.js?v=160324',
   './comparison.html',
@@ -72,7 +73,7 @@ const APP_SHELL = [
   './comparison.css?v=160095',
   './comparison-ab.css?v=160095',
   './comparison.js?v=160095',
-  './market-portal.js?v=160421',
+  './market-portal.js?v=160501',
   './market-lang.js?v=160082',
   './market.css?v=160082',
   './market.js?v=160402',
