@@ -4,7 +4,10 @@ const $=id=>document.getElementById(id);
 const PREFIX='inj_node_visualize_wealth_price_';
 const SCENARIO='inj_node_visualize_wealth_scenario_v2';
 let previousCurrency='';
-let walletScope=read('inj_node_visualize_wealth_scope_v1')==='all'?'all':'selected';
+let walletScope=read('inj_node_visualize_wealth_scope_v2')==='all'?'all':'selected';
+let spotUsd=NaN;
+let nextSpotCheck=0;
+let spotLoading=false;
 const missingWalletRequests=new Map();
 const multiAprCache=new Map();
 let waitingForRate=false;
@@ -20,7 +23,7 @@ it:{
  totalBase:'Disponibili + staking + reward',stakeBase:'Solo INJ effettivamente delegati',
  note:'Simulazione indicativa: valorizza esclusivamente gli INJ, senza stimare altri token, commissioni o imposte.',
  yieldTitle:'RENDITA POTENZIALE DA STAKING · USD',yieldNote:'Valori stimati sul prezzo ipotetico e APR netto dei validatori, senza compound né variazioni future.',yieldLoading:'APR NETTO · SINCRONIZZAZIONE',yieldCached:'CACHE',yieldLive:'LIVE',yieldUnavailable:'APR non disponibile: in attesa della rete Injective.',yieldNoStake:'NESSUNO STAKING',yieldFx:'Cambio EUR/USD non disponibile per stimare la rendita in dollari.',
- scopeSelected:'WALLET SELEZIONATO',scopeAll:'TUTTI I WALLET',allWallets:'Tutti i wallet',walletCount:'wallet',
+ scopeSelected:'WALLET SELEZIONATO',scopeAll:'ALL WALLETS',selectedTab:'Selezionato',allTab:'All Wallets',allWallets:'Tutti i wallet',walletCount:'wallet',
  noWallet:'Nessun wallet salvato',noSelected:'Nessun wallet selezionato',incomplete:'DATI INCOMPLETI',
  waiting:'IN ATTESA',saved:'DATI SALVATI',recent:'DATI AGGIORNATI',privacy:'PRIVACY ATTIVA',
  privacyNote:'I valori sono nascosti dalle impostazioni Privacy.', invalid:'Prezzo non valido'
@@ -34,7 +37,7 @@ en:{
  totalBase:'Available + staked + rewards',stakeBase:'Delegated INJ only',
  note:'Illustrative simulation: values INJ only, excluding other tokens, fees and taxes.',
  yieldTitle:'POTENTIAL STAKING INCOME · USD',yieldNote:'Estimated at the hypothetical price and validator net APR, without compounding or future rate changes.',yieldLoading:'NET APR · SYNCING',yieldCached:'CACHED',yieldLive:'LIVE',yieldUnavailable:'APR unavailable: waiting for Injective network.',yieldNoStake:'NO STAKING',yieldFx:'EUR/USD exchange rate unavailable for USD yield estimates.',
- scopeSelected:'SELECTED WALLET',scopeAll:'ALL WALLETS',allWallets:'All wallets',walletCount:'wallets',
+ scopeSelected:'SELECTED WALLET',scopeAll:'ALL WALLETS',selectedTab:'Selected',allTab:'All Wallets',allWallets:'All wallets',walletCount:'wallets',
  noWallet:'No saved wallets',noSelected:'No selected wallet',incomplete:'INCOMPLETE DATA',
  waiting:'WAITING',saved:'CACHED DATA',recent:'UPDATED DATA',privacy:'PRIVACY ON',
  privacyNote:'Values are hidden by your Privacy settings.',invalid:'Invalid price'
@@ -45,7 +48,9 @@ function curr(){return read('inj_monitor_currency')==='EUR'?'EUR':'USD'}
 function eurPerUsd(){
  // Shared market rate in INJ Node: one USD is this many EUR.
  const rate=Number(read('inj_monitor_eur_rate'));
- return Number.isFinite(rate)&&rate>0&&rate<10?rate:NaN;
+ if(Number.isFinite(rate)&&rate>0&&rate<10)return rate;
+ const parentRate=Number(dashboardSnapshot()?.eurPerUsd);
+ return Number.isFinite(parentRate)&&parentRate>0&&parentRate<10?parentRate:NaN;
 }
 function convertedPrice(value,from,to){
  if(from===to)return value;
@@ -95,55 +100,66 @@ function money(n){
   style:'currency',currency,minimumFractionDigits:2,maximumFractionDigits:2
  }).format(n);
 }
+function dashboardSnapshot(){
+ try{
+  if(window.parent!==window && window.parent.location.origin===location.origin){
+   const fn=window.parent.INJ_GET_POTENTIAL_VALUE_SNAPSHOT;
+   if(typeof fn==='function'){
+    const snapshot=fn();
+    if(snapshot&&Array.isArray(snapshot.wallets))return snapshot;
+   }
+  }
+ }catch(_){}
+ return null;
+}
+function validWalletAddress(address){return /^inj1[a-z0-9]{30,}$/i.test(String(address||''))}
+function normalizeWallet(entry,cached){
+ const address=String(entry?.address||'').trim().toLowerCase();
+ if(!validWalletAddress(address))return null;
+ const total=num(entry?.total),staked=num(entry?.staked),updated=Number(entry?.updated)||0;
+ const validLive=updated>0&&Number.isFinite(total)&&Number.isFinite(staked)&&staked<=total+1e-5;
+ const cachedTotal=num(cached?.total),cachedStaked=num(cached?.staked),cachedUpdated=Number(cached?.updated)||0;
+ const cachedValid=cachedUpdated>0&&Number.isFinite(cachedTotal)&&Number.isFinite(cachedStaked)&&cachedStaked<=cachedTotal+1e-5;
+ const useLive=validLive&&(!cachedValid||updated>=cachedUpdated);
+ const source=useLive?entry:cachedValid?cached:null;
+ return {
+  address,label:String(entry?.label||cached?.label||'Wallet'),
+  total:source?num(source.total):NaN,
+  staked:source?num(source.staked):NaN,
+  updated:source?(Number(source.updated)||0):0,
+  personalApr:Number.isFinite(cachedApr(entry?.personalApr))?cachedApr(entry.personalApr):cachedApr(cached?.personalApr)
+ };
+}
 function getRows(){
  let wallets=[],summaries={};
- try{wallets=JSON.parse(read('inj_monitor_wallets_v1')||'[]');summaries=JSON.parse(read('inj_monitor_summaries_v1')||'{}')}catch(_){}
- const rows=new Map();
- for(const w of Array.isArray(wallets)?wallets:[]){
-  const address=String(w?.address||'').trim().toLowerCase();
-  if(!/^inj1[a-z0-9]{30,}$/.test(address)||rows.has(address))continue;
-  const s=summaries?.[address]||{};
-  rows.set(address,{address,label:String(w?.label||'Wallet'),total:num(s.total),staked:num(s.staked),updated:Number(s.updated)||0,personalApr:cachedApr(s.personalApr)});
+ try{wallets=JSON.parse(read('inj_monitor_wallets_v1')||'[]')}catch(_){}
+ try{summaries=JSON.parse(read('inj_monitor_summaries_v1')||'{}')}catch(_){}
+ if(!Array.isArray(wallets))wallets=[];
+ if(!summaries||typeof summaries!=='object')summaries={};
+ const snapshot=dashboardSnapshot();
+ const sources=snapshot?snapshot.wallets:wallets;
+ const seen=new Set(),rows=[];
+ for(const item of sources){
+  const address=String(item?.address||'').trim().toLowerCase();
+  if(!validWalletAddress(address)||seen.has(address))continue;
+  seen.add(address);
+  const row=normalizeWallet(item,summaries[address]);
+  if(row)rows.push(row);
  }
- // Treat the parent as the canonical source for ALL wallets in the app.
- // A saved localStorage list alone can lag behind Home after renames/removals.
- try{
-  if(window.parent!==window&&window.parent.location.origin===location.origin
-    &&typeof window.parent.INJ_GET_ALL_WALLET_SNAPSHOTS==='function'){
-   const snapshots=window.parent.INJ_GET_ALL_WALLET_SNAPSHOTS();
-   if(Array.isArray(snapshots)&&snapshots.length){
-    const liveAddresses=new Set(snapshots.map(p=>String(p?.address||'').toLowerCase()));
-    for(const address of rows.keys())if(!liveAddresses.has(address))rows.delete(address);
-    for(const p of snapshots){
-     const address=String(p?.address||'').trim().toLowerCase();
-     if(!/^inj1[a-z0-9]{30,}$/.test(address))continue;
-     const old=rows.get(address);
-     const updated=Number(p.updated)||0;
-     const freshTotal=num(p.total),freshStake=num(p.staked);
-     const validLive=updated>0&&Number.isFinite(freshTotal)&&Number.isFinite(freshStake)&&freshStake<=freshTotal+1e-5;
-     if(!old){
-      rows.set(address,{address,label:String(p.label||'Wallet'),total:validLive?freshTotal:NaN,
-       staked:validLive?freshStake:NaN,updated:validLive?updated:0,personalApr:cachedApr(p.personalApr)});
-     }else if(validLive && (updated>=old.updated || !ready(old))){
-      rows.set(address,{address,label:String(p.label||old.label),total:freshTotal,
-       staked:freshStake,updated,personalApr:Number.isFinite(cachedApr(p.personalApr))?cachedApr(p.personalApr):old.personalApr});
-     }
-    }
-   }
-  }
- }catch(_){}
- let selected=String(read('inj_node_comparison_selected_wallet_v1')||read('inj_monitor_address')||'').toLowerCase();
- try{
-  if(window.parent!==window&&window.parent.location.origin===location.origin&&typeof window.parent.INJ_GET_SELECTED_WALLET_SNAPSHOT==='function'){
-   const p=window.parent.INJ_GET_SELECTED_WALLET_SNAPSHOT();
-   if(p?.address){
-    selected=String(p.address).toLowerCase();
-    if(!rows.has(selected))rows.set(selected,{address:selected,label:p.label||'Wallet',total:num(p.total),staked:num(p.staked),updated:Number(p.updated)||0,personalApr:cachedApr(p.personalApr)});
-    else if(Number(p.updated)>0)rows.set(selected,{address:selected,label:p.label||rows.get(selected).label,total:num(p.total),staked:num(p.staked),updated:Number(p.updated)||0,personalApr:Number.isFinite(cachedApr(p.personalApr))?cachedApr(p.personalApr):rows.get(selected).personalApr});
-   }
-  }
- }catch(_){}
- return {rows:[...rows.values()],selected};
+ let selected=snapshot?String(snapshot.selectedAddress||'').toLowerCase():String(read('inj_monitor_address')||'').toLowerCase();
+ if(!rows.some(row=>row.address===selected))selected=rows[0]?.address||'';
+ const marketPrice=num(snapshot?.priceUsd);
+ if(marketPrice>0)spotUsd=marketPrice;
+ return {rows,selected,priceUsd:marketPrice>0?marketPrice:spotUsd,source:snapshot?'dashboard':'cache'};
+}
+function refreshSpotPrice(){
+ if(document.hidden||spotUsd>0||spotLoading||Date.now()<nextSpotCheck)return;
+ spotLoading=true;nextSpotCheck=Date.now()+60_000;
+ apiJson('https://api.binance.com/api/v3/ticker/price?symbol=INJUSDT')
+  .then(data=>{
+   const price=num(data?.price);
+   if(price>0){spotUsd=price;render();}
+  }).catch(()=>{}).finally(()=>{spotLoading=false;});
 }
 // APR is expressed in percent, as in Dashboard. Never infer it from wallet balances.
 function cachedApr(value){
@@ -342,12 +358,15 @@ function syncMissingWallets(rows){
 }
 function syncMultiApr(wallet){
  if(!wallet?.members)return;
+ let inflight=[...multiAprCache.values()].filter(entry=>entry.busy).length;
  for(const row of wallet.members){
+  if(inflight>=2)break;
   if(!ready(row)||row.staked<=0)continue;
   const old=multiAprCache.get(row.address);
   if(old?.busy||Date.now()<(old?.nextAt||0))continue;
   const entry={value:old?.value??NaN,updated:old?.updated||0,nextAt:Date.now()+5*60_000,busy:true};
   multiAprCache.set(row.address,entry);
+  inflight++;
   livePersonalApr(row.address).then(apr=>{
    entry.value=apr;entry.updated=Date.now();entry.nextAt=Date.now()+5*60_000;
   }).catch(()=>{entry.nextAt=Date.now()+35_000}).finally(()=>{entry.busy=false;render()});
