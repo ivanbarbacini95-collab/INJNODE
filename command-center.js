@@ -271,17 +271,17 @@ async function loadExtendedHistory(key) {
   return extendedHistoryLoading[key];
 }
 function chartSource(key){const cfg=ranges[key];return cfg?state.series[cfg.source]||[]:[]}
-function buildCandles(rows,start,bucketMs,now,lastPrice,maxCandles){
-  const alignedStart=Math.floor(start/bucketMs)*bucketMs;
+function buildCandles(rows,start,bucketMs,now,lastPrice,maxCandles,weekOffset=0){
+  const alignedStart=Math.floor((start+weekOffset)/bucketMs)*bucketMs-weekOffset;
   const map=new Map();
   for(const row of rows){
     if(!row||!(row.c>0)||row.t<alignedStart-bucketMs||row.t>now)continue;
-    const bt=Math.floor(row.t/bucketMs)*bucketMs;
+    const bt=Math.floor((row.t+weekOffset)/bucketMs)*bucketMs-weekOffset;
     let c=map.get(bt);
     if(!c){c={t:bt,o:row.o||row.c,h:row.h||row.c,l:row.l||row.c,c:row.c};map.set(bt,c)}
     else{c.h=Math.max(c.h,row.h||row.c);c.l=Math.min(c.l,row.l||row.c);c.c=row.c}
   }
-  const currentStart=Math.floor(now/bucketMs)*bucketMs;
+  const currentStart=Math.floor((now+weekOffset)/bucketMs)*bucketMs-weekOffset;
   const candles=[];let prev=0;
   for(let t=alignedStart;t<=currentStart;t+=bucketMs){
     let c=map.get(t);
@@ -310,7 +310,7 @@ function drawChart(key,now,dt){
   const src=chartSource(key),start=now-cfg.ms;
   const rows=src.filter(r=>r&&r.t<=now&&r.t>=start-cfg.bucket&&r.c>0);
   if(!rows.length){const {w,h}=resizeCanvas(c);c.getContext('2d').clearRect(0,0,c.width,c.height);updateTimeframeChange(cfg,0,0);card.querySelector('.cc-time-axis span').textContent='In attesa di storico reale';return;}
-  const candles=buildCandles(rows,start,cfg.bucket,now,state.visual,cfg.maxCandles);
+  const candles=buildCandles(rows,start,cfg.bucket,now,state.visual,cfg.maxCandles,cfg.weekOffset||0);
   const allPrices=candles.flatMap(c=>[c.h,c.l]);
   let rawMin=Math.min(...allPrices),rawMax=Math.max(...allPrices);
   const floor=Math.max(state.visual*cfg.minSpan,state.visual<10?.00005:.0005);
@@ -508,8 +508,25 @@ function recordMarketTick(price,previous){
  if(state.low24>0&&price<state.low24){pushEvent('Nuovo minimo 24h: '+priceText(price),'low',60000);state.low24=price;}
  if(state.lastMarketTick&&previous>0)for(const [i,level] of tactical.levels.entries())if((previous<level&&price>=level)||(previous>level&&price<=level))pushEvent(`Livello ${i+1} attraversato ${price>=level?'al rialzo':'al ribasso'}: ${priceText(level)}`,'level'+i,30000);
 }
-function selectMain(key){if(!ranges[key])return;const old=tactical.main;const i=tactical.small.indexOf(key);if(i>=0)tactical.small[i]=old;tactical.main=key;$('ccMainRange').value=key;const shown=[key,...tactical.small];document.querySelectorAll('.cc-chart').forEach(card=>{const k=card.dataset.key;card.hidden=!shown.includes(k);card.classList.toggle('cc-primary',k===key);card.style.gridRow=k===key?'':String(tactical.small.indexOf(k)+1);if(matchMedia('(max-width:600px)').matches&&k!==key)card.style.gridRow=String(tactical.small.indexOf(k)+2);card.querySelector('button').setAttribute('aria-pressed',String(k===key));});state.scales[key]=null;state.lastDraw=0;}
-function updateChartMeta(card,cfg,rows,now){const full=rows[0].t<=now-cfg.ms+cfg.bucket*1.5;const axis=card.querySelector('.cc-time-axis');const fmt=t=>new Date(t).toLocaleString('it-IT',cfg.ms>=DAY?{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}:{hour:'2-digit',minute:'2-digit',...(cfg.ms<=600000?{second:'2-digit'}:{})});const times=axis.querySelectorAll('time');const a=fmt(Math.max(rows[0].t,now-cfg.ms)),b=fmt(now);if(times[0].textContent!==a)times[0].textContent=a;if(times[1].textContent!==b)times[1].textContent=b;const label=full?'':'Storico parziale';if(axis.querySelector('span').textContent!==label)axis.querySelector('span').textContent=label;}
+function selectMain(key){if(!ranges[key])return;
+ const cfg = ranges[key];
+ const historyCard = $('ccHistoryChart');
+ if(historyCard){
+  const extended=Boolean(cfg.interval);
+  historyCard.dataset.key=extended?key:'extended-inactive';
+  const button=historyCard.querySelector('.cc-promote');
+  if(extended && button){
+   const captions={h3:'3 ORE',h6:'6 ORE',h12:'12 ORE',d3:'3 GIORNI',mo1:'1 MESE',y1:'1 ANNO',all:'TUTTO'};
+   button.dataset.promote=key;
+   button.setAttribute('aria-label','Grafico '+captions[key]);
+   const name=button.querySelector('strong');
+   if(name)name.textContent=key==='all'?'INJ / USDT · DAL 2020':captions[key];
+  }
+ }
+ const old=tactical.main;const i=tactical.small.indexOf(key);if(i>=0)tactical.small[i]=old;tactical.main=key;$('ccMainRange').value=key;const shown=[key,...tactical.small];document.querySelectorAll('.cc-chart').forEach(card=>{const k=card.dataset.key;card.hidden=!shown.includes(k);card.classList.toggle('cc-primary',k===key);card.style.gridRow=k===key?'':String(tactical.small.indexOf(k)+1);if(matchMedia('(max-width:600px)').matches&&k!==key)card.style.gridRow=String(tactical.small.indexOf(k)+2);card.querySelector('button').setAttribute('aria-pressed',String(k===key));});state.scales[key]=null;state.lastDraw=0;
+ if(cfg.interval) void loadExtendedHistory(key);
+}
+function updateChartMeta(card,cfg,rows,now){const full=rows[0].t<=now-cfg.ms+cfg.bucket*1.5;const axis=card.querySelector('.cc-time-axis');const fmt=t=>new Date(t).toLocaleString('it-IT',cfg.ms>=365*DAY?{month:'short',year:'numeric'}:cfg.ms>=DAY?{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}:{hour:'2-digit',minute:'2-digit',...(cfg.ms<=600000?{second:'2-digit'}:{})});const times=axis.querySelectorAll('time');const a=fmt(Math.max(rows[0].t,now-cfg.ms)),b=fmt(now);if(times[0].textContent!==a)times[0].textContent=a;if(times[1].textContent!==b)times[1].textContent=b;const label=cfg.source==='histALL'?'Storico INJ/USDT · dal 21/10/2020':full?'':'Storico parziale';if(axis.querySelector('span').textContent!==label)axis.querySelector('span').textContent=label;}
 function drawLevels(ctx,min,span,left,right,bottom,ph){const marks=[...(!privacy&&state.avgPrice>0?[{p:state.avgPrice,label:'PREZZO MEDIO'}]:[]),...tactical.levels.map((p,i)=>({p,label:'LIVELLO '+(i+1)}))];ctx.save();ctx.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();ctx.fillStyle=ctx.strokeStyle;ctx.font='11px system-ui';ctx.setLineDash([5,5]);for(const mark of marks){if(mark.p<min||mark.p>min+span)continue;const y=candleY(mark.p,min,span,bottom,ph);ctx.globalAlpha=.55;ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(right,y);ctx.stroke();ctx.globalAlpha=.95;ctx.fillText(mark.label+' '+priceText(mark.p),left+5,Math.max(14,y-5));}ctx.restore();}
 function renderTactical(){const p=state.price;if(!(p>0))return;let positives=0,total=0;for(const cfg of Object.values(ranges)){const rows=state.series[cfg.source]||[];const start=Date.now()-cfg.ms;const first=rows.find(r=>r.t>=start-cfg.bucket);if(!first||first.t>start+cfg.bucket*1.5)continue;total++;if(p>first.o)positives++;}setText('ccConsensus',total?`${positives} / ${total}`:'—');setText('ccLowDistance',state.low24>0?`${((p/state.low24-1)*100).toFixed(2)}% sopra`:'—');setText('ccHighDistance',state.high24>0?`${Math.max(0,(state.high24/p-1)*100).toFixed(2)}% al massimo`:'—');setText('ccLevelSummary',tactical.levels.length?tactical.levels.map((v,i)=>`L${i+1} ${priceText(v)} · ${pct((v/p-1)*100)}`).join(' / '):'Livelli personali · non impostati');for(const id of ['ccTotalPnl','ccTotalPnlPct','ccDailyPnl','ccDailyPnlPct','ccChange24']){const el=$(id);if(!el)continue;const base=id.startsWith('ccTotal')?state.avgPrice:state.open24;el.classList.toggle('positive',base>0&&p>base);el.classList.toggle('negative',base>0&&p<base);}}
 function initTactical(){try{const saved=JSON.parse(localStorage.getItem('inj_node_cc_levels_'+state.address)||'[]');tactical.levels=Array.isArray(saved)?saved.map(Number).filter(x=>Number.isFinite(x)&&x>0).slice(0,2):[];}catch(_){}selectMain('h1');$('ccMainRange').addEventListener('change',e=>selectMain(e.target.value));document.querySelectorAll('[data-promote]').forEach(b=>b.addEventListener('click',()=>selectMain(b.dataset.promote)));$('ccLevelsButton').addEventListener('click',()=>{['ccLevel1','ccLevel2'].forEach((id,i)=>$(id).value=tactical.levels[i]||'');$('ccLevelsDialog').showModal();});$('ccEventsButton').addEventListener('click',()=>$('ccEventsDialog').showModal());document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>$(b.dataset.close).close()));$('ccLevelsForm').addEventListener('submit',e=>{e.preventDefault();tactical.levels=['ccLevel1','ccLevel2'].map(id=>Number($(id).value)).filter(x=>Number.isFinite(x)&&x>0);try{localStorage.setItem('inj_node_cc_levels_'+state.address,JSON.stringify(tactical.levels));}catch(_){}$('ccLevelsDialog').close();renderTactical();});const wake=()=>{document.body.classList.remove('cc-idle');clearTimeout(tactical.idleTimer);if(tactical.observing)tactical.idleTimer=setTimeout(()=>{if(!document.querySelector('dialog[open]')&&!document.querySelector('.cc-chart-tools :focus'))document.body.classList.add('cc-idle');},6000);};$('ccObserve').addEventListener('click',()=>{tactical.observing=!tactical.observing;document.body.classList.toggle('cc-observing',tactical.observing);$('ccObserve').setAttribute('aria-pressed',String(tactical.observing));$('ccObserve').textContent=tactical.observing?'Osservazione attiva':'Osservazione';$('ccObserve').blur();wake();});['pointermove','pointerdown','keydown','focusin'].forEach(type=>document.addEventListener(type,wake,{passive:true}));window.addEventListener('resize',()=>selectMain(tactical.main),{passive:true});}
