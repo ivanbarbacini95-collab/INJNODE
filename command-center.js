@@ -32,7 +32,7 @@ const ranges = {
   h6:{ms:6*HOUR,bucket:6*60_000,source:'histH6',canvas:'ccCanvasHistory',card:'.cc-chart-history',ids:['ccHistTop','ccHistMid','ccHistBottom','ccHistMarker'],changeId:'ccHistChange',minSpan:.0005,maxCandles:60,interval:'5m',limit:80},
   h12:{ms:12*HOUR,bucket:12*60_000,source:'histH12',canvas:'ccCanvasHistory',card:'.cc-chart-history',ids:['ccHistTop','ccHistMid','ccHistBottom','ccHistMarker'],changeId:'ccHistChange',minSpan:.0007,maxCandles:60,interval:'5m',limit:150},
   d3:{ms:3*DAY,bucket:HOUR,source:'histD3',canvas:'ccCanvasHistory',card:'.cc-chart-history',ids:['ccHistTop','ccHistMid','ccHistBottom','ccHistMarker'],changeId:'ccHistChange',minSpan:.002,maxCandles:72,interval:'1h',limit:80},
-  mo1:{ms:30*DAY,bucket:12*HOUR,source:'histMO1',canvas:'ccCanvasHistory',card:'.cc-chart-history',ids:['ccHistTop','ccHistMid','ccHistBottom','ccHistMarker'],changeId:'ccHistChange',minSpan:.007,maxCandles:60,interval:'4h',limit:220},
+  mo1:{ms:30*DAY,bucket:12*HOUR,source:'histMO1',canvas:'ccCanvasHistory',card:'.cc-chart-history',ids:['ccHistTop','ccHistMid','ccHistBottom','ccHistMarker'],changeId:'ccHistChange',minSpan:.007,maxCandles:66,interval:'4h',limit:220},
   y1:{ms:365*DAY,bucket:7*DAY,source:'histY1',canvas:'ccCanvasHistory',card:'.cc-chart-history',ids:['ccHistTop','ccHistMid','ccHistBottom','ccHistMarker'],changeId:'ccHistChange',minSpan:.025,maxCandles:54,interval:'1d',limit:380,weekOffset:3*DAY},
   all:{ms:Date.now()-INJ_HISTORY_ORIGIN,bucket:7*DAY,source:'histALL',canvas:'ccCanvasHistory',card:'.cc-chart-history',ids:['ccHistTop','ccHistMid','ccHistBottom','ccHistMarker'],changeId:'ccHistChange',minSpan:.05,maxCandles:450,interval:'1w',limit:1000,weekOffset:3*DAY}
 };
@@ -42,6 +42,20 @@ const state = {
   series:{s1:[],m1:[],m30:[],h4:[]},scales:{},ws:null,reconnect:0,wsGeneration:0,raf:0,lastFrame:0,lastDraw:0,lastSync:0,apiOk:false,marketOk:false,stopped:false,lastMarketTick:0,lastTickDir:0,chartEnterAt:0,walletLoading:false,validatorMeta:{},validatorSyncAt:0,aprSyncAt:0
 };
 Object.keys(ranges).forEach(k=>state.scales[k]=null);
+// Use calendar boundaries, not a hard-coded 30/365-day approximation.
+function rangeStart(key,now=Date.now()){
+  if(key==='all')return INJ_HISTORY_ORIGIN;
+  if(key==='mo1'||key==='y1'){
+    const d=new Date(now),originalDay=d.getUTCDate();
+    d.setUTCDate(1);
+    if(key==='mo1')d.setUTCMonth(d.getUTCMonth()-1);
+    else d.setUTCFullYear(d.getUTCFullYear()-1);
+    const daysInMonth=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth()+1,0)).getUTCDate();
+    d.setUTCDate(Math.min(originalDay,daysInMonth));
+    return d.getTime();
+  }
+  return now-ranges[key].ms;
+}
 
 const n=v=>Number.isFinite(Number(v))?Number(v):0;
 const fromWei=v=>n(v)/INJ_DECIMALS;
@@ -270,7 +284,7 @@ async function loadExtendedHistory(key) {
     try{
       // Request actual data for this timeframe. The ALL query starts before
       // listing so no older INJ/USDT quotes are silently cut from the plot.
-      const from=key==='all'?INJ_HISTORY_ORIGIN:Date.now()-cfg.ms-cfg.bucket;
+      const from=rangeStart(key)-cfg.bucket;
       const rows=await fetchKlines(cfg.interval,cfg.limit,from);
       if(!rows.length)throw Error('No candles available');
       if(key==='all'&&rows.length===cfg.limit)throw Error('Historical data may be truncated');
@@ -324,7 +338,7 @@ function drawChart(key,now,dt){
   const cfg=ranges[key],c=$(cfg.canvas),card=document.querySelector(cfg.card);
   if(!c||!card||card.hidden||!(state.visual>0))return;
   now=marketFresh()?now:(state.lastMarketTick||state.historyAt||now);
-  const src=chartSource(key),start=now-cfg.ms;
+  const src=chartSource(key),start=rangeStart(key,now);
   const rows=src.filter(r=>r&&r.t<=now&&r.t>=start-cfg.bucket&&r.c>0);
   if(!rows.length){resizeCanvas(c);const ctx=c.getContext('2d');ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,c.width,c.height);updateTimeframeChange(cfg,0,0);card.querySelector('.cc-time-axis span').textContent=extendedHistoryErrors[key]?'Storico non disponibile · riprova':extendedHistoryLoading[key]?'Caricamento dati del periodo…':'In attesa di storico reale';return;}
   const candles=buildCandles(rows,start,cfg.bucket,now,state.visual,cfg.maxCandles,cfg.weekOffset||0);
@@ -560,11 +574,11 @@ function selectMain(key){if(!ranges[key])return;
 function updateChartMeta(card,cfg,rows,now){
   const axis=card.querySelector('.cc-time-axis');
   const first=rows[0].t;
-  const full=cfg.source==='histALL'?rows.length>0:first<=now-cfg.ms+cfg.bucket*1.5;
+  const full=cfg.source==='histALL'?rows.length>0:first<=rangeStart(tactical.main,now)+cfg.bucket*1.5;
   const long=cfg.ms>=30*DAY;
   const fmt=t=>new Date(t).toLocaleString('it-IT',long?{month:'short',year:'numeric'}:cfg.ms>=DAY?{day:'2-digit',month:'2-digit',hour:'2-digit'}:{hour:'2-digit',minute:'2-digit',...(cfg.ms<=600000?{second:'2-digit'}:{})});
   const times=axis.querySelectorAll('time');
-  const a=cfg.source==='histALL'?new Date(first).toLocaleDateString('it-IT'):fmt(Math.max(first,now-cfg.ms));
+  const a=cfg.source==='histALL'?new Date(first).toLocaleDateString('it-IT'):fmt(Math.max(first,rangeStart(tactical.main,now)));
   const b=fmt(now);
   if(times[0].textContent!==a)times[0].textContent=a;
   if(times[1].textContent!==b)times[1].textContent=b;
@@ -572,7 +586,7 @@ function updateChartMeta(card,cfg,rows,now){
   if(axis.querySelector('span').textContent!==label)axis.querySelector('span').textContent=label;
 }
 function drawLevels(ctx,min,span,left,right,bottom,ph){const marks=[...(!privacy&&state.avgPrice>0?[{p:state.avgPrice,label:'PREZZO MEDIO'}]:[]),...tactical.levels.map((p,i)=>({p,label:'LIVELLO '+(i+1)}))];ctx.save();ctx.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();ctx.fillStyle=ctx.strokeStyle;ctx.font='11px system-ui';ctx.setLineDash([5,5]);for(const mark of marks){if(mark.p<min||mark.p>min+span)continue;const y=candleY(mark.p,min,span,bottom,ph);ctx.globalAlpha=.55;ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(right,y);ctx.stroke();ctx.globalAlpha=.95;ctx.fillText(mark.label+' '+priceText(mark.p),left+5,Math.max(14,y-5));}ctx.restore();}
-function renderTactical(){const p=state.price;if(!(p>0))return;let positives=0,total=0;for(const cfg of Object.values(ranges)){const rows=state.series[cfg.source]||[];const start=Date.now()-cfg.ms;const first=rows.find(r=>r.t>=start-cfg.bucket);if(!first||first.t>start+cfg.bucket*1.5)continue;total++;if(p>first.o)positives++;}setText('ccConsensus',total?`${positives} / ${total}`:'—');setText('ccLowDistance',state.low24>0?`${((p/state.low24-1)*100).toFixed(2)}% sopra`:'—');setText('ccHighDistance',state.high24>0?`${Math.max(0,(state.high24/p-1)*100).toFixed(2)}% al massimo`:'—');setText('ccLevelSummary',tactical.levels.length?tactical.levels.map((v,i)=>`L${i+1} ${priceText(v)} · ${pct((v/p-1)*100)}`).join(' / '):'Livelli personali · non impostati');for(const id of ['ccTotalPnl','ccTotalPnlPct','ccDailyPnl','ccDailyPnlPct','ccChange24']){const el=$(id);if(!el)continue;const base=id.startsWith('ccTotal')?state.avgPrice:state.open24;el.classList.toggle('positive',base>0&&p>base);el.classList.toggle('negative',base>0&&p<base);}}
+function renderTactical(){const p=state.price;if(!(p>0))return;let positives=0,total=0;for(const cfg of Object.values(ranges)){const rows=state.series[cfg.source]||[];const start=rangeStart(Object.keys(ranges).find(k=>ranges[k]===cfg),Date.now());const first=rows.find(r=>r.t>=start-cfg.bucket);if(!first||first.t>start+cfg.bucket*1.5)continue;total++;if(p>first.o)positives++;}setText('ccConsensus',total?`${positives} / ${total}`:'—');setText('ccLowDistance',state.low24>0?`${((p/state.low24-1)*100).toFixed(2)}% sopra`:'—');setText('ccHighDistance',state.high24>0?`${Math.max(0,(state.high24/p-1)*100).toFixed(2)}% al massimo`:'—');setText('ccLevelSummary',tactical.levels.length?tactical.levels.map((v,i)=>`L${i+1} ${priceText(v)} · ${pct((v/p-1)*100)}`).join(' / '):'Livelli personali · non impostati');for(const id of ['ccTotalPnl','ccTotalPnlPct','ccDailyPnl','ccDailyPnlPct','ccChange24']){const el=$(id);if(!el)continue;const base=id.startsWith('ccTotal')?state.avgPrice:state.open24;el.classList.toggle('positive',base>0&&p>base);el.classList.toggle('negative',base>0&&p<base);}}
 function initTactical(){try{const saved=JSON.parse(localStorage.getItem('inj_node_cc_levels_'+state.address)||'[]');tactical.levels=Array.isArray(saved)?saved.map(Number).filter(x=>Number.isFinite(x)&&x>0).slice(0,2):[];}catch(_){}selectMain('h1');$('ccMainRange').addEventListener('change',e=>selectMain(e.target.value));document.querySelectorAll('[data-promote]').forEach(b=>b.addEventListener('click',()=>selectMain(b.dataset.promote)));$('ccLevelsButton').addEventListener('click',()=>{['ccLevel1','ccLevel2'].forEach((id,i)=>$(id).value=tactical.levels[i]||'');$('ccLevelsDialog').showModal();});$('ccEventsButton').addEventListener('click',()=>$('ccEventsDialog').showModal());document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>$(b.dataset.close).close()));$('ccLevelsForm').addEventListener('submit',e=>{e.preventDefault();tactical.levels=['ccLevel1','ccLevel2'].map(id=>Number($(id).value)).filter(x=>Number.isFinite(x)&&x>0);try{localStorage.setItem('inj_node_cc_levels_'+state.address,JSON.stringify(tactical.levels));}catch(_){}$('ccLevelsDialog').close();renderTactical();});const wake=()=>{document.body.classList.remove('cc-idle');clearTimeout(tactical.idleTimer);if(tactical.observing)tactical.idleTimer=setTimeout(()=>{if(!document.querySelector('dialog[open]')&&!document.querySelector('.cc-chart-tools :focus'))document.body.classList.add('cc-idle');},6000);};$('ccObserve').addEventListener('click',()=>{tactical.observing=!tactical.observing;document.body.classList.toggle('cc-observing',tactical.observing);$('ccObserve').setAttribute('aria-pressed',String(tactical.observing));$('ccObserve').textContent=tactical.observing?'Osservazione attiva':'Osservazione';$('ccObserve').blur();wake();});['pointermove','pointerdown','keydown','focusin'].forEach(type=>document.addEventListener(type,wake,{passive:true}));window.addEventListener('resize',()=>selectMain(tactical.main),{passive:true});}
 
 $('ccBack')?.addEventListener('click',()=>{stop();if(history.length>1)history.back();else location.href='./index.html'});
