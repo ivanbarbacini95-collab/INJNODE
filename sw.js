@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.03.09-potential-yield-layout';
+const CACHE_NAME = 'inj-node-v16.03.10-wallet-scope';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160088',
@@ -47,8 +47,8 @@ const APP_SHELL = [
   './home-desktop-tiles.css?v=160115',
   './wallet-dock-transparent.css?v=160116',
   './visualize-wealth.html',
-  './visualize-wealth.css?v=160150',
-  './visualize-wealth.js?v=160149',
+  './visualize-wealth.css?v=160151',
+  './visualize-wealth.js?v=160151',
   './visualize-wealth-home.css?v=160127',
   './aqua-mirage.css?v=160113',
   './aqua-mirage.js?v=160113',
