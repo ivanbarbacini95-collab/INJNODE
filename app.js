@@ -128,55 +128,6 @@ window.INJ_GET_SELECTED_WALLET_SNAPSHOT = function () {
   };
 };
 
-// Read-only multi-wallet snapshot for embedded Potential Value.
-// Returns ALL wallets already present in INJ Node, including the selected
-// wallet's latest live state. No wallet addresses are rendered in this UI.
-window.INJ_GET_ALL_WALLET_SNAPSHOTS = function () {
-  return state.wallets.map((wallet) => {
-    const row = state.walletSummaries[wallet.address] || null;
-    const isActive = wallet.address === state.address;
-    const liveUpdated = Number(state.lastWalletUpdate) || 0;
-    const cachedUpdated = Number(row?.updated) || 0;
-    const useLive = isActive && liveUpdated > cachedUpdated && !state.loading;
-    const summary = useLive
-      ? { ...row, staked: state.staked, available: state.available,
-          rewards: state.rewards,
-          total: state.available + state.staked + state.rewards,
-          personalApr: state.personalApr, updated: liveUpdated }
-      : row;
-    const total = Number(summary?.total);
-    const staked = Number(summary?.staked);
-    const apr = Number(summary?.personalApr);
-    return {
-      address: wallet.address,
-      label: wallet.label,
-      total: summary && Number.isFinite(total) && total >= 0 ? total : NaN,
-      staked: summary && Number.isFinite(staked) && staked >= 0 ? staked : NaN,
-      personalApr: summary && summary.personalApr != null && Number.isFinite(apr) ? apr : NaN,
-      updated: Number(summary?.updated) || 0
-    };
-  });
-};
-
-
-// One read-only source for Potential Value: exactly the wallets and selection
-// currently managed by Dashboard/Home, plus the current INJ market quote.
-// Keep the simulator independent from unrelated Comparison selection storage.
-window.INJ_GET_POTENTIAL_VALUE_SNAPSHOT = function () {
-  const wallets = window.INJ_GET_ALL_WALLET_SNAPSHOTS();
-  const selected = window.INJ_GET_SELECTED_WALLET_SNAPSHOT();
-  const selectedAddress = selected?.address ||
-    (state.currentView === 'home' ? state.entrySelectedAddress : state.address) ||
-    state.wallets[0]?.address || '';
-  const priceUsd = number(state.price) || number(state.marketRawPrice);
-  return {
-    selectedAddress,
-    wallets,
-    priceUsd: priceUsd > 0 ? priceUsd : 0,
-    eurPerUsd: number(state.eurRate) > 0 ? number(state.eurRate) : 0
-  };
-};
-
 function setEntryOnboardingStatus(message, mode = '') {
   const status = $('entryWalletStatus');
   if (!status) return;
