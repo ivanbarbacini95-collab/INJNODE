@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.03.15-wallet-scope-live';
+const CACHE_NAME = 'inj-node-v16.03.16-potential-wallet-tabs';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160088',
@@ -47,8 +47,8 @@ const APP_SHELL = [
   './home-desktop-tiles.css?v=160115',
   './wallet-dock-transparent.css?v=160116',
   './visualize-wealth.html',
-  './visualize-wealth.css?v=160154',
-  './visualize-wealth.js?v=160155',
+  './visualize-wealth.css?v=160156',
+  './visualize-wealth.js?v=160156',
   './visualize-wealth-home.css?v=160127',
   './aqua-mirage.css?v=160113',
   './aqua-mirage.js?v=160113',
@@ -74,7 +74,7 @@ const APP_SHELL = [
   './top-clarity.css?v=16.00.88',
   './viewport.js?v=16.00.14',
   './style.css?v=16.01.44',
-  './app.js?v=16.03.15',
+  './app.js?v=16.03.16',
   './i18n.js?v=160145',
   './i18n.js?v=160117',
   './i18n.js?v=160088',
