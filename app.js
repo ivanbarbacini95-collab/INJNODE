@@ -2307,6 +2307,10 @@ function closeEntryGate({ revealDashboard = true } = {}) {
   gate.classList.add('leaving');
 
   window.setTimeout(() => {
+    // An iOS PWA may resume after Scroll Guard has already released an
+    // abandoned Home fade, or the user may have returned Home meanwhile.
+    // Never hide the newly opened page or reset Dashboard scroll in that case.
+    if (revealDashboard && (state.currentView !== 'dashboard' || !gate.classList.contains('leaving'))) return;
     if (revealDashboard && state.currentView === 'dashboard') {
       // Home is a fixed foreground panel. Unlock the document, then fix its
       // scroll origin in this SAME task, before hiding the foreground panel.
