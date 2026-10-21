@@ -621,3 +621,42 @@
     -webkit-font-smoothing:antialiased;
   }
 }
+
+/* Desktop stability: avoid whole-card GPU repaints / white flashes from
+   simultaneous animated beams, sweeping layers and translucent hover paints.
+   Numerical rewards still update live; mobile animations are unaffected. */
+@media (min-width:1000px) and (hover:hover) and (pointer:fine){
+  html[data-inj-page="live-rewards"] .reward-row,
+  html[data-inj-page="live-rewards"] .rewards-total-panel{
+    transform:none!important;
+    transition:none!important;
+    backface-visibility:visible!important;
+    will-change:auto!important;
+  }
+  html[data-inj-page="live-rewards"] .reward-row:hover{
+    transform:none!important;
+    background:linear-gradient(145deg,color-mix(in srgb,var(--surface) 96%,transparent),color-mix(in srgb,var(--accent) 2.5%,var(--surface)))!important;
+  }
+  html[data-inj-page="live-rewards"] .reward-flow.reward-runway-live>i,
+  html[data-inj-page="live-rewards"] .reward-flow span,
+  html[data-inj-page="live-rewards"] .reward-velocity-travel,
+  html[data-inj-page="live-rewards"] .rewards-total-panel::after,
+  html[data-inj-page="live-rewards"] .reward-velocity-beacon{
+    animation:none!important;
+    transition:none!important;
+    will-change:auto!important;
+    filter:none!important;
+    -webkit-filter:none!important;
+  }
+  html[data-inj-page="live-rewards"] .reward-flow.reward-runway-live>i:not(.runway-active){
+    opacity:.18!important;
+    box-shadow:none!important;
+  }
+  html[data-inj-page="live-rewards"] .reward-flow.reward-runway-live>i.runway-active{
+    opacity:.76!important;
+    box-shadow:0 0 5px color-mix(in srgb,var(--up) 40%,transparent)!important;
+  }
+  html[data-inj-page="live-rewards"] .reward-velocity-travel{opacity:.30!important}
+  html[data-inj-page="live-rewards"] .reward-velocity-beacon{opacity:.15!important}
+  html[data-inj-page="live-rewards"] .rewards-total-panel::after{display:none!important}
+}
