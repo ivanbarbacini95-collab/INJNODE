@@ -52,7 +52,7 @@
   ['h1','1H','1 ora'],['h3','3H','3 ore'],['h6','6H','6 ore'],
   ['h12','12H','12 ore'],['d1','1G','1 giorno'],['d3','3G','3 giorni'],
   ['w1','1S','1 settimana'],['mo1','1M','1 mese'],
-  ['y1','1A','1 anno'],['all','TUTTO','Dal 21 ottobre 2020']
+  ['y1','1Y','1 anno'],['all','TUTTO','Dalla prima quotazione disponibile di INJ/USDT']
  ];
  var buttons=[];
  frames.forEach(function(pair){
