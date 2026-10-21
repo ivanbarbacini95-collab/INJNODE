@@ -8,6 +8,9 @@ let walletScope=read('inj_node_visualize_wealth_scope_v2')==='all'?'all':'select
 let spotUsd=NaN;
 let nextSpotCheck=0;
 let spotLoading=false;
+let bridgedSnapshot=null;
+let bridgeReceivedAt=0;
+let bridgeLastAskedAt=0;
 let manualPriceTouched=false;
 const missingWalletRequests=new Map();
 const multiAprCache=new Map();
@@ -101,17 +104,48 @@ function money(n){
   style:'currency',currency,minimumFractionDigits:2,maximumFractionDigits:2
  }).format(n);
 }
+// Independent message channel for iOS/Safari PWAs. The parent also pushes
+// immediately after iframe load; this child retries when returning from sleep.
+function requestDashboardSnapshot(){
+ if(window.parent===window||document.hidden)return;
+ const now=Date.now();
+ if(now-bridgeLastAskedAt<2800)return;
+ bridgeLastAskedAt=now;
+ try{window.parent.postMessage({type:'injnode:wealth:request'},location.origin)}catch(_){}
+}
+window.addEventListener('message',event=>{
+ if(event.origin!==location.origin||event.source!==window.parent)return;
+ if(event.data?.type!=='injnode:wealth:snapshot')return;
+ const incoming=event.data.snapshot;
+ if(!incoming||!Array.isArray(incoming.wallets))return;
+ bridgedSnapshot=incoming;
+ bridgeReceivedAt=Date.now();
+ render();
+});
+function walletSnapshotScore(snapshot){
+ if(!Array.isArray(snapshot?.wallets))return -1;
+ return snapshot.wallets.reduce((score,row)=>{
+  const total=Number(row?.total),staked=Number(row?.staked);
+  return score+(Number(row?.updated)>0&&Number.isFinite(total)&&Number.isFinite(staked)&&staked<=total+1e-5?1:0);
+ },0);
+}
 function dashboardSnapshot(){
+ let direct=null;
  try{
   if(window.parent!==window && window.parent.location.origin===location.origin){
    const fn=window.parent.INJ_GET_POTENTIAL_VALUE_SNAPSHOT;
    if(typeof fn==='function'){
     const snapshot=fn();
-    if(snapshot&&Array.isArray(snapshot.wallets))return snapshot;
+    if(snapshot&&Array.isArray(snapshot.wallets))direct=snapshot;
    }
   }
  }catch(_){}
- return null;
+ const bridgeFresh=Date.now()-bridgeReceivedAt<90_000;
+ // Prefer the more complete set, not simply whichever bridge answers first.
+ if(bridgeFresh&&walletSnapshotScore(bridgedSnapshot)>walletSnapshotScore(direct))return bridgedSnapshot;
+ if(direct?.wallets?.length)return direct;
+ if(bridgeFresh&&bridgedSnapshot?.wallets?.length)return bridgedSnapshot;
+ return direct?.wallets?.length?direct:null;
 }
 function validWalletAddress(address){return /^inj1[a-z0-9]{30,}$/i.test(String(address||''))}
 function normalizeWallet(entry,cached){
@@ -138,7 +172,7 @@ function getRows(){
  if(!Array.isArray(wallets))wallets=[];
  if(!summaries||typeof summaries!=='object')summaries={};
  const snapshot=dashboardSnapshot();
- const sources=snapshot?snapshot.wallets:wallets;
+ const sources=snapshot?.wallets?.length?snapshot.wallets:wallets;
  const seen=new Set(),rows=[];
  for(const item of sources){
   const address=String(item?.address||'').trim().toLowerCase();
@@ -147,7 +181,7 @@ function getRows(){
   const row=normalizeWallet(item,summaries[address]);
   if(row)rows.push(row);
  }
- let selected=snapshot?String(snapshot.selectedAddress||'').toLowerCase():String(read('inj_monitor_address')||'').toLowerCase();
+ let selected=snapshot?.wallets?.length?String(snapshot.selectedAddress||'').toLowerCase():String(read('inj_monitor_address')||'').toLowerCase();
  if(!rows.some(row=>row.address===selected))selected=rows[0]?.address||'';
  const marketPrice=num(snapshot?.priceUsd);
  if(marketPrice>0)spotUsd=marketPrice;
@@ -387,6 +421,7 @@ function translate(){
 }
 function render(){
  const t=dict[lang()],unit=curr();translate();
+ requestDashboardSnapshot();
  const all=getRows();
  refreshSpotPrice();
  if(previousCurrency!==unit||waitingForRate){
@@ -481,5 +516,5 @@ window.addEventListener('storage',(event)=>{
 });
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)render()});
 render();
-setInterval(()=>{if(!document.hidden)render()},2000);
+setInterval(()=>{if(!document.hidden){requestDashboardSnapshot();render()}},3500);
 })();
