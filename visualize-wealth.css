@@ -44,3 +44,27 @@ button,input{font:inherit;color:inherit}button{cursor:pointer}button:focus-visib
 .wealth-primary .wealth-amount{font-size:clamp(32px,9vw,45px)}.wealth-secondary .wealth-amount{font-size:clamp(29px,8vw,40px)}
 }
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* Desktop / embedded PWA: give Potential Value one explicit scrolling
+   surface. The parent Home remains fixed only while this section is open. */
+@media (min-width:821px) and (hover:hover) and (pointer:fine){
+  html[data-inj-page="visualize-wealth"]{
+    height:100%!important;
+    min-height:0!important;
+    overflow:hidden!important;
+  }
+  html[data-inj-page="visualize-wealth"] body{
+    height:100dvh!important;
+    min-height:0!important;
+    max-height:100dvh!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    overscroll-behavior-y:contain!important;
+    scroll-behavior:auto!important;
+  }
+  html[data-inj-page="visualize-wealth"] .wealth-shell{
+    min-height:100%;
+    height:auto!important;
+    overflow:visible!important;
+  }
+}
