@@ -53,7 +53,7 @@ try {
 <link rel="stylesheet" href="./unified-navigation.css?v=160136">
 <script defer src="./section-heading-harmony.js?v=160131"></script>
 <script defer src="./scroll-edges.js?v=160128"></script>
-<link rel="stylesheet" href="./command-center-flash.css?v=160301">
+<link rel="stylesheet" href="./command-center-flash.css?v=160307">
 </head>
 <body class="cc-flash-terminal">
 <main class="cc-shell" id="commandCenter">
@@ -112,7 +112,7 @@ try {
         <div class="cc-chart-tools">
           <label for="ccMainRange">Grafico principale</label>
           <select id="ccMainRange">
-            <option value="m1">1 MIN</option><option value="m5">5 MIN</option><option value="m10">10 MIN</option><option selected value="h1">1 ORA</option><option value="d1">1 GIORNO</option><option value="w1">1 SETTIMANA</option>
+            <option value="m1">1 MIN</option><option value="m5">5 MIN</option><option value="m10">10 MIN</option><option selected value="h1">1 ORA</option><option value="h3">3 ORE</option><option value="h6">6 ORE</option><option value="h12">12 ORE</option><option value="d1">1 GIORNO</option><option value="d3">3 GIORNI</option><option value="w1">1 SETTIMANA</option><option value="mo1">1 MESE</option><option value="y1">1 ANNO</option><option value="all">TUTTO (DAL 2020)</option>
           </select>
           <button id="ccLevelsButton" type="button">Livelli</button>
           <button id="ccObserve" type="button" aria-pressed="false">Osservazione</button>
@@ -143,6 +143,11 @@ try {
         <article class="cc-chart cc-chart-1w neutral" data-key="w1">
           <header><button class="cc-promote" data-promote="w1" type="button" aria-label="Porta 1 SETTIMANA nel grafico principale"><strong>1 SETTIMANA</strong><small>Weekly structure</small></button><div class="cc-chart-status"><b class="neutral" id="cc1wChange">—</b><span class="cc-chart-feed">ATTESA</span></div></header>
           <div class="cc-chart-body"><canvas id="ccCanvas1w"></canvas><aside class="cc-scale"><span id="cc1wTop">—</span><span id="cc1wMid">—</span><span id="cc1wBottom">—</span><b id="cc1wMarker">—</b></aside></div><div class="cc-time-axis"><time></time><span></span><time></time></div>
+        </article>
+        <!-- One reused OHLC canvas for 3H / 6H / 12H / 3D / 1M / 1Y / ALL. -->
+        <article class="cc-chart cc-chart-history neutral" id="ccHistoryChart" data-key="extended-inactive" hidden>
+          <header><button class="cc-promote" data-promote="h3" type="button"><strong>STORICO REALE</strong><small>INJ/USDT</small></button><div class="cc-chart-status"><b class="neutral" id="ccHistChange">—</b><span class="cc-chart-feed">ATTESA</span></div></header>
+          <div class="cc-chart-body"><canvas id="ccCanvasHistory"></canvas><aside class="cc-scale"><span id="ccHistTop">—</span><span id="ccHistMid">—</span><span id="ccHistBottom">—</span><b id="ccHistMarker">—</b></aside></div><div class="cc-time-axis"><time></time><span>Storico INJ/USDT</span><time></time></div>
         </article>
       </section>
     </section>
@@ -180,8 +185,8 @@ try {
 
 <dialog class="cc-dialog" id="ccLevelsDialog"><form id="ccLevelsForm"><header><h2>Livelli personali</h2><button aria-label="Chiudi" data-close="ccLevelsDialog" type="button">×</button></header><p>Prezzi INJ / USDT. Le soglie vengono salvate per questo wallet; lascia vuoto per rimuoverle.</p><label>Livello 1<input id="ccLevel1" inputmode="decimal" min="0.000001" placeholder="Es. 7.50" step="any" type="number"/></label><label>Livello 2<input id="ccLevel2" inputmode="decimal" min="0.000001" placeholder="Es. 10.00" step="any" type="number"/></label><p>Il prezzo medio appare sul grafico quando rientra nella scala visibile. Gli avvisi funzionano mentre il Command Centre è aperto.</p><button type="submit">Salva livelli</button></form></dialog>
 <dialog class="cc-dialog" id="ccEventsDialog"><header><h2>Eventi della sessione</h2><button aria-label="Chiudi" data-close="ccEventsDialog" type="button">×</button></header><ol id="ccEventList"><li>Nessun evento</li></ol></dialog>
-<script defer src="command-center.js?v=16.00.18"></script>
-<script defer src="./command-center-flash.js?v=160302"></script>
+<script defer src="command-center.js?v=16.03.07"></script>
+<script defer src="./command-center-flash.js?v=160307"></script>
 
 
 </body>
