@@ -123,8 +123,39 @@ window.INJ_GET_SELECTED_WALLET_SNAPSHOT = function () {
     available: Number(row?.available) || 0,
     staked: Number(row?.staked) || 0,
     rewards: Number(row?.rewards) || 0,
+    personalApr: Number.isFinite(Number(row?.personalApr)) && row?.personalApr != null ? Number(row.personalApr) : NaN,
     updated: Number.isFinite(updated) && updated > 0 ? updated : 0
   };
+};
+
+// Read-only multi-wallet snapshot for embedded Potential Value.
+// Returns ALL wallets already present in INJ Node, including the selected
+// wallet's latest live state. No wallet addresses are rendered in this UI.
+window.INJ_GET_ALL_WALLET_SNAPSHOTS = function () {
+  return state.wallets.map((wallet) => {
+    const row = state.walletSummaries[wallet.address] || null;
+    const isActive = wallet.address === state.address;
+    const liveUpdated = Number(state.lastWalletUpdate) || 0;
+    const cachedUpdated = Number(row?.updated) || 0;
+    const useLive = isActive && liveUpdated > cachedUpdated && !state.loading;
+    const summary = useLive
+      ? { ...row, staked: state.staked, available: state.available,
+          rewards: state.rewards,
+          total: state.available + state.staked + state.rewards,
+          personalApr: state.personalApr, updated: liveUpdated }
+      : row;
+    const total = Number(summary?.total);
+    const staked = Number(summary?.staked);
+    const apr = Number(summary?.personalApr);
+    return {
+      address: wallet.address,
+      label: wallet.label,
+      total: summary && Number.isFinite(total) && total >= 0 ? total : NaN,
+      staked: summary && Number.isFinite(staked) && staked >= 0 ? staked : NaN,
+      personalApr: summary && summary.personalApr != null && Number.isFinite(apr) ? apr : NaN,
+      updated: Number(summary?.updated) || 0
+    };
+  });
 };
 
 function setEntryOnboardingStatus(message, mode = '') {
