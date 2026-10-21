@@ -15,8 +15,7 @@ html[data-inj-page="index"][data-inj-scroll="dashboard"]{
   -webkit-overflow-scrolling:touch!important;
 }
 html[data-inj-page="index"][data-inj-scroll="dashboard"]
-body.dashboard-scroll-ready:not(.entry-gate-open):not(.menu-overlay-open):not(.inj-section-open)
-:not(.focus-display-open):not(.pulse-view-open):not(.live-charts-open):not(.chart-overlay-open){
+body.dashboard-scroll-ready:not(.entry-gate-open):not(.menu-overlay-open):not(.inj-section-open):not(.focus-display-open):not(.pulse-view-open):not(.live-charts-open):not(.chart-overlay-open){
   position:static!important;
   height:auto!important;
   min-height:100dvh!important;
