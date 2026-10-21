@@ -1,9 +1,9 @@
-const CACHE_NAME = 'inj-node-v16.03.16-potential-wallet-tabs';
+const CACHE_NAME = 'inj-node-v16.03.17-dashboard-wallet-bridge';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160088',
   './navigation.css?v=160080',
-  './navigation.js?v=160120',
+  './navigation.js?v=160157',
   './navigation.js?v=160119',
   './navigation.js?v=160117',
   './navigation.js?v=160110',
@@ -48,7 +48,7 @@ const APP_SHELL = [
   './wallet-dock-transparent.css?v=160116',
   './visualize-wealth.html',
   './visualize-wealth.css?v=160156',
-  './visualize-wealth.js?v=160156',
+  './visualize-wealth.js?v=160157',
   './visualize-wealth-home.css?v=160127',
   './aqua-mirage.css?v=160113',
   './aqua-mirage.js?v=160113',
