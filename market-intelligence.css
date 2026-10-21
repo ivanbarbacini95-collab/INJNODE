@@ -58,3 +58,68 @@ html[data-inj-market] #injGlobalMarket>.overview{margin-top:15px}
  html[data-inj-market] .inj-mi-control button{padding:8px 9px}
 }
 @media(prefers-reduced-motion:reduce){html[data-inj-market] .inj-mi-tabs *,html[data-inj-market] #injIntelligenceMain *{animation:none!important;transition:none!important}}
+
+/* Visibly readable snapshot and trend, even on Safari iPhone / light themes. */
+html[data-inj-market] .inj-mi-chart-wrap{min-height:265px!important}
+html[data-inj-market] #injIntelChart{
+ min-height:245px!important;height:auto!important;max-height:390px!important;
+ overflow:visible!important;visibility:visible!important;opacity:1!important;
+}
+html[data-inj-market] .inj-mi-grid{stroke:var(--line)!important;stroke-opacity:.72}
+html[data-inj-market] .inj-mi-chart-samples{
+ color:var(--accent);font-size:10px;letter-spacing:.06em;
+ font-weight:800;white-space:nowrap;font-variant-numeric:tabular-nums;
+}
+html[data-inj-market] .inj-mi-trend-line{
+ stroke-width:3.6px;opacity:1;
+ vector-effect:non-scaling-stroke;
+ filter:drop-shadow(0 0 3px color-mix(in srgb,var(--accent) 45%,transparent));
+}
+html[data-inj-market] .inj-mi-final-dot{
+ filter:drop-shadow(0 0 5px var(--accent));
+}
+html[data-inj-market] .inj-mi-snapshot-eyebrow{
+ fill:var(--muted);font:800 13px system-ui,sans-serif;letter-spacing:2.2px;
+}
+html[data-inj-market] .inj-mi-snapshot-value{
+ fill:var(--text);font:850 43px system-ui,sans-serif;letter-spacing:-1.4px;
+ paint-order:stroke;stroke:var(--bg);stroke-width:1.5px;
+}
+html[data-inj-market] .inj-mi-snapshot-guide{
+ stroke:var(--accent);stroke-width:2;stroke-opacity:.56;
+ stroke-dasharray:7 9;vector-effect:non-scaling-stroke;
+}
+html[data-inj-market] .inj-mi-snapshot-halo{
+ fill:var(--accent);opacity:.12;
+ transform-origin:420px 187px;
+ animation:inj-mi-sample-pulse 2.2s ease-in-out infinite;
+}
+html[data-inj-market] .inj-mi-snapshot-ring{
+ fill:var(--bg);stroke:var(--accent);stroke-width:3px;
+}
+html[data-inj-market] .inj-mi-snapshot-dot{
+ fill:var(--accent);stroke:var(--bg);stroke-width:1px;
+ filter:drop-shadow(0 0 7px var(--accent));
+}
+html[data-inj-market] .inj-mi-snapshot-time{
+ fill:var(--text);font:750 15px system-ui,sans-serif;letter-spacing:.4px;
+}
+html[data-inj-market] .inj-mi-snapshot-caption{
+ fill:var(--muted);font:700 12px system-ui,sans-serif;letter-spacing:1px;
+}
+html[data-inj-market] .inj-mi-source-link{
+ display:block;margin-top:12px;color:var(--accent);
+ font-weight:750;text-decoration:underline;
+}
+@keyframes inj-mi-sample-pulse{
+ 0%,100%{opacity:.08;transform:scale(.85)}
+ 50%{opacity:.2;transform:scale(1.16)}
+}
+@media(max-width:600px){
+ html[data-inj-market] .inj-mi-chart-samples{width:100%;font-size:9px}
+ html[data-inj-market] #injIntelChart{min-height:195px!important}
+ html[data-inj-market] .inj-mi-chart-wrap{min-height:215px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ html[data-inj-market] .inj-mi-snapshot-halo{animation:none!important}
+}

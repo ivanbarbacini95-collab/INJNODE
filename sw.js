@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.04.02-intelligence-data-check';
+const CACHE_NAME = 'inj-node-v16.04.21-market-visibility-intro';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160088',
@@ -24,7 +24,8 @@ const APP_SHELL = [
   './section-heading-harmony.css?v=160131',
   './unified-navigation.css?v=160138',
   './menu-header-clear.css?v=160139',
-  './intro-b-capital.css?v=160142',
+  './intro-node-ambient.css?v=160421',
+  './intro-node-ambient.js?v=160421',
   './live-charts-open-history.css?v=160140',
   './b-capital-group-brand.png',
   './section-heading-harmony.js?v=160131',
@@ -62,8 +63,8 @@ const APP_SHELL = [
   './ios-converter-keyboard.js?v=160095',
   './treasury-ownership.css?v=160099',
   './market.html',
-  './market-intelligence.css?v=160401',
-  './market-intelligence.js?v=160402',
+  './market-intelligence.css?v=160421',
+  './market-intelligence.js?v=160421',
   './market-dominance.css?v=160324',
   './market-dominance.js?v=160324',
   './comparison.html',
@@ -71,7 +72,7 @@ const APP_SHELL = [
   './comparison.css?v=160095',
   './comparison-ab.css?v=160095',
   './comparison.js?v=160095',
-  './market-portal.js?v=160402',
+  './market-portal.js?v=160421',
   './market-lang.js?v=160082',
   './market.css?v=160082',
   './market.js?v=160402',

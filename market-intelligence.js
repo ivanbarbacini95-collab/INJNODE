@@ -235,7 +235,24 @@ function heading(){
 }
 function fromHistory(kind){
  const start=now()-WINDOW[days],arr=dataHistory[kind]||[];
- return arr.filter(p=>p.t>=start&&Number.isFinite(kind==='dominance'?p.d:p.v)).map(p=>({t:p.t,v:kind==='dominance'?p.d:p.v,label:'INJ'}));
+ const real=arr.filter(p=>p.t>=start&&Number.isFinite(kind==='dominance'?p.d:p.v))
+  .map(p=>({t:p.t,v:kind==='dominance'?p.d:p.v,label:'INJ'}));
+ if(real.length)return real;
+ // A verified stored snapshot is also a genuine reading. Use its original
+ // observation timestamp; never manufacture earlier history or a time series.
+ let reading=NaN,stamp=0;
+ if(kind==='staking'){reading=chain.ratio;stamp=chainAt;}
+ else if(kind==='burn'){reading=chain.burn;stamp=chainAt;}
+ else if(kind==='dominance'){
+  const cap=pos(currentINJ()?.market_cap),global=pos(market?.global?.total_market_cap?.usd);
+  if(cap&&global&&cap<global)reading=cap/global*100;
+  stamp=marketAt;
+ }
+ if(Number.isFinite(reading)&&reading>=0&&stamp>=start&&stamp<=now()&&
+    now()-stamp<24*3600000){
+  return [{t:stamp,v:reading,label:'INJ'}];
+ }
+ return [];
 }
 function metricPoints(){
  if(metric==='dominance')return fromHistory('dominance');
@@ -248,82 +265,136 @@ function renderChart(){
  heading();
  const svg=$('injIntelChart'),note=$('injIntelChartEmpty'),inspect=$('injIntelInspect');
  if(!svg||!note||!inspect)return;
- const data=metricPoints().filter(p=>Number.isFinite(p.t)&&Number.isFinite(p.v)).sort((a,b)=>a.t-b.t);
- plotted=data;svg.replaceChildren();
- if(data.length<2){
-  note.hidden=false;note.replaceChildren();
-  if(data.length===1){
-   svg.hidden=false;const ns='http://www.w3.org/2000/svg';
-   const line=document.createElementNS(ns,'line'),dot=document.createElementNS(ns,'circle');
-   for(const [k,v]of Object.entries({x1:69,x2:820,y1:180,y2:180,class:'inj-mi-grid'}))line.setAttribute(k,String(v));
-   for(const [k,v]of Object.entries({cx:450,cy:180,r:6,fill:'var(--accent)',stroke:'var(--bg)','stroke-width':2}))dot.setAttribute(k,String(v));
-   svg.append(line,dot);
-   inspect.textContent=time(data[0].t)+' · '+displayPoint(data[0]);
-   note.textContent=tr('Prima rilevazione reale. La curva crescerà con le prossime misurazioni.','First real reading. More measurements will build the curve.');
-   return;
-  }
+ const data=metricPoints().filter(p=>Number.isFinite(p?.t)&&Number.isFinite(p?.v))
+  .sort((a,b)=>a.t-b.t);
+ plotted=data;
+ svg.replaceChildren();
+ svg.onpointermove=null;svg.onpointerdown=null;svg.onkeydown=null;
+ const count=data.length;
+ const sampleText= count===0?tr('NESSUNA RILEVAZIONE','NO READINGS'):
+  count===1?tr('1 RILEVAZIONE REALE','1 REAL READING'):
+  fmt(count,0)+tr(' RILEVAZIONI REALI',' REAL READINGS');
+ text('injIntelChartSamples',sampleText);
+ const metricValue=p=>metric==='price'?usd(p.v):metric==='burn'?fmt(p.v,2)+' INJ':percent(p.v,4);
+ const ns='http://www.w3.org/2000/svg',W=840,H=315,L=69,R=18,T=17,B=37;
+ const make=(kind,attrs={},parent=svg)=>{
+  const el=document.createElementNS(ns,kind);
+  for(const [k,v]of Object.entries(attrs))el.setAttribute(k,String(v));
+  parent.appendChild(el);return el;
+ };
+ svg.hidden=false;
+ svg.setAttribute('viewBox','0 0 840 315');
+ svg.setAttribute('aria-label',tr('Grafico interattivo con letture verificate.','Interactive chart with verified readings.'));
+ note.replaceChildren();
+ if(!count){
+  note.hidden=false;
   svg.hidden=true;
-  let label=chartLoading?tr('Caricamento grafico reale…','Loading real data…'):
-   metric==='burn'?tr('Lo storico dei burn non è disponibile dalle API consultate.','Burn history is not available from queried APIs.'):
-   metric==='staking'?tr('In attesa delle rilevazioni dello staking on-chain.','Waiting for on-chain staking readings.'):
-   metric==='dominance'?tr('In attesa di capitalizzazione INJ e mercato globale.','Waiting for INJ and total-market capitalization.'):
-   tr('Storico non disponibile dalle fonti di mercato.','History unavailable from market providers.');
-  const current=currentINJ();
-  if(metric==='price'&&pos(current?.current_price))label+=' '+tr('Prezzo attuale rilevato: ','Observed current price: ')+usd(current.current_price)+'.';
-  if(metric==='relative'&&pos(current?.current_price))label+=' '+tr('Il confronto 7G/30G è mostrato in Relative Strength.','The 7D/30D comparison appears in Relative Strength.');
-  note.textContent=label;
+  note.textContent=chartLoading?tr('Sincronizzazione dati reali…','Syncing real data…'):
+   metric==='burn'?tr('La fonte burn non ha ancora fornito un totale verificabile.','Burn provider has not yet returned a verifiable total.'):
+   metric==='staking'?tr('Attesa dei dati staking dalla blockchain.','Waiting for on-chain staking data.'):
+   metric==='dominance'?tr('Attesa dei dati di capitalizzazione INJ e del mercato crypto.','Waiting for INJ and total-market capitalization.'):
+   tr('Storico non disponibile dalle fonti dati.','Price history unavailable from data providers.');
   if(metric==='burn'){
-   const link=document.createElement('a');link.href='https://injective.com/inj';link.target='_blank';link.rel='noopener noreferrer';
-   link.textContent=tr('Statistiche ufficiali Injective ↗','Official Injective statistics ↗');
-   link.style.cssText='display:block;margin-top:12px;color:var(--accent);font-weight:750;text-decoration:underline;';
-   note.append(link);
+   const a=document.createElement('a');
+   a.href='https://injective.com/inj';a.target='_blank';a.rel='noopener noreferrer';
+   a.textContent=tr('Verifica sul sito Injective ↗','Check Injective official site ↗');
+   a.className='inj-mi-source-link';note.append(a);
   }
-  inspect.textContent=chartLoading?tr('Sincronizzazione…','Syncing…'):'—';
+  inspect.textContent='—';return;
+ }
+ note.hidden=true;
+ // With exactly one real measurement, draw a substantial CURRENT SNAPSHOT.
+ // No artificial time series: the horizontal guide is explicitly a snapshot
+ // reference, not a flat historic price or inferred line.
+ if(count===1){
+  const p=data[0],v=metricValue(p);
+  for(const y of [48,98,148,198,248]){
+   make('line',{x1:L,y1:y,x2:W-R,y2:y,class:'inj-mi-grid'});
+  }
+  for(const x of [L+60,290,550,W-R-60]){
+   make('line',{x1:x,y1:27,x2:x,y2:262,class:'inj-mi-grid',opacity:'.48'});
+  }
+  make('text',{x:W/2,y:56,'text-anchor':'middle',class:'inj-mi-snapshot-eyebrow'})
+   .textContent=tr('VALORE ATTUALE RILEVATO','LATEST VERIFIED READING');
+  make('text',{x:W/2,y:111,'text-anchor':'middle',class:'inj-mi-snapshot-value'}).textContent=v;
+  make('line',{x1:145,x2:695,y1:187,y2:187,class:'inj-mi-snapshot-guide'});
+  make('circle',{cx:W/2,cy:187,r:30,class:'inj-mi-snapshot-halo'});
+  make('circle',{cx:W/2,cy:187,r:13,class:'inj-mi-snapshot-ring'});
+  make('circle',{cx:W/2,cy:187,r:7,class:'inj-mi-snapshot-dot'});
+  make('text',{x:W/2,y:237,'text-anchor':'middle',class:'inj-mi-snapshot-time'}).textContent=time(p.t);
+  make('text',{x:W/2,y:265,'text-anchor':'middle',class:'inj-mi-snapshot-caption'})
+   .textContent=tr('PRIMA RILEVAZIONE · STORICO IN COSTRUZIONE','FIRST READING · BUILDING HISTORY');
+  inspect.textContent=time(p.t)+' · '+v;
+  svg.onpointermove=()=>{inspect.textContent=time(p.t)+' · '+v};
+  svg.onpointerdown=svg.onpointermove;
+  svg.onkeydown=e=>{if(['ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();inspect.textContent=time(p.t)+' · '+v}};
+  svg.setAttribute('aria-label',tr('Valore corrente verificato: ','Verified current value: ')+v+'. '+tr('Prima rilevazione: storico in costruzione.','First reading: history is being built.'));
   return;
  }
- svg.hidden=false;note.hidden=true;
  const seriesNames=[...new Set(data.map(p=>p.label||'INJ'))];
- const boundsX=[Math.min(...data.map(x=>x.t)),Math.max(...data.map(x=>x.t))];
- const values=data.map(p=>p.v),min=Math.min(...values),max=Math.max(...values);
- const pad=Math.max((max-min)*.14,Math.abs(max)*.006,.0000001),lo=min-pad,hi=max+pad;
- const W=840,H=315,L=69,R=18,T=17,B=37;
- const cx=t=>L+(t-boundsX[0])/(boundsX[1]-boundsX[0]||1)*(W-L-R);
- const cy=v=>T+(1-(v-lo)/(hi-lo))*(H-T-B);
- const ns='http://www.w3.org/2000/svg';
- function node(kind,a={},parent=svg){const el=document.createElementNS(ns,kind);for(const [k,v]of Object.entries(a))el.setAttribute(k,String(v));parent.appendChild(el);return el}
- for(let i=0;i<4;i++){
-  const y=T+i/3*(H-T-B),v=hi-i/3*(hi-lo);
-  node('line',{x1:L,y1:y,x2:W-R,y2:y,class:'inj-mi-grid'});
-  node('text',{x:L-9,y:y+4,'text-anchor':'end',class:'inj-mi-tick'}).textContent=
-   metric==='price'?('$'+fmt(v,2)):metric==='burn'?fmt(v,0):fmt(v,3)+(metric==='relative'||metric==='staking'||metric==='dominance'?'%':'');
+ const firstTime=Math.min(...data.map(p=>p.t)),lastTime=Math.max(...data.map(p=>p.t));
+ const values=data.map(p=>p.v),mn=Math.min(...values),mx=Math.max(...values);
+ const pad=Math.max((mx-mn)*.15,Math.abs(mx)*.006,.00000001);
+ const lo=mn-pad,hi=mx+pad;
+ const x=t=>L+(t-firstTime)/(lastTime-firstTime||1)*(W-L-R);
+ const y=v=>T+(1-(v-lo)/(hi-lo))*(H-T-B);
+ for(let i=0;i<5;i++){
+  const yy=T+i/4*(H-T-B),value=hi-i/4*(hi-lo);
+  make('line',{x1:L,y1:yy,x2:W-R,y2:yy,class:'inj-mi-grid'});
+  make('text',{x:L-9,y:yy+4,'text-anchor':'end',class:'inj-mi-tick'}).textContent=
+   metric==='price'?'$'+fmt(value,2):metric==='burn'?fmt(value,0):fmt(value,4)+'%';
  }
- node('text',{x:L,y:H-8,class:'inj-mi-tick'}).textContent=time(boundsX[0]);
- node('text',{x:W-R,y:H-8,'text-anchor':'end',class:'inj-mi-tick'}).textContent=time(boundsX[1]);
+ make('text',{x:L,y:H-8,class:'inj-mi-tick'}).textContent=time(firstTime);
+ make('text',{x:W-R,y:H-8,'text-anchor':'end',class:'inj-mi-tick'}).textContent=time(lastTime);
+ const defs=make('defs');
+ const grad=make('linearGradient',{id:'injMiFillV3',x1:0,y1:0,x2:0,y2:1},defs);
+ make('stop',{offset:'0%','stop-color':'var(--accent)','stop-opacity':'.25'},grad);
+ make('stop',{offset:'100%','stop-color':'var(--accent)','stop-opacity':'0'},grad);
  const colors={INJ:'var(--accent)',BTC:'#f4a24a',ETH:'#909aeb'};
- for(const name of seriesNames){
-  const points=data.filter(p=>(p.label||'INJ')===name),d=points.map((p,i)=>(i?'L':'M')+cx(p.t).toFixed(2)+' '+cy(p.v).toFixed(2)).join(' ');
-  if(points.length>1)node('path',{d,stroke:colors[name]||'var(--accent)',fill:'none','stroke-width':name==='INJ'?2.8:1.75,opacity:name==='INJ'?1:.8,'stroke-linecap':'round','stroke-linejoin':'round'});
+ for(const label of seriesNames){
+  const rows=data.filter(p=>(p.label||'INJ')===label);
+  if(rows.length<2)continue;
+  const d=rows.map((p,i)=>(i?'L':'M')+x(p.t).toFixed(2)+' '+y(p.v).toFixed(2)).join(' ');
+  const col=colors[label]||'var(--accent)';
+  if(label==='INJ'){
+   const area=d+' L'+x(rows.at(-1).t).toFixed(2)+' '+(H-B)+' L'+x(rows[0].t).toFixed(2)+' '+(H-B)+' Z';
+   make('path',{d:area,fill:'url(#injMiFillV3)',stroke:'none'});
+  }
+  make('path',{d,stroke:col,fill:'none','stroke-width':label==='INJ'?4:2.4,
+   'stroke-linecap':'round','stroke-linejoin':'round',
+   class:'inj-mi-trend-line',opacity:label==='INJ'?1:.88});
+  const last=rows.at(-1);
+  make('circle',{cx:x(last.t),cy:y(last.v),r:label==='INJ'?7:5,fill:col,
+   stroke:'var(--bg)','stroke-width':2,class:'inj-mi-final-dot'});
  }
- let group=null;
- function selection(e){
-  const bounds=svg.getBoundingClientRect();const px=(e.clientX-bounds.left)/(bounds.width||1)*W;
-  let nearest=data[0],distance=Infinity;
-  for(const p of data){const delta=Math.abs(px-cx(p.t));if(delta<distance){nearest=p;distance=delta}}
-  show(nearest);
- }
+ let selection=null,selectionIndex=data.length-1;
  function show(p){
   if(!p)return;
-  if(group)group.remove();
-  group=node('g');
-  node('line',{x1:cx(p.t),x2:cx(p.t),y1:T,y2:H-B,class:'inj-mi-crosshair'},group);
-  node('circle',{cx:cx(p.t),cy:cy(p.v),r:5,fill:colors[p.label]||'var(--accent)',stroke:'var(--bg)','stroke-width':2},group);
-  const value=metric==='price'?usd(p.v):metric==='burn'?fmt(p.v,2)+' INJ':percent(p.v,4);
-  inspect.textContent=time(p.t)+' · '+(p.label||'INJ')+' '+value;
+  if(selection)selection.remove();
+  selection=make('g');
+  make('line',{x1:x(p.t),x2:x(p.t),y1:T,y2:H-B,class:'inj-mi-crosshair'},selection);
+  make('circle',{cx:x(p.t),cy:y(p.v),r:7.5,fill:colors[p.label]||'var(--accent)',
+   stroke:'var(--bg)','stroke-width':2.3},selection);
+  inspect.textContent=time(p.t)+' · '+(p.label||'INJ')+' '+metricValue(p);
  }
- const lastINJ=data.filter(p=>p.label==='INJ').at(-1)||data.at(-1);show(lastINJ);
- svg.onpointerdown=selection;svg.onpointermove=selection;
- svg.onkeydown=e=>{if(!['ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();const index=data.findIndex(p=>p.t===window.__injMiKeyboardT);const next=Math.max(0,Math.min(data.length-1,(index<0?data.length-1:index)+(e.key==='ArrowLeft'?-1:1)));window.__injMiKeyboardT=data[next].t;show(data[next])};
- svg.setAttribute('aria-label',tr('Grafico INJ interattivo: tocca o trascina per leggere un punto reale','Interactive INJ chart: touch or drag to inspect a real observation'));
+ show(data.filter(p=>p.label==='INJ').at(-1)||data.at(-1));
+ function hover(e){
+  const rect=svg.getBoundingClientRect();
+  const pixel=(e.clientX-rect.left)/(rect.width||1)*W;
+  let closest=0,distance=Infinity;
+  data.forEach((p,i)=>{const dx=Math.abs(x(p.t)-pixel);if(dx<distance){distance=dx;closest=i}});
+  selectionIndex=closest;show(data[closest]);
+ }
+ svg.onpointermove=hover;svg.onpointerdown=hover;
+ svg.onkeydown=e=>{
+  if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;
+  e.preventDefault();
+  if(e.key==='Home')selectionIndex=0;
+  else if(e.key==='End')selectionIndex=data.length-1;
+  else selectionIndex=Math.max(0,Math.min(data.length-1,selectionIndex+(e.key==='ArrowLeft'?-1:1)));
+  show(data[selectionIndex]);
+ };
+ svg.setAttribute('aria-label',tr('Grafico dei dati reali con ', 'Real data chart with ')+sampleText);
 }
 function cleanChart(payload,id){
  const rows=Array.isArray(payload?.prices)?payload.prices:[];

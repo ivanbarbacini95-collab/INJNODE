@@ -152,7 +152,8 @@
 <link rel="stylesheet" href="./section-heading-harmony.css?v=160131">
 <link rel="stylesheet" href="./unified-navigation.css?v=160138">
 <link rel="stylesheet" href="./menu-header-clear.css?v=160139">
-<link rel="stylesheet" href="./intro-b-capital.css?v=160142">
+<link rel="stylesheet" href="./intro-node-ambient.css?v=160421">
+  <script defer src="./intro-node-ambient.js?v=160421"></script>
 <link rel="stylesheet" href="./wallet-edge-scroll-stability.css?v=160143">
 <link rel="stylesheet" href="./menu-accordion.css?v=160145">
 <link rel="stylesheet" href="./home-mobile-launcher-fix.css?v=160204">
@@ -300,6 +301,7 @@
 </head>
 <body class="boot-loading">
 <div aria-label="Avvio INJ Node" aria-live="polite" aria-atomic="true" class="boot-splash node-pulse-splash" id="bootSplash" role="status">
+  <div class="node-ambient-field" id="nodeAmbientField" aria-hidden="true"><span class="node-ambient-ring r1"></span><span class="node-ambient-ring r2"></span><span class="node-ambient-ring r3"></span></div>
   <div class="node-pulse-stage">
     <div aria-hidden="true" class="node-pulse-name"><strong>INJ</strong><span>NODE</span></div>
     <div aria-hidden="true" class="node-pulse-visual">
@@ -309,9 +311,6 @@
       </svg>
     </div>
     <div class="node-pulse-status" id="bootStatus">CONNECTING TO INJECTIVE <i class="node-pulse-indicator" aria-hidden="true"></i></div>
-  </div>
-  <div class="node-capital-brand" role="img" aria-label="B Capital Group — Private Capital · Digital Assets">
-    <img class="node-capital-artwork" src="./b-capital-group-brand.png" alt="" aria-hidden="true" width="668" height="199" loading="eager" decoding="async"/>
   </div>
   <div class="node-pulse-foot" aria-hidden="true">REAL-TIME INTELLIGENCE</div>
 </div>
@@ -1207,6 +1206,6 @@
 <div id="injMarketPortal" class="inj-market-portal" hidden aria-label="Mercato" role="dialog" aria-modal="true">
   <iframe id="injMarketFrame" title="Mercato" loading="eager" referrerpolicy="same-origin"></iframe>
 </div>
-<script defer src="market-portal.js?v=160402"></script>
+<script defer src="market-portal.js?v=160421"></script>
 </body>
 </html>
