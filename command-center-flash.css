@@ -139,6 +139,45 @@ body.cc-flash-terminal .cc-flash-timeframes button{
 }
 body.cc-flash-terminal .cc-flash-timeframes button[aria-pressed="true"]{color:var(--accent)!important}
 body.cc-flash-terminal .cc-flash-timeframes button:hover{color:var(--text)!important}
+/* All timeframe choices stay in a single frameless row. When the viewport is
+   narrower than the full control strip, only the strip scrolls horizontally. */
+body.cc-flash-terminal .cc-market-stage>.cc-section-head>div:first-child{
+  flex:0 0 auto!important;
+}
+body.cc-flash-terminal .cc-chart-tools{
+  flex:1 1 auto!important;
+  min-width:0!important;
+  max-width:calc(100% - 96px)!important;
+  justify-content:flex-end!important;
+}
+body.cc-flash-terminal .cc-flash-timeframes{
+  flex:1 1 auto!important;
+  min-width:0!important;
+  max-width:100%!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+  justify-content:flex-start!important;
+  overscroll-behavior-x:contain!important;
+  -webkit-overflow-scrolling:touch!important;
+  scrollbar-width:none!important;
+  scroll-behavior:smooth;
+}
+body.cc-flash-terminal .cc-flash-timeframes::-webkit-scrollbar{display:none!important}
+body.cc-flash-terminal .cc-flash-timeframes button{
+  flex:0 0 auto!important;
+  padding-inline:clamp(6px,.65vw,11px)!important;
+}
+body.cc-flash-terminal .cc-flash-timeframes button[aria-pressed="true"]{
+  background:color-mix(in srgb,var(--accent) 9%,transparent)!important;
+}
+body.cc-flash-terminal .cc-chart-history .cc-chart-feed{
+  letter-spacing:.035em!important;
+}
+@media(max-width:1320px){
+  body.cc-flash-terminal .cc-flash-timeframes{gap:2px!important}
+  body.cc-flash-terminal .cc-flash-timeframes button{padding-inline:6px!important;font-size:.62rem!important}
+}
+
 body.cc-flash-terminal .cc-charts{
   display:grid!important;height:100%!important;min-height:0!important;
   width:100%!important;grid-template-columns:minmax(0,1fr)!important;
