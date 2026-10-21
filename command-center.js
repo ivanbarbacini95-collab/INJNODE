@@ -499,7 +499,19 @@ function renderSystem(){
  setText('ccWalletState',state.lastSync?`WALLET · ${state.apiOk&&Date.now()-state.lastSync<120000?'ONLINE':'CACHE'}`:'WALLET · ATTESA');
  setText('ccLastSync',state.lastSync?new Date(state.lastSync).toLocaleTimeString('it-IT'):'—');
  setText('ccFooterSystem',`API · ${state.apiOk?'ONLINE':'IN ATTESA'}`);
- document.querySelectorAll('.cc-chart-feed').forEach(el=>{if(el.textContent!==mode)el.textContent=mode});
+ document.querySelectorAll('.cc-chart-feed').forEach(el=>{
+    // Keep real loading/error feedback on the shared history chart instead of
+    // replacing it with generic websocket status every second.
+    if(el.closest('#ccHistoryChart')){
+      const key=tactical.main;
+      if(ranges[key]?.interval){
+        const value=extendedHistoryLoading[key]?'CARICAMENTO STORICO':extendedHistoryErrors[key]?'STORICO NON DISPONIBILE':state.series[ranges[key].source]?.length?'STORICO REALE · '+mode:'IN ATTESA DI STORICO';
+        if(el.textContent!==value)el.textContent=value;
+      }
+      return;
+    }
+    if(el.textContent!==mode)el.textContent=mode;
+  });
  if(tactical.wasFresh&&!fresh)pushEvent('Flusso mercato interrotto: ultimo prezzo conservato.','connection');
  tactical.wasFresh=fresh;
 }
