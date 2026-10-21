@@ -158,6 +158,42 @@
 <link rel="stylesheet" href="./home-mobile-launcher-fix.css?v=160204">
 <script defer src="./section-heading-harmony.js?v=160131"></script>
 <script defer src="./scroll-edges.js?v=160143"></script>
+
+<style id="inj-dashboard-chart-stability">
+/* v16.03.03 — Terminale Dashboard: header fermo durante gli aggiornamenti live. */
+#chartDialog .market-terminal-quote{
+  display:grid;
+  grid-auto-rows:max-content;
+  justify-items:end;
+  align-content:center;
+  row-gap:3px;
+  min-width:118px;
+  flex-shrink:0;
+  font-variant-numeric:tabular-nums;
+  font-feature-settings:"tnum" 1;
+}
+#chartDialog #chartHeaderPrice,
+#chartDialog #chartHeaderChange{
+  display:block;
+  width:100%;
+  min-height:1.2em;
+  margin:0;
+  line-height:1.2;
+  text-align:right;
+  white-space:nowrap;
+  font-variant-numeric:tabular-nums;
+  font-feature-settings:"tnum" 1;
+  animation:none!important;
+  transform:none!important;
+}
+#chartDialog .native-chart-line,
+#chartDialog .native-chart-live-dot{
+  animation:none!important;
+}
+@media(max-width:480px){
+  #chartDialog .market-terminal-quote{min-width:100px;row-gap:2px;}
+}
+</style>
 </head>
 <body class="boot-loading">
 <div aria-label="Avvio INJ Node" aria-live="polite" aria-atomic="true" class="boot-splash node-pulse-splash" id="bootSplash" role="status">
@@ -1041,7 +1077,7 @@
 </div>
 </div>
 <div aria-live="polite" class="toast" id="toast" role="status"></div>
-<script defer="" src="app.js?v=16.03.01"></script>
+<script defer="" src="app.js?v=16.03.03"></script>
 <script>
 (function(){
   function bindEntryHubs(){
