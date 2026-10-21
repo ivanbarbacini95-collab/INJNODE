@@ -18,7 +18,9 @@ try{const t=localStorage.getItem('inj_monitor_theme');const valid=['navy','black
 <link rel="stylesheet" href="./ocean-x-series.css?v=160114">
 <script defer src="./navigation.js?v=160318"></script>
 <script defer src="./visualize-wealth.js?v=160318"></script>
+<script defer src="./visualize-wealth-extras.js?v=160319"></script>
 <link rel="stylesheet" href="./scroll-edges.css?v=160129">
+<link rel="stylesheet" href="./visualize-wealth-extras.css?v=160319">
 <link rel="stylesheet" href="./section-heading-harmony.css?v=160131">
 <link rel="stylesheet" href="./unified-navigation.css?v=160136">
 <script defer src="./section-heading-harmony.js?v=160131"></script>
@@ -47,6 +49,43 @@ try{const t=localStorage.getItem('inj_monitor_theme');const valid=['navy','black
 <article class="wealth-result wealth-primary"><p class="wealth-result-label" id="wealthTotalLabel">NET WORTH SIMULATO</p><div class="wealth-amount" id="wealthTotal">—</div><p class="wealth-result-detail" id="wealthTotalDetail">Disponibili + staking + reward</p></article>
 <div class="wealth-divider" aria-hidden="true"></div>
 <article class="wealth-result wealth-secondary"><p class="wealth-result-label" id="wealthStakedLabel">SOLO STAKING</p><div class="wealth-amount" id="wealthStaked">—</div><p class="wealth-result-detail" id="wealthStakedDetail">Solo INJ effettivamente delegati</p></article>
+</section>
+<section class="wealth-all" aria-labelledby="wealthAllTitle">
+  <div class="wealth-extra-head">
+    <h2 id="wealthAllTitle">TUTTI I WALLET · SIMULAZIONE</h2>
+    <span class="wealth-extra-state" id="wealthAllCount">—</span>
+  </div>
+  <div class="wealth-all-grid">
+    <article>
+      <span id="wealthAllWorthLabel">PATRIMONIO TOTALE</span>
+      <strong id="wealthAllWorth">—</strong>
+      <small id="wealthAllInj">—</small>
+    </article>
+    <article>
+      <span id="wealthAllStakeLabel">SOLO STAKING</span>
+      <strong id="wealthAllStake">—</strong>
+      <small id="wealthAllStakeInj">—</small>
+    </article>
+  </div>
+</section>
+<section class="wealth-income" aria-labelledby="wealthIncomeTitle">
+  <div class="wealth-extra-head">
+    <h2 id="wealthIncomeTitle">RENDITA POTENZIALE DA STAKING · USD</h2>
+    <span class="wealth-extra-state" id="wealthIncomeStatus">APR IN AGGIORNAMENTO</span>
+  </div>
+  <div class="wealth-income-grid" role="table" aria-label="Rendita per wallet selezionato e tutti i wallet">
+    <div class="wealth-income-row" role="row">
+      <span role="columnheader" id="wealthIncomePeriodTitle">PERIODO</span>
+      <div role="columnheader"><strong id="wealthIncomeSelectedTitle">WALLET SELEZIONATO</strong><small id="wealthIncomeSelectedName">—</small><small id="wealthIncomeSelectedApr">APR —</small></div>
+      <div role="columnheader"><strong id="wealthIncomeAllTitle">TUTTI I WALLET</strong><small id="wealthIncomeAllApr">APR —</small></div>
+    </div>
+    <div class="wealth-income-row" role="row"><span role="cell">1H</span><strong role="cell" id="wealthIncomeSelected1h">—</strong><strong role="cell" id="wealthIncomeAll1h">—</strong></div>
+<div class="wealth-income-row" role="row"><span role="cell">1D</span><strong role="cell" id="wealthIncomeSelected1d">—</strong><strong role="cell" id="wealthIncomeAll1d">—</strong></div>
+<div class="wealth-income-row" role="row"><span role="cell">1S</span><strong role="cell" id="wealthIncomeSelected1w">—</strong><strong role="cell" id="wealthIncomeAll1w">—</strong></div>
+<div class="wealth-income-row" role="row"><span role="cell">1M</span><strong role="cell" id="wealthIncomeSelected1m">—</strong><strong role="cell" id="wealthIncomeAll1m">—</strong></div>
+<div class="wealth-income-row" role="row"><span role="cell">1Y</span><strong role="cell" id="wealthIncomeSelected1y">—</strong><strong role="cell" id="wealthIncomeAll1y">—</strong></div>
+  </div>
+  <p class="wealth-income-note" id="wealthIncomeNote">Rendita stimata al prezzo ipotetico e APR netto, senza compound.</p>
 </section>
 <p class="wealth-footnote" id="wealthFootnote">Simulazione indicativa: valorizza esclusivamente gli INJ, senza stimare altri token, commissioni o imposte.</p>
 </main>
