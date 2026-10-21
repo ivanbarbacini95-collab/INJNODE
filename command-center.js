@@ -14,6 +14,7 @@ const $ = id => document.getElementById(id);
 const HOUR = 60 * 60_000;
 const DAY = 24 * HOUR;
 const INJ_HISTORY_ORIGIN = Date.UTC(2020,0,1); // Before the first listed INJ/USDT candle.
+const INJ_LISTING_START=Date.UTC(2020,9,21,4); // Binance INJ/USDT trading launch.
 const INJ_DECIMALS = 1e18;
 const LCD_ENDPOINTS = ['https://sentry.lcd.injective.network:443','https://lcd.injective.network','https://1rpc.io/inj-lcd'];
 const APR_ENDPOINT = 'https://api.ui.injective.network/api/v1/cache/stats/apr';
@@ -583,7 +584,7 @@ function updateChartMeta(card,cfg,rows,now){
   const long=cfg.ms>=30*DAY;
   const fmt=t=>new Date(t).toLocaleString('it-IT',long?{month:'short',year:'numeric'}:cfg.ms>=DAY?{day:'2-digit',month:'2-digit',hour:'2-digit'}:{hour:'2-digit',minute:'2-digit',...(cfg.ms<=600000?{second:'2-digit'}:{})});
   const times=axis.querySelectorAll('time');
-  const a=cfg.source==='histALL'?new Date(first).toLocaleDateString('it-IT'):fmt(Math.max(first,rangeStart(tactical.main,now)));
+  const a=cfg.source==='histALL'?new Date(Math.max(first,INJ_LISTING_START)).toLocaleDateString('it-IT'):fmt(Math.max(first,rangeStart(tactical.main,now)));
   const b=fmt(now);
   if(times[0].textContent!==a)times[0].textContent=a;
   if(times[1].textContent!==b)times[1].textContent=b;
