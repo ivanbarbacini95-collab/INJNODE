@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.03.21-staking-growth';
+const CACHE_NAME = 'inj-node-v16.03.24-market-dominance';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160088',
@@ -62,6 +62,8 @@ const APP_SHELL = [
   './ios-converter-keyboard.js?v=160095',
   './treasury-ownership.css?v=160099',
   './market.html',
+  './market-dominance.css?v=160324',
+  './market-dominance.js?v=160324',
   './comparison.html',
   './home-vitality.js?v=1.0.0',
   './comparison.css?v=160095',
