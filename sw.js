@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.03.18-potential-pre-apr-rollback';
+const CACHE_NAME = 'inj-node-v16.03.19-multi-wallet-income';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160088',
@@ -49,6 +49,8 @@ const APP_SHELL = [
   './visualize-wealth.html',
   './visualize-wealth.css?v=160318',
   './visualize-wealth.js?v=160318',
+  './visualize-wealth-extras.css?v=160319',
+  './visualize-wealth-extras.js?v=160319',
   './visualize-wealth-home.css?v=160127',
   './aqua-mirage.css?v=160113',
   './aqua-mirage.js?v=160113',
