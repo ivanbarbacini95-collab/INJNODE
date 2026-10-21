@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.03.04-chart-centered';
+const CACHE_NAME = 'inj-node-v16.03.05-dashboard-scroll-resume';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160088',
@@ -73,12 +73,12 @@ const APP_SHELL = [
   './top-clarity.css?v=16.00.88',
   './viewport.js?v=16.00.14',
   './style.css?v=16.01.44',
-  './app.js?v=16.03.04',
+  './app.js?v=16.03.05',
   './i18n.js?v=160145',
   './i18n.js?v=160117',
   './i18n.js?v=160088',
   './i18n.js?v=160084',
-  './scroll-guard.js?v=160074',
+  './scroll-guard.js?v=160305',
   './live-charts.html',
   './live-charts.css?v=16.00.39',
   './live-charts.js?v=16.00.40',
