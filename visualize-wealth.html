@@ -29,7 +29,7 @@ try{const t=localStorage.getItem('inj_monitor_theme');const valid=['navy','black
 <header class="wealth-header">
 <button class="wealth-home" id="visualizeWealthBack" type="button" aria-label="Torna alla Home" title="Home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 11 8-7 8 7M6.5 10v9h11v-9M10 19v-5h4v5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
 <div class="wealth-heading inj-location-title" data-i18n-skip="true"><strong class="inj-location-name">INJ Node</strong><span class="inj-location-section" data-inj-section-name="visualize-wealth" id="wealthPageTitle">Valore Potenziale</span></div>
-<button class="wealth-scope-toggle" id="wealthScopeToggle" type="button" aria-pressed="false" title="Tutti i wallet">WALLET SELEZIONATO</button>
+<button class="wealth-scope-toggle" id="wealthScopeToggle" type="button" aria-pressed="false" data-scope="selected" aria-label="Passa a tutti i wallet" title="Passa a tutti i wallet"><span class="wealth-scope-dot" aria-hidden="true"></span><span id="wealthScopeText">SINGOLO</span></button>
 </header>
 <main class="wealth-main">
 <div class="wealth-intro">
