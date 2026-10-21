@@ -369,8 +369,9 @@ function render(){
  const all=getRows();
  if(walletScope==='all')syncMissingWallets(all.rows);
  const wallet=walletScope==='all'?aggregateWallets(all.rows):all.rows.find(r=>r.address===all.selected);
- $('wealthScopeToggle').textContent=walletScope==='all'?t.scopeAll+' · '+all.rows.length:t.scopeSelected;
+ $('wealthScopeToggle').textContent=walletScope==='all'?(lang()==='en'?'ALL · ':'TUTTI · ')+all.rows.length:(lang()==='en'?'SINGLE':'SINGOLO');
  $('wealthScopeToggle').setAttribute('aria-pressed',String(walletScope==='all'));
+ $('wealthScopeToggle').dataset.scope=walletScope;
  $('wealthScopeToggle').title=walletScope==='all'?t.scopeSelected:t.scopeAll;
  $('wealthScopeToggle').setAttribute('aria-label',(walletScope==='all'?t.scopeAll:t.scopeSelected)+(walletScope==='all'?' · '+all.rows.length:''));
  const complete=ready(wallet);
