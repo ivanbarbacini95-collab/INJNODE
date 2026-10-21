@@ -70,3 +70,6 @@ button,input{font:inherit;color:inherit}button{cursor:pointer}button:focus-visib
  .wealth-yield-grid{column-gap:7px}
  .wealth-yield-item>strong{font-size:clamp(14px,4.15vw,17px)}
 }
+
+.wealth-scope-toggle{margin-left:auto;border:1px solid var(--line);border-radius:24px;padding:9px 12px;background:var(--accent-soft);color:var(--accent);font-size:10px;font-weight:800;white-space:nowrap}
+@media(max-width:520px){.wealth-header{gap:8px}.wealth-scope-toggle{font-size:9px;padding:8px}.wealth-heading strong{font-size:16px}}
