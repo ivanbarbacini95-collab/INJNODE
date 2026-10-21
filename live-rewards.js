@@ -248,7 +248,8 @@ function tickVelocityPulse(node,row,now){
   row.velocityCarry+=elapsed*row.ratePerMs;
   if(row.velocityCarry<VELOCITY_PULSE_QUANTUM)return;
   row.velocityCarry%=VELOCITY_PULSE_QUANTUM;
-  if(reducedVelocityMotion.matches||now-row.velocityLastFlashAt<400)return;
+  // Desktop keeps the live values but does not animate repeated bright beacons.
+   if((matchMedia('(min-width:1000px) and (hover:hover) and (pointer:fine)').matches)||reducedVelocityMotion.matches||now-row.velocityLastFlashAt<400)return;
   const beacon=node?.querySelector('[data-velocity-beacon]');
   if(!beacon||typeof beacon.animate!=='function')return;
   beacon.animate([
