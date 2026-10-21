@@ -6542,18 +6542,23 @@ function renderMarket() {
   setBlinkOnlyElement(amount, state.price > 0 ? usdt(state.changeAmount, 4) : '— USDT', state.price > 0 ? state.changeAmount : NaN);
   amount.className = state.changeAmount > 0 ? 'positive' : state.changeAmount < 0 ? 'negative' : '';
 
-  const terminalPrice = $('chartHeaderPrice');
-  const terminalChange = $('chartHeaderChange');
-  if (terminalPrice) {
-    setBlinkOnlyElement(
-      terminalPrice,
-      state.price > 0 ? `$${state.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: state.price < 10 ? 4 : 2 })}` : '$—',
-      state.price > 0 ? state.price : NaN
-    );
-  }
-  if (terminalChange) {
-    setBlinkOnlyElement(terminalChange, state.price > 0 ? `${next > 0 ? '+' : ''}${next.toFixed(2)}% · 24H` : '—', state.price > 0 ? next : NaN, { flash: false });
-    terminalChange.className = next > 0 ? 'positive' : next < 0 ? 'negative' : 'neutral';
+  // Il terminale aperto ha un unico writer (renderNativeChartSummary).
+  // Evita effetti numerici concorrenti e cambi di layout nel suo header.
+  if (!isChartOpen()) {
+    const terminalPrice = $('chartHeaderPrice');
+    const terminalChange = $('chartHeaderChange');
+    if (terminalPrice) {
+      setBlinkOnlyElement(
+        terminalPrice,
+        state.price > 0 ? `${state.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: state.price < 10 ? 4 : 2 })}` : '$—',
+        state.price > 0 ? state.price : NaN,
+        { flash: false }
+      );
+    }
+    if (terminalChange) {
+      setBlinkOnlyElement(terminalChange, state.price > 0 ? `${next > 0 ? '+' : ''}${next.toFixed(2)}% · 24H` : '—', state.price > 0 ? next : NaN, { flash: false });
+      terminalChange.className = next > 0 ? 'positive' : next < 0 ? 'negative' : 'neutral';
+    }
   }
   renderMarketTimeframes();
   if (isFocusDisplayActive()) renderFocusDisplay();
@@ -7253,17 +7258,24 @@ function renderNativeChartSummary() {
   const high = values.length ? Math.max(number(chart.max), ...values) : number(chart.max);
   const perf = nativeChartPerformance(current, open);
 
-  if ($('nativeChartOpen')) $('nativeChartOpen').textContent = nativeChartPrice(open);
-  if ($('nativeChartLow')) $('nativeChartLow').textContent = nativeChartPrice(low);
-  if ($('nativeChartHigh')) $('nativeChartHigh').textContent = nativeChartPrice(high);
-  if ($('nativeChartNow')) $('nativeChartNow').textContent = nativeChartPrice(current);
-  if ($('chartHeaderPrice')) $('chartHeaderPrice').textContent = nativeChartPrice(current);
+  // Non riscrivere nodi identici: evita reflow e micro-lampeggi nel top.
+  const setStableText = (id, value) => {
+    const element = $(id);
+    if (element && element.textContent !== value) element.textContent = value;
+  };
+  setStableText('nativeChartOpen', nativeChartPrice(open));
+  setStableText('nativeChartLow', nativeChartPrice(low));
+  setStableText('nativeChartHigh', nativeChartPrice(high));
+  setStableText('nativeChartNow', nativeChartPrice(current));
+  setStableText('chartHeaderPrice', nativeChartPrice(current));
 
   const change = $('chartHeaderChange');
   if (change) {
     const label = state.nativeChartRange === 'y1' ? 'ALL · 1Y' : NATIVE_CHART_CONFIG[state.nativeChartRange]?.label || '1D';
-    change.textContent = open > 0 ? `${perf >= 0 ? '+' : ''}${perf.toFixed(2)}% · ${label}` : '—';
-    change.className = perf > 0 ? 'positive' : perf < 0 ? 'negative' : 'neutral';
+    const nextText = open > 0 ? `${perf >= 0 ? '+' : ''}${perf.toFixed(2)}% · ${label}` : '—';
+    if (change.textContent !== nextText) change.textContent = nextText;
+    const nextClass = perf > 0 ? 'positive' : perf < 0 ? 'negative' : 'neutral';
+    if (change.className !== nextClass) change.className = nextClass;
   }
 }
 
@@ -7380,7 +7392,10 @@ function renderNativeChart() {
     // La linea usa sempre tutta la larghezza per il periodo realmente trascorso.
     // Niente spazio vuoto fino a fine ora/giorno/settimana/mese/anno.
     const latestTimestamp = Math.max(periodStart + 1, plotted[plotted.length - 1]?.t || now, Math.min(now, periodEnd));
-    const visibleEnd = Math.min(periodEnd, latestTimestamp);
+    // Ancoraggio a intervalli di tempo: non riscalare l'intero tracciato
+    // orizzontalmente a ogni singolo tick live.
+    const horizontalStep = { h1: 15_000, d1: 60_000, w1: 300_000, m1: 1_800_000, y1: 21_600_000 }[state.nativeChartRange] || 60_000;
+    const visibleEnd = Math.min(periodEnd, periodStart + Math.max(horizontalStep, Math.ceil((latestTimestamp - periodStart) / horizontalStep) * horizontalStep));
 
     const perfValues = plotted.map((row) => row.perf);
     const rawMin = Math.min(0, ...perfValues);
@@ -7395,6 +7410,23 @@ function renderNativeChart() {
     const margin = Math.max(0.06, span * 0.08);
     minPerf -= margin;
     maxPerf += margin;
+    span = maxPerf - minPerf;
+
+    // La scala verticale non deve cambiare a ogni variazione dell'ultimo prezzo.
+    // Apre ulteriore spazio solo quando un nuovo estremo si avvicina al bordo;
+    // si reinizializza quando cambia timeframe, periodo o prezzo di apertura.
+    const scaleKey = `${state.nativeChartRange}:${periodStart}:${state.nativeChart.open}`;
+    let axisScale = state.nativeChart.axisScale;
+    if (!axisScale || axisScale.key !== scaleKey) {
+      axisScale = { key: scaleKey, min: minPerf - span * 0.16, max: maxPerf + span * 0.16 };
+      state.nativeChart.axisScale = axisScale;
+    } else {
+      const stableSpan = Math.max(0.01, axisScale.max - axisScale.min);
+      if (rawMin < axisScale.min + stableSpan * 0.04) axisScale.min = rawMin - stableSpan * 0.20;
+      if (rawMax > axisScale.max - stableSpan * 0.04) axisScale.max = rawMax + stableSpan * 0.20;
+    }
+    minPerf = axisScale.min;
+    maxPerf = axisScale.max;
     span = maxPerf - minPerf;
 
     const xFor = (t) => pad.l + Math.max(0, Math.min(1, (t - periodStart) / Math.max(1, visibleEnd - periodStart))) * plotW;
