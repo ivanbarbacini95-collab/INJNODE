@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.07.32-centered-heatmap-performance';
+const CACHE_NAME = 'inj-node-v16.07.33-market-init-fix';
 const APP_SHELL = [
   './dashboard-ipad-layout.css?v=160722',
   './market-favorites.css?v=160724',
@@ -87,7 +87,7 @@ const APP_SHELL = [
   './market-portal.js?v=160719',
   './market-lang.js?v=160082',
   './market.css?v=160082',
-  './market.js?v=160732',
+  './market.js?v=160733',
   './market-pro.css?v=160108',
   './market-pro.js?v=160720',
   './market-views.css?v=160716',
