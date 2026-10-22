@@ -297,7 +297,7 @@ async function startStreams(){
  updateConnectionStatus();
 }
 // Single data source for list and heatmap: no parallel network feed.
-window.INJ_MARKET_VIEW_API={getCoins:()=>state.coins,getCurrency:()=>state.currency,formatMoney,formatPercent:pct,getChange:change,open:detail,switchCurrency};
+window.INJ_MARKET_VIEW_API={getCoins:()=>state.coins,getCurrency:()=>state.currency,formatMoney:money,formatPercent:pct,getChange:change,open:detail,switchCurrency};
 // Shared read-only observation: this does not trigger additional network calls.
 window.INJ_MARKET_READONLY_SNAPSHOT=()=>({
  injective:state.coins.find(c=>c.id==='injective-protocol')||null,
