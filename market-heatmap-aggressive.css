@@ -46,8 +46,7 @@ html[data-inj-market] #marketHeatmap .heatmap-grid > .heatmap-tile .hm-change{
 html[data-inj-market] #marketHeatmap .heatmap-grid > .heatmap-tile .hm-spark{
   opacity:.79!important;
 }
-/* Aggressive, double-core edge: a vivid colored bar, with metallic light
-   through the center and contained glow. No animation at rest. */
+/* Fixed-size performance signal. Invisible at rest; illuminates ONLY on changed quotes. */
 html[data-inj-market] #marketHeatmap .heatmap-grid > .heatmap-tile:nth-child(n)::after{
   content:""!important;
   display:block!important;
@@ -73,21 +72,24 @@ html[data-inj-market] #marketHeatmap .heatmap-grid > .heatmap-tile:nth-child(n):
     0 0 14px color-mix(in srgb,var(--arctic-tone) 43%,transparent),
     0 0 23px color-mix(in srgb,var(--arctic-tone) 19%,transparent),
     inset 1px 0 0 rgba(255,255,255,.27)!important;
-  opacity:.84;
+  /* Off at rest: no persistent color/glow until a REAL price tick. */
+  opacity:0;
   transform:none!important;
+  clip-path:none!important;
   filter:none!important;
   animation:none!important;
 }
-/* One brief data-driven pulse. The parent surface never flashes. */
+/* One brief fade up/down, fixed dimensions. Never pulse the card or change bar geometry. */
 @keyframes injAggressiveEdgePulse{
-  0%{opacity:.48;clip-path:inset(8% 0 8% 0)}
-  34%{opacity:1;clip-path:inset(0 0 0 0)}
-  58%{opacity:.98;clip-path:inset(0 0 0 0)}
-  100%{opacity:.84;clip-path:inset(0 0 0 0)}
+  /* Never animate size, clipping or transform. Only opacity changes. */
+  0%{opacity:0}
+  25%{opacity:1}
+  59%{opacity:1}
+  100%{opacity:0}
 }
 html[data-inj-market] #marketHeatmap .heatmap-grid > .heatmap-tile.market-flash-up::after,
 html[data-inj-market] #marketHeatmap .heatmap-grid > .heatmap-tile.market-flash-down::after{
-  animation:injAggressiveEdgePulse .94s cubic-bezier(.19,.12,.24,1) 1 both!important;
+  animation:injAggressiveEdgePulse .96s cubic-bezier(.24,.09,.26,1) 1 both!important;
 }
 /* No global card glow on pointer movement; use a discreet metallic edge. */
 @media(hover:hover) and (pointer:fine){
