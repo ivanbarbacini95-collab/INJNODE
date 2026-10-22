@@ -20,11 +20,26 @@
  let mode='list',range=rangeChoices.includes(read())?read():'24h';
  let listTiles=new Map(),mapTiles=new Map(),pending=new Set(),renderQueued=false,timer=null;
  const all=()=>api()?.getCoins?.()||[];
+ // Applies exclusively to the Heatmap. Global Crypto preserves the full Top 200.
+ // Match identifiers/names as well as tickers; do not filter native BTC, ETH, SOL or INJ.
+ const stableSymbols=new Set(['USDT','USDC','DAI','USDS','USDE','USDD','USD1','PYUSD','FDUSD','TUSD','FRAX','LUSD','GUSD','PAX','USDP','RLUSD','USDY','USD0','CRVUSD','GHO','EURI','EURC','EUROC','AEUR','SUSD','USDB','USDT0','BUSD','USTC','MIM','CUSD','USDF','BFUSD','USDX']);
+ const wrappedSymbols=new Set(['WBTC','WETH','WBETH','WSTETH','STETH','WEETH','EETH','CBETH','CBBTC','BTCB','BBTC','TBTC','FBTC','RETH','SFRXETH','WBNB','WSOL','WMATIC','WPOL','WAVAX','WFTM','WTRX','WSTUSR','WUSDM','WRSETH','RSETH','EZETH']);
+ const stableIds=new Set(['tether','usd-coin','dai','usds','ethena-usde','first-digital-usd','paypal-usd','world-liberty-financial-usd','frax','frax-usd','pax-dollar','paxos-standard','true-usd','gemini-dollar','ripple-usd','global-dollar','usual-usd','sky-dollar','usdd','liquity-usd','gho','curve-usd','euro-coin','euro-coinvertible','binance-usd','magic-internet-money','stasis-eurs','usd1']);
+ function heatmapEligible(coin){
+  const symbol=String(coin.symbol||'').trim().toUpperCase();
+  const id=String(coin.id||'').trim().toLowerCase();
+  const name=String(coin.name||'').trim().toLowerCase();
+  if(stableSymbols.has(symbol)||wrappedSymbols.has(symbol)||stableIds.has(id))return false;
+  if(/^(wrapped|bridged|binance-peg|wormhole|coinbase-wrapped|synthetic|liquid-staked|liquid-staking|wrapped-staked|staked|restaked|restaking)[-\s]/i.test(id)||/^(wrapped|bridged|binance-peg|wormhole|coinbase wrapped|synthetic|liquid staked|staked|restaked)\b/.test(name))return false;
+  if(/\b(stablecoin|stable coin|bridged usdt|bridged usdc|wrapped bitcoin|wrapped ethereum|wrapped ether|wrapped btc|wrapped eth)\b/.test(name))return false;
+  return true;
+ }
  function filtered(){
   const count=Number($('scope')?.value)||200;
   const query=String($('search')?.value||'').trim().toLowerCase();
   const direction=$('direction')?.value||'all';
-  return all().slice(0,count).filter(coin=>{
+  const eligible=mode==='heatmap'?all().filter(heatmapEligible):all();
+  return eligible.slice(0,count).filter(coin=>{
    if(query&&!String(coin.name+' '+coin.symbol).toLowerCase().includes(query))return false;
    const day=change(coin,'24h');
    return direction==='all'||(direction==='up'&&Number.isFinite(day)&&day>=0)||(direction==='down'&&Number.isFinite(day)&&day<0);
