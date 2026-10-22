@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.07.01-wallet-theme-surfaces';
+const CACHE_NAME = 'inj-node-v16.07.02-wallet-ownership-theme';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160080',
@@ -63,6 +63,7 @@ const APP_SHELL = [
   './ios-screen-fixes.css?v=160095',
   './ios-converter-keyboard.js?v=160095',
   './treasury-ownership.css?v=160099',
+  './treasury-ownership-theme.css?v=160702',
   './market.html',
   './market-intelligence.css?v=160421',
   './market-intelligence-summary.js?v=160625',
