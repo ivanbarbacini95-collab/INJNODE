@@ -28,7 +28,7 @@
  const english=()=>{try{return localStorage.getItem('inj_node_language_v1')==='en'}catch(_){return document.documentElement.lang==='en'}};
  const tr=(it,en)=>english()?en:it;
  const canVibrate=()=>typeof navigator.vibrate==='function';
- let last=0,audio=null;
+ let last=-Infinity,audio=null;
  function update(){
   const snd=soundButton(),hap=hapticButton(),volumeControl=volumeInput(),volumeDisplay=volumeLabel();
   const level=volume();
