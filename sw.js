@@ -1,7 +1,7 @@
-const CACHE_NAME = 'inj-node-v16.07.13-market-eur-usd-synced';
+const CACHE_NAME = 'inj-node-v16.07.14-home-volume';
 const APP_SHELL = [
-  './home-entry-feedback.js?v=160712',
-  './home-entry-feedback.css?v=160712',
+  './home-entry-feedback.js?v=160713',
+  './home-entry-feedback.css?v=160713',
   './inj-uhd.css?v=160710',
   './navigation.css?v=160090',
   './navigation.css?v=160080',
