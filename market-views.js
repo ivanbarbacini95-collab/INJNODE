@@ -111,6 +111,7 @@
   node.classList.toggle('is-flat',!Number.isFinite(delta)||delta===0);
   const strength=Number.isFinite(delta)?Math.min(58,22+Math.log1p(Math.abs(delta))*13):0;
   node.style.setProperty('--heat-fill',strength.toFixed(0)+'%');
+  node.style.setProperty('--heat-rim',(Math.min(78,Math.max(30,strength+13))).toFixed(0)+'%');
   const label=percent(delta),price=money(coin.current_price);
   const p=node.querySelector('.hm-change');
   if(p&&p.textContent!==label)p.textContent=label;
