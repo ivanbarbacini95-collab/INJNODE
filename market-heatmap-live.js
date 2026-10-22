@@ -1,6 +1,7 @@
-/* INJ Node · genuine rolling 1H Heatmap charts · v16.07.26
-   Only timestamped observations from the existing Binance/CG price feed.
-   No 7D resampling, independent polling, assumed prices or offline backfill. */
+/* INJ Node · Heatmap historical multi-timeframe chart engine v16.07.31.
+   Historical timestamps: verified Binance public spot candles first; CoinGecko
+   per-coin market_chart fallback. Subsequent live points: existing Market feed.
+   No fabricated candles, stretched 7D proxy or simultaneous 200-coin requests. */
 (()=>{
  'use strict';
  const market=()=>window.INJ_MARKET_VIEW_API;
@@ -8,163 +9,297 @@
  const global=document.getElementById('injGlobalMarket');
  const heat=document.getElementById('marketHeatmap');
  const grid=document.getElementById('marketHeatmapGrid');
- if(!views||!global||!heat||!grid)return;
- const storageKey='inj_node_heatmap_real_1h_v1';
- const windowMs=60*60*1000,stepMs=30000,maxPoints=155;
- const series=new Map();
- let currency='',dirty=false,paintPending=false,paintTimer=0,lastPaint=0;
- function currentCurrency(){return market()?.getCurrency?.()||'usd'}
- function restore(){
+ const note=document.getElementById('heatmapHourSource');
+ if(!market()||!views||!global||!heat||!grid)return;
+ const frames={
+  '1h':{span:3600000,interval:'1m',limit:70,days:1,ttl:150000,gap:420000},
+  '24h':{span:86400000,interval:'15m',limit:104,days:1,ttl:480000,gap:5400000},
+  '7d':{span:604800000,interval:'2h',limit:90,days:7,ttl:1500000,gap:25200000},
+  '30d':{span:2592000000,interval:'8h',limit:96,days:30,ttl:2700000,gap:86400000}
+ };
+ const historyKey='inj_node_heatmap_historical_v2',liveKey='inj_node_heatmap_real_1h_v1';
+ const liveStep=30000,oneHour=3600000;
+ const history=new Map(),live=new Map(),tasks=[],queued=new Set(),inflight=new Set(),inView=new Set();
+ let frame=localRange(),currency='',dirty=false,lastSave=0,lastPaint=0,paintQueued=false,
+     paintingTimer=0,running=0,epoch=0,requestsSuspendedUntil=0,cgCooldownUntil=0,observer=null;
+ const time=()=>Date.now();
+ const coinById=id=>market()?.getCoins?.().find(x=>x.id===id);
+ const memoryKey=(id,period)=>id+'|'+period;
+ function localRange(){
+  try{const r=localStorage.getItem('inj_node_market_heat_range_v1');return frames[r]?r:'24h'}catch(_){return '24h'}
+ }
+ function getCurrency(){return market()?.getCurrency?.()||'usd'}
+ function acceptCurrency(){
+  const curr=getCurrency();
+  if(curr!==currency){
+   currency=curr;live.clear();
+   for(const [key,item] of history)if(item.source==='coingecko'&&item.currency!==currency)history.delete(key);
+   dirty=true;
+  }
+ }
+ function readSaved(){
   try{
-   const data=JSON.parse(localStorage.getItem(storageKey)||'null');
-   if(!data||data.version!==1||!Array.isArray(data.series)||typeof data.currency!=='string')return;
-   currency=data.currency;
-   const now=Date.now();
-   for(const entry of data.series.slice(0,250)){
-    const id=String(entry?.[0]||'').trim();
-    if(!/^[a-z0-9][a-z0-9_.-]{0,99}$/i.test(id)||!Array.isArray(entry?.[1]))continue;
-    const samples=entry[1].filter(p=>Array.isArray(p)&&p.length===2
-      &&Number.isFinite(p[0])&&Number.isFinite(p[1])&&p[1]>0
-      &&p[0]>now-windowMs&&p[0]<=now+stepMs)
-      .slice(-maxPoints).sort((a,b)=>a[0]-b[0]);
-    if(samples.length)series.set(id,samples);
+   const value=JSON.parse(localStorage.getItem(historyKey)||'null');
+   if(!value||value.version!==2||!Array.isArray(value.items))return;
+   for(const item of value.items.slice(0,110)){
+    const id=String(item?.id||'');
+    if(!/^[a-z0-9][a-z0-9_.-]{0,99}$/i.test(id)||!frames[item?.frame])continue;
+    if(!['binance','coingecko'].includes(item.source))continue;
+    if(!Array.isArray(item.points)||!Number.isFinite(item.at))continue;
+    const points=item.points.filter(p=>Array.isArray(p)&&p.length===2&&Number.isFinite(p[0])&&Number.isFinite(p[1])&&p[1]>0)
+      .slice(-210).sort((a,b)=>a[0]-b[0]);
+    if(!points.length||time()-item.at>86400000)continue;
+    history.set(memoryKey(id,item.frame),{id,frame:item.frame,source:item.source,
+      currency:item.currency||'usd',points,at:item.at});
    }
   }catch(_){}
  }
- function ensureCurrency(){
-  const next=currentCurrency();
-  if(currency!==next){
-   series.clear();currency=next;dirty=true;
-  }
- }
- function prune(now=Date.now()){
-  for(const [id,points] of series){
-   while(points.length&&points[0][0]<=now-windowMs)points.shift();
-   if(!points.length)series.delete(id);
-  }
+ function readLive(){
+  try{
+   const item=JSON.parse(localStorage.getItem(liveKey)||'null');
+   if(!item||item.version!==1||!Array.isArray(item.series)||item.currency!==currency)return;
+   for(const [id,raw] of item.series.slice(0,200)){
+    if(!Array.isArray(raw))continue;
+    const points=raw.filter(p=>Array.isArray(p)&&Number.isFinite(p[0])&&Number.isFinite(p[1])
+      &&p[1]>0&&p[0]>time()-oneHour&&p[0]<=time()+liveStep).slice(-130);
+    if(points.length)live.set(id,points);
+   }
+  }catch(_){}
  }
  function save(){
   if(!dirty)return;
-  prune();
+  const now=time();
   try{
-   localStorage.setItem(storageKey,JSON.stringify({
-    version:1,currency,series:[...series]
-   }));
-   dirty=false;
-  }catch(_){/* Memory-only in private mode or storage quota exhaustion. */}
+   const valid=[...history.values()]
+    .filter(item=>item.source==='binance'||item.currency===currency)
+    .sort((a,b)=>b.at-a.at).slice(0,100);
+   localStorage.setItem(historyKey,JSON.stringify({version:2,items:valid}));
+   const l=[...live].filter(([id,pts])=>pts.length).slice(0,200);
+   localStorage.setItem(liveKey,JSON.stringify({version:1,currency,series:l}));
+   dirty=false;lastSave=now;
+  }catch(_){/* Private browsing or quota: memory cache remains active. */}
  }
- function record(coin,now=Date.now()){
-  if(!coin||typeof coin.id!=='string')return false;
-  const value=Number(coin.current_price);
-  if(!Number.isFinite(value)||value<=0)return false;
-  ensureCurrency();
-  const bucket=Math.floor(now/stepMs)*stepMs;
-  let points=series.get(coin.id);
-  if(!points){points=[];series.set(coin.id,points)}
-  while(points.length&&points[0][0]<=now-windowMs)points.shift();
-  const last=points[points.length-1];
+ function record(coin,at=time()){
+  if(!coin?.id)return false;
+  const price=Number(coin.current_price);
+  if(!Number.isFinite(price)||price<=0)return false;
+  acceptCurrency();
+  const bucket=Math.floor(at/liveStep)*liveStep;
+  const pts=live.get(coin.id)||[];
+  const last=pts[pts.length-1];
   if(last&&last[0]===bucket){
-   if(last[1]===value)return false;
-   last[1]=value;
+   if(last[1]===price)return false;
+   last[1]=price;
   }else if(!last||bucket>last[0]){
-   points.push([bucket,value]);
-   if(points.length>maxPoints)points.splice(0,points.length-maxPoints);
+   pts.push([bucket,price]);
   }else return false;
-  dirty=true;
+  while(pts.length&&(pts.length>135||pts[0][0]<at-oneHour))pts.shift();
+  live.set(coin.id,pts);dirty=true;
   return true;
  }
- function visible(){
-  return !document.hidden&&!global.hidden&&!heat.hidden&&grid.isConnected;
+ function visible(){return !document.hidden&&!global.hidden&&!heat.hidden&&grid.isConnected}
+ function isStoredCurrent(item,at=time()){
+  return item&&(item.source==='binance'||item.currency===currency)
+   &&at-item.at<frames[item.frame].ttl;
  }
- // The horizontal axis is always NOW-60min ... NOW. A gap > 4min yields a
- // discontinuity instead of a fabricated smooth bridge across missing quotes.
- function draw(svg,id,now){
-  const from=now-windowMs;
-  const values=(series.get(id)||[]).filter(p=>p[0]>=from&&p[0]<=now);
-  const ns='http://www.w3.org/2000/svg',fragment=document.createDocumentFragment();
-  if(values.length){
-   const lowValue=Math.min(...values.map(p=>p[1]));
-   const highValue=Math.max(...values.map(p=>p[1]));
-   const margin=(highValue-lowValue)*.12||lowValue*.001||.00001;
-   const min=lowValue-margin,scale=highValue-lowValue+2*margin;
-   const coord=(point)=>{
-    const x=Math.max(0,Math.min(100,(point[0]-from)/windowMs*100));
-    const y=Math.max(2,Math.min(22,22-(point[1]-min)/scale*20));
-    return [x,y];
-   };
-   let segment=[],last=null;
-   function emit(){
-    if(segment.length>1){
-     const poly=document.createElementNS(ns,'polyline');
-     poly.setAttribute('points',segment.join(' '));
-     fragment.append(poly);
+ function info(){
+  if(!note)return;
+  const label=frame.toUpperCase();
+  note.textContent=(document.documentElement.lang==='en'?'Real history':'Storico reale')+' '+label+' · Binance / CoinGecko';
+ }
+ function draw(svg,id,at){
+  if(!svg)return;
+  const settings=frames[frame],cutoff=at-settings.span;
+  const historical=history.get(memoryKey(id,frame));
+  const useHistory=historical&&(historical.source==='binance'||historical.currency===currency);
+  const base=useHistory?historical.points.filter(p=>p[0]>=cutoff&&p[0]<=at):[];
+  // Klines are priced in native USDT; align current live quote values into
+  // that same scale using the last verified spot observation. No FX label.
+  const coin=coinById(id),current=Number(coin?.current_price);
+  const factor=useHistory&&historical.source==='binance'&&base.length&&current>0
+    ?base[base.length-1][1]/current:1;
+  const fresh=(live.get(id)||[]).filter(p=>p[0]>=cutoff&&p[0]<=at)
+    .map(p=>[p[0],p[1]*factor]);
+  const after=base.length?base[base.length-1][0]:0;
+  const data=base.concat(fresh.filter(p=>p[0]>after)).slice(-280);
+  const ns='http://www.w3.org/2000/svg',frag=document.createDocumentFragment();
+  if(data.length){
+   const lo=Math.min(...data.map(p=>p[1])),hi=Math.max(...data.map(p=>p[1]));
+   const pad=(hi-lo)*.12||lo*.001||.000001,min=lo-pad,span=hi-lo+pad*2;
+   const xy=p=>[
+    Math.max(0,Math.min(100,(p[0]-cutoff)/settings.span*100)),
+    Math.max(2,Math.min(22,22-(p[1]-min)/span*20))
+   ];
+   const sampled=data.length>145?data.filter((_,i)=>i===0||i===data.length-1||i%Math.ceil(data.length/142)===0):data;
+   let points=[],previous=null;
+   const emit=()=>{
+    if(points.length>=2){
+     const line=document.createElementNS(ns,'polyline');
+     line.setAttribute('points',points.join(' '));frag.appendChild(line);
     }
-    segment=[];
-   }
-   for(const point of values){
-    if(last&&point[0]-last[0]>240000)emit();
-    const [x,y]=coord(point);
-    segment.push(x.toFixed(2)+','+y.toFixed(2));
-    last=point;
+    points=[];
+   };
+   for(const point of sampled){
+    if(previous&&point[0]-previous[0]>settings.gap)emit();
+    const [x,y]=xy(point);points.push(x.toFixed(2)+','+y.toFixed(2));previous=point;
    }
    emit();
-   const [cx,cy]=coord(values[values.length-1]);
-   const dot=document.createElementNS(ns,'circle');
-   dot.setAttribute('cx',cx.toFixed(2));
-   dot.setAttribute('cy',cy.toFixed(2));
-   dot.setAttribute('r','1.7');
-   fragment.append(dot);
+   const last=sampled[sampled.length-1],coords=xy(last);
+   const circle=document.createElementNS(ns,'circle');
+   circle.setAttribute('cx',coords[0].toFixed(2));
+   circle.setAttribute('cy',coords[1].toFixed(2));
+   circle.setAttribute('r','1.65');frag.appendChild(circle);
   }
-  svg.replaceChildren(fragment);
+  svg.replaceChildren(frag);
+  if(svg.parentElement)svg.parentElement.classList.toggle('hm-spark-loading',!base.length&&fresh.length<2);
  }
  function paint(){
   if(!visible())return;
-  ensureCurrency();
-  const now=Date.now();
+  acceptCurrency();
+  const now=time();
   for(const tile of grid.querySelectorAll('.heatmap-tile[data-coin]')){
-   const svg=tile.querySelector('.hm-spark');
-   if(svg)draw(svg,tile.dataset.coin,now);
+   if(inView.size&&!inView.has(tile.dataset.coin))continue;
+   draw(tile.querySelector('.hm-spark'),tile.dataset.coin,now);
   }
   lastPaint=now;
  }
- function queuePaint(){
-  if(!visible()||paintPending)return;
-  const remaining=Math.max(0,1500-(Date.now()-lastPaint));
-  paintPending=true;
-  paintTimer=setTimeout(()=>{
-   paintPending=false;
+ function repaintSoon(){
+  if(!visible()||paintQueued)return;
+  paintQueued=true;
+  paintingTimer=setTimeout(()=>{
+   paintQueued=false;
    if(visible())requestAnimationFrame(paint);
-  },remaining);
+  },Math.max(0,700-(time()-lastPaint)));
+ }
+ function parseKlines(raw,now){
+  if(!Array.isArray(raw))throw Error('No candle data');
+  const out=[];
+  for(const row of raw){
+   if(!Array.isArray(row)||row.length<7)continue;
+   const t=Math.min(now,Number(row[6])),p=Number(row[4]);
+   if(Number.isFinite(t)&&Number.isFinite(p)&&p>0&&t<=now)out.push([t,p]);
+  }
+  return out;
+ }
+ async function requestJson(url){
+  const ctrl=new AbortController(),handle=setTimeout(()=>ctrl.abort(),10500);
+  try{
+   const response=await fetch(url,{signal:ctrl.signal,headers:{accept:'application/json'},cache:'no-store'});
+   if(!response.ok){const err=new Error('Historical quote HTTP '+response.status);err.status=response.status;throw err}
+   return await response.json();
+  }finally{clearTimeout(handle)}
+ }
+ async function fetchHistorical(coin,period){
+  const config=frames[period],now=time(),pair=market()?.getVerifiedPair?.(coin);
+  if(pair){
+   try{
+    const url='https://data-api.binance.vision/api/v3/klines?symbol='+encodeURIComponent(pair)
+     +'&interval='+config.interval+'&limit='+config.limit;
+    const raw=await requestJson(url),points=parseKlines(raw,now).filter(p=>p[0]>=now-config.span);
+    if(points.length>=3)return {source:'binance',currency:'usdt',points};
+   }catch(e){
+    if(e.status===429||e.status===418){requestsSuspendedUntil=now+120000;throw e}
+   }
+  }
+  // CoinGecko market_chart is rate-limited and may be inaccessible without
+  // credentials; use only after verification, and never imitate missing history.
+  if(now<cgCooldownUntil)return null;
+  try{
+   const currency=getCurrency();
+   const url='https://api.coingecko.com/api/v3/coins/'+encodeURIComponent(coin.id)
+    +'/market_chart?vs_currency='+encodeURIComponent(currency)+'&days='+config.days;
+   const data=await requestJson(url);
+   const points=(Array.isArray(data.prices)?data.prices:[]).filter(p=>Array.isArray(p)
+     &&Number.isFinite(p[0])&&Number.isFinite(p[1])&&p[1]>0&&p[0]>=now-config.span&&p[0]<=now);
+   if(points.length>=3)return {source:'coingecko',currency,points:points.slice(-230)};
+  }catch(e){
+   if(e.status===429||e.status===401||e.status===403)cgCooldownUntil=time()+300000;
+  }
+  return null;
+ }
+ function schedule(id,period){
+  if(!visible()||!frames[period])return;
+  const coin=coinById(id);if(!coin)return;
+  const item=history.get(memoryKey(id,period)),key=memoryKey(id,period);
+  if(isStoredCurrent(item)||queued.has(key)||inflight.has(key))return;
+  if(market()?.getPairStatus?.()==='pending')return;
+  queued.add(key);tasks.push({id,period,epoch});
+  pump();
+ }
+ function pump(){
+  if(!visible()||running>=2||time()<requestsSuspendedUntil)return;
+  while(running<2&&tasks.length){
+   const job=tasks.shift(),key=memoryKey(job.id,job.period);
+   queued.delete(key);
+   if(job.epoch!==epoch||inflight.has(key)||isStoredCurrent(history.get(key)))continue;
+   const coin=coinById(job.id);
+   if(!coin)continue;
+   inflight.add(key);running++;
+   (async()=>{
+    try{
+     const result=await fetchHistorical(coin,job.period);
+     if(result&&result.points.length){
+      history.set(key,{id:job.id,frame:job.period,...result,at:time()});
+      dirty=true;repaintSoon();
+     }
+    }catch(_){/* Keep real prior points; missing historical data stays unknown. */}
+    finally{
+     running--;inflight.delete(key);
+     if(tasks.length)setTimeout(pump,450);
+    }
+   })();
+  }
+ }
+ function focusVisible(){
+  if(!visible())return;
+  inView.clear();
+  observer?.disconnect();
+  const nodes=grid.querySelectorAll('.heatmap-tile[data-coin]');
+  if(typeof IntersectionObserver==='function'){
+   if(!observer)observer=new IntersectionObserver(entries=>{
+    for(const entry of entries){
+     const id=entry.target.dataset.coin;
+     if(entry.isIntersecting){inView.add(id);schedule(id,frame)}
+     else inView.delete(id);
+    }
+    repaintSoon();
+   },{root:null,rootMargin:'250px 0px 250px 0px',threshold:0});
+   for(const node of nodes)observer.observe(node);
+  }else{
+   for(const node of [...nodes].slice(0,18)){inView.add(node.dataset.coin);schedule(node.dataset.coin,frame)}
+  }
+  repaintSoon();
+ }
+ function changeRange(next){
+  if(!frames[next])return;
+  if(frame!==next){frame=next;epoch++;queued.clear();tasks.length=0;inView.clear()}
+  info();focusVisible();pump();
  }
  function observeSnapshot(coins){
   if(!Array.isArray(coins))return;
-  const now=Date.now();
-  for(const c of coins)record(c,now);
-  queuePaint();
+  const now=time();
+  for(const coin of coins)record(coin,now);
+  if(visible()){repaintSoon();focusVisible()}
  }
- // Hook only into the already established market stream. Other Market views
- // and the actual price ticker keep their original behavior.
  const originalTick=views.tick;
  views.tick=function(coin){
   const updated=record(coin);
   const result=originalTick?.(coin);
-  if(updated)queuePaint();
+  if(updated)repaintSoon();
   return result;
  };
- const observer=new MutationObserver(()=>queuePaint());
- observer.observe(grid,{childList:true});
- window.INJ_MARKET_HEATMAP_LIVE={observeSnapshot};
- restore();
- ensureCurrency();
- // On load, the existing current quotes are real observations at this moment.
- observeSnapshot(market()?.getCoins?.()||[]);
- setInterval(()=>{if(visible())paint()},10000);
- setInterval(()=>{if(!document.hidden)save()},60000);
+ // Top-level asset grid mutations only. SVG point edits must not reschedule.
+ const mutation=new MutationObserver(()=>focusVisible());
+ mutation.observe(grid,{childList:true});
+ window.addEventListener('injnode:market:pairsready',()=>focusVisible());
+ window.addEventListener('injnode:market:heatrange',event=>changeRange(event.detail?.range));
+ window.addEventListener('injnode:market:currencychange',()=>{acceptCurrency();focusVisible()});
+ document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else focusVisible()});
  window.addEventListener('pagehide',save);
- document.addEventListener('visibilitychange',()=>{
-  if(document.hidden)save();
-  else queuePaint();
- });
- window.addEventListener('injnode:market:currencychange',()=>{ensureCurrency();queuePaint()});
- queuePaint();
+ setInterval(()=>{if(visible()){paint();if(time()-lastSave>60000)save()}},10000);
+ setInterval(()=>{if(!document.hidden){save();if(visible()){for(const id of inView)schedule(id,frame)}}},60000);
+ window.INJ_MARKET_HEATMAP_LIVE={observeSnapshot};
+ currency=getCurrency();readSaved();readLive();info();
+ observeSnapshot(market()?.getCoins?.()||[]);
+ setTimeout(focusVisible,0);
 })();
