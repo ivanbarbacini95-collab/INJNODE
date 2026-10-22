@@ -118,7 +118,7 @@
   }
 </style>
 <link rel="stylesheet" href="navigation.css?v=160090">
-<script defer src="./home-entry-feedback.js?v=160712"></script>
+<script defer src="./home-entry-feedback.js?v=160713"></script>
 <script defer src="navigation.js?v=160318"></script>
 <script defer src="i18n.js?v=160145"></script>
 <script defer src="scroll-guard.js?v=160525"></script>
@@ -311,7 +311,7 @@
 <link rel="stylesheet" href="./app-icon-picker.css?v=160704">
 <script defer src="./app-icon-picker.js?v=160704"></script>
 <link rel="stylesheet" href="./inj-uhd.css?v=160710">
-<link rel="stylesheet" href="./home-entry-feedback.css?v=160712">
+<link rel="stylesheet" href="./home-entry-feedback.css?v=160713">
 </head>
 <body class="boot-loading">
 <div aria-label="Avvio INJ Node" aria-live="polite" aria-atomic="true" class="boot-splash node-pulse-splash" id="bootSplash" role="status">
@@ -500,6 +500,14 @@
 <span class="menu-action-copy"><strong>Suono apertura</strong><small>Breve tono entrando nelle sezioni</small></span>
 <span class="menu-action-value">ON</span>
 </button>
+<div class="menu-feedback-volume" id="menuFeedbackVolumeControl">
+ <div class="menu-feedback-volume-head">
+  <label for="menuFeedbackVolume" id="menuFeedbackVolumeTitle">Volume apertura</label>
+  <output for="menuFeedbackVolume" id="menuFeedbackVolumeValue">Standard · 40%</output>
+ </div>
+ <input id="menuFeedbackVolume" type="range" min="0" max="100" step="5" value="40" aria-label="Volume suono apertura">
+ <small id="menuFeedbackVolumeHint">Regola il tono · rilascia per provarlo</small>
+</div>
 <button type="button" class="menu-action menu-setting menu-feedback-setting" id="menuFeedbackHapticButton" aria-pressed="false" title="Vibrazione dove supportata">
 <span aria-hidden="true" class="menu-action-icon"><svg viewBox="0 0 24 24"><rect x="8" y="3.5" width="8" height="17" rx="2"/><path d="M4.5 8v8M19.5 8v8M2 10v4M22 10v4"/></svg></span>
 <span class="menu-action-copy"><strong>Vibrazione breve</strong><small>Quando disponibile sul dispositivo</small></span>
