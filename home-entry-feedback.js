@@ -1,4 +1,4 @@
-/* INJ Node · Home launch micro-feedback v16.07.13.
+/* INJ Node · Home launch micro-feedback v16.07.15.
  * Runs only on a genuine section-launch gesture, never on live data or timers.
  * iOS Safari has no navigator.vibrate; no unsafe switch/checkbox overlays. */
 (()=>{
@@ -97,20 +97,56 @@
   if(!read(HAPTIC_KEY)||!canVibrate())return;
   try{navigator.vibrate(14)}catch(_){/* optional enhancement */}
  }
- // Capture before the existing Home navigation handlers or iframe creation.
- // Preserve all clicks, default behavior, scroll, focus and accessibility.
- document.addEventListener('click',event=>{
-  if(!event.isTrusted || event.defaultPrevented || event.button>0 ||
-    event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
-  const source=event.target;
-  if(!(source instanceof Element))return;
+ // Home has two genuine activation paths:
+ // (1) pointerup for Safari's fast-tap buttons: app.js immediately invokes
+ //     button.click(), producing an *untrusted* synthetic click.
+ // (2) native trusted click for mouse, keyboard, and normal link activation.
+ // Listening only for event.isTrusted clicks silently misses mobile buttons.
+ const sectionFor=source=>{
+  if(!(source instanceof Element))return null;
   const section=source.closest('#entryGate .entry-actions .entry-action');
-  if(!section||section.matches('[disabled],[aria-disabled="true"]'))return;
-  const current=performance.now();
-  if(current-last<190)return;
-  last=current;
+  return section&&!section.matches('[disabled],[aria-disabled="true"]')?section:null;
+ };
+ let touchStart=null,lastPointerSection=null,lastPointerAt=0;
+ function signal(section){
+  if(!section)return;
+  const now=performance.now();
+  if(now-last<175)return;
+  last=now;
   vibrate();
   playSound();
+ }
+ document.addEventListener('pointerdown',event=>{
+  if(!event.isTrusted||(event.pointerType!=='touch'&&event.pointerType!=='pen'))return;
+  const section=sectionFor(event.target);
+  if(!section)return;
+  touchStart={id:event.pointerId,section,x:event.clientX,y:event.clientY,moved:false};
+ },{capture:true,passive:true});
+ document.addEventListener('pointermove',event=>{
+  if(!touchStart||event.pointerId!==touchStart.id)return;
+  const dx=event.clientX-touchStart.x,dy=event.clientY-touchStart.y;
+  if(dx*dx+dy*dy>144)touchStart.moved=true;
+ },{capture:true,passive:true});
+ document.addEventListener('pointercancel',event=>{
+  if(touchStart?.id===event.pointerId)touchStart=null;
+ },{capture:true,passive:true});
+ document.addEventListener('pointerup',event=>{
+  if(!touchStart||event.pointerId!==touchStart.id)return;
+  const gesture=touchStart;touchStart=null;
+  if(gesture.moved||sectionFor(event.target)!==gesture.section)return;
+  // One genuine sound before app.js performs the fast-tap synthetic click.
+  lastPointerSection=gesture.section;
+  lastPointerAt=performance.now();
+  signal(gesture.section);
+ },{capture:true,passive:true});
+ document.addEventListener('click',event=>{
+  if(!event.isTrusted||event.defaultPrevented||event.button>0||
+    event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
+  const section=sectionFor(event.target);
+  if(!section)return;
+  // Ignore Safari's delayed trusted click after the same pointer release.
+  if(section===lastPointerSection&&performance.now()-lastPointerAt<1100)return;
+  signal(section);
  },true);
  soundButton()?.addEventListener('click',()=>{
   write(SOUND_KEY,!read(SOUND_KEY));update();
