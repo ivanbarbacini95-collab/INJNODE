@@ -73,7 +73,7 @@
  function rowHtml(coin){
   const rank=finite(coin.market_cap_rank)?'#'+num(coin.market_cap_rank):'—';
   const symbol=String(coin.symbol||'').toUpperCase();
-  return '<button type="button" class="mp-row" data-coin="'+escape(coin.id)+'" aria-label="'+escape(coin.name+' '+symbol)+'">'+
+  return '<button type="button" class="mp-row" data-coin="'+escape(coin.id)+'" data-previous-price="'+escape(coin.current_price)+'" aria-label="'+escape(coin.name+' '+symbol)+'">'+
   '<span class="mp-identity"><span class="mp-rank">'+rank+'</span><img loading="lazy" referrerpolicy="no-referrer" src="'+escape(coin.image||'')+'" alt=""><span class="mp-name"><strong>'+escape(coin.name)+'</strong><small>'+escape(symbol)+'</small></span></span>'+
   '<span class="mp-price"><strong class="mp-price-value">'+escape(money(coin.current_price))+'</strong><small class="mp-mobile-label">'+escape(money(coin.market_cap,true))+' Cap</small></span>'+
   '<span class="mp-change mp-hour">'+pctHtml(coin,'1h')+'</span>'+
@@ -95,12 +95,12 @@
  }
  function tile(coin){
   const v=change(coin,range),node=document.createElement('button');
-  node.type='button';node.className='heatmap-tile';node.dataset.coin=coin.id;
+  node.type='button';node.className='heatmap-tile';node.dataset.coin=coin.id;node.dataset.previousPrice=String(coin.current_price);
   if(coin.id==='injective-protocol')node.classList.add('is-inj');
   const sym=document.createElement('strong');sym.className='hm-symbol';sym.textContent=String(coin.symbol||'').toUpperCase();
   const value=document.createElement('span');value.className='hm-change';
-  const rank=document.createElement('small');rank.className='hm-rank';rank.textContent=finite(coin.market_cap_rank)?'#'+num(coin.market_cap_rank):'';
-  node.append(sym,value,rank);
+  const price=document.createElement('small');price.className='hm-price';
+  node.append(sym,value,price);
   recolor(node,coin,v);
   return node;
  }
@@ -113,8 +113,10 @@
   node.style.setProperty('--heat-fill',strength.toFixed(0)+'%');
   node.style.setProperty('--heat-rim',(Math.min(78,Math.max(30,strength+13))).toFixed(0)+'%');
   const label=percent(delta),price=money(coin.current_price);
-  const p=node.querySelector('.hm-change');
+  const p=node.querySelector('.hm-change'),priceNode=node.querySelector('.hm-price');
   if(p&&p.textContent!==label)p.textContent=label;
+  if(priceNode&&priceNode.textContent!==price)priceNode.textContent=price;
+  node.dataset.displayPrice=price;
   const text=coin.name+' ('+String(coin.symbol||'').toUpperCase()+') · '+range.toUpperCase()+' '+label+' · '+price;
   node.setAttribute('aria-label',text);
   node.title=text;
@@ -163,6 +165,15 @@
    if(coin)recolor(element,coin);
   }
  }
+ // Flash only actual visible price changes. A short finite pulse, not a permanent glow.
+ function priceFlash(element,direction,tile=false){
+  if(!element||!direction||window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)return;
+  const rise=direction==='up'?'market-flash-up':'market-flash-down';
+  element.classList.remove('market-flash-up','market-flash-down');
+  // Re-arm a completed animation without replacing any live text or DOM structure.
+  void element.offsetWidth;
+  element.classList.add(rise);
+ }
  function tick(coin){
   if(global.hidden)return;
   const active=mode==='heatmap'?mapTiles:listTiles;
@@ -175,9 +186,20 @@
    for(const id of pending){
     const current=byId.get(id),element=active.get(id);
     if(!element||!current)continue;
-    if(mode==='heatmap'){recolor(element,current);continue}
+    if(mode==='heatmap'){
+     const old=element.dataset.displayPrice,next=money(current.current_price);
+     recolor(element,current);
+     if(old&&old!==next)priceFlash(element,current.current_price>Number(element.dataset.previousPrice||0)?'up':'down',true);
+     element.dataset.previousPrice=String(current.current_price);
+     continue;
+    }
     const price=element.querySelector('.mp-price-value'),next=money(current.current_price);
-    if(price&&price.textContent!==next)price.textContent=next;
+    if(price&&price.textContent!==next){
+     const prior=Number(element.dataset.previousPrice||0);
+     price.textContent=next;
+     if(prior>0)priceFlash(price,current.current_price>prior?'up':'down');
+    }
+    element.dataset.previousPrice=String(current.current_price);
     for(const k of ['1h','24h','7d','30d']){
      const span=element.querySelector('.mp-'+k);
      if(!span)continue;
