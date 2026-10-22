@@ -133,7 +133,7 @@
  }
  function vibrate(){
   if(!read(HAPTIC_KEY)||!canVibrate())return;
-  try{navigator.vibrate(14)}catch(_){/* optional enhancement */}
+  try{navigator.vibrate(35)}catch(_){/* optional enhancement; iPhone native switch duration is OS-controlled */}
  }
  // Home has two genuine activation paths:
  // (1) pointerup for Safari's fast-tap buttons: app.js immediately invokes
