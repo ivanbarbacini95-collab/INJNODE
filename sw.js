@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.07.12-home-entry-feedback';
+const CACHE_NAME = 'inj-node-v16.07.13-market-eur-usd-synced';
 const APP_SHELL = [
   './home-entry-feedback.js?v=160712',
   './home-entry-feedback.css?v=160712',
@@ -79,7 +79,7 @@ const APP_SHELL = [
   './market-portal.js?v=160625',
   './market-lang.js?v=160082',
   './market.css?v=160082',
-  './market.js?v=160709',
+  './market.js?v=160713',
   './market-pro.css?v=160108',
   './market-pro.js?v=160709',
   './market-views.css?v=160711',
