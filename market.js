@@ -297,9 +297,12 @@ async function startStreams(){
   }catch(_){/* unavailable network: CoinGecko still refreshes */ }
  }
  updateConnectionStatus();
+ window.dispatchEvent(new Event('injnode:market:pairsready'));
 }
 // Single data source for list and heatmap: no parallel network feed.
-window.INJ_MARKET_VIEW_API={getCoins:()=>state.coins,getCurrency:()=>state.currency,formatMoney:money,formatPercent:pct,getChange:change,open:detail,switchCurrency};
+window.INJ_MARKET_VIEW_API={getCoins:()=>state.coins,getCurrency:()=>state.currency,formatMoney:money,formatPercent:pct,getChange:change,open:detail,switchCurrency,
+ getPairStatus:()=>state.binancePairs===null?'pending':'ready',
+ getVerifiedPair:coin=>{const pair=String(coin?.symbol||'').toUpperCase()+'USDT';return state.pairCoins.get(pair)===coin?pair:null;}};
 // Shared read-only observation: this does not trigger additional network calls.
 window.INJ_MARKET_READONLY_SNAPSHOT=()=>({
  injective:state.coins.find(c=>c.id==='injective-protocol')||null,
