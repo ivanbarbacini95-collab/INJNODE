@@ -34,12 +34,30 @@
   if(/\b(stablecoin|stable coin|bridged usdt|bridged usdc|wrapped bitcoin|wrapped ethereum|wrapped ether|wrapped btc|wrapped eth)\b/.test(name))return false;
   return true;
  }
+ // Skip incomplete quote records. A missing single optional chart or metric
+ // should not hide an otherwise valid coin from the vertical Global Crypto list.
+ function hasMarketQuote(coin){
+  if(!coin||typeof coin!=='object')return false;
+  const id=String(coin.id||'').trim(),name=String(coin.name||'').trim(),symbol=String(coin.symbol||'').trim();
+  const price=num(coin.current_price);
+  if(!id||!name||!symbol||!Number.isFinite(price)||price<=0)return false;
+  const cap=num(coin.market_cap),volume=num(coin.total_volume),daily=change(coin,'24h');
+  return (Number.isFinite(cap)&&cap>0)||(Number.isFinite(volume)&&volume>0)||Number.isFinite(daily);
+ }
+ // A Heatmap tile has no meaningful red/green fill without the chosen period.
+ // Do not show black "—" tiles for missing or invalid timeframe samples.
+ function hasHeatmapData(coin){
+  return hasMarketQuote(coin)&&Number.isFinite(change(coin,range));
+ }
  function filtered(){
   const count=Number($('scope')?.value)||200;
   const query=String($('search')?.value||'').trim().toLowerCase();
   const direction=$('direction')?.value||'all';
-  const eligible=mode==='heatmap'?all().filter(heatmapEligible):all();
-  return eligible.slice(0,count).filter(coin=>{
+  const rankedTop=all().slice(0,count);
+  const eligible=mode==='heatmap'
+   ?rankedTop.filter(coin=>heatmapEligible(coin)&&hasHeatmapData(coin))
+   :rankedTop.filter(hasMarketQuote);
+  return eligible.filter(coin=>{
    if(query&&!String(coin.name+' '+coin.symbol).toLowerCase().includes(query))return false;
    const day=change(coin,'24h');
    return direction==='all'||(direction==='up'&&Number.isFinite(day)&&day>=0)||(direction==='down'&&Number.isFinite(day)&&day<0);
@@ -71,6 +89,7 @@
   const v=change(coin,k);return '<span class="mp-percent mp-'+k+' '+tone(v)+'">'+escape(percent(v))+'</span>';
  }
  function rowHtml(coin){
+  const chart=spark(coin);
   const rank=finite(coin.market_cap_rank)?'#'+num(coin.market_cap_rank):'—';
   const symbol=String(coin.symbol||'').toUpperCase();
   return '<button type="button" class="mp-row" data-coin="'+escape(coin.id)+'" data-previous-price="'+escape(coin.current_price)+'" aria-label="'+escape(coin.name+' '+symbol)+'">'+
@@ -82,7 +101,7 @@
   '<span class="mp-change mp-month">'+pctHtml(coin,'30d')+'</span>'+
   '<span class="mp-stat mp-cap">'+escape(money(coin.market_cap,true))+'</span>'+
   '<span class="mp-stat mp-volume">'+escape(money(coin.total_volume,true))+'</span>'+
-  '<span class="mp-chart">'+spark(coin)+'</span></button>';
+  '<span class="mp-chart">'+(chart==='—'?'':chart)+'</span></button>';
  }
  function renderList(items){
   const coins=sorted(items),template=document.createElement('template'),next=new Map();
@@ -159,11 +178,9 @@
   if(!rangeChoices.includes(next))return;
   range=next;save(range);
   heat.querySelectorAll('[data-heat-range]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.heatRange===range)));
-  const byId=new Map(all().map(c=>[c.id,c]));
-  for(const [id,element] of mapTiles){
-   const coin=byId.get(id);
-   if(coin)recolor(element,coin);
-  }
+  // A coin may have valid 24h data but no 1h/7d/30d history.
+  // Rebuild visible tiles on period change instead of retaining black placeholders.
+  if(mode==='heatmap')requestRender();
  }
  // Flash only actual visible price changes. A short finite pulse, not a permanent glow.
  function priceFlash(element,direction,tile=false){
