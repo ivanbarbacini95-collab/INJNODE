@@ -1,11 +1,14 @@
-/* INJ Node — Global Crypto / Heatmap: two independent sections, one live data feed. */
+/* INJ Node — Global Crypto, Heatmap and Favorites: one live market data source. */
 (()=>{
  'use strict';
  const $=id=>document.getElementById(id);
  const global=$('injGlobalMarket'),heat=$('marketHeatmap'),list=$('hybridPro'),rows=$('marketProRows');
  const grid=$('marketHeatmapGrid'),legacy=global?.querySelector('.tablewrap');
- if(!global||!heat||!list||!rows||!grid||!legacy)return;
- const key='inj_node_market_heat_range_v1',en=()=>document.documentElement.lang==='en',tr=(it,eng)=>en()?eng:it;
+ const favControls=$('marketFavoritesControls'),favModes=$('marketFavoritesModes'),scope=$('scope');
+ if(!global||!heat||!list||!rows||!grid||!legacy||!favControls||!favModes)return;
+ const key='inj_node_market_heat_range_v1',favoritesKey='inj_node_crypto_favorites_v1',
+  favoriteModeKey='inj_node_crypto_favorites_mode_v1';
+ const en=()=>document.documentElement.lang==='en',tr=(it,eng)=>en()?eng:it;
  const rangeChoices=['1h','24h','7d','30d'];
  const read=()=>{try{return localStorage.getItem(key)}catch(_){return null}};
  const save=value=>{try{localStorage.setItem(key,value)}catch(_){}};
@@ -17,7 +20,25 @@
  const percent=value=>api()?.formatPercent?.(num(value))||'—';
  const change=(coin,frame)=>num(api()?.getChange?.(coin,frame));
  const tone=v=>!Number.isFinite(v)?'flat':v>0?'up':v<0?'down':'flat';
- let mode='list',range=rangeChoices.includes(read())?read():'24h';
+ function readFavorites(){
+  const result=new Map();
+  try{
+   const saved=JSON.parse(localStorage.getItem(favoritesKey)||'[]');
+   if(Array.isArray(saved))for(const item of saved){
+    const id=String(item?.id||'').trim();
+    if(!/^[a-z0-9][a-z0-9_.-]{0,99}$/i.test(id)||result.has(id)||result.size>=250)continue;
+    result.set(id,{id,name:String(item.name||id).slice(0,90),symbol:String(item.symbol||'').slice(0,18)});
+   }
+  }catch(_){}
+  return result;
+ }
+ let favorites=readFavorites();
+ const persistFavorites=()=>{try{localStorage.setItem(favoritesKey,JSON.stringify([...favorites.values()]))}catch(_){}};
+ let section='global',mode='list',range=rangeChoices.includes(read())?read():'24h',
+     favoriteLayout=readLocalFavoriteMode();
+ function readLocalFavoriteMode(){
+  try{return localStorage.getItem(favoriteModeKey)==='heatmap'?'heatmap':'list'}catch(_){return 'list'}
+ }
  let listTiles=new Map(),mapTiles=new Map(),pending=new Set(),renderQueued=false,timer=null;
  const all=()=>api()?.getCoins?.()||[];
  // Applies exclusively to the Heatmap. Global Crypto preserves the full Top 200.
@@ -53,9 +74,11 @@
   const count=Number($('scope')?.value)||200;
   const query=String($('search')?.value||'').trim().toLowerCase();
   const direction=$('direction')?.value||'all';
-  const rankedTop=all().slice(0,count);
+  const rankedTop=section==='favorites'
+   ?[...favorites.keys()].map(id=>all().find(c=>c.id===id)).filter(Boolean)
+   :all().slice(0,count);
   const eligible=mode==='heatmap'
-   ?rankedTop.filter(coin=>heatmapEligible(coin)&&hasHeatmapData(coin))
+   ?rankedTop.filter(coin=>(section==='favorites'||heatmapEligible(coin))&&hasHeatmapData(coin))
    :rankedTop.filter(hasMarketQuote);
   return eligible.filter(coin=>{
    if(query&&!String(coin.name+' '+coin.symbol).toLowerCase().includes(query))return false;
@@ -88,11 +111,64 @@
  function pctHtml(coin,k){
   const v=change(coin,k);return '<span class="mp-percent mp-'+k+' '+tone(v)+'">'+escape(percent(v))+'</span>';
  }
+ const favoriteIcon='<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m12 2.5 2.9 5.88 6.49.94-4.7 4.58 1.11 6.47L12 17.32l-5.8 3.05 1.1-6.47-4.7-4.58 6.5-.94Z"/></svg>';
+ function favoriteLabel(coin,saved){
+  const symbol=String(coin.symbol||'').toUpperCase(),name=String(coin.name||coin.id);
+  return (saved?tr('Rimuovi dai preferiti: ','Remove from favorites: '):tr('Aggiungi ai preferiti: ','Add to favorites: '))+name+' ('+symbol+')';
+ }
+ function favoriteButtonHtml(coin){
+  const saved=favorites.has(coin.id);
+  return '<button type="button" class="market-favorite-toggle'+(saved?' is-saved':'')+'" data-favorite-id="'+escape(coin.id)+'" data-favorite-name="'+escape(coin.name)+'" data-favorite-symbol="'+escape(coin.symbol)+'" aria-pressed="'+saved+'" aria-label="'+escape(favoriteLabel(coin,saved))+'" title="'+escape(favoriteLabel(coin,saved))+'">'+favoriteIcon+'</button>';
+ }
+ function makeFavoriteButton(coin){
+  const fragment=document.createElement('template');
+  fragment.innerHTML=favoriteButtonHtml(coin);
+  return fragment.content.firstElementChild;
+ }
+ function updateFavoriteButton(button){
+  const id=button?.dataset?.favoriteId;if(!id)return;
+  const coin=all().find(c=>c.id===id)||{id,name:button.dataset.favoriteName,symbol:button.dataset.favoriteSymbol};
+  const saved=favorites.has(id),label=favoriteLabel(coin,saved);
+  button.classList.toggle('is-saved',saved);
+  button.setAttribute('aria-pressed',String(saved));
+  button.setAttribute('aria-label',label);
+  button.title=label;
+ }
+ function updateFavoritesUI(){
+  const size=favorites.size,count=$('injFavoriteTabCount');
+  if(count){count.textContent=String(size);count.hidden=size===0;}
+  $('marketFavoritesHeading').textContent=tr('I tuoi preferiti','Your favorites');
+  $('marketFavoritesStatus').textContent=size
+   ?size+' '+tr(size===1?'crypto salvata':'crypto salvate',size===1?'saved crypto':'saved cryptos')+' · '+tr('su questo dispositivo','on this device')
+   :tr('Tocca la stella accanto a una crypto in Global Crypto o Heatmap','Tap a star beside any coin in Global Crypto or Heatmap');
+  $('marketFavoritesList').textContent=tr('Lista','List');
+  $('marketFavoritesMap').textContent='Heatmap';
+  favModes.setAttribute('aria-label',tr('Visualizzazione preferiti','Favorites view'));
+  favModes.querySelectorAll('[data-favorite-mode]').forEach(b=>{
+   b.setAttribute('aria-pressed',String(b.dataset.favoriteMode===favoriteLayout));
+  });
+  const missing=all().length?[...favorites.keys()].filter(id=>!all().some(c=>c.id===id)).length:0;
+  const note=$('marketFavoritesUnavailable');
+  if(note){
+   note.hidden=!missing;
+   note.textContent=missing+' '+tr(missing===1?'preferito non presente nella Top 200 attuale':'preferiti non presenti nella Top 200 attuale',
+      missing===1?'favorite currently outside the Top 200':'favorites currently outside the Top 200')
+      +' · '+tr('salvataggio conservato','still saved');
+  }
+ }
+ function toggleFavorite(id,name,symbol){
+  if(favorites.has(id))favorites.delete(id);
+  else favorites.set(id,{id,name:String(name||id).slice(0,90),symbol:String(symbol||'').slice(0,18)});
+  persistFavorites();
+  updateFavoritesUI();
+  if(section==='favorites')requestRender();
+  else document.querySelectorAll('[data-favorite-id]').forEach(updateFavoriteButton);
+ }
  function rowHtml(coin){
   const chart=spark(coin);
   const rank=finite(coin.market_cap_rank)?'#'+num(coin.market_cap_rank):'—';
   const symbol=String(coin.symbol||'').toUpperCase();
-  return '<button type="button" class="mp-row" data-coin="'+escape(coin.id)+'" data-previous-price="'+escape(coin.current_price)+'" aria-label="'+escape(coin.name+' '+symbol)+'">'+
+  return '<div class="market-favorite-row"><button type="button" class="mp-row" data-coin="'+escape(coin.id)+'" data-previous-price="'+escape(coin.current_price)+'" aria-label="'+escape(coin.name+' '+symbol)+'">'+
   '<span class="mp-identity"><span class="mp-rank">'+rank+'</span>'+(String(coin.image||'').trim()?'<img loading="lazy" referrerpolicy="no-referrer" src="'+escape(coin.image)+'" alt="">':'')+'<span class="mp-name"><strong>'+escape(coin.name)+'</strong><small>'+escape(symbol)+'</small></span></span>'+
   '<span class="mp-price"><strong class="mp-price-value">'+escape(money(coin.current_price))+'</strong><small class="mp-mobile-label">'+escape(money(coin.market_cap,true))+' Cap</small></span>'+
   '<span class="mp-change mp-hour">'+pctHtml(coin,'1h')+'</span>'+
@@ -101,14 +177,17 @@
   '<span class="mp-change mp-month">'+pctHtml(coin,'30d')+'</span>'+
   '<span class="mp-stat mp-cap">'+escape(money(coin.market_cap,true))+'</span>'+
   '<span class="mp-stat mp-volume">'+escape(money(coin.total_volume,true))+'</span>'+
-  '<span class="mp-chart">'+(chart==='—'?'':chart)+'</span></button>';
+  '<span class="mp-chart">'+(chart==='—'?'':chart)+'</span></button>'+favoriteButtonHtml(coin)+'</div>';
  }
  function renderList(items){
   const coins=sorted(items),template=document.createElement('template'),next=new Map();
   template.innerHTML=coins.length?coins.map(rowHtml).join(''):'<div class="mp-empty">'+
-   (all().length?tr('Nessun risultato','No results'):tr('Caricamento criptovalute…','Loading cryptocurrencies…'))+'</div>';
+   (section==='favorites'&&favorites.size===0
+    ?tr('Nessuna crypto salvata. Usa la stella in Global Crypto o Heatmap.','No saved cryptos yet. Use the star in Global Crypto or Heatmap.')
+    :all().length?tr('Nessun risultato o prezzo attualmente disponibile','No matching results or currently available quotes')
+    :tr('Caricamento criptovalute…','Loading cryptocurrencies…'))+'</div>';
   rows.replaceChildren(template.content);
-  rows.querySelectorAll('[data-coin]').forEach(el=>next.set(el.dataset.coin,el));
+  rows.querySelectorAll('.mp-row[data-coin]').forEach(el=>next.set(el.dataset.coin,el));
   listTiles=next;
   $('mpMetaCount').textContent=tr('Crypto visualizzate: ','Displayed assets: ')+coins.length;
  }
@@ -143,10 +222,19 @@
  function renderMap(items){
   const coins=ranked(items),fragment=document.createDocumentFragment(),next=new Map();
   if(coins.length){
-   for(const coin of coins){const el=tile(coin);fragment.append(el);next.set(coin.id,el)}
+   for(const coin of coins){
+    const el=tile(coin),wrapper=document.createElement('div');
+    wrapper.className='market-favorite-tile';
+    wrapper.append(el,makeFavoriteButton(coin));
+    fragment.append(wrapper);
+    next.set(coin.id,el);
+   }
   }else{
    const empty=document.createElement('div');empty.className='heatmap-empty';
-   empty.textContent=all().length?tr('Nessuna crypto corrisponde ai filtri','No matching cryptocurrencies'):tr('Caricamento dati di mercato…','Loading market data…');
+   empty.textContent=section==='favorites'&&favorites.size===0
+    ?tr('Nessuna crypto salvata. Usa la stella in Global Crypto o Heatmap.','No saved cryptos yet. Use the star in Global Crypto or Heatmap.')
+    :all().length?tr('Nessuna crypto con dati disponibili per questo periodo','No cryptos with available data for this period')
+    :tr('Caricamento dati di mercato…','Loading market data…');
    fragment.append(empty);
   }
   grid.replaceChildren(fragment);
@@ -155,6 +243,7 @@
  }
  function render(){
   if(global.hidden)return;
+  updateFavoritesUI();
   const coins=filtered();
   if(mode==='heatmap')renderMap(coins);
   else renderList(coins);
@@ -165,14 +254,28 @@
   requestAnimationFrame(()=>{renderQueued=false;render()});
  }
  function setView(next){
-  mode=next==='heatmap'?'heatmap':'list';
+  section=next==='favorites'?'favorites':next==='heatmap'?'heatmap':'global';
+  mode=section==='favorites'?favoriteLayout:section==='heatmap'?'heatmap':'list';
+  if(timer){clearTimeout(timer);timer=null}
+  pending.clear();
   document.documentElement.dataset.marketMode=mode;
   list.hidden=mode!=='list';
   heat.hidden=mode!=='heatmap';
   legacy.hidden=true;
+  favControls.hidden=section!=='favorites';
+  scope.hidden=section==='favorites';
   $('marketProSort').hidden=mode==='heatmap';
-  $('marketHeading').textContent=mode==='heatmap'?'Market Heatmap':tr('Global Crypto','Global Crypto');
+  $('marketHeading').textContent=section==='favorites'?tr('Preferiti','Favorites'):mode==='heatmap'?'Market Heatmap':'Global Crypto';
+  $('mpMetaTitle').innerHTML=section==='favorites'?'FAVORITES <span>· HYBRID PRO</span>':'HYBRID PRO <span>· MARKET WATCH</span>';
+  updateFavoritesUI();
   requestRender();
+ }
+ function setFavoriteLayout(next){
+  if(next!=='list'&&next!=='heatmap')return;
+  favoriteLayout=next;
+  try{localStorage.setItem(favoriteModeKey,next)}catch(_){}
+  if(section==='favorites')setView('favorites');
+  else updateFavoritesUI();
  }
  function setRange(next){
   if(!rangeChoices.includes(next))return;
@@ -241,24 +344,44 @@
   },1500);
  }
  function languageChange(){
-  $('marketProSort').setAttribute('aria-label',tr('Ordina Global Crypto','Sort Global Crypto'));
+  $('injFavoriteTabLabel').textContent=tr('Preferiti','Favorites');
+  $('marketProSort').setAttribute('aria-label',tr('Ordina Crypto','Sort cryptos'));
   $('heatmapCount').textContent=tr('Crypto visualizzate: ','Displayed assets: ')+mapTiles.size;
   $('heatmapNote').textContent=tr('Verde: rialzo · Rosso: ribasso','Green: up · Red: down');
-  $('marketHeading').textContent=mode==='heatmap'?'Market Heatmap':'Global Crypto';
+  $('marketHeading').textContent=section==='favorites'?tr('Preferiti','Favorites'):mode==='heatmap'?'Market Heatmap':'Global Crypto';
+  updateFavoritesUI();
   requestRender();
  }
  $('heatmapRanges').addEventListener('click',e=>{
   const b=e.target.closest('[data-heat-range]');if(b)setRange(b.dataset.heatRange);
  });
  $('marketProSort').addEventListener('change',requestRender);
+ favModes.addEventListener('click',e=>{
+  const b=e.target.closest('[data-favorite-mode]');
+  if(b)setFavoriteLayout(b.dataset.favoriteMode);
+ });
+ window.addEventListener('storage',e=>{
+  if(e.key===favoritesKey){favorites=readFavorites();updateFavoritesUI();requestRender();}
+  if(e.key===favoriteModeKey){favoriteLayout=readLocalFavoriteMode();if(section==='favorites')setView('favorites');}
+ });
  // Remove broken/empty coin icons instead of exposing black image placeholders.
  rows.addEventListener('error',event=>{
   const image=event.target;
   if(image?.tagName==='IMG'&&image.closest('.mp-identity'))image.remove();
  },true);
- rows.addEventListener('click',e=>{const b=e.target.closest('[data-coin]');if(b)api()?.open?.(b.dataset.coin)});
- grid.addEventListener('click',e=>{const b=e.target.closest('[data-coin]');if(b)api()?.open?.(b.dataset.coin)});
- window.INJ_MARKET_VIEWS={render:requestRender,tick,setView,languageChange};
+ function onAssetClick(e){
+  const favorite=e.target.closest('[data-favorite-id]');
+  if(favorite){
+   e.preventDefault();
+   toggleFavorite(favorite.dataset.favoriteId,favorite.dataset.favoriteName,favorite.dataset.favoriteSymbol);
+   return;
+  }
+  const asset=e.target.closest('[data-coin]');
+  if(asset)api()?.open?.(asset.dataset.coin);
+ }
+ rows.addEventListener('click',onAssetClick);
+ grid.addEventListener('click',onAssetClick);
+ window.INJ_MARKET_VIEWS={render:requestRender,tick,setView,languageChange,favoriteCount:()=>favorites.size};
  setRange(range);
  setView('list');
 })();
