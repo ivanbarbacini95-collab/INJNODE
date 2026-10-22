@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.07.07-market-terminal-fullscreen';
+const CACHE_NAME = 'inj-node-v16.07.08-market-heatmap-tabs';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160080',
@@ -66,7 +66,7 @@ const APP_SHELL = [
   './treasury-ownership-theme.css?v=160702',
   './market.html',
   './market-intelligence.css?v=160421',
-  './market-intelligence-summary.js?v=160625',
+  './market-intelligence-summary.js?v=160708',
   './market-intelligence-summary.css?v=160625',
   './inj-ownership.js?v=160625',
   './comparison.html',
@@ -79,8 +79,8 @@ const APP_SHELL = [
   './market.js?v=160402',
   './market-pro.css?v=160108',
   './market-pro.js?v=160108',
-  './market-views.css?v=160707',
-  './market-views.js?v=160707',
+  './market-views.css?v=160708',
+  './market-views.js?v=160708',
   './manifest.webmanifest?v=16.06.29',
   './app-icon-picker.css?v=160704',
   './app-icon-picker.js?v=160704',
