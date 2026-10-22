@@ -195,14 +195,59 @@
   listTiles=next;
   $('mpMetaCount').textContent=tr('Crypto visualizzate: ','Displayed assets: ')+coins.length;
  }
+ // Compact real CoinGecko 7D sparkline, strictly from points returned in the existing market feed.
+ // No synthetic chart and no extra requests per tile.
+ function heatSpark(coin){
+  const source=coin.sparkline_in_7d?.price;
+  if(!Array.isArray(source)||source.length<2)return null;
+  const data=source.map(num).filter(Number.isFinite);
+  if(data.length<2)return null;
+  const stride=Math.max(1,Math.ceil((data.length-1)/30));
+  const sample=data.filter((_,i)=>i%stride===0||i===data.length-1);
+  if(sample.length<2)return null;
+  const min=Math.min(...sample),max=Math.max(...sample),span=max-min||1;
+  const path=sample.map((v,i)=>(i*100/(sample.length-1)).toFixed(2)+','+(22-(v-min)/span*19).toFixed(2)).join(' ');
+  const ns='http://www.w3.org/2000/svg';
+  const svg=document.createElementNS(ns,'svg');
+  svg.setAttribute('viewBox','0 0 100 24');
+  svg.setAttribute('preserveAspectRatio','none');
+  svg.setAttribute('aria-hidden','true');
+  svg.classList.add('hm-spark');
+  const line=document.createElementNS(ns,'polyline');
+  line.setAttribute('points',path);
+  svg.append(line);
+  return svg;
+ }
  function tile(coin){
   const v=change(coin,range),node=document.createElement('button');
-  node.type='button';node.className='heatmap-tile';node.dataset.coin=coin.id;node.dataset.previousPrice=String(coin.current_price);
+  const symbol=String(coin.symbol||'').toUpperCase();
+  node.type='button';node.className='heatmap-tile';node.dataset.coin=coin.id;
+  node.dataset.previousPrice=String(coin.current_price);
+  node.dataset.watermark=symbol.length<=9?symbol:'';
   if(coin.id==='injective-protocol')node.classList.add('is-inj');
-  const sym=document.createElement('strong');sym.className='hm-symbol';sym.textContent=String(coin.symbol||'').toUpperCase();
+  const identity=document.createElement('span');identity.className='hm-identity';
+  const imageUrl=String(coin.image||'').trim();
+  if(/^https:\/\//i.test(imageUrl)){
+   const icon=document.createElement('img');
+   icon.className='hm-icon';icon.src=imageUrl;icon.alt='';
+   icon.loading='lazy';icon.decoding='async';icon.referrerPolicy='no-referrer';
+   identity.append(icon);
+  }
+  const labels=document.createElement('span');labels.className='hm-labels';
+  const sym=document.createElement('strong');sym.className='hm-symbol';sym.textContent=symbol;
+  const name=document.createElement('small');name.className='hm-name';name.textContent=String(coin.name||'');
+  labels.append(sym,name);identity.append(labels);
+  node.append(identity);
+  if(finite(coin.market_cap_rank)){
+   const badge=document.createElement('small');
+   badge.className='hm-rank';badge.textContent='#'+Math.trunc(num(coin.market_cap_rank));
+   node.append(badge);
+  }
   const value=document.createElement('span');value.className='hm-change';
   const price=document.createElement('small');price.className='hm-price';
-  node.append(sym,value,price);
+  node.append(price,value);
+  const chart=heatSpark(coin);
+  if(chart)node.append(chart);
   recolor(node,coin,v);
   return node;
  }
@@ -409,6 +454,11 @@
   if(asset)api()?.open?.(asset.dataset.coin);
  }
  rows.addEventListener('click',onAssetClick);
+ // A missing provider logo simply disappears; no broken-image rectangle on the card.
+ grid.addEventListener('error',event=>{
+  const image=event.target;
+  if(image?.tagName==='IMG'&&image.classList.contains('hm-icon'))image.remove();
+ },true);
  grid.addEventListener('click',onAssetClick);
  window.INJ_MARKET_VIEWS={render:requestRender,tick,setView,languageChange,favoriteCount:()=>favorites.size};
  setRange(range);
