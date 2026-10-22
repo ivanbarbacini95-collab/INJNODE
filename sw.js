@@ -1,6 +1,7 @@
-const CACHE_NAME = 'inj-node-v16.07.22-ipad-layout';
+const CACHE_NAME = 'inj-node-v16.07.23-market-favorites';
 const APP_SHELL = [
   './dashboard-ipad-layout.css?v=160722',
+  './market-favorites.css?v=160723',
   './chart-haptics.js?v=160720',
   './chart-haptics.css?v=160720',
   './home-scroll-memory.js?v=160719',
@@ -87,6 +88,8 @@ const APP_SHELL = [
   './market-pro.css?v=160108',
   './market-pro.js?v=160720',
   './market-views.css?v=160716',
+  './market-views.js?v=160723',
+  './market-intelligence-summary.js?v=160723',
   './market-views.js?v=160716',
   './manifest.webmanifest?v=16.06.29',
   './app-icon-picker.css?v=160704',
