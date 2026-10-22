@@ -193,8 +193,14 @@
   }catch(_){/* CoinGecko fallback for unlisted pairs, regional restrictions or outages. */}
   const days=ranges[range],{helpers,coin}=active;
   const requestDays=range==='1h'?1:Math.min(365,days*2);
-  const url=helpers.API+'/coins/'+encodeURIComponent(coin.id)+'/market_chart?vs_currency='+helpers.currency+'&days='+requestDays+'&precision=full';
-  const response=await helpers.getJson(url,signal);
+  const base=helpers.API+'/coins/'+encodeURIComponent(coin.id)+'/market_chart?vs_currency='+helpers.currency+'&days=';
+  let response;
+  try{response=await helpers.getJson(base+requestDays+'&precision=full',signal)}
+  catch(error){
+   if(requestDays===days)throw error;
+   // A longer window may be rejected by the free API; retry the selected range.
+   response=await helpers.getJson(base+days+'&precision=full',signal);
+  }
   const all=(response?.prices||[]).map(v=>({t:Number(v[0]),v:Number(v[1])})).filter(x=>finite(x.t)&&finite(x.v)&&x.v>0);
   return {data:all,provider:tr('CoinGecko · storico reale alla frequenza disponibile','CoinGecko · real history at source sampling frequency')};
  }
