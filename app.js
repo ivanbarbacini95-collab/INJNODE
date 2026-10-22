@@ -975,7 +975,11 @@ function renderEntryGate() {
   // Keep the selected wallet visible after a rebuild without disturbing a user's swipe.
   requestAnimationFrame(() => {
     const selectedRow = [...host.querySelectorAll('.entry-wallet-row')].find((row) => row.dataset.address === state.entrySelectedAddress);
-    if (selectedRow && state.wallets.length > 1) selectedRow.scrollIntoView({ behavior: 'auto', block: 'nearest', inline: 'center' });
+    if (selectedRow && state.wallets.length > 1) {
+      // Horizontal wallet-centering must NEVER scroll the entire Home back to
+      // the wallet row when returning from Dashboard or another section.
+      host.scrollLeft = entryWalletCenteredScrollLeft(host,selectedRow);
+    }
   });
 
   renderEntryOverview();
@@ -2351,6 +2355,7 @@ function activateEntrySelection() {
 
 function enterDashboardFromGate() {
   if (state.currentView !== 'home' || !modeLaunchAllowed()) return;
+  window.INJ_HOME_SCROLL?.save();
   activateEntrySelection();
 
   // Mode handoff: Live View must never donate its fullscreen scroll/touch
@@ -2388,6 +2393,7 @@ function enterDashboardFromGate() {
 function parkEntryGateUnderImmersive() {
   const gate = $('entryGate');
   if (!gate) return;
+  window.INJ_HOME_SCROLL?.save();
   // v15.64: the selector never leaves the compositor while Live/Pulse is open.
   // It remains a fully painted, theme-correct page underneath the immersive layer.
   gate.classList.remove('leaving', 'mode-return');
@@ -2410,6 +2416,7 @@ function restoreEntryGateFromImmersive() {
   gate.setAttribute('aria-hidden', 'false');
   document.body.classList.add('entry-gate-open');
   document.body.classList.remove('entry-live-launch', 'mode-returning');
+  window.INJ_HOME_SCROLL?.restore();
 }
 
 function armModeExitLock(duration = 1250) {
@@ -5582,12 +5589,14 @@ function returnDashboardToEntryGate() {
   gate.classList.remove('leaving', 'immersive-underlay', 'mode-return', 'return-front', 'dashboard-underlay');
   gate.classList.add('visible', 'home-return-stable');
   gate.setAttribute('aria-hidden', 'false');
+  window.INJ_HOME_SCROLL?.restore();
 
   requestAnimationFrame(() => {
     document.body.classList.remove('dashboard-home-instant-return');
     const refreshHome = () => {
       if (state.currentView !== 'home') return;
       renderEntryGate();
+      window.INJ_HOME_SCROLL?.restore();
       requestAnimationFrame(() => loadEntrySparkline(false));
     };
     if ('requestIdleCallback' in window) requestIdleCallback(refreshHome, { timeout: 180 });
