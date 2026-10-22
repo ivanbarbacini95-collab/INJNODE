@@ -99,9 +99,23 @@
   }
   html[data-inj-page="index"] body.dashboard-scroll-ready > .app-shell #top .metrics-grid > #ownedTotalCard {
     grid-column:1/-1!important;
+    grid-row:1!important;
+  }
+  html[data-inj-page="index"] body.dashboard-scroll-ready > .app-shell #top .metrics-grid > #availableCard {
+    grid-column:1!important;
+    grid-row:2!important;
+  }
+  html[data-inj-page="index"] body.dashboard-scroll-ready > .app-shell #top .metrics-grid > #stakedCard {
+    grid-column:2!important;
+    grid-row:2!important;
+  }
+  html[data-inj-page="index"] body.dashboard-scroll-ready > .app-shell #top .metrics-grid > #rewardsCard {
+    grid-column:1!important;
+    grid-row:3!important;
   }
   html[data-inj-page="index"] body.dashboard-scroll-ready > .app-shell #top .metrics-grid > #aprCard {
-    grid-column:auto!important;
+    grid-column:2!important;
+    grid-row:3!important;
   }
 }
 /* Wide iPads in landscape: three metrics above two, with no unused tracks. */
