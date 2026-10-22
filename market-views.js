@@ -195,35 +195,22 @@
   listTiles=next;
   $('mpMetaCount').textContent=tr('Crypto visualizzate: ','Displayed assets: ')+coins.length;
  }
- // Compact real CoinGecko 7D sparkline, strictly from points returned in the existing market feed.
- // No synthetic chart and no extra requests per tile.
- function heatSpark(coin){
-  const source=coin.sparkline_in_7d?.price;
-  if(!Array.isArray(source)||source.length<2)return null;
-  const data=source.map(num).filter(Number.isFinite);
-  if(data.length<2)return null;
-  const stride=Math.max(1,Math.ceil((data.length-1)/30));
-  const sample=data.filter((_,i)=>i%stride===0||i===data.length-1);
-  if(sample.length<2)return null;
-  const min=Math.min(...sample),max=Math.max(...sample),span=max-min||1;
-  const path=sample.map((v,i)=>(i*100/(sample.length-1)).toFixed(2)+','+(22-(v-min)/span*19).toFixed(2)).join(' ');
-  const ns='http://www.w3.org/2000/svg';
-  const svg=document.createElementNS(ns,'svg');
-  svg.setAttribute('viewBox','0 0 100 24');
-  svg.setAttribute('preserveAspectRatio','none');
-  svg.setAttribute('aria-hidden','true');
+ // The 1H line is filled by market-heatmap-live.js from actual timestamped quotes.
+ // Never draw the 7D CoinGecko sparkline into a 1H-labelled chart.
+ function heatSpark(){
+  const wrap=document.createElement('span');wrap.className='hm-spark-wrap';
+  const label=document.createElement('small');label.className='hm-spark-timeframe';label.textContent='1H';
+  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
   svg.classList.add('hm-spark');
-  const line=document.createElementNS(ns,'polyline');
-  line.setAttribute('points',path);
-  svg.append(line);
-  return svg;
+  svg.setAttribute('viewBox','0 0 100 24');
+  svg.setAttribute('preserveAspectRatio','none');svg.setAttribute('aria-hidden','true');
+  wrap.append(label,svg);return wrap;
  }
  function tile(coin){
   const v=change(coin,range),node=document.createElement('button');
   const symbol=String(coin.symbol||'').toUpperCase();
   node.type='button';node.className='heatmap-tile';node.dataset.coin=coin.id;
   node.dataset.previousPrice=String(coin.current_price);
-  node.dataset.watermark=symbol.length<=9?symbol:'';
   if(coin.id==='injective-protocol')node.classList.add('is-inj');
   const identity=document.createElement('span');identity.className='hm-identity';
   const imageUrl=String(coin.image||'').trim();
@@ -246,8 +233,7 @@
   const value=document.createElement('span');value.className='hm-change';
   const price=document.createElement('small');price.className='hm-price';
   node.append(price,value);
-  const chart=heatSpark(coin);
-  if(chart)node.append(chart);
+  node.append(heatSpark());
   recolor(node,coin,v);
   return node;
  }
