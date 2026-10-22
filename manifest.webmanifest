@@ -1,22 +1,31 @@
 {
+  "id": "./index.html",
   "name": "INJ Node",
   "short_name": "INJ Node",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#050505",
-  "theme_color": "#050505",
-  "description": "INJ Node portfolio, staking and market monitor.",
+  "background_color": "#06121d",
+  "theme_color": "#06121d",
+  "description": "Monitor live di wallet, staking e mercati Injective.",
   "icons": [
     {
-      "src": "./icons/icon-192-v15.68.png",
+      "src": "./icons/inj-node-192-v16.06.28.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "./icons/apple-touch-icon-v15.68.png",
+      "src": "./icons/inj-node-512-v16.06.28.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icons/inj-node-180-v16.06.28.png",
       "sizes": "180x180",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     }
   ]
 }
