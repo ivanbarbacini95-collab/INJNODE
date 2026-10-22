@@ -118,7 +118,7 @@
   }
 </style>
 <link rel="stylesheet" href="navigation.css?v=160090">
-<script defer src="./home-entry-feedback.js?v=160718"></script>
+<script defer src="./home-entry-feedback.js?v=160719"></script>
 <script defer src="navigation.js?v=160318"></script>
 <script defer src="i18n.js?v=160145"></script>
 <script defer src="scroll-guard.js?v=160525"></script>
@@ -311,7 +311,7 @@
 <link rel="stylesheet" href="./app-icon-picker.css?v=160704">
 <script defer src="./app-icon-picker.js?v=160704"></script>
 <link rel="stylesheet" href="./inj-uhd.css?v=160710">
-<link rel="stylesheet" href="./home-entry-feedback.css?v=160714">
+<link rel="stylesheet" href="./home-entry-feedback.css?v=160719">
 </head>
 <body class="boot-loading">
 <div aria-label="Avvio INJ Node" aria-live="polite" aria-atomic="true" class="boot-splash node-pulse-splash" id="bootSplash" role="status">
@@ -444,6 +444,14 @@
 <span class="menu-action-copy"><strong>Vibrazione breve</strong><small>Quando disponibile sul dispositivo</small></span>
 <span class="menu-action-value">N/D</span>
 </button>
+<div class="menu-feedback-native-test" id="menuFeedbackNativeTest" hidden>
+ <div class="menu-feedback-native-copy">
+  <strong id="menuFeedbackNativeTitle">Prova vibrazione iPhone</strong>
+  <small id="menuFeedbackNativeHint">Tocca direttamente l’interruttore per verificare il Taptic Engine. Test sperimentale.</small>
+ </div>
+ <input id="menuFeedbackNativeSwitch" type="checkbox" switch aria-label="Prova il feedback aptico nativo di iPhone">
+ <small id="menuFeedbackNativeResult" class="menu-feedback-native-result" aria-live="polite"></small>
+</div>
 <div class="theme-control menu-theme-control" id="themeControl">
 <button aria-controls="themePicker" aria-expanded="false" aria-label="Scegli tema" class="menu-action menu-setting" id="themeButton" title="Scegli tema" type="button">
 <span aria-hidden="true" class="menu-action-icon"><svg viewbox="0 0 24 24"><path d="M12 3.5a8.5 8.5 0 1 0 0 17h1.1a1.7 1.7 0 0 0 0-3.4h-.8a1.8 1.8 0 0 1 0-3.6H15a5.5 5.5 0 0 0 0-11h-3Z"></path><circle cx="8" cy="9" r=".7"></circle><circle cx="11" cy="6.8" r=".7"></circle><circle cx="7.2" cy="13" r=".7"></circle></svg></span>
