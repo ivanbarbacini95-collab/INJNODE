@@ -167,10 +167,22 @@
  }
  // Flash only actual visible price changes. A short finite pulse, not a permanent glow.
  function priceFlash(element,direction,tile=false){
-  if(!element||!direction||window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)return;
+  if(!element||window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)return;
+  if(tile){
+   // The pulse must match the tile's selected-timeframe colour, not the
+   // direction of an unrelated instantaneous market tick.
+   if(element.classList.contains('is-up'))direction='up';
+   else if(element.classList.contains('is-down'))direction='down';
+   else return;
+   // Avoid rearming an ongoing or just-ended pulse when the feed is busy.
+   const now=performance.now(),last=Number(element.dataset.lastHeatPulse||0);
+   if(last&&now-last<1850)return;
+   element.dataset.lastHeatPulse=String(now);
+  }
+  if(!direction)return;
   const rise=direction==='up'?'market-flash-up':'market-flash-down';
   element.classList.remove('market-flash-up','market-flash-down');
-  // Re-arm a completed animation without replacing any live text or DOM structure.
+  // Only one colour transition per real displayed-price change.
   void element.offsetWidth;
   element.classList.add(rise);
  }
