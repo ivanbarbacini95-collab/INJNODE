@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.07.06-market-terminal-redesign';
+const CACHE_NAME = 'inj-node-v16.07.07-market-terminal-fullscreen';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160080',
@@ -79,8 +79,8 @@ const APP_SHELL = [
   './market.js?v=160402',
   './market-pro.css?v=160108',
   './market-pro.js?v=160108',
-  './market-views.css?v=160706',
-  './market-views.js?v=160706',
+  './market-views.css?v=160707',
+  './market-views.js?v=160707',
   './manifest.webmanifest?v=16.06.29',
   './app-icon-picker.css?v=160704',
   './app-icon-picker.js?v=160704',
