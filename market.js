@@ -32,8 +32,6 @@ async function fetchMarket(targetCurrency){
   }
   state.currency=targetCurrency;
   state.coins=response;
-  // One existing market feed, shared with the timestamped 1H Heatmap.
-  window.INJ_MARKET_HEATMAP_LIVE?.observeSnapshot?.(response);
   state.last=Date.now();
   state.priceSnapshot=new Map(response.map(c=>[c.id,{price:c.current_price,percent:Object.fromEntries(frames.map(k=>[k,change(c,k)]))}]));
   state.top200Volume=response.reduce((sum,c)=>sum+(Number.isFinite(c.total_volume)&&c.total_volume>0?c.total_volume:0),0);
@@ -269,8 +267,6 @@ async function startStreams(){
  if(document.hidden||!state.coins.length)return;
  const available=await refreshBinancePairs();
  if(generation!==streamGeneration||document.hidden)return;
- // A failed verification is still a resolved attempt: allow CoinGecko fallback.
- state.marketPairVerificationResolved=true;
  const symbolCounts=new Map();
  for(const coin of state.coins){
   const symbol=String(coin.symbol||'').toUpperCase();
@@ -299,12 +295,9 @@ async function startStreams(){
   }catch(_){/* unavailable network: CoinGecko still refreshes */ }
  }
  updateConnectionStatus();
- window.dispatchEvent(new Event('injnode:market:pairsready'));
 }
 // Single data source for list and heatmap: no parallel network feed.
-window.INJ_MARKET_VIEW_API={getCoins:()=>state.coins,getCurrency:()=>state.currency,formatMoney:money,formatPercent:pct,getChange:change,open:detail,switchCurrency,
- getPairStatus:()=>state.marketPairVerificationResolved?'ready':'pending',
- getVerifiedPair:coin=>{const pair=String(coin?.symbol||'').toUpperCase()+'USDT';return state.pairCoins.get(pair)===coin?pair:null;}};
+window.INJ_MARKET_VIEW_API={getCoins:()=>state.coins,getCurrency:()=>state.currency,formatMoney,formatPercent:pct,getChange:change,open:detail,switchCurrency};
 // Shared read-only observation: this does not trigger additional network calls.
 window.INJ_MARKET_READONLY_SNAPSHOT=()=>({
  injective:state.coins.find(c=>c.id==='injective-protocol')||null,
