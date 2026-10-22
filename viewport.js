@@ -7,6 +7,7 @@
   let lastHeight = 0;
   let lastScroll = -1;
   let scrollIdleTimer = 0;
+  let lastScrollActivity = 0;
   const editable = () => document.activeElement?.matches('input,textarea,[contenteditable="true"]');
 
   function syncDocumentTop() {
@@ -41,15 +42,29 @@
     if (!frame) frame = requestAnimationFrame(measure);
   }
 
+  function settleNativeScroll() {
+    const elapsed = performance.now() - lastScrollActivity;
+    if (elapsed < 155) {
+      // One low-frequency trailing check, never a timer reset per scroll event.
+      scrollIdleTimer = window.setTimeout(settleNativeScroll, Math.max(60, 175 - elapsed));
+      return;
+    }
+    scrollIdleTimer = 0;
+    root.classList.remove('inj-native-scrolling');
+    syncDocumentTop();
+  }
   function markNativeScroll() {
-    // Keep wheel/trackpad scrolling on the browser compositor. No geometry reads
-    // or CSS variable writes are performed for every scroll frame.
+    // Avoid creating/cancelling a timer on every 60–120Hz touch/wheel event.
+    // Browser-native scrolling remains entirely under WebKit's control.
+    lastScrollActivity = performance.now();
     if (!root.classList.contains('inj-native-scrolling')) root.classList.add('inj-native-scrolling');
-    clearTimeout(scrollIdleTimer);
-    scrollIdleTimer = setTimeout(() => {
-      root.classList.remove('inj-native-scrolling');
-      syncDocumentTop();
-    }, 140);
+    if (!scrollIdleTimer) scrollIdleTimer = window.setTimeout(settleNativeScroll, 180);
+  }
+  function nativeScrollEnd() {
+    if (scrollIdleTimer) window.clearTimeout(scrollIdleTimer);
+    scrollIdleTimer = 0;
+    root.classList.remove('inj-native-scrolling');
+    syncDocumentTop();
   }
   function syncTheme() {
     const css = getComputedStyle(root);
@@ -62,7 +77,7 @@
   root.dataset.injViewport = '160008';
   window.addEventListener('resize', schedule, { passive: true });
   window.addEventListener('scroll', markNativeScroll, { passive: true });
-  window.addEventListener('scrollend', syncDocumentTop, { passive: true });
+  window.addEventListener('scrollend', nativeScrollEnd, { passive: true });
   // Capture the current document offset immediately before a control can open
   // an absolute/fullscreen surface. This replaces the old per-frame scroll work.
   document.addEventListener('pointerdown', syncDocumentTop, { passive: true, capture: true });
