@@ -32,6 +32,8 @@ async function fetchMarket(targetCurrency){
   }
   state.currency=targetCurrency;
   state.coins=response;
+  // One existing market feed, shared with the timestamped 1H Heatmap.
+  window.INJ_MARKET_HEATMAP_LIVE?.observeSnapshot?.(response);
   state.last=Date.now();
   state.priceSnapshot=new Map(response.map(c=>[c.id,{price:c.current_price,percent:Object.fromEntries(frames.map(k=>[k,change(c,k)]))}]));
   state.top200Volume=response.reduce((sum,c)=>sum+(Number.isFinite(c.total_volume)&&c.total_volume>0?c.total_volume:0),0);
