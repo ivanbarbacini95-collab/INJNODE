@@ -32,7 +32,7 @@
     portal.setAttribute('aria-label', titleFor());
     frame.title = titleFor();
     // The primary app, wallet selection and Home are untouched underneath.
-    frame.src = './market.html?v=160501&lang=' + (window.INJ_I18N?.getLanguage?.() || localStorage.getItem('inj_node_language_v1') || 'it');
+    frame.src = './market.html?v=160522&lang=' + (window.INJ_I18N?.getLanguage?.() || localStorage.getItem('inj_node_language_v1') || 'it');
     document.title = 'INJ NODE | ' + titleFor();
     if (!history.state?.injMarketPortal) {
       history.pushState({ ...(history.state || {}), injMarketPortal: true }, '', '#market');

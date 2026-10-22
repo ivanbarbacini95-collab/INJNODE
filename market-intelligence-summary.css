@@ -32,3 +32,52 @@ html[data-inj-market] .inj-mi-hero{
   font-size:clamp(21px,5.4vw,30px);
  }
 }
+
+/* INJ Essentials: lightweight verified CoinGecko gauges, no chart libraries. */
+html[data-inj-market] .inj-essentials{min-width:0;width:100%;padding:10px 2px 29px;color:var(--text)}
+html[data-inj-market] .inj-essentials-heading{display:flex;justify-content:space-between;align-items:end;gap:10px 18px;flex-wrap:wrap;margin-bottom:19px}
+html[data-inj-market] .inj-essentials-heading small,
+html[data-inj-market] .inj-essentials-topline small,
+html[data-inj-market] .inj-essentials-donut-heading small{display:block;color:var(--accent);font-size:9px;letter-spacing:.12em;font-weight:800}
+html[data-inj-market] .inj-essentials-heading h3{font-size:clamp(18px,2.6vw,24px);margin:5px 0 0;letter-spacing:-.025em}
+html[data-inj-market] .inj-essentials-source{font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums}
+html[data-inj-market] .inj-essentials-range{border-block:1px solid var(--line);padding:18px 0 22px}
+html[data-inj-market] .inj-essentials-topline{display:flex;align-items:end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+html[data-inj-market] .inj-essentials-topline h4,
+html[data-inj-market] .inj-essentials-donut-heading h4{font-size:clamp(14px,2vw,18px);margin:4px 0 0;letter-spacing:-.025em}
+html[data-inj-market] .inj-essentials-topline>strong{font-size:clamp(19px,2.6vw,25px);font-variant-numeric:tabular-nums;letter-spacing:-.04em}
+html[data-inj-market] .inj-essentials-track{position:relative;height:42px;margin:14px 0 4px;--inj-range-position:50%}
+html[data-inj-market] .inj-essentials-track-bar{position:absolute;left:0;right:0;top:18px;height:6px;border-radius:100px;background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 25%,var(--line)),var(--accent))}
+html[data-inj-market] .inj-essentials-pin{position:absolute;top:7px;left:var(--inj-range-position);transform:translateX(-50%);width:28px;height:28px;border:2px solid var(--accent);border-radius:50%;background:var(--bg);box-shadow:0 0 0 5px color-mix(in srgb,var(--accent) 13%,transparent)}
+html[data-inj-market] .inj-essentials-pin i{position:absolute;width:8px;height:8px;top:8px;left:8px;background:var(--accent);border-radius:50%}
+html[data-inj-market] .inj-essentials-track[data-ready="false"] .inj-essentials-track-bar{background:var(--line);opacity:.55}
+html[data-inj-market] .inj-essentials-track[data-ready="false"] .inj-essentials-pin{display:none}
+html[data-inj-market] .inj-essentials-range-bottom{display:grid;grid-template-columns:1fr minmax(75px,1fr) 1fr;align-items:start;gap:6px}
+html[data-inj-market] .inj-essentials-range-bottom>div:last-child{text-align:right}
+html[data-inj-market] .inj-essentials-range-bottom small,
+html[data-inj-market] .inj-essentials-detail small{display:block;font-size:9px;color:var(--muted);letter-spacing:.065em;font-weight:730}
+html[data-inj-market] .inj-essentials-range-bottom strong{display:block;margin-top:6px;font-size:clamp(14px,2vw,18px);font-variant-numeric:tabular-nums}
+html[data-inj-market] .inj-essentials-range-bottom>span{font-size:10px;color:var(--muted);text-align:center;line-height:1.4;align-self:center}
+html[data-inj-market] .inj-essentials-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border-bottom:1px solid var(--line)}
+html[data-inj-market] .inj-essentials-donut{min-width:0;padding:20px 20px 22px 0;background:transparent;border:0!important;box-shadow:none!important}
+html[data-inj-market] .inj-essentials-donut+.inj-essentials-donut{border-left:1px solid var(--line)!important;padding-left:22px;padding-right:0}
+html[data-inj-market] .inj-essentials-donut-body{display:flex;align-items:center;gap:clamp(9px,2vw,24px);margin-top:16px}
+html[data-inj-market] .inj-essentials-gauge{width:clamp(112px,14vw,170px);aspect-ratio:1;position:relative;display:grid;place-items:center;flex:none}
+html[data-inj-market] .inj-essentials-gauge svg{display:block;width:100%;height:100%;transform:rotate(-90deg);overflow:visible}
+html[data-inj-market] .inj-essentials-gauge circle{fill:none;stroke-width:12}
+html[data-inj-market] .inj-essentials-gauge-bg{stroke:var(--line);opacity:.85}
+html[data-inj-market] .inj-essentials-gauge-progress{stroke:var(--accent);stroke-linecap:round;stroke-dasharray:0 314.1593;transition:stroke-dasharray .4s ease}
+html[data-inj-market] .inj-essentials-gauge-center{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;gap:3px;pointer-events:none}
+html[data-inj-market] .inj-essentials-gauge-center strong{font-weight:850;letter-spacing:-.05em;font-size:clamp(18px,3vw,27px);line-height:1.2;font-variant-numeric:tabular-nums}
+html[data-inj-market] .inj-essentials-gauge-center small{font-size:8px;color:var(--muted);letter-spacing:.06em;font-weight:750}
+html[data-inj-market] .inj-essentials-detail{display:flex;flex-direction:column;gap:5px;justify-content:center;min-width:0;overflow-wrap:anywhere}
+html[data-inj-market] .inj-essentials-detail strong{font-size:clamp(14px,2vw,21px);line-height:1.3;font-variant-numeric:tabular-nums}
+html[data-inj-market] .inj-essentials-detail>span{font-size:10px;color:var(--muted);line-height:1.5}
+html[data-inj-market] .inj-essentials-note{margin:13px 0 0;color:var(--muted);font-size:10px;line-height:1.6}
+@media(max-width:850px){html[data-inj-market] .inj-essentials-pair{grid-template-columns:1fr}
+ html[data-inj-market] .inj-essentials-donut,html[data-inj-market] .inj-essentials-donut+.inj-essentials-donut{padding:18px 0 20px;border-left:0!important}
+ html[data-inj-market] .inj-essentials-donut+.inj-essentials-donut{border-top:1px solid var(--line)!important}
+ html[data-inj-market] .inj-essentials-gauge{width:clamp(122px,32vw,155px)}
+}
+@media(max-width:380px){html[data-inj-market] .inj-essentials-gauge{width:115px}html[data-inj-market] .inj-essentials-donut-body{gap:9px}}
+@media(prefers-reduced-motion:reduce){html[data-inj-market] .inj-essentials-gauge-progress{transition:none}}
