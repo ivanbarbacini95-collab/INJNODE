@@ -4,8 +4,8 @@
  const $=id=>document.getElementById(id);
  const global=$('injGlobalMarket'),heat=$('marketHeatmap'),list=$('hybridPro'),rows=$('marketProRows');
  const grid=$('marketHeatmapGrid'),legacy=global?.querySelector('.tablewrap');
- const favControls=$('marketFavoritesControls'),favModes=$('marketFavoritesModes'),scope=$('scope');
- if(!global||!heat||!list||!rows||!grid||!legacy||!favControls||!favModes)return;
+ const favControls=$('marketFavoritesControls'),favModes=$('marketFavoritesModes'),scope=$('scope'),nav=$('injIntelRoot');
+ if(!global||!heat||!list||!rows||!grid||!legacy||!favControls||!favModes||!nav)return;
  const key='inj_node_market_heat_range_v1',favoritesKey='inj_node_crypto_favorites_v1',
   favoriteModeKey='inj_node_crypto_favorites_mode_v1';
  const en=()=>document.documentElement.lang==='en',tr=(it,eng)=>en()?eng:it;
@@ -140,7 +140,7 @@
   $('marketFavoritesHeading').textContent=tr('I tuoi preferiti','Your favorites');
   $('marketFavoritesStatus').textContent=size
    ?size+' '+tr(size===1?'crypto salvata':'crypto salvate',size===1?'saved crypto':'saved cryptos')+' · '+tr('su questo dispositivo','on this device')
-   :tr('Tocca la stella accanto a una crypto in Global Crypto o Heatmap','Tap a star beside any coin in Global Crypto or Heatmap');
+   :tr('Tocca la stella accanto a una crypto in Global Crypto','Tap a star beside any coin in Global Crypto');
   $('marketFavoritesList').textContent=tr('Lista','List');
   $('marketFavoritesMap').textContent='Heatmap';
   favModes.setAttribute('aria-label',tr('Visualizzazione preferiti','Favorites view'));
@@ -164,6 +164,10 @@
   if(section==='favorites')requestRender();
   else document.querySelectorAll('[data-favorite-id]').forEach(updateFavoriteButton);
  }
+ function favoriteRemoveHtml(coin){
+  const label=tr('Rimuovi dai preferiti: ','Remove from favorites: ')+coin.name+' ('+String(coin.symbol||'').toUpperCase()+')';
+  return '<button type="button" class="market-favorite-remove" data-favorite-id="'+escape(coin.id)+'" data-favorite-name="'+escape(coin.name)+'" data-favorite-symbol="'+escape(coin.symbol)+'" aria-label="'+escape(label)+'" title="'+escape(label)+'" aria-pressed="true">×</button>';
+ }
  function rowHtml(coin){
   const chart=spark(coin);
   const rank=finite(coin.market_cap_rank)?'#'+num(coin.market_cap_rank):'—';
@@ -177,13 +181,13 @@
   '<span class="mp-change mp-month">'+pctHtml(coin,'30d')+'</span>'+
   '<span class="mp-stat mp-cap">'+escape(money(coin.market_cap,true))+'</span>'+
   '<span class="mp-stat mp-volume">'+escape(money(coin.total_volume,true))+'</span>'+
-  '<span class="mp-chart">'+(chart==='—'?'':chart)+'</span></button>'+favoriteButtonHtml(coin)+'</div>';
+  '<span class="mp-chart">'+(chart==='—'?'':chart)+'</span></button>'+(section==='global'?favoriteButtonHtml(coin):favoriteRemoveHtml(coin))+'</div>';
  }
  function renderList(items){
   const coins=sorted(items),template=document.createElement('template'),next=new Map();
   template.innerHTML=coins.length?coins.map(rowHtml).join(''):'<div class="mp-empty">'+
    (section==='favorites'&&favorites.size===0
-    ?tr('Nessuna crypto salvata. Usa la stella in Global Crypto o Heatmap.','No saved cryptos yet. Use the star in Global Crypto or Heatmap.')
+    ?tr('Nessuna crypto salvata. Tocca una stella in Global Crypto.','No saved cryptos yet. Tap a star in Global Crypto.')
     :all().length?tr('Nessun risultato o prezzo attualmente disponibile','No matching results or currently available quotes')
     :tr('Caricamento criptovalute…','Loading cryptocurrencies…'))+'</div>';
   rows.replaceChildren(template.content);
@@ -223,16 +227,14 @@
   const coins=ranked(items),fragment=document.createDocumentFragment(),next=new Map();
   if(coins.length){
    for(const coin of coins){
-    const el=tile(coin),wrapper=document.createElement('div');
-    wrapper.className='market-favorite-tile';
-    wrapper.append(el,makeFavoriteButton(coin));
-    fragment.append(wrapper);
+    const el=tile(coin);
+    fragment.append(el);
     next.set(coin.id,el);
    }
   }else{
    const empty=document.createElement('div');empty.className='heatmap-empty';
    empty.textContent=section==='favorites'&&favorites.size===0
-    ?tr('Nessuna crypto salvata. Usa la stella in Global Crypto o Heatmap.','No saved cryptos yet. Use the star in Global Crypto or Heatmap.')
+    ?tr('Nessuna crypto salvata. Tocca una stella in Global Crypto.','No saved cryptos yet. Tap a star in Global Crypto.')
     :all().length?tr('Nessuna crypto con dati disponibili per questo periodo','No cryptos with available data for this period')
     :tr('Caricamento dati di mercato…','Loading market data…');
    fragment.append(empty);
@@ -255,6 +257,12 @@
  }
  function setView(next){
   section=next==='favorites'?'favorites':next==='heatmap'?'heatmap':'global';
+  if(section==='favorites'){
+   const intel=$('injIntelligenceMain');
+   if(intel)intel.hidden=true;
+   global.hidden=false;
+   document.documentElement.dataset.marketSection='favorites';
+  }
   mode=section==='favorites'?favoriteLayout:section==='heatmap'?'heatmap':'list';
   if(timer){clearTimeout(timer);timer=null}
   pending.clear();
@@ -270,6 +278,22 @@
   updateFavoritesUI();
   requestRender();
  }
+ // Favorites opens independently of an older cached section-router.
+ function openFavoritesTab(event){
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  try{localStorage.setItem('inj_node_intel_view_v1','favorites')}catch(_){}
+  const intel=$('injIntelligenceMain');if(intel)intel.hidden=true;
+  global.hidden=false;
+  document.documentElement.dataset.marketSection='favorites';
+  const suffix=$('injIntelHeaderSuffix');
+  if(suffix)suffix.textContent=tr('PREFERITI','FAVORITES');
+  nav.querySelectorAll('[data-inj-intel-view]').forEach(b=>{
+   b.setAttribute('aria-pressed',String(b.dataset.injIntelView==='favorites'));
+  });
+  setView('favorites');
+ }
+ $('injIntelTabFavorites')?.addEventListener('click',openFavoritesTab,{capture:true});
  function setFavoriteLayout(next){
   if(next!=='list'&&next!=='heatmap')return;
   favoriteLayout=next;
