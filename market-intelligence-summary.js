@@ -65,6 +65,7 @@ function viewSwitch(next){
  }
  window.INJ_MARKET_VIEWS?.setView?.(view==='favorites'?'favorites':view==='heatmap'?'heatmap':'list');
 }
+window.INJ_MARKET_NAVIGATE=viewSwitch;
 function render(){
  const mcap=positive(coin?.market_cap),total=positive(global?.total_market_cap?.usd);
  const dominance=mcap&&total&&mcap<=total?mcap/total*100:NaN;
