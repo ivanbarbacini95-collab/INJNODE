@@ -311,6 +311,7 @@
 <link rel="stylesheet" href="./app-icon-picker.css?v=160704">
 <script defer src="./app-icon-picker.js?v=160704"></script>
 <link rel="stylesheet" href="./inj-uhd.css?v=160710">
+<link rel="stylesheet" href="./home-entry-feedback.css?v=160712">
 </head>
 <body class="boot-loading">
 <div aria-label="Avvio INJ Node" aria-live="polite" aria-atomic="true" class="boot-splash node-pulse-splash" id="bootSplash" role="status">
@@ -494,6 +495,16 @@
   <button type="button" class="menu-app-icon-copy" id="appIconCopyLink">Copia link per Safari</button>
  </div>
 </details>
+<button type="button" class="menu-action menu-setting menu-feedback-setting" id="menuFeedbackSoundButton" aria-pressed="true" title="Suono apertura sezioni">
+<span aria-hidden="true" class="menu-action-icon"><svg viewBox="0 0 24 24"><path d="M5 9h4l5-4v14l-5-4H5zM17 9c2 1.6 2 4.4 0 6M19.5 6c3.5 3 3.5 9 0 12"/></svg></span>
+<span class="menu-action-copy"><strong>Suono apertura</strong><small>Breve tono entrando nelle sezioni</small></span>
+<span class="menu-action-value">ON</span>
+</button>
+<button type="button" class="menu-action menu-setting menu-feedback-setting" id="menuFeedbackHapticButton" aria-pressed="false" title="Vibrazione dove supportata">
+<span aria-hidden="true" class="menu-action-icon"><svg viewBox="0 0 24 24"><rect x="8" y="3.5" width="8" height="17" rx="2"/><path d="M4.5 8v8M19.5 8v8M2 10v4M22 10v4"/></svg></span>
+<span class="menu-action-copy"><strong>Vibrazione breve</strong><small>Quando disponibile sul dispositivo</small></span>
+<span class="menu-action-value">N/D</span>
+</button>
     <div class="menu-language-card" id="languageControl" aria-label="Lingua interfaccia">
   <span aria-hidden="true" class="menu-action-icon menu-language-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"></circle><path d="M4 12h16M12 4c2.4 2.2 3.6 4.9 3.6 8S14.4 17.8 12 20M12 4c-2.4 2.2-3.6 4.9-3.6 8s1.2 5.8 3.6 8"></path></svg></span>
   <span class="menu-language-copy"><strong>Lingua</strong><small>Interfaccia</small></span>
@@ -1251,5 +1262,6 @@
   <iframe id="injMarketFrame" title="Mercato" loading="eager" referrerpolicy="same-origin"></iframe>
 </div>
 <script defer src="market-portal.js?v=160625"></script>
+<script defer src="./home-entry-feedback.js?v=160712"></script>
 </body>
 </html>
