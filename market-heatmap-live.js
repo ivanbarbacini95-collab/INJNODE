@@ -118,10 +118,18 @@
   const coin=coinById(id),current=Number(coin?.current_price);
   const factor=useHistory&&historical.source==='binance'&&base.length&&current>0
     ?base[base.length-1][1]/current:1;
-  const fresh=(live.get(id)||[]).filter(p=>p[0]>=cutoff&&p[0]<=at)
+  const freshRaw=(live.get(id)||[]).filter(p=>p[0]>=cutoff&&p[0]<=at)
     .map(p=>[p[0],p[1]*factor]);
+  // A month's chart must never lose its earliest historical points because
+  // 30-second live quotes are more frequent than 8-hour historical bars.
+  const streamStep={'1h':30000,'24h':300000,'7d':3600000,'30d':14400000}[frame];
+  const fresh=[];
+  for(const point of freshRaw){
+   if(!fresh.length||point[0]-fresh[fresh.length-1][0]>=streamStep)fresh.push(point);
+   else fresh[fresh.length-1]=point;
+  }
   const after=base.length?base[base.length-1][0]:0;
-  const data=base.concat(fresh.filter(p=>p[0]>after)).slice(-280);
+  const data=base.concat(fresh.filter(p=>p[0]>after));
   const ns='http://www.w3.org/2000/svg',frag=document.createDocumentFragment();
   if(data.length){
    const lo=Math.min(...data.map(p=>p[1])),hi=Math.max(...data.map(p=>p[1]));
