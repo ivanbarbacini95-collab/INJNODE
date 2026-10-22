@@ -95,3 +95,46 @@
 #headerMenuPanel #menuFeedbackVolumeControl.is-muted .menu-feedback-volume-slider button{
  opacity:.48!important;pointer-events:none!important;
 }
+
+
+/* iOS PWA haptics pilot: a real, directly touched native WebKit switch.
+   Never overlay it on scrolling Home tiles: WebKit switches can swallow pans.
+   Native appearance intentionally preserved; styling away the switch kills haptics. */
+#headerMenuPanel #menuFeedbackNativeTest[hidden]{display:none!important}
+#headerMenuPanel #menuFeedbackNativeTest{
+ display:grid!important;
+ grid-template-columns:minmax(0,1fr) auto!important;
+ align-items:center!important;
+ column-gap:12px!important;row-gap:7px!important;
+ padding:12px 12px!important;
+ margin:4px 0 9px!important;
+ border:1px solid color-mix(in srgb,var(--accent,#6ac1e7) 23%,var(--line,#394a55))!important;
+ border-radius:11px!important;
+ background:color-mix(in srgb,var(--accent,#6ac1e7) 5%,var(--panel,#17242e))!important;
+ min-width:0!important;width:100%!important;
+}
+#headerMenuPanel .menu-feedback-native-copy{
+ display:flex;flex-direction:column;gap:4px;min-width:0!important;
+}
+#headerMenuPanel .menu-feedback-native-copy strong{
+ font-size:.83rem;font-weight:740;color:var(--text);
+}
+#headerMenuPanel .menu-feedback-native-copy small{
+ font-size:.69rem;line-height:1.36;color:var(--muted);
+}
+#headerMenuPanel #menuFeedbackNativeSwitch{
+ display:block!important;
+ width:52px!important;height:32px!important;
+ min-width:52px!important;
+ padding:0!important;margin:0!important;
+ border:0!important;outline-offset:3px!important;
+ -webkit-appearance:auto!important;appearance:auto!important;
+ accent-color:var(--accent,#61c2e5);
+ pointer-events:auto!important;touch-action:manipulation;
+ cursor:pointer;
+}
+#headerMenuPanel #menuFeedbackNativeResult{
+ display:block;grid-column:1 / -1;
+ font-size:.69rem;line-height:1.4;color:var(--muted);
+}
+#headerMenuPanel #menuFeedbackNativeResult:empty{display:none}
