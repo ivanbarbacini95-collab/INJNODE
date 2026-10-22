@@ -378,9 +378,14 @@
     const current=byId.get(id),element=active.get(id);
     if(!element||!current)continue;
     if(mode==='heatmap'){
-     const old=element.dataset.displayPrice,next=money(current.current_price);
+     // Light the fixed edge ONLY for a true underlying price change.
+     // Percent/date updates or repeated quotes must not fire the bar.
+     const previous=Number(element.dataset.previousPrice);
+     const currentPrice=num(current.current_price);
+     const changed=Number.isFinite(previous)&&previous>0
+       &&Number.isFinite(currentPrice)&&currentPrice>0&&currentPrice!==previous;
      recolor(element,current);
-     if(old&&old!==next)priceFlash(element,current.current_price>Number(element.dataset.previousPrice||0)?'up':'down',true);
+     if(changed)priceFlash(element,currentPrice>previous?'up':'down',true);
      element.dataset.previousPrice=String(current.current_price);
      continue;
     }
@@ -447,6 +452,13 @@
   if(image?.tagName==='IMG'&&image.classList.contains('hm-icon'))image.remove();
  },true);
  grid.addEventListener('click',onAssetClick);
+ // Remove pulse classes at animation end. A stationary quote has no active signal.
+ grid.addEventListener('animationend',event=>{
+  if(event.animationName!=='injAggressiveEdgePulse')return;
+  const tile=event.target;
+  if(tile?.classList?.contains('heatmap-tile'))
+   tile.classList.remove('market-flash-up','market-flash-down');
+ });
  window.INJ_MARKET_VIEWS={render:requestRender,tick,setView,languageChange,favoriteCount:()=>favorites.size};
  setRange(range);
  setView('list');
