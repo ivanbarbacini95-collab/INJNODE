@@ -69,5 +69,10 @@
  window.addEventListener('pageshow',event=>{
   if(event.persisted&&isHomeVisible())restore();
  });
+ // On iOS, history.back() may apply a scroll position after the section
+ // iframe has been removed. Win that final paint as well.
+ window.addEventListener('popstate',()=>{
+  if(isHomeVisible()&&known())restore();
+ });
  window.INJ_HOME_SCROLL={save,restore,restoreNow};
 })();
