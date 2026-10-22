@@ -20,7 +20,7 @@ const cap=v=>!Number.isFinite(v)?'—':v>=1e12?'$'+(v/1e12).toFixed(2)+'T':v>=1e
 const percent=(n,d=2)=>Number.isFinite(n)?formatted(n,d)+'%':'—';
 const time=t=>new Date(t).toLocaleTimeString(en()?'en-US':'it-IT',{hour:'2-digit',minute:'2-digit'});
 const text=(id,v)=>{const el=$(id);if(el&&el.textContent!==v)el.textContent=v};
-let view=['intel','global','heatmap'].includes(read('inj_node_intel_view_v1'))?read('inj_node_intel_view_v1'):'intel';
+let view=['intel','global','heatmap','favorites'].includes(read('inj_node_intel_view_v1'))?read('inj_node_intel_view_v1'):'intel';
 let coin=null,global=null,marketAt=0,marketFetched=0,marketBusy=false;
 let staked=NaN,stakingAt=0,stakingFetched=0,stakingBusy=false;
 let nativeSupply=NaN,supplyAt=0;
@@ -42,6 +42,7 @@ function labels(){
  text('injIntelTabIntel','INJ Intelligence');
  text('injIntelTabGlobal','Global Crypto');
  text('injIntelTabHeatmap','Heatmap');
+  text('injIntelTabFavorites',tr('Preferiti','Favorites')+(window.INJ_MARKET_VIEWS?.favoriteCount?.()?' · '+window.INJ_MARKET_VIEWS.favoriteCount():''));
  text('injIntelHeaderSubtitle',tr('Il centro di analisi di Injective','Injective market intelligence terminal'));
  text('injIntelPriceLabel',tr('PREZZO INJ','INJ PRICE'));
  text('injIntelMCLabel','MARKET CAP');
@@ -51,16 +52,16 @@ function labels(){
  render();
 }
 function viewSwitch(next){
- view=['intel','global','heatmap'].includes(next)?next:'intel';
+ view=['intel','global','heatmap','favorites'].includes(next)?next:'intel';
  try{localStorage.setItem('inj_node_intel_view_v1',view)}catch(_){}
  $('injIntelligenceMain').hidden=view!=='intel';
  $('injGlobalMarket').hidden=view==='intel';
  document.documentElement.dataset.marketSection=view;
- text('injIntelHeaderSuffix',view==='intel'?'INJ':view==='heatmap'?'HEATMAP':'TOP 200');
+ text('injIntelHeaderSuffix',view==='intel'?'INJ':view==='heatmap'?'HEATMAP':view==='favorites'?tr('PREFERITI','FAVORITES'):'TOP 200');
  for(const button of document.querySelectorAll('[data-inj-intel-view]')){
   button.setAttribute('aria-pressed',String(button.dataset.injIntelView===view));
  }
- window.INJ_MARKET_VIEWS?.setView?.(view==='heatmap'?'heatmap':'list');
+ window.INJ_MARKET_VIEWS?.setView?.(view==='favorites'?'favorites':view==='heatmap'?'heatmap':'list');
 }
 function render(){
  const mcap=positive(coin?.market_cap),total=positive(global?.total_market_cap?.usd);
