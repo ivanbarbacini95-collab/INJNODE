@@ -25,6 +25,7 @@
   const insideOrigin = (location.origin && location.origin !== 'null') ? location.origin : '*';
   function reveal() {
     if (open) return;
+    window.INJ_HOME_SCROLL?.save();
     open = true;
     entryScroll = window.scrollY;
     portal.classList.remove('is-ready');
@@ -49,8 +50,9 @@
     try { launcher.focus({ preventScroll: true }); } catch (_) {}
     // Unlock the document first; then restore the exact Home offset.
     window.INJ_SCROLL_GUARD?.refresh();
+    window.INJ_HOME_SCROLL?.restore();
     requestAnimationFrame(() => {
-      if (!open && Math.abs(window.scrollY - entryScroll) > 8) window.scrollTo(0, entryScroll);
+      if (!open) window.INJ_HOME_SCROLL?.restore();
     });
   }
   launcher.addEventListener('click', (event) => {
