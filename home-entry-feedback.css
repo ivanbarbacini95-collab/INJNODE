@@ -22,3 +22,74 @@
 #menuFeedbackHapticButton:disabled .menu-action-copy small{
  color:var(--muted);
 }
+
+
+/* Simple inline volume control in Settings > Preferences. */
+#headerMenuPanel #menuFeedbackVolumeControl{
+ --volume-percent:40%;
+ display:flex!important;
+ flex-direction:column!important;
+ gap:9px!important;
+ width:100%!important;min-width:0!important;
+ padding:10px 13px 12px!important;margin:0!important;
+ box-sizing:border-box;
+ border-top:1px solid var(--line,rgba(170,170,170,.14));
+ background:color-mix(in srgb,var(--accent,#9ad3ea) 4%,transparent);
+ border-radius:10px;
+}
+#headerMenuPanel .menu-feedback-volume-head{
+ display:flex;align-items:baseline;justify-content:space-between;
+ gap:8px;min-width:0;
+}
+#headerMenuPanel .menu-feedback-volume-head label{
+ font-size:.82rem;font-weight:720;color:var(--text);
+}
+#headerMenuPanel .menu-feedback-volume-head output{
+ color:var(--accent,var(--text));
+ font-size:.78rem;font-weight:800;
+ white-space:nowrap;font-variant-numeric:tabular-nums;
+}
+#headerMenuPanel #menuFeedbackVolumeHint{
+ font-size:.69rem;line-height:1.3;color:var(--muted);
+}
+#headerMenuPanel #menuFeedbackVolume{
+ display:block;width:100%;max-width:100%;height:26px;
+ margin:0!important;padding:0!important;
+ background:transparent!important;
+ border:0!important;box-shadow:none!important;
+ outline-offset:4px;
+ cursor:pointer;
+ touch-action:pan-x;
+ accent-color:var(--accent);
+ -webkit-appearance:none;appearance:none;
+}
+#headerMenuPanel #menuFeedbackVolume::-webkit-slider-runnable-track{
+ height:5px;border-radius:999px;
+ background:linear-gradient(90deg,
+  var(--accent) 0%,var(--accent) var(--volume-percent),
+  color-mix(in srgb,var(--line) 90%,var(--muted)) var(--volume-percent),
+  color-mix(in srgb,var(--line) 90%,var(--muted)) 100%);
+}
+#headerMenuPanel #menuFeedbackVolume::-webkit-slider-thumb{
+ -webkit-appearance:none;appearance:none;
+ width:18px;height:18px;margin-top:-6.5px;
+ border-radius:50%;background:var(--accent);
+ border:3px solid var(--panel,var(--bg));
+ box-shadow:0 0 0 1px color-mix(in srgb,var(--accent) 45%,var(--line));
+}
+#headerMenuPanel #menuFeedbackVolume::-moz-range-track{
+ height:5px;border-radius:999px;
+ background:color-mix(in srgb,var(--line) 90%,var(--muted));
+}
+#headerMenuPanel #menuFeedbackVolume::-moz-range-progress{
+ height:5px;border-radius:999px;background:var(--accent);
+}
+#headerMenuPanel #menuFeedbackVolume::-moz-range-thumb{
+ width:15px;height:15px;border-radius:50%;
+ background:var(--accent);
+ border:3px solid var(--panel,var(--bg));
+}
+#headerMenuPanel #menuFeedbackVolumeControl.is-muted{
+ opacity:.62;
+}
+#headerMenuPanel #menuFeedbackVolume:disabled{cursor:not-allowed}
