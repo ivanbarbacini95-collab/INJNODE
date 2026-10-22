@@ -854,7 +854,9 @@ function setEntryWalletSelection(address, { scroll = false } = {}) {
 
   if (scroll && host) {
     const row = [...host.querySelectorAll('.entry-wallet-row')].find((item) => item.dataset.address === address);
-    row?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    // Smoothly center the selected wallet horizontally; never drag the
+    // entire Home vertically back to the carousel.
+    if(row)host.scrollTo({left:entryWalletCenteredScrollLeft(host,row),behavior:'smooth'});
   }
 }
 
