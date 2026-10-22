@@ -1,7 +1,7 @@
-const CACHE_NAME = 'inj-node-v16.07.36-morning-brief';
+const CACHE_NAME = 'inj-node-v16.07.37-morning-brief-wake-fix';
 const APP_SHELL = [
   './morning-brief.css?v=160736',
-  './morning-brief.js?v=160736',
+  './morning-brief.js?v=160737',
   './dashboard-ipad-layout.css?v=160722',
   './home-wide-menu-fix.css?v=160734',
   './market-favorites.css?v=160735',

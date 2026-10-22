@@ -34,7 +34,7 @@
  let nightData=null,nightFor=0,fetching=false,lastData=null,onceOpening=false,refreshing=false;
  let nightSamples=read(NIGHTS,{});
  if(!nightSamples||typeof nightSamples!=='object')nightSamples={};
- let seenShow=false,lastFocus=null;
+ let seenShow=false,lastFocus=null,readyAttemptAt=0;
  function freshWallets(data){
   const wallets=Array.isArray(data?.wallets)?data.wallets:[];
   const t=now();
@@ -200,8 +200,10 @@
   if(settings.shown===today)return;
   if(!onceOpening){onceOpening=true;setTimeout(()=>{onceOpening=false},900);}
   const info=freshWallets(data);
-  if(!(data.price>0)||!data.priceAt||now()-data.priceAt>120000)return;
-  if(info.wallets.length&&!info.complete)return;
+  if(!readyAttemptAt)readyAttemptAt=now();
+  const ready=data.price>0&&data.priceAt&&now()-data.priceAt<=120000&&(!info.wallets.length||info.complete);
+  // Offline and temporarily unavailable APIs must not silently swallow the brief.
+  if(!ready&&now()-readyAttemptAt<25000)return;
   seenShow=true;
   show(false);
  }
