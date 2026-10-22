@@ -29,7 +29,7 @@ html[data-inj-market] #marketHeatmap .map-compact-head::before{
   border-radius:9px;
   background:linear-gradient(135deg,rgba(129,183,211,.15),rgba(46,94,122,.055));
   color:#b7ddec;
-  font:750 10px/1.15 inherit;
+  font-size:10px;font-weight:750;line-height:1.15;font-family:inherit;
   letter-spacing:.105em;
   white-space:nowrap;
 }
@@ -52,19 +52,19 @@ html[data-inj-market] #marketHeatmap .heatmap-grid{
    Featured spans only operate in wide layouts. */
 @media (min-width:1700px){
   html[data-inj-market] #marketHeatmap .heatmap-grid{grid-template-columns:repeat(10,minmax(0,1fr))!important}
-  html[data-inj-market] #marketHeatmap .heatmap-grid > .heatmap-tile:nth-child(-n+5){grid-column:span 2!important}
+  html[data-inj-market] #marketHeatmap .heatmap-grid > .heatmap-tile:nth-child(-n+5){grid-column:span 2!important;grid-row:span 2!important}
 }
 @media (min-width:1240px) and (max-width:1699px){
   html[data-inj-market] #marketHeatmap .heatmap-grid{grid-template-columns:repeat(8,minmax(0,1fr))!important}
-  html[data-inj-market] #marketHeatmap .heatmap-grid > .heatmap-tile:nth-child(-n+4){grid-column:span 2!important}
+  html[data-inj-market] #marketHeatmap .heatmap-grid > .heatmap-tile:nth-child(-n+4){grid-column:span 2!important;grid-row:span 2!important}
 }
 @media (min-width:830px) and (max-width:1239px){
   html[data-inj-market] #marketHeatmap .heatmap-grid{grid-template-columns:repeat(6,minmax(0,1fr))!important}
-  html[data-inj-market] #marketHeatmap .heatmap-grid > .heatmap-tile:nth-child(-n+3){grid-column:span 2!important}
+  html[data-inj-market] #marketHeatmap .heatmap-grid > .heatmap-tile:nth-child(-n+3){grid-column:span 2!important;grid-row:span 2!important}
 }
 @media (min-width:600px) and (max-width:829px){
   html[data-inj-market] #marketHeatmap .heatmap-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important}
-  html[data-inj-market] #marketHeatmap .heatmap-grid > .heatmap-tile:nth-child(-n+2){grid-column:span 2!important}
+  html[data-inj-market] #marketHeatmap .heatmap-grid > .heatmap-tile:nth-child(-n+2){grid-column:span 2!important;grid-row:span 2!important}
 }
 html[data-inj-market] #marketHeatmap .heatmap-grid > .heatmap-tile:nth-child(n){
   --arctic-tone:var(--arctic-silver);
@@ -139,7 +139,7 @@ html[data-inj-market] #marketHeatmap .heatmap-grid > .heatmap-tile::before{
   bottom:-25px;
   color:var(--arctic-tone);
   opacity:.075;
-  font:900 clamp(52px,6vw,90px)/1 inherit;
+  font-size:clamp(52px,6vw,90px);font-weight:900;line-height:1;font-family:inherit;
   letter-spacing:-.10em;
   white-space:nowrap;
   pointer-events:none!important;
@@ -239,6 +239,12 @@ html[data-inj-market] #marketHeatmap .heatmap-grid > .heatmap-tile:focus-visible
   }
 }
 @media(min-width:600px){
+  html[data-inj-market] #marketHeatmap .heatmap-grid > .heatmap-tile:nth-child(-n+5) .hm-spark{
+    width:64%;height:38px;margin-top:auto;opacity:.92;
+  }
+  html[data-inj-market] #marketHeatmap .heatmap-grid > .heatmap-tile:nth-child(-n+5) .hm-rank{
+    right:13px;top:11px;font-size:11px!important;
+  }
   html[data-inj-market] #marketHeatmap .heatmap-grid > .heatmap-tile:nth-child(-n+5) .hm-icon{
     width:29px;height:29px;flex-basis:29px;
   }
