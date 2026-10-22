@@ -211,7 +211,13 @@
    const data=await requestJson(url);
    const points=(Array.isArray(data.prices)?data.prices:[]).filter(p=>Array.isArray(p)
      &&Number.isFinite(p[0])&&Number.isFinite(p[1])&&p[1]>0&&p[0]>=now-config.span&&p[0]<=now);
-   if(points.length>=3)return {source:'coingecko',currency,points:points.slice(-230)};
+   // Retain the entire requested time window (including the beginning of
+   // the month), rather than silently truncating 30D to the final 230 hours.
+   if(points.length>=3){
+    const stride=Math.max(1,Math.ceil(points.length/190));
+    const sampled=points.filter((_,i)=>i===0||i===points.length-1||i%stride===0);
+    return {source:'coingecko',currency,points:sampled};
+   }
   }catch(e){
    if(e.status===429||e.status===401||e.status===403)cgCooldownUntil=time()+300000;
   }
