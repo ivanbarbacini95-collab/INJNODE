@@ -1,0 +1,134 @@
+/* INJ Node · v16.07.34 · full-width desktop canvas and contained Settings.
+   Home-only selectors. No scroll ownership, touch gestures, theme selections,
+   wallet state or sound/volume logic are changed. */
+
+/* Ultrawide: the window itself is the themed canvas. No centered outer shell
+   with visible differently colored side pillars. Keep content grids intact. */
+@media (min-width:1800px){
+ html[data-inj-page="index"],
+ html[data-inj-page="index"] body{
+  width:100%!important;
+  max-width:none!important;
+  background:var(--page-gradient,linear-gradient(150deg,var(--theme-canvas,#020708),var(--bg,#020708))),var(--theme-canvas,var(--bg,#020708))!important;
+  background-repeat:no-repeat!important;
+  background-size:cover!important;
+ }
+ html[data-inj-page="index"] body.dashboard-scroll-ready > .app-shell,
+ html[data-inj-page="index"] body > .app-shell{
+  width:100%!important;
+  max-width:none!important;
+  margin-inline:0!important;
+  border-inline:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  background:transparent!important;
+ }
+ /* Home entry remains comfortably laid out, but has no visible framed island. */
+ html[data-inj-page="index"] #entryGate{
+  width:100%!important;
+  max-width:none!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+ }
+ html[data-inj-page="index"] #entryGate > .entry-gate-shell:not(.first-access){
+  border-color:transparent!important;
+  box-shadow:none!important;
+  background:transparent!important;
+ }
+}
+
+/* Settings menu: CLOSED means genuinely absent, not translated off screen.
+   This also prevents the always-display:flex volume range from peeking out
+   through the left side of the home screen. */
+html[data-inj-page="index"] #headerMenu:not(.open) #headerMenuPanel,
+html[data-inj-page="index"] #headerMenu:not(.open) #headerMenuBackdrop{
+ display:none!important;
+ visibility:hidden!important;
+ opacity:0!important;
+ pointer-events:none!important;
+ transform:none!important;
+ -webkit-transform:none!important;
+ animation:none!important;
+ transition:none!important;
+}
+
+/* A stationary popup, not a sliding drawer. Its only scroll is vertical and
+   stays inside the visible settings surface. */
+html[data-inj-page="index"] #headerMenu.open #headerMenuPanel{
+ display:block!important;
+ visibility:visible!important;
+ opacity:1!important;
+ pointer-events:auto!important;
+ position:fixed!important;
+ top:max(9px,env(safe-area-inset-top,0px))!important;
+ bottom:auto!important;
+ right:max(10px,env(safe-area-inset-right,0px))!important;
+ left:auto!important;
+ width:min(430px,calc(100vw - 20px))!important;
+ max-width:calc(100vw - 20px)!important;
+ height:auto!important;
+ max-height:calc(100dvh - 20px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))!important;
+ overflow-x:hidden!important;
+ overflow-y:auto!important;
+ overscroll-behavior-y:contain!important;
+ box-sizing:border-box!important;
+ transform:none!important;
+ -webkit-transform:none!important;
+ translate:none!important;
+ animation:none!important;
+ transition:none!important;
+ z-index:2147483200!important;
+ scrollbar-gutter:stable;
+}
+html[data-inj-page="index"] #headerMenu.open #headerMenuBackdrop{
+ display:block!important;
+ visibility:visible!important;
+ opacity:1!important;
+ position:fixed!important;
+ inset:0!important;
+ width:100vw!important;
+ height:100dvh!important;
+ pointer-events:auto!important;
+ transform:none!important;
+ -webkit-transform:none!important;
+ transition:none!important;
+ z-index:2147483100!important;
+}
+
+/* The range control exists only within the Settings preferences disclosure.
+   It cannot become an independently positioned floating element. */
+html[data-inj-page="index"] #headerMenuPanel #menuFeedbackVolumeControl{
+ position:static!important;
+ inset:auto!important;
+ transform:none!important;
+ float:none!important;
+ clear:both!important;
+ max-width:100%!important;
+}
+html[data-inj-page="index"] #headerMenuPanel #menuPreferencesAccordion:not([open]) #menuFeedbackVolumeControl{
+ display:none!important;
+}
+
+/* Preserve normal native details opening/closing, and don't allow horizontal
+   swipes inside the range slider to drag the entire floating panel. */
+html[data-inj-page="index"] #headerMenuPanel :is(.menu-accordion,.menu-accordion-content){
+ max-width:100%!important;
+ min-width:0!important;
+}
+html[data-inj-page="index"] #headerMenuPanel .menu-feedback-volume-slider{
+ max-width:100%!important;
+ min-width:0!important;
+}
+html[data-inj-page="index"] #headerMenuPanel #menuFeedbackVolume{
+ touch-action:pan-x!important;
+}
+@media(max-width:599px){
+ html[data-inj-page="index"] #headerMenu.open #headerMenuPanel{
+  right:max(8px,env(safe-area-inset-right,0px))!important;
+  width:calc(100vw - 16px)!important;
+  max-width:calc(100vw - 16px)!important;
+  scrollbar-gutter:auto;
+ }
+}
