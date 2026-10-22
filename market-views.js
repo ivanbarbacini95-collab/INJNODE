@@ -195,16 +195,6 @@
   listTiles=next;
   $('mpMetaCount').textContent=tr('Crypto visualizzate: ','Displayed assets: ')+coins.length;
  }
- // Each card's chart follows the timeframe selected in the Heatmap toolbar.
- // The renderer supplies verified history and advances the last point in real time.
- function heatSpark(){
-  const wrap=document.createElement('span');wrap.className='hm-spark-wrap';
-  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
-  svg.classList.add('hm-spark');
-  svg.setAttribute('viewBox','0 0 100 24');
-  svg.setAttribute('preserveAspectRatio','none');svg.setAttribute('aria-hidden','true');
-  wrap.append(svg);return wrap;
- }
  function tile(coin){
   const v=change(coin,range),node=document.createElement('button');
   const symbol=String(coin.symbol||'').toUpperCase();
@@ -232,7 +222,6 @@
   const value=document.createElement('span');value.className='hm-change';
   const price=document.createElement('small');price.className='hm-price';
   node.append(price,value);
-  node.append(heatSpark());
   recolor(node,coin,v);
   return node;
  }
@@ -338,11 +327,11 @@
  function setRange(next){
   if(!rangeChoices.includes(next))return;
   range=next;save(range);
+  $('heatmapPerformanceSource').textContent=tr('Performance '+range.toUpperCase(),'Performance '+range.toUpperCase());
   heat.querySelectorAll('[data-heat-range]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.heatRange===range)));
-  // A coin may have valid 24h data but no 1h/7d/30d history.
-  // Rebuild visible tiles on period change instead of retaining black placeholders.
+  // The timeframe affects the actual percent, tile tint and edge signal.
+  // Rebuild because a coin may lack performance observations for a given period.
   if(mode==='heatmap')requestRender();
-  window.dispatchEvent(new CustomEvent('injnode:market:heatrange',{detail:{range}}));
  }
  // Flash only actual visible price changes. A short finite pulse, not a permanent glow.
  function priceFlash(element,direction,tile=false){
@@ -417,7 +406,7 @@
   $('marketProSort').setAttribute('aria-label',tr('Ordina Crypto','Sort cryptos'));
   $('heatmapCount').textContent=tr('Crypto visualizzate: ','Displayed assets: ')+mapTiles.size;
   $('heatmapNote').textContent=tr('Verde: rialzo · Rosso: ribasso','Green: up · Red: down');
-  $('heatmapHourSource').textContent=tr('Grafici '+range.toUpperCase()+' · storico reale','Real '+range.toUpperCase()+' price charts');
+  $('heatmapPerformanceSource').textContent=tr('Performance '+range.toUpperCase(),'Performance '+range.toUpperCase());
   $('marketHeading').textContent=section==='favorites'?tr('Preferiti','Favorites'):mode==='heatmap'?'Market Heatmap':'Global Crypto';
   $('mpMetaTitle').innerHTML=section==='favorites'?tr('PREFERITI','FAVORITES')+' <span>· HYBRID PRO</span>':'HYBRID PRO <span>· MARKET WATCH</span>';
   updateFavoritesUI();
