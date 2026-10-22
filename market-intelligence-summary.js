@@ -4,7 +4,7 @@
 'use strict';
 const $=id=>document.getElementById(id);
 if(!$('injIntelligenceMain')||!$('injGlobalMarket'))return;
-const CACHE='inj_node_intel_summary_cache_v1',STAKE_CACHE='inj_node_intel_chain_snapshot_v2';
+const CACHE='inj_node_intel_summary_cache_v1',STAKE_CACHE='inj_node_intel_chain_snapshot_v2',SUPPLY_CACHE='inj_node_intel_native_supply_v1';
 const CG='https://api.coingecko.com/api/v3';
 const LCD=['https://sentry.lcd.injective.network:443','https://lcd.injective.network','https://1rpc.io/inj-lcd'];
 const now=()=>Date.now();
@@ -23,6 +23,7 @@ const text=(id,v)=>{const el=$(id);if(el&&el.textContent!==v)el.textContent=v};
 let view=read('inj_node_intel_view_v1')==='global'?'global':'intel';
 let coin=null,global=null,marketAt=0,marketFetched=0,marketBusy=false;
 let staked=NaN,stakingAt=0,stakingFetched=0,stakingBusy=false;
+let nativeSupply=NaN,supplyAt=0;
 try{
  const saved=JSON.parse(read(CACHE)||'null');
  if(saved?.at>now()-3600000){
@@ -31,6 +32,10 @@ try{
  const chain=JSON.parse(read(STAKE_CACHE)||'null');
  if(chain?.at>now()-86400000&&Number.isFinite(Number(chain?.data?.bonded))){
   staked=Number(chain.data.bonded);stakingAt=chain.at;
+ }
+ const native=JSON.parse(read(SUPPLY_CACHE)||'null');
+ if(native?.at>now()-86400000&&Number.isFinite(Number(native.amount))&&Number(native.amount)>0){
+  nativeSupply=Number(native.amount);supplyAt=native.at;
  }
 }catch(_){}
 function labels(){
@@ -76,13 +81,13 @@ function render(){
 function insightRender(){
  const current=positive(coin?.current_price);
  const low=positive(coin?.low_24h),high=positive(coin?.high_24h);
- const ath=positive(coin?.ath);
+ const ath=positive(coin?.ath),atl=positive(coin?.atl);
  const circulating=positive(coin?.circulating_supply);
  const supply=positive(coin?.total_supply);
  const validRange=Number.isFinite(current)&&Number.isFinite(low)&&Number.isFinite(high)&&high>low&&current>=low*.95&&current<=high*1.05;
  const validAth=Number.isFinite(current)&&Number.isFinite(ath)&&ath>0;
  // Total supply is distinct from max supply and from staking.
- const validSupply=Number.isFinite(circulating)&&Number.isFinite(supply)&&supply>=circulating;
+ const validSupply=Number.isFinite(nativeSupply)&&Number.isFinite(staked)&&nativeSupply>=staked&&staked>=0;
  const label=(id,it,eng)=>text(id,tr(it,eng));
  const percentLabel=(v)=>Number.isFinite(v)?formatted(v,1)+'%':'—';
  const uint=v=>Number.isFinite(v)?formatted(v,0)+' INJ':'—';
@@ -94,13 +99,16 @@ function insightRender(){
  label('injAthTitle',"Distanza dall'ATH",'ATH recovery');
  label('injAthCenterLabel','DEL MASSIMO','OF ATH');
  label('injAthMaxLabel','MASSIMO STORICO','ALL-TIME HIGH');
- label('injSupplyTitle','Distribuzione supply','Supply distribution');
- label('injSupplyCenterLabel','CIRCOLANTE','CIRCULATING');
- label('injSupplyCirculatingLabel','IN CIRCOLAZIONE','CIRCULATING');
- label('injSupplyRemainingLabel','DIFFERENZA DAL TOTALE','TOTAL LESS CIRCULATING');
+ label('injAtlTitle',"Risalita dall'ATL",'ATL recovery');
+ label('injAtlCenterLabel','RANGE STORICO','PRICE RANGE');
+ label('injAtlMinLabel','MINIMO STORICO','ALL-TIME LOW');
+ label('injSupplyTitle','Distribuzione on-chain','On-chain distribution');
+ label('injSupplyCenterLabel','IN STAKING','STAKED');
+ label('injSupplyCirculatingLabel','IN STAKING','STAKED');
+ label('injSupplyRemainingLabel','NON IN STAKING','NOT STAKED');
  label('injInsightNote',
-  "CoinGecko · I valori aggiornano insieme al prezzo. L'offerta non circolante non equivale ai token in staking.",
-  'CoinGecko · Values update with the price. Non-circulating supply does not mean staked tokens.');
+  'ATH/ATL e prezzo: CoinGecko. Supply e staking: blockchain Injective. Staking non equivale a proprietà.',
+  'ATH/ATL and price: CoinGecko. Supply and staking: Injective blockchain. Staking is not ownership.');
  const track=$('injRangeTrack');
  text('injRangePrice',usd(current));
  text('injRangeLow',usd(low));text('injRangeHigh',usd(high));
@@ -134,18 +142,41 @@ function insightRender(){
  }
  const at=Date.parse(coin?.ath_date||'');
  text('injAthDate',Number.isFinite(at)?new Date(at).toLocaleDateString(en()?'en-US':'it-IT',{day:'2-digit',month:'short',year:'numeric'}):'—');
- if(validSupply){
-  const fraction=circulating/supply;
-  text('injSupplyPercent',percentLabel(fraction*100));
-  text('injSupplyCirculating',uint(circulating));
-  text('injSupplyRemaining',uint(Math.max(0,supply-circulating)));
-  text('injSupplyTotal',tr('Supply totale: ','Total supply: ')+uint(supply));
-  ring('injSupplyArc','injSupplyGauge',fraction,tr('Supply circolante: ','Circulating supply: ')+percentLabel(fraction*100));
+ // ATL gauge measures the price position between the recorded ATL and ATH,
+ // not the (unbounded) gain multiplier since ATL.
+ const validATL=Number.isFinite(atl)&&atl>0&&Number.isFinite(current);
+ const hasFullRange=validATL&&Number.isFinite(ath)&&ath>atl;
+ if(validATL){
+  const gain=(current/atl-1)*100;
+  const position=hasFullRange?Math.max(0,Math.min(1,(current-atl)/(ath-atl))):NaN;
+  text('injAtlPercent',Number.isFinite(position)?percentLabel(position*100):'—');
+  text('injAtlPrice',usd(atl));
+  text('injAtlDistance',tr('Dal minimo: ','From ATL: ')+(gain>=0?'+':'')+percentLabel(gain));
+  ring('injAtlArc','injAtlGauge',position,tr('Posizione del prezzo tra ATL e ATH: ','Price position between ATL and ATH: ')+percentLabel(position*100));
  }else{
-  text('injSupplyPercent','—');text('injSupplyCirculating',uint(circulating));
+  text('injAtlPercent','—');text('injAtlPrice',usd(atl));
+  text('injAtlDistance',tr('ATL non disponibile','ATL unavailable'));
+  ring('injAtlArc','injAtlGauge',NaN,tr('ATL non disponibile','ATL unavailable'));
+ }
+ const atlDate=Date.parse(coin?.atl_date||'');
+ text('injAtlDate',Number.isFinite(atlDate)?new Date(atlDate).toLocaleDateString(en()?'en-US':'it-IT',{day:'2-digit',month:'short',year:'numeric'}):'—');
+
+ // Supply distribution is now backed by a native LCD chain total, not the
+ // sometimes-static circulating/max figures returned by price aggregators.
+ text('injSupplyCG',tr('Circolante (CoinGecko): ','Circulating (CoinGecko): ')+uint(circulating));
+ if(validSupply){
+  const fraction=staked/nativeSupply;
+  text('injSupplyPercent',percentLabel(fraction*100));
+  text('injSupplyCirculating',uint(staked));
+  text('injSupplyRemaining',uint(nativeSupply-staked));
+  text('injSupplyTotal',tr('Supply nativa totale: ','Total native supply: ')+uint(nativeSupply));
+  ring('injSupplyArc','injSupplyGauge',fraction,tr('INJ in staking sulla supply nativa: ','INJ staked vs native supply: ')+percentLabel(fraction*100));
+ }else{
+  text('injSupplyPercent','—');
+  text('injSupplyCirculating',uint(staked));
   text('injSupplyRemaining','—');
-  text('injSupplyTotal',tr('Supply totale non disponibile','Total supply unavailable'));
-  ring('injSupplyArc','injSupplyGauge',NaN,tr('Supply non disponibile','Supply unavailable'));
+  text('injSupplyTotal',tr('Supply nativa non disponibile','Native supply unavailable'));
+  ring('injSupplyArc','injSupplyGauge',NaN,tr('Rapporto staking/supply non verificato','Staking/supply ratio unavailable'));
  }
 }
 
@@ -203,19 +234,35 @@ async function marketFallback(force=false){
 async function chainStaking(){
  if(stakingBusy||document.hidden||now()-stakingFetched<300000)return;
  stakingBusy=true;stakingFetched=now();
+ let gotStake=false,gotSupply=false;
  for(const url of LCD){
-  try{
-   const result=await getJson(url+'/cosmos/staking/v1beta1/pool',5000);
-   const bonded=Number(result?.pool?.bonded_tokens)/1e18;
-   if(Number.isFinite(bonded)&&bonded>0&&bonded<2e8){
-    staked=bonded;stakingAt=now();
-    save(STAKE_CACHE,{at:stakingAt,data:{bonded}});
-    break;
+  // Query independently: a failed bank supply response must not hide staking.
+  const results=await Promise.allSettled([
+   gotStake?Promise.resolve(null):getJson(url+'/cosmos/staking/v1beta1/pool',4500),
+   gotSupply?Promise.resolve(null):getJson(url+'/cosmos/bank/v1beta1/supply/inj',4500)
+  ]);
+  if(!gotStake&&results[0].status==='fulfilled'){
+   const amount=Number(results[0].value?.pool?.bonded_tokens)/1e18;
+   if(Number.isFinite(amount)&&amount>0&&amount<2e8){
+    staked=amount;stakingAt=now();gotStake=true;
+    // Do not overwrite other chain fields previously saved by older views.
+    let extra={};
+    try{extra=JSON.parse(read(STAKE_CACHE)||'{}')?.data||{}}catch(_){}
+    save(STAKE_CACHE,{at:stakingAt,data:{...extra,bonded:staked}});
    }
-  }catch(_){}
+  }
+  if(!gotSupply&&results[1].status==='fulfilled'){
+   const amount=Number(results[1].value?.amount?.amount)/1e18;
+   if(Number.isFinite(amount)&&amount>0&&amount<1e9){
+    nativeSupply=amount;supplyAt=now();gotSupply=true;
+    save(SUPPLY_CACHE,{at:supplyAt,amount:nativeSupply});
+   }
+  }
+  if(gotStake&&gotSupply)break;
  }
  stakingBusy=false;render();
 }
+
 function tick(){
  if(document.hidden)return;
  ingestShared();
@@ -233,6 +280,11 @@ window.addEventListener('message',e=>{
 });
 window.addEventListener('pageshow',()=>{labels();tick()});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)tick()});
+// The independent holder module can reuse verified market data without
+// fetching additional price endpoints or reading undocumented globals.
+window.INJ_INTEL_READONLY_SNAPSHOT=()=>({
+ coin,staked,nativeSupply,marketAt,stakingAt,supplyAt
+});
 viewSwitch(view);labels();tick();
 setInterval(tick,15000);
 })();

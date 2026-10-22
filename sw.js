@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.06.01-adaptive-smooth-scroll';
+const CACHE_NAME = 'inj-node-v16.06.25-ownership-atl-holders';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160080',
@@ -62,13 +62,14 @@ const APP_SHELL = [
   './treasury-ownership.css?v=160099',
   './market.html',
   './market-intelligence.css?v=160421',
-  './market-intelligence-summary.js?v=160522',
-  './market-intelligence-summary.css?v=160522',
+  './market-intelligence-summary.js?v=160625',
+  './market-intelligence-summary.css?v=160625',
+  './inj-ownership.js?v=160625',
   './comparison.html',
   './comparison.css?v=160095',
   './comparison-ab.css?v=160095',
   './comparison.js?v=160095',
-  './market-portal.js?v=160522',
+  './market-portal.js?v=160625',
   './market-lang.js?v=160082',
   './market.css?v=160082',
   './market.js?v=160402',
