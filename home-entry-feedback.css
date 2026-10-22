@@ -1,0 +1,24 @@
+/* INJ Node · Home entry feedback preferences.
+   Only styles two existing-menu-format rows: no overlay, extra scroll surface or layout rewrite. */
+#menuFeedbackSoundButton .menu-action-value,
+#menuFeedbackHapticButton .menu-action-value{
+ font-weight:800;
+ font-variant-numeric:tabular-nums;
+ min-width:37px;
+ text-align:right;
+}
+#menuFeedbackSoundButton[aria-pressed="true"] .menu-action-value,
+#menuFeedbackHapticButton[aria-pressed="true"] .menu-action-value{
+ color:var(--accent,var(--text));
+}
+#menuFeedbackSoundButton[aria-pressed="false"] .menu-action-value,
+#menuFeedbackHapticButton[aria-pressed="false"] .menu-action-value{
+ color:var(--muted);
+}
+#menuFeedbackHapticButton:disabled{
+ opacity:.62;
+ cursor:not-allowed;
+}
+#menuFeedbackHapticButton:disabled .menu-action-copy small{
+ color:var(--muted);
+}
