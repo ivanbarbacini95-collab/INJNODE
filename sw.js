@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.06.31-wallet-rail-seamless';
+const CACHE_NAME = 'inj-node-v16.06.32-wallet-layout-clean';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160080',
@@ -46,8 +46,8 @@ const APP_SHELL = [
   './theme-catalog.css?v=160114',
   './home-desktop-tiles.css?v=160115',
   './wallet-dock-transparent.css?v=160116',
-  './wallet-selection-glow.css?v=160630',
-  './wallet-rail-seamless.css?v=160631',
+  './wallet-selection-glow.css?v=160632',
+  './wallet-rail-seamless.css?v=160632',
   './visualize-wealth.html',
   './visualize-wealth.css?v=160502',
   './visualize-wealth.js?v=160318',
@@ -86,7 +86,7 @@ const APP_SHELL = [
   './viewport.css?v=16.00.74',
   './top-clarity.css?v=16.00.88',
   './style.css?v=16.01.44',
-  './app.js?v=16.06.30',
+  './app.js?v=16.06.32',
   './i18n.js?v=160145',
   './scroll-guard.js?v=160525',
   './live-charts.html',

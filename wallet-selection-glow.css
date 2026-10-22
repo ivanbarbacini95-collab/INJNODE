@@ -66,26 +66,6 @@ html[data-inj-page="index"][data-theme] body .app-shell main#top #walletCards > 
   outline-offset:3px!important;
   border-radius:inherit;
 }
-/* Extra human-readable signal: translated automatically on language change. */
-html[data-inj-page="index"] body .app-shell #walletCards .wallet-mini-current-label{
-  display:block;
-  width:max-content;
-  max-width:100%;
-  margin-top:7px;
-  color:var(--accent)!important;
-  background:transparent!important;
-  font:800 10px/1.4 system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
-  letter-spacing:.075em;
-  text-align:left;
-  white-space:normal;
-  overflow-wrap:anywhere;
-}
-html[data-inj-page="index"] body .app-shell #walletCards .wallet-mini-current-label::before{
-  content:"● IN VISUALIZZAZIONE";
-}
-html[data-inj-page="index"][lang="en"] body .app-shell #walletCards .wallet-mini-current-label::before{
-  content:"● VIEWING";
-}
 @media (hover:hover) and (pointer:fine) {
  html[data-inj-page="index"][data-theme] body .app-shell main#top #walletCards > .wallet-mini:not(.active):hover{
    border-color:color-mix(in srgb,var(--accent) 48%,var(--line))!important;

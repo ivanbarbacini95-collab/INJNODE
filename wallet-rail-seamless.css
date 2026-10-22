@@ -87,3 +87,70 @@ html[data-inj-page="index"][data-theme] body .app-shell #top #walletCards > .wal
    animation:none!important;
  }
 }
+
+
+/* v16.06.32 · shared multi-wallet presentation for Home and Dashboard.
+   The native three-cell Dashboard wallet grid is preserved with no extra
+   child and no top/bottom positioning adjustments. */
+html[data-inj-page="index"][data-theme] body .app-shell #top #walletCards .wallet-mini-current-label {
+ display:none!important;
+}
+/* Home carousel uses .entry-wallet-row.selected/.entry-wallet.selected,
+   independent of the Dashboard selection; never modify gesture transforms,
+   snap positions, horizontal/vertical overflow, padding or row dimensions. */
+html[data-inj-page="index"][data-theme] body #entryGate .entry-wallet-section,
+html[data-inj-page="index"][data-theme] body #entryGate .entry-wallet-section > .entry-wallets,
+html[data-inj-page="index"][data-theme] body #entryGate .entry-wallet-section #entryWallets,
+html[data-inj-page="index"][data-theme] body #entryGate #entryWallets > .entry-wallet-row {
+ background:transparent!important;
+ background-color:transparent!important;
+ background-image:none!important;
+ -webkit-backdrop-filter:none!important;
+ backdrop-filter:none!important;
+ filter:none!important;
+ box-shadow:none!important;
+ -webkit-box-shadow:none!important;
+}
+/* Remove only the backdrop pseudo-layers that create rectangular fill in
+   the gap between adjacent Home wallet items, not gesture markers/handles. */
+html[data-inj-page="index"][data-theme] body #entryGate .entry-wallet-section::before,
+html[data-inj-page="index"][data-theme] body #entryGate .entry-wallet-section::after,
+html[data-inj-page="index"][data-theme] body #entryGate #entryWallets::before,
+html[data-inj-page="index"][data-theme] body #entryGate #entryWallets::after,
+html[data-inj-page="index"][data-theme] body #entryGate #entryWallets > .entry-wallet-row::before,
+html[data-inj-page="index"][data-theme] body #entryGate #entryWallets > .entry-wallet-row::after {
+ content:none!important;
+ display:none!important;
+}
+html[data-inj-page="index"][data-theme] body #entryGate #entryWallets > .entry-wallet-row > .entry-wallet {
+ background:transparent!important;
+ background-color:transparent!important;
+ background-image:none!important;
+ border-color:color-mix(in srgb,var(--accent) 24%,var(--line))!important;
+ box-shadow:none!important;
+ -webkit-box-shadow:none!important;
+ -webkit-backdrop-filter:none!important;
+ backdrop-filter:none!important;
+ transition:border-color .18s ease,box-shadow .18s ease!important;
+}
+/* ONE active glow, on the selected button only. The separate rename
+   button and any existing Home wallet ticker layout remain untouched. */
+html[data-inj-page="index"][data-theme] body #entryGate #entryWallets > .entry-wallet-row.selected > .entry-wallet.selected {
+ background:color-mix(in srgb,var(--accent) 3%,transparent)!important;
+ border-color:color-mix(in srgb,var(--accent) 90%,var(--line))!important;
+ box-shadow:
+   0 0 0 1px color-mix(in srgb,var(--accent) 24%,transparent),
+   0 0 16px color-mix(in srgb,var(--accent) 20%,transparent)!important;
+ -webkit-box-shadow:
+   0 0 0 1px color-mix(in srgb,var(--accent) 24%,transparent),
+   0 0 16px color-mix(in srgb,var(--accent) 20%,transparent)!important;
+}
+html[data-inj-page="index"][data-theme] body #entryGate #entryWallets > .entry-wallet-row.selected > .entry-wallet.selected > i {
+ background:var(--accent)!important;
+ box-shadow:0 0 12px color-mix(in srgb,var(--accent) 38%,transparent)!important;
+}
+@media(prefers-reduced-motion:reduce){
+ html[data-inj-page="index"][data-theme] body #entryGate #entryWallets > .entry-wallet-row > .entry-wallet {
+  transition:none!important;
+ }
+}

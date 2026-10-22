@@ -3102,15 +3102,9 @@ function renderWalletCards() {
     worth.textContent = row && state.price > 0 ? compactMoney(row.total * state.price) : (fresh ? 'LIVE' : row ? 'CACHE' : 'SYNC');
 
     open.append(heading, total, worth);
-    // Distinct, theme-aware indication of the portfolio currently in view.
-    // The label itself is translated by CSS from the document language, so
-    // changing IT/EN does not require rebuilding the wallet or its numbers.
-    if (active) {
-      const viewing = document.createElement('span');
-      viewing.className = 'wallet-mini-current-label';
-      viewing.setAttribute('aria-hidden', 'true'); // aria-pressed already conveys selection
-      open.appendChild(viewing);
-    }
+    // Exactly three layout children. The selected state is conveyed by
+    // aria-pressed, the theme-accent border and the existing status dot.
+    // Never append badges here: this button uses a fixed compact grid.
     open.addEventListener('click', () => {
       if (!active || state.walletPendingAddress) loadWallet(true, wallet.address);
     });
