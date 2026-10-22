@@ -1,10 +1,10 @@
-const CACHE_NAME = 'inj-node-v16.07.29-real-visible-price-pulse';
+const CACHE_NAME = 'inj-node-v16.07.30-slim-trend-wash';
 const APP_SHELL = [
   './dashboard-ipad-layout.css?v=160722',
   './market-favorites.css?v=160724',
   './market-heatmap-arctic.css?v=160725',
   './market-heatmap-live.css?v=160726',
-  './market-heatmap-aggressive.css?v=160728',
+  './market-heatmap-aggressive.css?v=160730',
   './market-heatmap-live.js?v=160726',
   './chart-haptics.js?v=160720',
   './chart-haptics.css?v=160720',
