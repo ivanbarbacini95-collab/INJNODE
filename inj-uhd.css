@@ -31,7 +31,7 @@ html body :is(
 html body svg{
  shape-rendering:geometricPrecision;
 }
-html body svg :is(path,polyline,polygon,line,circle,rect){
+html body :is(.entry-action-icon,.home,.market-icon,.header-menu-button) svg :is(path,polyline,polygon,line,circle,rect){
  vector-effect:non-scaling-stroke;
 }
 /* Embedded SVG icons typically use native path widths; preserve fill/stroke
@@ -83,11 +83,5 @@ html body :is(img,svg){
   line-height:1.15;
  }
 }
-/* Slightly sharper separations for light palettes without solid gray overlays. */
-@media(min-resolution:2dppx){
- html[data-theme] body :is(
-  .market-asset-section,.inj-mi-tabs,.mp-results,.cc-shell,.treasury-shell
- ){
-  -webkit-backface-visibility:visible;
- }
-}
+/* Themes are defined with CSS gradients, not bitmap screenshots: they remain
+   resolution-independent on 2x/3x screens and at native 4K/5K dimensions. */
