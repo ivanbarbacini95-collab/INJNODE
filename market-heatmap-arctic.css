@@ -100,11 +100,11 @@ html[data-inj-market] #marketHeatmap .heatmap-grid > .heatmap-tile:nth-child(n){
 }
 html[data-inj-market] #marketHeatmap .heatmap-grid > .heatmap-tile.is-up{
   --arctic-tone:var(--arctic-green);
-  border-color:color-mix(in srgb,var(--arctic-green) 54%,#7397a8)!important;
+  border-color:color-mix(in srgb,var(--arctic-green) var(--heat-rim,48%),#7397a8)!important;
   background:
     linear-gradient(158deg,rgba(219,251,255,.145) 0%,transparent 28%,rgba(2,14,25,.12) 85%),
     radial-gradient(ellipse at 105% 106%,rgba(47,229,196,.22),transparent 66%),
-    linear-gradient(130deg,color-mix(in srgb,var(--arctic-green) 21%,#103445),#0a2635 80%)!important;
+    linear-gradient(130deg,color-mix(in srgb,var(--arctic-green) var(--heat-fill,30%),#103445),#0a2635 80%)!important;
   box-shadow:
     inset 0 1px 0 rgba(203,255,247,.28),
     inset 0 0 0 1px rgba(39,230,192,.095),
@@ -113,11 +113,11 @@ html[data-inj-market] #marketHeatmap .heatmap-grid > .heatmap-tile.is-up{
 }
 html[data-inj-market] #marketHeatmap .heatmap-grid > .heatmap-tile.is-down{
   --arctic-tone:var(--arctic-red);
-  border-color:color-mix(in srgb,var(--arctic-red) 54%,#8c9cab)!important;
+  border-color:color-mix(in srgb,var(--arctic-red) var(--heat-rim,48%),#8c9cab)!important;
   background:
     linear-gradient(158deg,rgba(238,241,254,.125) 0%,transparent 29%,rgba(6,13,25,.14) 86%),
     radial-gradient(ellipse at 105% 106%,rgba(239,112,134,.19),transparent 65%),
-    linear-gradient(130deg,color-mix(in srgb,var(--arctic-red) 16%,#183343),#111f31 80%)!important;
+    linear-gradient(130deg,color-mix(in srgb,var(--arctic-red) var(--heat-fill,30%),#183343),#111f31 80%)!important;
   box-shadow:
     inset 0 1px 0 rgba(255,227,235,.23),
     inset 0 0 0 1px rgba(239,118,133,.085),
