@@ -8,6 +8,7 @@
  const hero=$('marketHeatmapGrid'),universe=$('marketHeatmapMore'),rows=$('marketProRows');
  if(!global||!heat||!hybrid||!legacy||!hero||!universe||!rows||!listBtn||!heatBtn)return;
  const KEY='inj_node_market_view_v1',RANGE_KEY='inj_node_market_heat_range_v1';
+ const MAIN_FILTERS={heatmapSearch:'search',heatmapScope:'scope',heatmapDirection:'direction'};
  const read=(key,fallback)=>{try{return localStorage.getItem(key)||fallback}catch(_){return fallback}};
  const save=(key,value)=>{try{localStorage.setItem(key,value)}catch(_){}};
  const api=()=>window.INJ_MARKET_VIEW_API;
