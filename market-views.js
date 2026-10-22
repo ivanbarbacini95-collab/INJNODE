@@ -407,6 +407,7 @@
   $('marketProSort').setAttribute('aria-label',tr('Ordina Crypto','Sort cryptos'));
   $('heatmapCount').textContent=tr('Crypto visualizzate: ','Displayed assets: ')+mapTiles.size;
   $('heatmapNote').textContent=tr('Verde: rialzo · Rosso: ribasso','Green: up · Red: down');
+  $('heatmapHourSource').textContent=tr('Grafico 1H · campioni ricevuti','1H chart · received quotes');
   $('marketHeading').textContent=section==='favorites'?tr('Preferiti','Favorites'):mode==='heatmap'?'Market Heatmap':'Global Crypto';
   $('mpMetaTitle').innerHTML=section==='favorites'?tr('PREFERITI','FAVORITES')+' <span>· HYBRID PRO</span>':'HYBRID PRO <span>· MARKET WATCH</span>';
   updateFavoritesUI();
