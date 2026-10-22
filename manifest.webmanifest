@@ -5,24 +5,24 @@
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#06121d",
-  "theme_color": "#06121d",
+  "background_color": "#071320",
+  "theme_color": "#071320",
   "description": "Monitor live di wallet, staking e mercati Injective.",
   "icons": [
     {
-      "src": "./icons/inj-node-192-v16.06.28.png",
+      "src": "./icons/inj-node-minimal-192-v16.06.29.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "./icons/inj-node-512-v16.06.28.png",
+      "src": "./icons/inj-node-minimal-512-v16.06.29.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "./icons/inj-node-180-v16.06.28.png",
+      "src": "./icons/inj-node-minimal-180-v16.06.29.png",
       "sizes": "180x180",
       "type": "image/png",
       "purpose": "any"

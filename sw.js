@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.06.28-pwa-home-icon';
+const CACHE_NAME = 'inj-node-v16.06.29-minimal-icon';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160080',
@@ -76,11 +76,11 @@ const APP_SHELL = [
   './market.js?v=160402',
   './market-pro.css?v=160108',
   './market-pro.js?v=160108',
-  './manifest.webmanifest?v=16.06.28',
-  './icons/inj-node-180-v16.06.28.png',
-  './icons/inj-node-192-v16.06.28.png',
-  './icons/inj-node-512-v16.06.28.png',
-  './icons/inj-node-icon-v16.06.28.svg',
+  './manifest.webmanifest?v=16.06.29',
+  './icons/inj-node-minimal-180-v16.06.29.png',
+  './icons/inj-node-minimal-192-v16.06.29.png',
+  './icons/inj-node-minimal-512-v16.06.29.png',
+  './icons/inj-node-minimal-v16.06.29.svg',
   './viewport.css?v=16.00.74',
   './top-clarity.css?v=16.00.88',
   './style.css?v=16.01.44',
