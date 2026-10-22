@@ -1,6 +1,7 @@
-const CACHE_NAME = 'inj-node-v16.07.33-market-init-fix';
+const CACHE_NAME = 'inj-node-v16.07.34-wide-canvas-fixed-menu';
 const APP_SHELL = [
   './dashboard-ipad-layout.css?v=160722',
+  './home-wide-menu-fix.css?v=160734',
   './market-favorites.css?v=160724',
   './market-heatmap-arctic.css?v=160725',
   './market-heatmap-live.css?v=160726',
