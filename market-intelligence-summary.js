@@ -42,7 +42,8 @@ function labels(){
  text('injIntelTabIntel','INJ Intelligence');
  text('injIntelTabGlobal','Global Crypto');
  text('injIntelTabHeatmap','Heatmap');
-  text('injIntelTabFavorites',tr('Preferiti','Favorites')+(window.INJ_MARKET_VIEWS?.favoriteCount?.()?' · '+window.INJ_MARKET_VIEWS.favoriteCount():''));
+  text('injFavoriteTabLabel',tr('Preferiti','Favorites'));
+  window.INJ_MARKET_VIEWS?.languageChange?.();
  text('injIntelHeaderSubtitle',tr('Il centro di analisi di Injective','Injective market intelligence terminal'));
  text('injIntelPriceLabel',tr('PREZZO INJ','INJ PRICE'));
  text('injIntelMCLabel','MARKET CAP');
