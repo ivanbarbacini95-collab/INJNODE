@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.07.02-wallet-ownership-theme';
+const CACHE_NAME = 'inj-node-v16.07.03-switchable-app-icon';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160080',
@@ -80,6 +80,26 @@ const APP_SHELL = [
   './market-pro.css?v=160108',
   './market-pro.js?v=160108',
   './manifest.webmanifest?v=16.06.29',
+  './app-icon-picker.css?v=160703',
+  './app-icon-picker.js?v=160703',
+  './install-icon-minimal.html',
+  './manifest-icon-minimal.webmanifest?v=160703',
+  './install-icon-classic.html',
+  './manifest-icon-classic.webmanifest?v=160703',
+  './install-icon-aurora.html',
+  './manifest-icon-aurora.webmanifest?v=160703',
+  './install-icon-pulse.html',
+  './manifest-icon-pulse.webmanifest?v=160703',
+  './icons/inj-node-180-v16.06.28.png',
+  './icons/inj-node-192-v16.06.28.png',
+  './icons/inj-node-512-v16.06.28.png',
+  './icons/inj-node-icon-v16.06.28.svg',
+  './icons/inj-node-aurora-180-v16.07.03.png',
+  './icons/inj-node-aurora-192-v16.07.03.png',
+  './icons/inj-node-aurora-512-v16.07.03.png',
+  './icons/inj-node-pulse-180-v16.07.03.png',
+  './icons/inj-node-pulse-192-v16.07.03.png',
+  './icons/inj-node-pulse-512-v16.07.03.png',
   './icons/inj-node-minimal-180-v16.06.29.png',
   './icons/inj-node-minimal-192-v16.06.29.png',
   './icons/inj-node-minimal-512-v16.06.29.png',
@@ -134,7 +154,7 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return;
 
   if (request.mode === 'navigate') {
-    const isolatedPath = ['live-charts.html', 'live-rewards.html', 'command-center.html', 'order-book.html', 'treasury.html', 'market.html', 'comparison.html', 'visualize-wealth.html'].find((name) => url.pathname.endsWith('/' + name));
+    const isolatedPath = ['live-charts.html', 'live-rewards.html', 'command-center.html', 'order-book.html', 'treasury.html', 'market.html', 'comparison.html', 'visualize-wealth.html', 'install-icon-minimal.html', 'install-icon-classic.html', 'install-icon-aurora.html', 'install-icon-pulse.html'].find((name) => url.pathname.endsWith('/' + name));
     event.respondWith(
       fetch(request, { cache: 'no-store' })
         .then((response) => {

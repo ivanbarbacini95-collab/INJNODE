@@ -304,9 +304,11 @@
 <link rel="stylesheet" href="./validator-transparent.css?v=160627">
 <link rel="apple-touch-icon" sizes="180x180" href="./icons/inj-node-minimal-180-v16.06.29.png">
 <link rel="icon" type="image/png" sizes="192x192" href="./icons/inj-node-minimal-192-v16.06.29.png">
-<link rel="icon" type="image/svg+xml" href="./icons/inj-node-minimal-icon-v16.06.29.svg">
+<link rel="icon" type="image/svg+xml" href="./icons/inj-node-minimal-v16.06.29.svg">
 <link rel="stylesheet" href="./wallet-selection-glow.css?v=160701">
 <link rel="stylesheet" href="./wallet-rail-seamless.css?v=160701">
+<link rel="stylesheet" href="./app-icon-picker.css?v=160703">
+<script defer src="./app-icon-picker.js?v=160703"></script>
 </head>
 <body class="boot-loading">
 <div aria-label="Avvio INJ Node" aria-live="polite" aria-atomic="true" class="boot-splash node-pulse-splash" id="bootSplash" role="status">
@@ -459,6 +461,36 @@
 </div>
 </div>
 </div>
+
+<details class="menu-app-icon-control" id="appIconControl">
+ <summary class="menu-action menu-setting menu-app-icon-trigger" id="appIconTrigger">
+   <span aria-hidden="true" class="menu-action-icon"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4"></rect><path d="M8 10h8M8 14h5M11 7v10"></path></svg></span>
+   <span class="menu-action-copy"><strong id="appIconTitle">Icona app</strong><small id="appIconSubtitle">Minimal · scegli logo</small></span>
+   <img id="appIconCurrentPreview" class="menu-app-icon-preview" src="./icons/inj-node-minimal-180-v16.06.29.png" width="36" height="36" alt="" aria-hidden="true">
+   <svg class="menu-action-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 10 4 4 4-4"></path></svg>
+ </summary>
+ <div class="menu-app-icon-panel">
+  <div id="appIconChoices" class="menu-app-icon-choices" role="group" aria-label="Loghi icona app">
+   <button type="button" class="menu-app-icon-choice" data-app-icon="minimal" aria-pressed="true">
+    <img src="./icons/inj-node-minimal-180-v16.06.29.png" width="52" height="52" loading="lazy" alt=""><span>Minimal</span><i aria-hidden="true"></i>
+   </button>
+   <button type="button" class="menu-app-icon-choice" data-app-icon="classic" aria-pressed="false">
+    <img src="./icons/inj-node-180-v16.06.28.png" width="52" height="52" loading="lazy" alt=""><span>Classic JN</span><i aria-hidden="true"></i>
+   </button>
+   <button type="button" class="menu-app-icon-choice" data-app-icon="aurora" aria-pressed="false">
+    <img src="./icons/inj-node-aurora-180-v16.07.03.png" width="52" height="52" loading="lazy" alt=""><span>Aurora</span><i aria-hidden="true"></i>
+   </button>
+   <button type="button" class="menu-app-icon-choice" data-app-icon="pulse" aria-pressed="false">
+    <img src="./icons/inj-node-pulse-180-v16.07.03.png" width="52" height="52" loading="lazy" alt=""><span>Pulse</span><i aria-hidden="true"></i>
+   </button>
+  </div>
+  <p class="menu-app-icon-note" id="appIconNote">Su iPhone l'icona già installata non cambia automaticamente. Per usare quella scelta apri la pagina dedicata in Safari e aggiungi nuovamente INJ Node alla Home.</p>
+  <a class="menu-app-icon-install" id="appIconInstallLink" href="./install-icon-minimal.html" target="_blank" rel="noopener">
+   <span id="appIconInstallText">Apri pagina per installare l'icona</span>
+   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5h11v11m0-11L8 16M5 9v10h10"></path></svg>
+  </a>
+ </div>
+</details>
     <div class="menu-language-card" id="languageControl" aria-label="Lingua interfaccia">
   <span aria-hidden="true" class="menu-action-icon menu-language-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"></circle><path d="M4 12h16M12 4c2.4 2.2 3.6 4.9 3.6 8S14.4 17.8 12 20M12 4c-2.4 2.2-3.6 4.9-3.6 8s1.2 5.8 3.6 8"></path></svg></span>
   <span class="menu-language-copy"><strong>Lingua</strong><small>Interfaccia</small></span>
