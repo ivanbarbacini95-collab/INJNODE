@@ -40,3 +40,63 @@ body.dashboard-scroll-ready:not(.entry-gate-open):not(.inj-section-open)
   overflow-y:visible!important;
   touch-action:auto!important;
 }
+
+/* v16.05.23 — Last author stylesheet: a single native document scroller.
+   Locks for actual modals and fullscreen sections remain in control. */
+html[data-inj-page="index"][data-inj-scroll="dashboard"]:not(:has(
+  #entryGate.visible[aria-hidden="false"],
+  #headerMenu.open,
+  .inj-content-frame,
+  #injMarketPortal:not([hidden]),
+  dialog[open],
+  #converterView.open,
+  #performanceTimelineView.open,
+  #focusDisplayDialog.mode-active:not(.mode-parked),
+  #liveChartsDialog.mode-active:not(.mode-parked),
+  #pulseViewDialog.mode-active:not(.mode-parked)
+)) {
+ position:static!important;inset:auto!important;
+ height:auto!important;min-height:100%!important;max-height:none!important;
+ overflow-x:clip!important;overflow-y:auto!important;
+ touch-action:auto!important;-webkit-overflow-scrolling:touch!important;
+}
+html[data-inj-page="index"][data-inj-scroll="dashboard"]:not(:has(
+  #entryGate.visible[aria-hidden="false"],
+  #headerMenu.open,
+  .inj-content-frame,
+  #injMarketPortal:not([hidden]),
+  dialog[open],
+  #converterView.open,
+  #performanceTimelineView.open,
+  #focusDisplayDialog.mode-active:not(.mode-parked),
+  #liveChartsDialog.mode-active:not(.mode-parked),
+  #pulseViewDialog.mode-active:not(.mode-parked)
+)) body.dashboard-scroll-ready {
+ position:static!important;inset:auto!important;
+ height:auto!important;min-height:100dvh!important;max-height:none!important;
+ overflow-x:clip!important;overflow-y:visible!important;
+ touch-action:auto!important;-webkit-overflow-scrolling:auto!important;
+}
+html[data-inj-page="index"][data-inj-scroll="dashboard"]:not(:has(
+  #entryGate.visible[aria-hidden="false"],
+  #headerMenu.open,
+  .inj-content-frame,
+  #injMarketPortal:not([hidden]),
+  dialog[open],
+  #converterView.open,
+  #performanceTimelineView.open,
+  #focusDisplayDialog.mode-active:not(.mode-parked),
+  #liveChartsDialog.mode-active:not(.mode-parked),
+  #pulseViewDialog.mode-active:not(.mode-parked)
+)) body.dashboard-scroll-ready > .app-shell {
+ display:block!important;position:relative!important;inset:auto!important;
+ width:100%!important;height:auto!important;min-height:100dvh!important;
+ max-height:none!important;overflow-x:clip!important;overflow-y:visible!important;
+ visibility:visible!important;pointer-events:auto!important;
+ touch-action:auto!important;transform:none!important;
+ -webkit-transform:none!important;contain:none!important;
+}
+html[data-inj-page="index"][data-inj-scroll="dashboard"]
+body.dashboard-scroll-ready > #entryGate[aria-hidden="true"]:not(.immersive-underlay) {
+ pointer-events:none!important;visibility:hidden!important;
+}

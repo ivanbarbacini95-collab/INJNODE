@@ -67,6 +67,14 @@
       recoveryTimer = 0;
     }
 
+    // An interrupted iOS fade can leave a transparent visible Home element
+    // even though aria-hidden was already set. Retire only this stale layer.
+    if (dashboardRequested && has(gate, 'visible') &&
+        gate?.getAttribute('aria-hidden') === 'true' &&
+        !menuOpen && !overlayOpen) {
+      gate.classList.remove('visible', 'leaving', 'dashboard-underlay');
+    }
+
     // Clear only obsolete locks after bfcache restore/interrupted transitions.
     if (!menuOpen && has(body, 'menu-overlay-open')) body.classList.remove('menu-overlay-open');
     if (!sectionFrame && has(body, 'inj-section-open')) body.classList.remove('inj-section-open');
@@ -77,8 +85,10 @@
 
     const gateVisible = has(gate, 'visible') && gate?.getAttribute('aria-hidden') === 'false';
     const dashboard = has(body, 'dashboard-scroll-ready');
-    if (dashboard && !gateVisible && has(body, 'entry-gate-open')) {
-      body.classList.remove('entry-gate-open');
+    if (dashboard && !gateVisible && !menuOpen && !overlayOpen) {
+      body.classList.remove('entry-gate-open', 'entry-live-launch',
+        'mode-returning', 'dashboard-home-return', 'dashboard-home-fade',
+        'dashboard-home-instant-return');
     }
     let next = '';
     if (!menuOpen && !overlayOpen) {
@@ -123,6 +133,12 @@
     window.addEventListener('pageshow', refresh, { passive:true });
     window.addEventListener('popstate', refresh, { passive:true });
     document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
+    // WebKit may miss a transition repaint. Repair after a gesture only if
+    // its scroll mode is demonstrably stale; never cancel native touch.
+    document.addEventListener('touchend', () => {
+      if (document.body?.classList.contains('dashboard-scroll-ready') &&
+          root.dataset.injScroll !== 'dashboard') refresh();
+    }, { passive:true });
     refresh();
   }
   window.INJ_SCROLL_GUARD = {
@@ -136,6 +152,9 @@
         homeVisible: !!document.getElementById('entryGate')?.classList.contains('visible'),
         rootOverflowY: getComputedStyle(root).overflowY,
         bodyOverflowY: body ? getComputedStyle(body).overflowY : '',
+        shellOverflowY: document.querySelector('.app-shell') ?
+          getComputedStyle(document.querySelector('.app-shell')).overflowY : '',
+        bodyClasses: body?.className || '',
         scrollTop: doc.scrollTop,
         scrollRange: Math.max(0, doc.scrollHeight - doc.clientHeight)
       };
