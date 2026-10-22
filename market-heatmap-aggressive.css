@@ -1,0 +1,132 @@
+/* INJ Node · Aggressive Trading Terminal · v16.07.27
+   Presentation-only override for the two Heatmap views.
+   Maintains genuine 1H quotes, native gestures and one finite price-change pulse. */
+html[data-inj-market] #marketHeatmap{
+  --arctic-green:#16f5b3;
+  --arctic-red:#ff5076;
+  --arctic-silver:#bdd6e4;
+  --agg-card-top:#182532;
+  --agg-card-bottom:#0c1723;
+}
+/* Titanium/graphite cards no longer receive whole-surface red/green fills.
+   The performance indication lives in the price, sparkline and strong edge bar. */
+html[data-inj-market] #marketHeatmap .heatmap-grid > .heatmap-tile:nth-child(n){
+  background:
+    linear-gradient(160deg,rgba(255,255,255,.040) 0%,transparent 47%),
+    linear-gradient(138deg,var(--agg-card-top) 0%,#111e2b 49%,var(--agg-card-bottom) 100%)!important;
+  border-color:rgba(163,193,213,.23)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(239,250,255,.085),
+    inset 0 -10px 18px rgba(3,11,19,.08),
+    0 4px 12px rgba(0,7,16,.22)!important;
+  padding-right:19px!important;
+  filter:none!important;
+  transform:none!important;
+  transition:border-color .23s ease,box-shadow .23s ease!important;
+}
+html[data-inj-market] #marketHeatmap .heatmap-grid > .heatmap-tile.is-up{
+  --arctic-tone:var(--arctic-green);
+}
+html[data-inj-market] #marketHeatmap .heatmap-grid > .heatmap-tile.is-down{
+  --arctic-tone:var(--arctic-red);
+}
+html[data-inj-market] #marketHeatmap .heatmap-grid > .heatmap-tile.is-flat{
+  --arctic-tone:var(--arctic-silver);
+}
+/* Keep the title and rank clear of the illuminated right edge. */
+html[data-inj-market] #marketHeatmap .heatmap-grid > .heatmap-tile .hm-rank{
+  right:19px!important;
+}
+html[data-inj-market] #marketHeatmap .heatmap-grid > .heatmap-tile .hm-identity{
+  max-width:100%!important;
+}
+html[data-inj-market] #marketHeatmap .heatmap-grid > .heatmap-tile .hm-change{
+  text-shadow:none!important;
+}
+html[data-inj-market] #marketHeatmap .heatmap-grid > .heatmap-tile .hm-spark{
+  opacity:.79!important;
+}
+/* Aggressive, double-core edge: a vivid colored bar, with metallic light
+   through the center and contained glow. No animation at rest. */
+html[data-inj-market] #marketHeatmap .heatmap-grid > .heatmap-tile:nth-child(n)::after{
+  content:""!important;
+  display:block!important;
+  position:absolute!important;
+  left:auto!important;
+  top:7%!important;
+  bottom:7%!important;
+  right:4px!important;
+  width:8px!important;
+  height:auto!important;
+  border:0!important;
+  border-radius:999px!important;
+  z-index:2!important;
+  pointer-events:none!important;
+  background:
+    linear-gradient(to right,
+      color-mix(in srgb,var(--arctic-tone) 70%,#0b1924) 0%,
+      var(--arctic-tone) 27%,
+      color-mix(in srgb,var(--arctic-tone) 52%,white) 62%,
+      var(--arctic-tone) 100%)!important;
+  box-shadow:
+    0 0 6px color-mix(in srgb,var(--arctic-tone) 82%,transparent),
+    0 0 14px color-mix(in srgb,var(--arctic-tone) 43%,transparent),
+    0 0 23px color-mix(in srgb,var(--arctic-tone) 19%,transparent),
+    inset 1px 0 0 rgba(255,255,255,.27)!important;
+  opacity:.88!important;
+  transform:scaleY(1)!important;
+  transform-origin:center!important;
+  filter:none!important;
+  animation:none!important;
+}
+/* One brief data-driven pulse. The parent surface never flashes. */
+@keyframes injAggressiveEdgePulse{
+  0%{opacity:.77;filter:brightness(1);transform:scaleY(.97)}
+  36%{opacity:1;filter:brightness(1.85);transform:scaleY(1.025)}
+  100%{opacity:.88;filter:brightness(1);transform:scaleY(1)}
+}
+html[data-inj-market] #marketHeatmap .heatmap-grid > .heatmap-tile.market-flash-up::after,
+html[data-inj-market] #marketHeatmap .heatmap-grid > .heatmap-tile.market-flash-down::after{
+  animation:injAggressiveEdgePulse .94s cubic-bezier(.19,.12,.24,1) 1 both!important;
+}
+/* No global card glow on pointer movement; use a discreet metallic edge. */
+@media(hover:hover) and (pointer:fine){
+  html[data-inj-market] #marketHeatmap .heatmap-grid > .heatmap-tile:hover{
+    filter:brightness(1.035)!important;
+    border-color:rgba(188,219,235,.38)!important;
+    box-shadow:
+      inset 0 1px 0 rgba(245,253,255,.12),
+      0 6px 16px rgba(0,7,16,.26)!important;
+  }
+}
+html[data-inj-market] #marketHeatmap .heatmap-grid > .heatmap-tile:focus-visible{
+  outline:2px solid #a8eafa!important;
+  outline-offset:2px!important;
+}
+/* Visual label reflects the selected preset, not the previous colorway. */
+html[data-inj-market] #marketHeatmap .map-compact-head::before{
+  content:"AGGRESSIVE TRADING TERMINAL"!important;
+  color:#b9d8e7!important;
+  border-color:rgba(163,198,216,.26)!important;
+  background:linear-gradient(145deg,rgba(120,150,174,.11),rgba(18,32,44,.08))!important;
+}
+@media(max-width:599px){
+  html[data-inj-market] #marketHeatmap .heatmap-grid > .heatmap-tile:nth-child(n){
+    padding-right:13px!important;
+  }
+  html[data-inj-market] #marketHeatmap .heatmap-grid > .heatmap-tile:nth-child(n)::after{
+    top:8%!important;
+    bottom:8%!important;
+    right:3px!important;
+    width:6px!important;
+  }
+  html[data-inj-market] #marketHeatmap .map-compact-head::before{
+    content:"AGGRESSIVE TERMINAL"!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  html[data-inj-market] #marketHeatmap .heatmap-grid > .heatmap-tile.market-flash-up::after,
+  html[data-inj-market] #marketHeatmap .heatmap-grid > .heatmap-tile.market-flash-down::after{
+    animation:none!important;
+  }
+}
