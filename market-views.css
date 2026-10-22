@@ -369,3 +369,64 @@ html[data-inj-market] .heatmap-grid .heatmap-tile{
 @media(prefers-reduced-motion:reduce){
  html[data-inj-market] .heatmap-grid .heatmap-tile{transition:none!important}
 }
+
+
+/* 16.07.10: three legible values on every tile — symbol, performance, price. */
+html[data-inj-market] .heatmap-grid .heatmap-tile .hm-price{
+ display:block!important;max-width:100%;min-width:0;
+ white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
+ color:var(--text)!important;opacity:.86;
+ font-size:clamp(10px,.9vw,13px)!important;font-weight:750!important;
+ line-height:1.14!important;letter-spacing:-.015em;
+ font-variant-numeric:tabular-nums;
+}
+html[data-inj-market] .heatmap-grid .heatmap-tile{
+ gap:4px!important;padding-block:7px!important;
+}
+/* All flashing is driven by received price deltas. No perpetual animations. */
+@keyframes injHeatmapPriceBlink{
+ 0%{opacity:0}
+ 34%{opacity:.35}
+ 100%{opacity:0}
+}
+html[data-inj-market] .heatmap-grid .heatmap-tile.market-flash-up::after,
+html[data-inj-market] .heatmap-grid .heatmap-tile.market-flash-down::after{
+ content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+ border-radius:inherit;
+ background:color-mix(in srgb,var(--positive) 26%,transparent);
+ animation:injHeatmapPriceBlink .75s ease-out both;
+}
+html[data-inj-market] .heatmap-grid .heatmap-tile.market-flash-down::after{
+ background:color-mix(in srgb,var(--negative) 26%,transparent);
+}
+@keyframes injPriceTextUp{
+ 0%,100%{color:var(--text);text-shadow:none}
+ 35%{color:var(--positive);text-shadow:0 0 7px color-mix(in srgb,var(--positive) 38%,transparent)}
+}
+@keyframes injPriceTextDown{
+ 0%,100%{color:var(--text);text-shadow:none}
+ 35%{color:var(--negative);text-shadow:0 0 7px color-mix(in srgb,var(--negative) 38%,transparent)}
+}
+html[data-inj-market] .mp-price-value.market-flash-up{
+ animation:injPriceTextUp .76s ease-out 1 both;
+}
+html[data-inj-market] .mp-price-value.market-flash-down{
+ animation:injPriceTextDown .76s ease-out 1 both;
+}
+@media(max-width:740px){
+ html[data-inj-market] .heatmap-grid{
+  grid-auto-rows:82px!important;
+ }
+ html[data-inj-market] .heatmap-grid .heatmap-tile:nth-child(n){
+  padding:6px 2px!important;gap:4px!important;
+ }
+ html[data-inj-market] .heatmap-grid .heatmap-tile .hm-price{
+  font-size:10px!important;
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ html[data-inj-market] .heatmap-grid .heatmap-tile.market-flash-up::after,
+ html[data-inj-market] .heatmap-grid .heatmap-tile.market-flash-down::after{animation:none!important;content:none!important}
+ html[data-inj-market] .mp-price-value.market-flash-up,
+ html[data-inj-market] .mp-price-value.market-flash-down{animation:none!important}
+}
