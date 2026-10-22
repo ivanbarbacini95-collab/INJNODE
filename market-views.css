@@ -1,5 +1,10 @@
 /* INJ Node · Global Crypto + Heatmap 3-tab terminal · 16.07.08
    No artificial card backgrounds in the asset list. Heatmap tiles share one size. */
+html.market-embedded[data-inj-market]{
+ /* The PWA portal already accounts for the iPhone status-bar safe area. */
+ --inj-header-safe:8px!important;
+ --inj-control-inset:8px!important;
+}
 html[data-inj-market] .tablewrap[hidden],
 html[data-inj-market] #hybridPro[hidden],
 html[data-inj-market] #marketHeatmap[hidden]{display:none!important}
