@@ -6,6 +6,21 @@
  if(!document.getElementById('entryGate'))return;
  const SOUND_KEY='inj_node_feedback_sound_v1';
  const HAPTIC_KEY='inj_node_feedback_haptic_v1';
+ const VOLUME_KEY='inj_node_feedback_volume_v1';
+ const DEFAULT_VOLUME=40; // Standard: matches the original 0.018 peak gain.
+ const volumeInput=()=>document.getElementById('menuFeedbackVolume');
+ const volumeLabel=()=>document.getElementById('menuFeedbackVolumeValue');
+ const volumeTitle=()=>document.getElementById('menuFeedbackVolumeTitle');
+ const volumeHint=()=>document.getElementById('menuFeedbackVolumeHint');
+ const volumeWrap=()=>document.getElementById('menuFeedbackVolumeControl');
+ const volume=()=>{
+  try {
+   const raw=localStorage.getItem(VOLUME_KEY);
+   return raw===null?DEFAULT_VOLUME:Math.max(0,Math.min(100,Math.round(Number(raw)||0)));
+  }catch(_){return DEFAULT_VOLUME}
+ };
+ const writeVolume=value=>{try{localStorage.setItem(VOLUME_KEY,String(value))}catch(_){}};
+ const volumeText=value=>value===DEFAULT_VOLUME?'Standard · '+value+'%':value+'%';
  const soundButton=()=>document.getElementById('menuFeedbackSoundButton');
  const hapticButton=()=>document.getElementById('menuFeedbackHapticButton');
  const read=(key)=>{try{return localStorage.getItem(key)!=='off'}catch(_){return true}};
@@ -15,7 +30,15 @@
  const canVibrate=()=>typeof navigator.vibrate==='function';
  let last=0,audio=null;
  function update(){
-  const snd=soundButton(),hap=hapticButton();
+  const snd=soundButton(),hap=hapticButton(),volumeControl=volumeInput(),volumeDisplay=volumeLabel();
+  const level=volume();
+  if(volumeControl){volumeControl.value=String(level);volumeControl.setAttribute('aria-valuetext',volumeText(level))}
+  if(volumeDisplay)volumeDisplay.textContent=volumeText(level);
+  if(volumeTitle())volumeTitle().textContent=tr('Volume apertura','Opening volume');
+  if(volumeHint())volumeHint().textContent=tr('Regola il tono · trascina per provare','Adjust tone · release to preview');
+  if(volumeWrap())volumeWrap().classList.toggle('is-muted',!read(SOUND_KEY));
+  if(volumeControl)volumeControl.disabled=!read(SOUND_KEY);
+  if(volumeControl)volumeControl.setAttribute('aria-label',tr('Volume suono apertura','Opening sound volume'));
   if(snd){
    const on=read(SOUND_KEY);
    snd.setAttribute('aria-pressed',String(on));
@@ -51,7 +74,10 @@
    oscillator.frequency.setValueAtTime(690,t);
    oscillator.frequency.exponentialRampToValueAtTime(860,t+.072);
    gain.gain.setValueAtTime(.0001,t);
-   gain.gain.exponentialRampToValueAtTime(.018,t+.012);
+   // 40% == old standard volume; ceiling modest to protect device speakers.
+   const peak=Math.max(.0001,Math.min(.045,.045*volume()/100));
+   if(volume()===0)return;
+   gain.gain.exponentialRampToValueAtTime(peak,t+.012);
    gain.gain.exponentialRampToValueAtTime(.0001,t+.105);
    oscillator.connect(gain);gain.connect(audio.destination);
    oscillator.start(t);oscillator.stop(t+.11);
@@ -69,7 +95,7 @@
     event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
   const source=event.target;
   if(!(source instanceof Element))return;
-  const section=source.closest('#entryGate .entry-actions.entry-flat-v44 > .entry-action');
+  const section=source.closest('#entryGate .entry-actions .entry-action');
   if(!section||section.matches('[disabled],[aria-disabled="true"]'))return;
   const current=performance.now();
   if(current-last<190)return;
@@ -84,9 +110,15 @@
   if(!canVibrate())return;
   write(HAPTIC_KEY,!read(HAPTIC_KEY));update();
  });
+ volumeInput()?.addEventListener('input',event=>{
+  const next=Math.max(0,Math.min(100,Math.round(Number(event.target.value)||0)));
+  writeVolume(next);
+  update();
+ });
+ volumeInput()?.addEventListener('change',()=>{playSound()});
  window.addEventListener('injnode:languagechange',update);
  window.addEventListener('storage',event=>{
-  if([SOUND_KEY,HAPTIC_KEY,'inj_node_language_v1'].includes(event.key))update();
+  if([SOUND_KEY,HAPTIC_KEY,VOLUME_KEY,'inj_node_language_v1'].includes(event.key))update();
  });
  update();
 })();
