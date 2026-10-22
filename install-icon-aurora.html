@@ -119,7 +119,7 @@
   }
 </style>
 <link rel="stylesheet" href="navigation.css?v=160090">
-<script defer src="./home-entry-feedback.js?v=160713"></script>
+<script defer src="./home-entry-feedback.js?v=160714"></script>
 <script defer src="navigation.js?v=160318"></script>
 <script defer src="i18n.js?v=160145"></script>
 <script defer src="scroll-guard.js?v=160525"></script>
@@ -312,7 +312,7 @@
 <link rel="stylesheet" href="./app-icon-picker.css?v=160704">
 <script defer src="./app-icon-picker.js?v=160704"></script>
 <link rel="stylesheet" href="./inj-uhd.css?v=160710">
-<link rel="stylesheet" href="./home-entry-feedback.css?v=160713">
+<link rel="stylesheet" href="./home-entry-feedback.css?v=160714">
 </head>
 <body class="boot-loading">
 <div aria-label="Avvio INJ Node" aria-live="polite" aria-atomic="true" class="boot-splash node-pulse-splash" id="bootSplash" role="status">
@@ -423,6 +423,28 @@
 <span class="menu-action-copy"><strong>Privacy</strong><small>Nascondi valori</small></span>
 <span aria-hidden="true" class="menu-action-state"></span>
 </button>
+<button type="button" class="menu-action menu-setting menu-feedback-setting" id="menuFeedbackSoundButton" aria-pressed="true" title="Suono apertura sezioni">
+<span aria-hidden="true" class="menu-action-icon"><svg viewBox="0 0 24 24"><path d="M5 9h4l5-4v14l-5-4H5zM17 9c2 1.6 2 4.4 0 6M19.5 6c3.5 3 3.5 9 0 12"/></svg></span>
+<span class="menu-action-copy"><strong>Suono apertura</strong><small>Breve tono entrando nelle sezioni</small></span>
+<span class="menu-action-value">ON</span>
+</button>
+<div class="menu-feedback-volume" id="menuFeedbackVolumeControl">
+ <div class="menu-feedback-volume-head">
+  <label for="menuFeedbackVolume" id="menuFeedbackVolumeTitle">Volume apertura</label>
+  <output for="menuFeedbackVolume" id="menuFeedbackVolumeValue">Standard · 40%</output>
+ </div>
+ <div class="menu-feedback-volume-slider">
+  <button type="button" id="menuFeedbackVolumeDown" aria-label="Riduci volume" title="Riduci volume">−</button>
+  <input id="menuFeedbackVolume" type="range" min="0" max="100" step="5" value="40" aria-label="Volume suono apertura">
+  <button type="button" id="menuFeedbackVolumeUp" aria-label="Aumenta volume" title="Aumenta volume">+</button>
+ </div>
+ <small id="menuFeedbackVolumeHint">Regola il tono · rilascia per provarlo</small>
+</div>
+<button type="button" class="menu-action menu-setting menu-feedback-setting" id="menuFeedbackHapticButton" aria-pressed="false" title="Vibrazione dove supportata">
+<span aria-hidden="true" class="menu-action-icon"><svg viewBox="0 0 24 24"><rect x="8" y="3.5" width="8" height="17" rx="2"/><path d="M4.5 8v8M19.5 8v8M2 10v4M22 10v4"/></svg></span>
+<span class="menu-action-copy"><strong>Vibrazione breve</strong><small>Quando disponibile sul dispositivo</small></span>
+<span class="menu-action-value">N/D</span>
+</button>
 <div class="theme-control menu-theme-control" id="themeControl">
 <button aria-controls="themePicker" aria-expanded="false" aria-label="Scegli tema" class="menu-action menu-setting" id="themeButton" title="Scegli tema" type="button">
 <span aria-hidden="true" class="menu-action-icon"><svg viewbox="0 0 24 24"><path d="M12 3.5a8.5 8.5 0 1 0 0 17h1.1a1.7 1.7 0 0 0 0-3.4h-.8a1.8 1.8 0 0 1 0-3.6H15a5.5 5.5 0 0 0 0-11h-3Z"></path><circle cx="8" cy="9" r=".7"></circle><circle cx="11" cy="6.8" r=".7"></circle><circle cx="7.2" cy="13" r=".7"></circle></svg></span>
@@ -496,24 +518,7 @@
   <button type="button" class="menu-app-icon-copy" id="appIconCopyLink">Copia link per Safari</button>
  </div>
 </details>
-<button type="button" class="menu-action menu-setting menu-feedback-setting" id="menuFeedbackSoundButton" aria-pressed="true" title="Suono apertura sezioni">
-<span aria-hidden="true" class="menu-action-icon"><svg viewBox="0 0 24 24"><path d="M5 9h4l5-4v14l-5-4H5zM17 9c2 1.6 2 4.4 0 6M19.5 6c3.5 3 3.5 9 0 12"/></svg></span>
-<span class="menu-action-copy"><strong>Suono apertura</strong><small>Breve tono entrando nelle sezioni</small></span>
-<span class="menu-action-value">ON</span>
-</button>
-<div class="menu-feedback-volume" id="menuFeedbackVolumeControl">
- <div class="menu-feedback-volume-head">
-  <label for="menuFeedbackVolume" id="menuFeedbackVolumeTitle">Volume apertura</label>
-  <output for="menuFeedbackVolume" id="menuFeedbackVolumeValue">Standard · 40%</output>
- </div>
- <input id="menuFeedbackVolume" type="range" min="0" max="100" step="5" value="40" aria-label="Volume suono apertura">
- <small id="menuFeedbackVolumeHint">Regola il tono · rilascia per provarlo</small>
-</div>
-<button type="button" class="menu-action menu-setting menu-feedback-setting" id="menuFeedbackHapticButton" aria-pressed="false" title="Vibrazione dove supportata">
-<span aria-hidden="true" class="menu-action-icon"><svg viewBox="0 0 24 24"><rect x="8" y="3.5" width="8" height="17" rx="2"/><path d="M4.5 8v8M19.5 8v8M2 10v4M22 10v4"/></svg></span>
-<span class="menu-action-copy"><strong>Vibrazione breve</strong><small>Quando disponibile sul dispositivo</small></span>
-<span class="menu-action-value">N/D</span>
-</button>
+
     <div class="menu-language-card" id="languageControl" aria-label="Lingua interfaccia">
   <span aria-hidden="true" class="menu-action-icon menu-language-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"></circle><path d="M4 12h16M12 4c2.4 2.2 3.6 4.9 3.6 8S14.4 17.8 12 20M12 4c-2.4 2.2-3.6 4.9-3.6 8s1.2 5.8 3.6 8"></path></svg></span>
   <span class="menu-language-copy"><strong>Lingua</strong><small>Interfaccia</small></span>
