@@ -1,5 +1,6 @@
-const CACHE_NAME = 'inj-node-v16.07.20-chart-tactile-scroll';
+const CACHE_NAME = 'inj-node-v16.07.22-ipad-layout';
 const APP_SHELL = [
+  './dashboard-ipad-layout.css?v=160722',
   './chart-haptics.js?v=160720',
   './chart-haptics.css?v=160720',
   './home-scroll-memory.js?v=160719',
