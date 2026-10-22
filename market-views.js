@@ -195,16 +195,15 @@
   listTiles=next;
   $('mpMetaCount').textContent=tr('Crypto visualizzate: ','Displayed assets: ')+coins.length;
  }
- // The 1H line is filled by market-heatmap-live.js from actual timestamped quotes.
- // Never draw the 7D CoinGecko sparkline into a 1H-labelled chart.
+ // Each card's chart follows the timeframe selected in the Heatmap toolbar.
+ // The renderer supplies verified history and advances the last point in real time.
  function heatSpark(){
   const wrap=document.createElement('span');wrap.className='hm-spark-wrap';
-  const label=document.createElement('small');label.className='hm-spark-timeframe';label.textContent='1H';
   const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
   svg.classList.add('hm-spark');
   svg.setAttribute('viewBox','0 0 100 24');
   svg.setAttribute('preserveAspectRatio','none');svg.setAttribute('aria-hidden','true');
-  wrap.append(label,svg);return wrap;
+  wrap.append(svg);return wrap;
  }
  function tile(coin){
   const v=change(coin,range),node=document.createElement('button');
@@ -343,6 +342,7 @@
   // A coin may have valid 24h data but no 1h/7d/30d history.
   // Rebuild visible tiles on period change instead of retaining black placeholders.
   if(mode==='heatmap')requestRender();
+  window.dispatchEvent(new CustomEvent('injnode:market:heatrange',{detail:{range}}));
  }
  // Flash only actual visible price changes. A short finite pulse, not a permanent glow.
  function priceFlash(element,direction,tile=false){
@@ -417,7 +417,7 @@
   $('marketProSort').setAttribute('aria-label',tr('Ordina Crypto','Sort cryptos'));
   $('heatmapCount').textContent=tr('Crypto visualizzate: ','Displayed assets: ')+mapTiles.size;
   $('heatmapNote').textContent=tr('Verde: rialzo · Rosso: ribasso','Green: up · Red: down');
-  $('heatmapHourSource').textContent=tr('Grafico 1H · campioni ricevuti','1H chart · received quotes');
+  $('heatmapHourSource').textContent=tr('Grafici '+range.toUpperCase()+' · storico reale','Real '+range.toUpperCase()+' price charts');
   $('marketHeading').textContent=section==='favorites'?tr('Preferiti','Favorites'):mode==='heatmap'?'Market Heatmap':'Global Crypto';
   $('mpMetaTitle').innerHTML=section==='favorites'?tr('PREFERITI','FAVORITES')+' <span>· HYBRID PRO</span>':'HYBRID PRO <span>· MARKET WATCH</span>';
   updateFavoritesUI();
