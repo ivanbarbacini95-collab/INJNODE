@@ -2793,6 +2793,32 @@ const state = {
   nativeChartHover: { active: false, t: 0 }
 };
 
+
+/* Morning Brief uses the same verified on-chain summaries and INJ ticker as the Home.
+   No extra wallet RPC or alternative fabricated balance is introduced. */
+window.INJ_MORNING_SOURCE = function () {
+  return {
+    price: state.price,
+    priceAt: state.lastMarketUpdate,
+    change24h: state.change,
+    currency: state.currency,
+    eurRate: state.eurRate,
+    view: state.currentView,
+    wallets: state.wallets.map((wallet) => {
+      const row = state.walletSummaries[wallet.address] || null;
+      const numeric = (key) => row && row[key] !== null && row[key] !== undefined && Number.isFinite(Number(row[key])) ? Number(row[key]) : null;
+      return {
+        address: wallet.address, label: wallet.label,
+        rewards: numeric('rewards'), staked: numeric('staked'),
+        apr: numeric('personalApr'), updated: numeric('updated') || 0
+      };
+    })
+  };
+};
+window.INJ_MORNING_REFRESH = async function () {
+  await Promise.allSettled([loadMarket(), refreshWalletSummaries(true)]);
+};
+
 function number(value) {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : 0;

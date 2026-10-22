@@ -315,6 +315,7 @@
 <link rel="stylesheet" href="./home-entry-feedback.css?v=160719">
 <link rel="stylesheet" href="./dashboard-ipad-layout.css?v=160722">
 <link rel="stylesheet" href="./home-wide-menu-fix.css?v=160734">
+<link rel="stylesheet" href="./morning-brief.css?v=160736">
 </head>
 <body class="boot-loading">
 <div aria-label="Avvio INJ Node" aria-live="polite" aria-atomic="true" class="boot-splash node-pulse-splash" id="bootSplash" role="status">
@@ -425,6 +426,7 @@
 <span class="menu-action-copy"><strong>Privacy</strong><small>Nascondi valori</small></span>
 <span aria-hidden="true" class="menu-action-state"></span>
 </button>
+<button type="button" class="menu-action menu-setting" id="morningBriefMenuButton" title="Riepilogo notturno"><span aria-hidden="true" class="menu-action-icon"><svg viewBox="0 0 24 24"><path d="M20 16.1A8.2 8.2 0 0 1 7.9 4 8.3 8.3 0 1 0 20 16.1Z"></path><path d="M14 5V2m-1.5 1.5h3M19 7V5m-1 1h2"></path></svg></span><span class="menu-action-copy"><strong id="morningBriefMenuTitle">Morning Brief</strong><small id="morningBriefMenuSubtitle">Il riepilogo quando ti svegli</small></span><span class="menu-action-value">↗</span></button>
 <button type="button" class="menu-action menu-setting menu-feedback-setting" id="menuFeedbackSoundButton" aria-pressed="true" title="Suono apertura sezioni">
 <span aria-hidden="true" class="menu-action-icon"><svg viewBox="0 0 24 24"><path d="M5 9h4l5-4v14l-5-4H5zM17 9c2 1.6 2 4.4 0 6M19.5 6c3.5 3 3.5 9 0 12"/></svg></span>
 <span class="menu-action-copy"><strong>Suono apertura</strong><small>Breve tono entrando nelle sezioni</small></span>
@@ -1257,8 +1259,39 @@
 </article>
 </div>
 </div>
+<section id="morningBriefOverlay" class="morning-brief-overlay" role="dialog" aria-modal="true" aria-labelledby="morningBriefTitle" hidden>
+  <div class="morning-brief-backdrop" data-morning-close></div>
+  <article class="morning-brief-card">
+    <header class="morning-brief-header">
+      <div><small>INJ NODE / B CAPITAL GROUP</small><h2 id="morningBriefTitle">Morning Brief</h2><span id="morningBriefTimestamp">—</span></div>
+      <button type="button" id="morningBriefClose" class="morning-brief-close" aria-label="Chiudi riepilogo">×</button>
+    </header>
+    <div class="morning-brief-body">
+      <p id="morningBriefHeadline" class="morning-brief-headline">Il tuo riepilogo INJ</p>
+      <div class="morning-brief-quote">
+        <div><small id="morningBriefPriceLabel">INJ / USDT · LIVE</small><strong id="morningBriefPrice">—</strong></div>
+        <span id="morningBriefChange" class="morning-brief-change">—</span>
+      </div>
+      <div class="morning-brief-stats">
+        <div><small id="morningBriefHighLabel">Massimo dalla notte</small><strong id="morningBriefHigh">—</strong></div>
+        <div><small id="morningBriefLowLabel">Minimo dalla notte</small><strong id="morningBriefLow">—</strong></div>
+      </div>
+      <div class="morning-brief-reward-grid private">
+        <div class="morning-brief-reward-primary"><small id="morningBriefRewardsLabel">REWARD DISPONIBILI ADESSO</small><strong id="morningBriefRewards">—</strong><span id="morningBriefRewardsValue">—</span></div>
+        <div class="morning-brief-reward-secondary"><small id="morningBriefAccruedLabel">MATURATI NELLA NOTTE · STIMA</small><strong id="morningBriefAccrued">—</strong><span id="morningBriefAccruedValue">—</span></div>
+      </div>
+      <p id="morningBriefExplanation" class="morning-brief-explanation">Dati in aggiornamento</p>
+      <div class="morning-brief-options">
+        <label for="morningBriefEnabled" id="morningBriefEnabledLabel">Apri al mattino</label><input id="morningBriefEnabled" type="checkbox" checked>
+        <label for="morningBriefWake" id="morningBriefWakeLabel">Dalle</label><select id="morningBriefWake"><option value="5">05:00</option><option value="6">06:00</option><option value="7" selected>07:00</option><option value="8">08:00</option><option value="9">09:00</option><option value="10">10:00</option><option value="11">11:00</option><option value="12">12:00</option></select>
+      </div>
+    </div>
+    <footer class="morning-brief-footer"><button type="button" id="morningBriefNotify">Attiva avviso</button><button type="button" id="morningBriefRefresh">Aggiorna</button><button type="button" id="morningBriefDone">Chiudi</button></footer>
+  </article>
+</section>
 <div aria-live="polite" class="toast" id="toast" role="status"></div>
 <script defer="" src="app.js?v=16.06.33"></script>
+<script defer src="./morning-brief.js?v=160736"></script>
 <script>
 (function(){
   function bindEntryHubs(){
