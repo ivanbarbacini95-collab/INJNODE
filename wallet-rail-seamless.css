@@ -1,5 +1,5 @@
 /* INJ NODE v16.06.31 — Seamless multi-wallet rail / all themes.
-   The Home wallet carousel is intentionally UNTOUCHED.
+   Home and Dashboard cards use the shared theme surface.
    This targets only Dashboard's #top .wallet-dock + #walletCards.
    No changes to scrolling, click targets or wallet data. */
 html[data-inj-page="index"][data-theme] body .app-shell #top > .wallet-dock,
@@ -39,10 +39,10 @@ html[data-inj-page="index"][data-theme] body .app-shell #top #walletCards > .wal
   filter:none!important;
 }
 html[data-inj-page="index"][data-theme] body .app-shell #top #walletCards > .wallet-mini {
+  background:var(--inj-theme-panel,var(--card-gradient,var(--surface)))!important;
+
   position:relative;
-  background:transparent!important;
-  background-color:transparent!important;
-  background-image:none!important;
+
   -webkit-backdrop-filter:none!important;
   backdrop-filter:none!important;
   filter:none!important;
@@ -61,11 +61,10 @@ html[data-inj-page="index"][data-theme] body .app-shell #top #walletCards > .wal
   backdrop-filter:none!important;
   box-shadow:none!important;
 }
-/* Only the viewed wallet glows: no dark or gray fill even on light themes. */
+/* The viewed wallet keeps the theme card gradient and a subtle accent tint. */
 html[data-inj-page="index"][data-theme] body .app-shell #top #walletCards > .wallet-mini.active {
-  background:transparent!important;
-  background-color:transparent!important;
-  background-image:none!important;
+  background:radial-gradient(ellipse at 94% 0%,color-mix(in srgb,var(--accent) 10%,transparent),transparent 57%),var(--inj-theme-panel,var(--card-gradient,var(--surface)))!important;
+
   border-color:color-mix(in srgb,var(--accent) 88%,var(--line))!important;
   box-shadow:
     0 0 0 1px color-mix(in srgb,var(--accent) 26%,transparent),
@@ -96,7 +95,7 @@ html[data-inj-page="index"][data-theme] body .app-shell #top #walletCards .walle
  display:none!important;
 }
 /* Home carousel uses .entry-wallet-row.selected/.entry-wallet.selected,
-   independent of the Dashboard selection; never modify gesture transforms,
+   independent of Dashboard state; never modify gesture transforms,
    snap positions, horizontal/vertical overflow, padding or row dimensions. */
 html[data-inj-page="index"][data-theme] body #entryGate .entry-wallet-section,
 html[data-inj-page="index"][data-theme] body #entryGate .entry-wallet-section > .entry-wallets,
@@ -123,9 +122,8 @@ html[data-inj-page="index"][data-theme] body #entryGate #entryWallets > .entry-w
  display:none!important;
 }
 html[data-inj-page="index"][data-theme] body #entryGate #entryWallets > .entry-wallet-row > .entry-wallet {
- background:transparent!important;
- background-color:transparent!important;
- background-image:none!important;
+  background:var(--inj-theme-panel,var(--card-gradient,var(--surface)))!important;
+
  border-color:color-mix(in srgb,var(--accent) 24%,var(--line))!important;
  box-shadow:none!important;
  -webkit-box-shadow:none!important;
@@ -133,10 +131,11 @@ html[data-inj-page="index"][data-theme] body #entryGate #entryWallets > .entry-w
  backdrop-filter:none!important;
  transition:border-color .18s ease,box-shadow .18s ease!important;
 }
-/* ONE active glow, on the selected button only. The separate rename
+/* ONE active glow plus theme-colored tile on the selected button. The separate rename
    button and any existing Home wallet ticker layout remain untouched. */
 html[data-inj-page="index"][data-theme] body #entryGate #entryWallets > .entry-wallet-row.selected > .entry-wallet.selected {
- background:color-mix(in srgb,var(--accent) 3%,transparent)!important;
+  background:radial-gradient(ellipse at 94% 0%,color-mix(in srgb,var(--accent) 10%,transparent),transparent 57%),var(--inj-theme-panel,var(--card-gradient,var(--surface)))!important;
+
  border-color:color-mix(in srgb,var(--accent) 90%,var(--line))!important;
  box-shadow:
    0 0 0 1px color-mix(in srgb,var(--accent) 24%,transparent),

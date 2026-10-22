@@ -1,5 +1,5 @@
 /* INJ Node v16.06.30 — Theme-aware Dashboard wallet selection.
-   No enclosing dark rectangle for multi-wallet lists. Pure presentation:
+   Theme-colored individual tiles; no enclosing wallet rail rectangle. Pure presentation:
    no scroll rules, touch handlers, wallet calculations or theme overrides. */
 html[data-inj-page="index"][data-theme] body .app-shell main#top > section.wallet-dock,
 html[data-inj-page="index"][data-theme] body .app-shell main#top > section.wallet-dock > .saved-wallets,
@@ -24,13 +24,13 @@ html[data-inj-page="index"][data-theme] body .app-shell main#top > section.walle
   content:none!important;
   display:none!important;
 }
-/* Unselected wallet items sit directly on the theme background. */
+/* Unselected wallet cards share the same gradient as other dashboard cards. */
 html[data-inj-page="index"][data-theme] body .app-shell main#top #walletCards > .wallet-mini {
+  background:var(--inj-theme-panel,var(--card-gradient,var(--surface)))!important;
+
   min-width:0;
   box-sizing:border-box;
-  background:transparent!important;
-  background-color:transparent!important;
-  background-image:none!important;
+
   border:1px solid color-mix(in srgb,var(--accent) 13%,var(--line))!important;
   box-shadow:none!important;
   -webkit-box-shadow:none!important;
@@ -38,12 +38,10 @@ html[data-inj-page="index"][data-theme] body .app-shell main#top #walletCards > 
   backdrop-filter:none!important;
   transition:border-color .2s ease,background-color .2s ease,box-shadow .2s ease!important;
 }
-/* The selected wallet is visually distinct across all 12 themes, including
-   light themes: theme semantic accent drives its glow, never a dark inset. */
+/* Selected wallet keeps its own theme gradient plus an accent glow. */
 html[data-inj-page="index"][data-theme] body .app-shell main#top #walletCards > .wallet-mini.active {
-  background:color-mix(in srgb,var(--accent) 4%,transparent)!important;
-  background-color:color-mix(in srgb,var(--accent) 4%,transparent)!important;
-  background-image:none!important;
+  background:radial-gradient(ellipse at 94% 0%,color-mix(in srgb,var(--accent) 10%,transparent),transparent 57%),var(--inj-theme-panel,var(--card-gradient,var(--surface)))!important;
+
   border-color:color-mix(in srgb,var(--accent) 82%,var(--line))!important;
   box-shadow:
     0 0 0 1px color-mix(in srgb,var(--accent) 25%,transparent),
