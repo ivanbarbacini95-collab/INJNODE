@@ -269,6 +269,8 @@ async function startStreams(){
  if(document.hidden||!state.coins.length)return;
  const available=await refreshBinancePairs();
  if(generation!==streamGeneration||document.hidden)return;
+ // A failed verification is still a resolved attempt: allow CoinGecko fallback.
+ state.marketPairVerificationResolved=true;
  const symbolCounts=new Map();
  for(const coin of state.coins){
   const symbol=String(coin.symbol||'').toUpperCase();
@@ -301,7 +303,7 @@ async function startStreams(){
 }
 // Single data source for list and heatmap: no parallel network feed.
 window.INJ_MARKET_VIEW_API={getCoins:()=>state.coins,getCurrency:()=>state.currency,formatMoney:money,formatPercent:pct,getChange:change,open:detail,switchCurrency,
- getPairStatus:()=>state.binancePairs===null?'pending':'ready',
+ getPairStatus:()=>state.marketPairVerificationResolved?'ready':'pending',
  getVerifiedPair:coin=>{const pair=String(coin?.symbol||'').toUpperCase()+'USDT';return state.pairCoins.get(pair)===coin?pair:null;}};
 // Shared read-only observation: this does not trigger additional network calls.
 window.INJ_MARKET_READONLY_SNAPSHOT=()=>({
