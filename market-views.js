@@ -35,7 +35,7 @@
  let favorites=readFavorites();
  const persistFavorites=()=>{try{localStorage.setItem(favoritesKey,JSON.stringify([...favorites.values()]))}catch(_){}};
  let section='global',mode='list',range=rangeChoices.includes(read())?read():'24h',
-     favoriteLayout=readLocalFavoriteMode();
+     favoriteLayout=readLocalFavoriteMode(),favoritesEditing=false,pendingRemovalId=null,lastRemoved=null,undoTimer=null;
  function readLocalFavoriteMode(){
   try{return localStorage.getItem(favoriteModeKey)==='heatmap'?'heatmap':'list'}catch(_){return 'list'}
  }
@@ -137,6 +137,23 @@
  function updateFavoritesUI(){
   const size=favorites.size,count=$('injFavoriteTabCount');
   if(count){count.textContent=String(size);count.hidden=size===0;}
+  if(section!=='favorites'||favoriteLayout!=='list'||size===0)favoritesEditing=false;
+  const manage=$('marketFavoritesManage');
+  if(manage){
+   manage.hidden=section!=='favorites'||favoriteLayout!=='list'||size===0;
+   manage.textContent=favoritesEditing?tr('Fine','Done'):tr('Gestisci','Manage');
+   manage.setAttribute('aria-pressed',String(favoritesEditing));
+  }
+  favControls.classList.toggle('is-editing',favoritesEditing);
+  list.classList.toggle('favorites-readonly',section==='favorites'&&!favoritesEditing);
+  const undoButton=$('marketFavoritesUndoButton');
+  if(undoButton)undoButton.textContent=tr('Annulla','Undo');
+  const confirmTitle=$('marketFavoriteConfirmTitle');
+  if(confirmTitle)confirmTitle.textContent=tr('Rimuovere dai preferiti?','Remove from favorites?');
+  const cancelButton=$('marketFavoriteConfirmCancel');
+  if(cancelButton)cancelButton.textContent=tr('Annulla','Cancel');
+  const removeButton=$('marketFavoriteConfirmRemove');
+  if(removeButton)removeButton.textContent=tr('Rimuovi','Remove');
   $('marketFavoritesHeading').textContent=tr('I tuoi preferiti','Your favorites');
   $('marketFavoritesStatus').textContent=size
    ?size+' '+tr(size===1?'crypto salvata':'crypto salvate',size===1?'saved crypto':'saved cryptos')+' · '+tr('su questo dispositivo','on this device')
@@ -164,15 +181,73 @@
   if(section==='favorites')requestRender();
   else document.querySelectorAll('[data-favorite-id]').forEach(updateFavoriteButton);
  }
+ function setFavoritesEditing(enabled){
+  favoritesEditing=Boolean(enabled)&&section==='favorites'&&favoriteLayout==='list'&&favorites.size>0;
+  updateFavoritesUI();
+  requestRender();
+ }
+ const confirmation=$('marketFavoriteConfirm');
+ function hideFavoriteUndo(){
+  if(undoTimer){clearTimeout(undoTimer);undoTimer=null;}
+  lastRemoved=null;
+  const banner=$('marketFavoritesUndo');
+  if(banner)banner.hidden=true;
+ }
+ function showFavoriteUndo(item,index){
+  hideFavoriteUndo();
+  lastRemoved={item,index};
+  const message=$('marketFavoritesUndoText'),banner=$('marketFavoritesUndo');
+  if(message)message.textContent=tr('Rimossa dai preferiti: ','Removed from favorites: ')+item.name+' ('+String(item.symbol).toUpperCase()+')';
+  if(banner)banner.hidden=false;
+  undoTimer=setTimeout(hideFavoriteUndo,8000);
+ }
+ function undoFavoriteRemoval(){
+  const removed=lastRemoved;
+  if(!removed)return;
+  hideFavoriteUndo();
+  if(favorites.has(removed.item.id))return;
+  const entries=[...favorites.entries()];
+  entries.splice(Math.max(0,Math.min(removed.index,entries.length)),0,[removed.item.id,removed.item]);
+  favorites=new Map(entries);
+  persistFavorites();
+  updateFavoritesUI();
+  requestRender();
+ }
+ function finishFavoriteRemoval(){
+  const id=pendingRemovalId;
+  pendingRemovalId=null;
+  if(confirmation?.open)confirmation.close();
+  if(!id||!favorites.has(id))return;
+  const item=favorites.get(id),index=[...favorites.keys()].indexOf(id);
+  favorites.delete(id);
+  persistFavorites();
+  updateFavoritesUI();
+  requestRender();
+  showFavoriteUndo(item,index);
+ }
+ function requestFavoriteRemoval(id){
+  if(section!=='favorites'||favoriteLayout!=='list'||!favoritesEditing||!favorites.has(id))return;
+  const item=favorites.get(id);
+  pendingRemovalId=id;
+  const description=tr('Vuoi rimuovere ','Do you want to remove ')+item.name+' ('+String(item.symbol).toUpperCase()+')'+tr(' dalla lista dei preferiti?',' from your favorites list?');
+  const target=$('marketFavoriteConfirmText');
+  if(target)target.textContent=description;
+  if(confirmation?.showModal){
+   if(!confirmation.open)confirmation.showModal();
+  }else if(window.confirm(description)){
+   finishFavoriteRemoval();
+  }else pendingRemovalId=null;
+ }
  function favoriteRemoveHtml(coin){
+  if(!favoritesEditing)return '';
   const label=tr('Rimuovi dai preferiti: ','Remove from favorites: ')+coin.name+' ('+String(coin.symbol||'').toUpperCase()+')';
-  return '<button type="button" class="market-favorite-remove" data-favorite-id="'+escape(coin.id)+'" data-favorite-name="'+escape(coin.name)+'" data-favorite-symbol="'+escape(coin.symbol)+'" aria-label="'+escape(label)+'" title="'+escape(label)+'" aria-pressed="true">×</button>';
+  return '<button type="button" class="market-favorite-remove" data-favorite-id="'+escape(coin.id)+'" aria-label="'+escape(label)+'" title="'+escape(label)+'"><span aria-hidden="true">−</span></button>';
  }
  function rowHtml(coin){
   const chart=spark(coin);
   const rank=finite(coin.market_cap_rank)?'#'+num(coin.market_cap_rank):'—';
   const symbol=String(coin.symbol||'').toUpperCase();
-  return '<div class="market-favorite-row"><button type="button" class="mp-row" data-coin="'+escape(coin.id)+'" data-previous-price="'+escape(coin.current_price)+'" aria-label="'+escape(coin.name+' '+symbol)+'">'+
+  return '<div class="market-favorite-row'+(section==='favorites'&&!favoritesEditing?' is-readonly':'')+'"><button type="button" class="mp-row" data-coin="'+escape(coin.id)+'" data-previous-price="'+escape(coin.current_price)+'" aria-label="'+escape(coin.name+' '+symbol)+'">'+
   '<span class="mp-identity"><span class="mp-rank">'+rank+'</span>'+(String(coin.image||'').trim()?'<img loading="lazy" referrerpolicy="no-referrer" src="'+escape(coin.image)+'" alt="">':'')+'<span class="mp-name"><strong>'+escape(coin.name)+'</strong><small>'+escape(symbol)+'</small></span></span>'+
   '<span class="mp-price"><strong class="mp-price-value">'+escape(money(coin.current_price))+'</strong><small class="mp-mobile-label">'+escape(money(coin.market_cap,true))+' Cap</small></span>'+
   '<span class="mp-change mp-hour">'+pctHtml(coin,'1h')+'</span>'+
@@ -420,6 +495,11 @@
   const b=e.target.closest('[data-favorite-mode]');
   if(b)setFavoriteLayout(b.dataset.favoriteMode);
  });
+ $('marketFavoritesManage')?.addEventListener('click',()=>setFavoritesEditing(!favoritesEditing));
+ $('marketFavoritesUndoButton')?.addEventListener('click',undoFavoriteRemoval);
+ $('marketFavoriteConfirmCancel')?.addEventListener('click',()=>confirmation?.close());
+ $('marketFavoriteConfirmRemove')?.addEventListener('click',finishFavoriteRemoval);
+ confirmation?.addEventListener('close',()=>{pendingRemovalId=null;});
  window.addEventListener('storage',e=>{
   if(e.key===favoritesKey){favorites=readFavorites();updateFavoritesUI();requestRender();}
   if(e.key===favoriteModeKey){favoriteLayout=readLocalFavoriteMode();if(section==='favorites')setView('favorites');}
@@ -430,7 +510,13 @@
   if(image?.tagName==='IMG'&&image.closest('.mp-identity'))image.remove();
  },true);
  function onAssetClick(e){
-  const favorite=e.target.closest('[data-favorite-id]');
+  const remove=e.target.closest('.market-favorite-remove');
+  if(remove){
+   e.preventDefault();
+   requestFavoriteRemoval(remove.dataset.favoriteId);
+   return;
+  }
+  const favorite=e.target.closest('.market-favorite-toggle');
   if(favorite){
    e.preventDefault();
    toggleFavorite(favorite.dataset.favoriteId,favorite.dataset.favoriteName,favorite.dataset.favoriteSymbol);

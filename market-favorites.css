@@ -154,3 +154,74 @@ html[data-inj-market] .market-favorite-remove:focus-visible{
 @media(prefers-reduced-motion:reduce){
  html[data-inj-market] .market-favorite-toggle{transition:none!important}
 }
+
+/* Favorites safe editing: read-only list until Gestisci/Manage is selected. */
+html[data-inj-market] #marketFavoritesManage[hidden],
+html[data-inj-market] #marketFavoritesUndo[hidden]{display:none!important}
+html[data-inj-market] .market-favorites-actions{display:flex;align-items:center;gap:8px;min-width:0}
+html[data-inj-market] #marketFavoritesManage{
+ min-height:40px;padding:8px 14px;white-space:nowrap;border-radius:10px;
+ border:1px solid color-mix(in srgb,var(--accent) 32%,var(--line));
+ background:color-mix(in srgb,var(--panel) 77%,transparent);
+ color:var(--text);font:inherit;font-size:11px;font-weight:800;cursor:pointer;touch-action:manipulation;
+}
+html[data-inj-market] #marketFavoritesManage[aria-pressed="true"]{
+ color:var(--accent,var(--text));background:color-mix(in srgb,var(--accent) 14%,var(--panel));
+}
+html[data-inj-market] #marketFavoritesManage:focus-visible,
+html[data-inj-market] #marketFavoritesUndoButton:focus-visible{
+ outline:2px solid var(--accent);outline-offset:2px
+}
+html[data-inj-market] .market-favorite-row.is-readonly{grid-template-columns:minmax(0,1fr)}
+html[data-inj-market] #hybridPro.favorites-readonly .mp-heading{padding-right:8px!important}
+html[data-inj-market] .market-favorite-remove{
+ width:34px;height:36px;color:#e38b93;border-radius:10px;
+ background:color-mix(in srgb,#e65b74 7%,transparent);
+}
+html[data-inj-market] .market-favorite-remove span{
+ display:grid;place-items:center;width:19px;height:19px;border:1.6px solid currentColor;
+ border-radius:50%;font-size:17px;font-weight:750;line-height:1
+}
+html[data-inj-market] .market-favorites-undo{
+ display:flex;align-items:center;justify-content:space-between;gap:12px;
+ flex:1 1 100%;min-width:0;padding:9px 12px;border-radius:10px;
+ border:1px solid color-mix(in srgb,var(--accent) 25%,var(--line));
+ background:color-mix(in srgb,var(--accent) 8%,var(--panel));
+ color:var(--text);font-size:11px;font-weight:650;
+}
+html[data-inj-market] #marketFavoritesUndoButton{
+ flex:0 0 auto;padding:7px 11px;border:1px solid var(--accent);border-radius:8px;
+ background:transparent;color:var(--accent);font:inherit;font-size:11px;font-weight:800;cursor:pointer;
+}
+html[data-inj-market] .market-favorite-confirm{
+ position:fixed;inset:0;margin:auto;box-sizing:border-box;
+ width:min(420px,calc(100vw - 32px));max-width:calc(100vw - 32px);
+ max-height:calc(100dvh - 32px);padding:0;border-radius:18px;
+ border:1px solid color-mix(in srgb,var(--accent) 27%,var(--line));
+ background:var(--panel,#0b1730);color:var(--text,#f4f7ff);
+ box-shadow:0 25px 85px rgba(0,0,0,.55);
+}
+html[data-inj-market] .market-favorite-confirm::backdrop{
+ background:rgba(2,7,20,.77);backdrop-filter:blur(5px)
+}
+html[data-inj-market] .market-favorite-confirm-inner{padding:23px;display:grid;gap:14px}
+html[data-inj-market] .market-favorite-confirm h2{margin:0;font-size:18px;line-height:1.35}
+html[data-inj-market] .market-favorite-confirm p{margin:0;font-size:13px;color:var(--muted);line-height:1.6}
+html[data-inj-market] .market-favorite-confirm-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:4px}
+html[data-inj-market] .market-favorite-confirm-actions button{
+ min-height:42px;padding:9px 17px;border-radius:10px;
+ font:inherit;font-size:12px;font-weight:800;cursor:pointer;touch-action:manipulation;
+ border:1px solid var(--line);background:transparent;color:var(--text);
+}
+html[data-inj-market] #marketFavoriteConfirmRemove{
+ background:color-mix(in srgb,#de536b 22%,var(--panel));border-color:#bb5c6a;color:var(--text)
+}
+html[data-inj-market] .market-favorite-confirm-actions button:focus-visible{
+ outline:2px solid var(--accent);outline-offset:2px
+}
+@media(max-width:740px){
+ html[data-inj-market] .market-favorites-actions{width:100%}
+ html[data-inj-market] .market-favorites-actions .market-favorites-switch{width:auto;flex:1;min-width:0}
+ html[data-inj-market] #marketFavoritesManage{min-height:44px;padding:9px 13px}
+ html[data-inj-market] .market-favorite-row.is-readonly{grid-template-columns:minmax(0,1fr)}
+}
