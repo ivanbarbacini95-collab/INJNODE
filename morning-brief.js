@@ -19,7 +19,7 @@
  const hhmm=t=>new Date(t).toLocaleTimeString(lang()?'en-GB':'it-IT',{hour:'2-digit',minute:'2-digit'});
  const nightStart=(timestamp=now())=>{
   const start=new Date(timestamp);start.setHours(23,0,0,0);
-  if(timestamp<start.getTime())start.setDate(start.getDate()-1);
+  if(new Date(timestamp).getHours()<20)start.setDate(start.getDate()-1);
   return start.getTime();
  };
  const fmtPrice=(usd,data)=>{
@@ -162,8 +162,10 @@
    settings.shown=dateKey(new Date());save(STORE,settings);
    if(typeof Notification!=='undefined'&&Notification.permission==='granted'&&!document.body.classList.contains('privacy-on')){
     const data=source(),price=data?.price>0&&now()-(data?.priceAt||0)<120000?fmtPrice(data.price,data):'—';
+    const walletSet=freshWallets(data);
+    const rewardText=walletSet.complete?fmtInj(walletSet.validRows.reduce((sum,w)=>sum+w.rewards,0)):'—';
     navigator.serviceWorker?.ready.then(reg=>reg.showNotification('INJ Morning Brief',{
-     body:tr('Buongiorno! INJ live: ','Good morning! INJ live: ')+price+tr(' · Apri INJ Node per i reward.',' · Open INJ Node for rewards.'),
+     body:tr('INJ live: ','INJ live: ')+price+tr(' · Reward disponibili: ',' · Available rewards: ')+rewardText,
      tag:'inj-morning-'+settings.shown,icon:'./icons/inj-node-minimal-192-v16.06.29.png'
     })).catch(()=>{});
    }
