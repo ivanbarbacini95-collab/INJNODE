@@ -52,44 +52,46 @@
 #headerMenuPanel #menuFeedbackVolumeHint{
  font-size:.69rem;line-height:1.3;color:var(--muted);
 }
+/* Visible, robust native slider. Keep iOS WebKit's thumb instead of suppressing it. */
+#headerMenuPanel .menu-feedback-volume-slider{
+ display:flex!important;align-items:center!important;gap:10px!important;
+ width:100%!important;min-width:0!important;
+}
+#headerMenuPanel .menu-feedback-volume-slider button{
+ flex:0 0 36px!important;
+ width:36px!important;height:36px!important;
+ display:grid!important;place-items:center!important;
+ border-radius:10px!important;
+ border:1px solid var(--line,rgba(180,190,200,.26))!important;
+ background:color-mix(in srgb,var(--accent,#7dd4e4) 12%,var(--panel,#101e30))!important;
+ color:var(--text)!important;
+ font-size:21px!important;font-weight:650!important;line-height:1!important;
+ padding:0!important;margin:0!important;
+ touch-action:manipulation;
+}
+#headerMenuPanel .menu-feedback-volume-slider button:active{
+ background:color-mix(in srgb,var(--accent,#7dd4e4) 24%,var(--panel,#101e30))!important;
+}
 #headerMenuPanel #menuFeedbackVolume{
- display:block;width:100%;max-width:100%;height:26px;
- margin:0!important;padding:0!important;
- background:transparent!important;
+ display:block!important;visibility:visible!important;opacity:1!important;
+ flex:1 1 auto!important;width:100%!important;min-width:0!important;
+ height:36px!important;max-width:100%!important;
+ margin:0!important;padding:0 2px!important;
+ appearance:auto!important;-webkit-appearance:auto!important;
+ accent-color:var(--accent,#69bffa)!important;
  border:0!important;box-shadow:none!important;
- outline-offset:4px;
- cursor:pointer;
- touch-action:pan-x;
- accent-color:var(--accent);
- -webkit-appearance:none;appearance:none;
-}
-#headerMenuPanel #menuFeedbackVolume::-webkit-slider-runnable-track{
- height:5px;border-radius:999px;
  background:linear-gradient(90deg,
-  var(--accent) 0%,var(--accent) var(--volume-percent),
-  color-mix(in srgb,var(--line) 90%,var(--muted)) var(--volume-percent),
-  color-mix(in srgb,var(--line) 90%,var(--muted)) 100%);
+  var(--accent,#69bffa) 0%,var(--accent,#69bffa) var(--volume-percent,40%),
+  color-mix(in srgb,var(--line,#708090) 82%,var(--muted,#8a9bad)) var(--volume-percent,40%),
+  color-mix(in srgb,var(--line,#708090) 82%,var(--muted,#8a9bad)) 100%) center / 100% 5px no-repeat!important;
+ cursor:pointer;touch-action:pan-x;
 }
-#headerMenuPanel #menuFeedbackVolume::-webkit-slider-thumb{
- -webkit-appearance:none;appearance:none;
- width:18px;height:18px;margin-top:-6.5px;
- border-radius:50%;background:var(--accent);
- border:3px solid var(--panel,var(--bg));
- box-shadow:0 0 0 1px color-mix(in srgb,var(--accent) 45%,var(--line));
-}
-#headerMenuPanel #menuFeedbackVolume::-moz-range-track{
- height:5px;border-radius:999px;
- background:color-mix(in srgb,var(--line) 90%,var(--muted));
-}
-#headerMenuPanel #menuFeedbackVolume::-moz-range-progress{
- height:5px;border-radius:999px;background:var(--accent);
-}
-#headerMenuPanel #menuFeedbackVolume::-moz-range-thumb{
- width:15px;height:15px;border-radius:50%;
- background:var(--accent);
- border:3px solid var(--panel,var(--bg));
-}
+#headerMenuPanel #menuFeedbackVolume:focus-visible{outline:2px solid var(--accent,#69bffa)!important;outline-offset:3px}
 #headerMenuPanel #menuFeedbackVolumeControl.is-muted{
  opacity:.62;
 }
 #headerMenuPanel #menuFeedbackVolume:disabled{cursor:not-allowed}
+
+#headerMenuPanel #menuFeedbackVolumeControl.is-muted .menu-feedback-volume-slider button{
+ opacity:.48!important;pointer-events:none!important;
+}
