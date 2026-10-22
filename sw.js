@@ -1,11 +1,12 @@
-const CACHE_NAME = 'inj-node-v16.07.18-system-silent-audio';
+const CACHE_NAME = 'inj-node-v16.07.19-home-scroll-native-haptic-test';
 const APP_SHELL = [
-  './home-entry-feedback.js?v=160718',
-  './home-entry-feedback.css?v=160714',
+  './home-scroll-memory.js?v=160719',
+  './home-entry-feedback.js?v=160719',
+  './home-entry-feedback.css?v=160719',
   './inj-uhd.css?v=160710',
   './navigation.css?v=160090',
   './navigation.css?v=160080',
-  './navigation.js?v=160318',
+  './navigation.js?v=160719',
   // Standalone sections still request these legacy cache keys.
   './navigation.css?v=160074',
   './',
@@ -76,7 +77,7 @@ const APP_SHELL = [
   './comparison.css?v=160095',
   './comparison-ab.css?v=160095',
   './comparison.js?v=160095',
-  './market-portal.js?v=160625',
+  './market-portal.js?v=160719',
   './market-lang.js?v=160082',
   './market.css?v=160082',
   './market.js?v=160713',
@@ -112,7 +113,7 @@ const APP_SHELL = [
   './viewport.css?v=16.00.74',
   './top-clarity.css?v=16.00.88',
   './style.css?v=16.01.44',
-  './app.js?v=16.06.32',
+  './app.js?v=16.06.33',
   './i18n.js?v=160145',
   './scroll-guard.js?v=160525',
   './live-charts.html',
