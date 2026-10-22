@@ -1,6 +1,6 @@
-const CACHE_NAME = 'inj-node-v16.07.17-market-blank-asset-cleanup';
+const CACHE_NAME = 'inj-node-v16.07.18-system-silent-audio';
 const APP_SHELL = [
-  './home-entry-feedback.js?v=160715',
+  './home-entry-feedback.js?v=160718',
   './home-entry-feedback.css?v=160714',
   './inj-uhd.css?v=160710',
   './navigation.css?v=160090',
