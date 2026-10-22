@@ -15,7 +15,12 @@ const variants={
 const KEY='inj_node_app_icon_v1',item=id=>document.getElementById(id);
 const read=()=>{try{return localStorage.getItem(KEY)}catch(_){return null}};
 const save=id=>{try{localStorage.setItem(KEY,id)}catch(_){}};
-let selected=Object.hasOwn(variants,read())?read():'minimal';
+// Static install routes contain the complete application with their own
+// manifest and apple-touch-icon. Keep that icon stable, even when Safari's
+// saved preference differs from the source PWA's preference.
+const installMatch=(location.pathname||'').match(/\/install-icon-(minimal|classic|aurora|pulse)\.html$/);
+const installedStyle=installMatch?.[1]||null;
+let selected=installedStyle||(Object.hasOwn(variants,read())?read():'minimal');
 const lang=()=>root.lang==='en'?'en':'it';
 function text(id,value){const el=item(id);if(el&&el.textContent!==value)el.textContent=value}
 function apply(){
@@ -28,14 +33,21 @@ function apply(){
  text('appIconTitle',english?'App icon':'Icona app');
  text('appIconSubtitle',data.title+' · '+(english?'choose style':'scegli stile'));
  text('appIconNote',english?
-  'iPhone cannot change an existing Home Screen app icon automatically. Open the dedicated page in Safari and add INJ Node to your Home Screen again. Back up locally stored wallets and settings before replacing an installation.':
-  'Su iPhone l’icona già installata non cambia automaticamente. Apri la pagina dedicata in Safari e aggiungi di nuovo INJ Node alla Home. Salva prima i wallet e le impostazioni memorizzati solo nel dispositivo.');
- text('appIconInstallText',english?'Open selected icon installation page':'Apri pagina per installare l’icona');
+  'Open INJ Node in Safari with your selected icon, then use Share → Add to Home Screen. Existing icons cannot change automatically. Keep your saved wallets and settings before replacing an installation.':
+  'Apri INJ Node in Safari con l’icona scelta, poi usa Condividi → Aggiungi alla schermata Home. L’icona attuale non cambia automaticamente. Conserva i wallet e le impostazioni locali prima di sostituire la PWA.');
+ text('appIconInstallText',english?'Open INJ Node in browser':'Apri INJ Node nel browser');
+ text('appIconCopyLink',english?'Copy link for Safari':'Copia link per Safari');
  const link=item('appIconInstallLink');
- if(link)link.href='./install-icon-'+selected+'.html';
+ if(link){
+  link.href='./install-icon-'+selected+'.html';
+  link.target='_blank';
+  link.rel='noopener noreferrer external';
+ }
  host.querySelector('#appIconChoices')?.setAttribute('aria-label',english?'App icon styles':'Stili icona app');
- // Update metadata of the open Safari page. A static per-icon install page
- // exists because iOS may snapshot apple-touch-icon before runtime updates.
+ // A browser installation route MUST keep its statically declared icon.
+ // Otherwise the active PWA's stored preference could overwrite the chosen
+ // icon before Safari captures the Add to Home Screen preview.
+ if(installedStyle)return;
  const apple=document.querySelector('link[rel="apple-touch-icon"]');
  if(apple)apple.href='./icons/'+data.png180;
  const favicon=document.querySelector('link[rel="icon"][type="image/png"]');
@@ -45,6 +57,22 @@ function apply(){
   if(data.svg){svg.href='./icons/'+data.svg;svg.disabled=false;svg.type='image/svg+xml'}
   else {svg.remove();}
  }
+}
+const copyButton=item('appIconCopyLink');
+if(copyButton){
+ copyButton.addEventListener('click',async()=>{
+  const link=item('appIconInstallLink');
+  if(!link)return;
+  const url=new URL(link.getAttribute('href')||link.href,location.href).href;
+  const english=lang()==='en';
+  try{
+   await navigator.clipboard.writeText(url);
+   copyButton.textContent=english?'Link copied — open in Safari':'Link copiato — aprilo in Safari';
+  }catch(_){
+   // Older standalone WebKit environments can deny clipboard writes.
+   window.prompt(english?'Copy and open this URL in Safari':'Copia questo link e aprilo in Safari',url);
+  }
+ });
 }
 for(const button of host.querySelectorAll('[data-app-icon]')){
  button.addEventListener('click',()=>{

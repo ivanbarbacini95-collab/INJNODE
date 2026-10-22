@@ -307,8 +307,8 @@
 <link rel="icon" type="image/svg+xml" href="./icons/inj-node-minimal-v16.06.29.svg">
 <link rel="stylesheet" href="./wallet-selection-glow.css?v=160701">
 <link rel="stylesheet" href="./wallet-rail-seamless.css?v=160701">
-<link rel="stylesheet" href="./app-icon-picker.css?v=160703">
-<script defer src="./app-icon-picker.js?v=160703"></script>
+<link rel="stylesheet" href="./app-icon-picker.css?v=160704">
+<script defer src="./app-icon-picker.js?v=160704"></script>
 </head>
 <body class="boot-loading">
 <div aria-label="Avvio INJ Node" aria-live="polite" aria-atomic="true" class="boot-splash node-pulse-splash" id="bootSplash" role="status">
@@ -484,11 +484,12 @@
     <img src="./icons/inj-node-pulse-180-v16.07.03.png" width="52" height="52" loading="lazy" alt=""><span>Pulse</span><i aria-hidden="true"></i>
    </button>
   </div>
-  <p class="menu-app-icon-note" id="appIconNote">Su iPhone l'icona già installata non cambia automaticamente. Per usare quella scelta apri la pagina dedicata in Safari e aggiungi nuovamente INJ Node alla Home.</p>
-  <a class="menu-app-icon-install" id="appIconInstallLink" href="./install-icon-minimal.html" target="_blank" rel="noopener">
-   <span id="appIconInstallText">Apri pagina per installare l'icona</span>
+  <p class="menu-app-icon-note" id="appIconNote">L'icona già installata non cambia da sola. Apri INJ Node in Safari con il nuovo logo, quindi usa Condividi → Aggiungi alla schermata Home.</p>
+  <a class="menu-app-icon-install" id="appIconInstallLink" href="./install-icon-minimal.html" target="_blank" rel="noopener noreferrer external">
+   <span id="appIconInstallText">Apri INJ Node nel browser</span>
    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5h11v11m0-11L8 16M5 9v10h10"></path></svg>
   </a>
+  <button type="button" class="menu-app-icon-copy" id="appIconCopyLink">Copia link per Safari</button>
  </div>
 </details>
     <div class="menu-language-card" id="languageControl" aria-label="Lingua interfaccia">

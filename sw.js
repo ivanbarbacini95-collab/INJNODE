@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.07.03-switchable-app-icon';
+const CACHE_NAME = 'inj-node-v16.07.04-install-full-app-browser';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160080',
@@ -80,16 +80,16 @@ const APP_SHELL = [
   './market-pro.css?v=160108',
   './market-pro.js?v=160108',
   './manifest.webmanifest?v=16.06.29',
-  './app-icon-picker.css?v=160703',
-  './app-icon-picker.js?v=160703',
+  './app-icon-picker.css?v=160704',
+  './app-icon-picker.js?v=160704',
   './install-icon-minimal.html',
-  './manifest-icon-minimal.webmanifest?v=160703',
+  './manifest-icon-minimal.webmanifest?v=160704',
   './install-icon-classic.html',
-  './manifest-icon-classic.webmanifest?v=160703',
+  './manifest-icon-classic.webmanifest?v=160704',
   './install-icon-aurora.html',
-  './manifest-icon-aurora.webmanifest?v=160703',
+  './manifest-icon-aurora.webmanifest?v=160704',
   './install-icon-pulse.html',
-  './manifest-icon-pulse.webmanifest?v=160703',
+  './manifest-icon-pulse.webmanifest?v=160704',
   './icons/inj-node-180-v16.06.28.png',
   './icons/inj-node-192-v16.06.28.png',
   './icons/inj-node-512-v16.06.28.png',

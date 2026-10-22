@@ -109,3 +109,17 @@
 @media(prefers-reduced-motion:reduce){
  #headerMenuPanel .menu-app-icon-trigger .menu-action-chevron{transition:none}
 }
+
+/* v16.07.04 · Browser installation fallback on iPhone standalone PWAs. */
+#headerMenuPanel .menu-app-icon-copy{
+ display:block!important;appearance:none;-webkit-appearance:none;
+ width:100%;min-height:42px;margin:8px 0 0!important;
+ padding:8px 12px!important;border:1px solid var(--line)!important;
+ border-radius:12px!important;background:transparent!important;
+ color:var(--text)!important;font-size:12px!important;
+ font-weight:700;text-align:center;cursor:pointer;
+ box-shadow:none!important;transform:none!important;
+}
+#headerMenuPanel .menu-app-icon-copy:focus-visible{
+ outline:2px solid var(--accent);outline-offset:2px;
+}
