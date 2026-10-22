@@ -75,6 +75,14 @@
       gate.classList.remove('visible', 'leaving', 'dashboard-underlay');
     }
 
+    // Once Live View is parked, it must not remain a transparent fullscreen
+    // hit-testing surface above Dashboard (Safari standalone PWA quirk).
+    const parkedFocus = $('focusDisplayDialog');
+    if (parkedFocus && has(parkedFocus, 'mode-parked') && !parkedFocus.hidden) {
+      parkedFocus.hidden = true;
+      parkedFocus.setAttribute('aria-hidden', 'true');
+    }
+
     // Clear only obsolete locks after bfcache restore/interrupted transitions.
     if (!menuOpen && has(body, 'menu-overlay-open')) body.classList.remove('menu-overlay-open');
     if (!sectionFrame && has(body, 'inj-section-open')) body.classList.remove('inj-section-open');

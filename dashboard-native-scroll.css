@@ -100,3 +100,16 @@ html[data-inj-page="index"][data-inj-scroll="dashboard"]
 body.dashboard-scroll-ready > #entryGate[aria-hidden="true"]:not(.immersive-underlay) {
  pointer-events:none!important;visibility:hidden!important;
 }
+
+
+/* v16.05.25 — Live View and Dashboard never share a touch or scroll layer.
+   A parked fullscreen Live View must be entirely removed from hit-testing,
+   while the live/closing overlay keeps its normal transition untouched. */
+html[data-inj-page="index"] #focusDisplayDialog[hidden],
+html[data-inj-page="index"] #focusDisplayDialog.mode-parked {
+  display:none!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+/* The Dashboard is the document scroller only after the Live overlay has
+   actually finished. Do not modify modal or Home scroll ownership here. */

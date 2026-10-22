@@ -2353,6 +2353,16 @@ function enterDashboardFromGate() {
   if (state.currentView !== 'home' || !modeLaunchAllowed()) return;
   activateEntrySelection();
 
+  // Mode handoff: Live View must never donate its fullscreen scroll/touch
+  // surface to Dashboard. This is safe because modeLaunchAllowed() above
+  // excludes every active/closing immersive overlay.
+  const parkedLiveView = $('focusDisplayDialog');
+  if (parkedLiveView?.classList.contains('mode-parked')) {
+    parkedLiveView.hidden = true;
+    parkedLiveView.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('focus-display-open', 'entry-live-launch', 'mode-returning');
+  }
+
   // v16.00.40 — Dashboard owns the native document scroller as soon as the
   // launch starts. Close transient controls before the Home fade so an old
   // overflow/touch lock cannot survive into the Dashboard.
@@ -5468,6 +5478,7 @@ function openFocusDisplay() {
   renderFocusDisplay();
   renderFocusAmbient();
   dialog.hidden = false;
+  dialog.removeAttribute('aria-hidden');
   dialog.classList.remove('controls-hidden', 'is-closing', 'mode-parked');
   dialog.classList.add('mode-active');
   document.body.classList.add('focus-display-open');
@@ -5516,12 +5527,22 @@ function closeFocusDisplay({ revealDashboard = true, animate = false } = {}) {
       restoreEntryGateFromImmersive();
       dialog.classList.remove('is-closing', 'mode-active');
       dialog.classList.add('mode-parked');
+      dialog.hidden = true;
+      dialog.setAttribute('aria-hidden', 'true');
       document.body.classList.remove('focus-display-open', 'mode-returning');
+      window.INJ_SCROLL_GUARD?.refresh();
       return;
     }
     prepareImmersiveHomeCrossfade();
     dialog.classList.add('is-closing');
-    window.setTimeout(() => finishImmersiveHomeCrossfade(dialog, 'focus-display-open'), 620);
+    window.setTimeout(() => {
+      finishImmersiveHomeCrossfade(dialog, 'focus-display-open');
+      // Fully retire the Live View layer; a parked but displayed fixed overlay
+      // could still capture Dashboard swipes on iPhone PWA.
+      dialog.hidden = true;
+      dialog.setAttribute('aria-hidden', 'true');
+      window.INJ_SCROLL_GUARD?.refresh();
+    }, 620);
     return;
   }
 
@@ -5529,8 +5550,11 @@ function closeFocusDisplay({ revealDashboard = true, animate = false } = {}) {
     const gate = $('entryGate');
     dialog.classList.remove('is-closing', 'mode-active');
     dialog.classList.add('mode-parked');
+    dialog.hidden = true;
+    dialog.setAttribute('aria-hidden', 'true');
     document.body.classList.remove('focus-display-open', 'mode-returning');
     gate?.classList.remove('mode-return');
+    window.INJ_SCROLL_GUARD?.refresh();
     pulseDashboardReveal();
   };
 

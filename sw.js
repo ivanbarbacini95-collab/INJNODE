@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.05.23-dashboard-scroll-recovery';
+const CACHE_NAME = 'inj-node-v16.05.25-live-dashboard-isolation';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160088',
@@ -18,7 +18,7 @@ const APP_SHELL = [
   './scroll-edges.css?v=160129',
   './scroll-edges.js?v=160143',
   './wallet-edge-scroll-stability.css?v=160143',
-  './dashboard-native-scroll.css?v=160523',
+  './dashboard-native-scroll.css?v=160525',
   './menu-accordion.css?v=160145',
   './home-mobile-launcher-fix.css?v=160204',
   './section-heading-harmony.css?v=160131',
@@ -84,12 +84,12 @@ const APP_SHELL = [
   './top-clarity.css?v=16.00.88',
   './viewport.js?v=16.00.14',
   './style.css?v=16.01.44',
-  './app.js?v=16.03.18',
+  './app.js?v=16.05.25',
   './i18n.js?v=160145',
   './i18n.js?v=160117',
   './i18n.js?v=160088',
   './i18n.js?v=160084',
-  './scroll-guard.js?v=160523',
+  './scroll-guard.js?v=160525',
   './live-charts.html',
   './live-charts.css?v=16.00.39',
   './live-charts.js?v=16.00.40',
@@ -106,6 +106,7 @@ const APP_SHELL = [
   './command-center.css?v=16.00.39',
   './command-center.js?v=16.05.03',
   './treasury.html',
+  './treasury-production-center.css?v=160525',
   './treasury.css?v=16.00.39',
   './treasury.js?v=16.00.99'
 ];
