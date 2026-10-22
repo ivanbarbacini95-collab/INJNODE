@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.06.26-compact-settings';
+const CACHE_NAME = 'inj-node-v16.06.27-validator-seamless';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160080',
@@ -8,6 +8,7 @@ const APP_SHELL = [
   './',
   './index.html',
   './adaptive-layout.css?v=160600',
+  './validator-transparent.css?v=160627',
   './adaptive-layout.js?v=160600',
   './navigation.js?v=160114',
   './i18n.js?v=160124',
