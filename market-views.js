@@ -282,6 +282,10 @@
  function openFavoritesTab(event){
   event.preventDefault();
   event.stopImmediatePropagation();
+  if(typeof window.INJ_MARKET_NAVIGATE==='function'){
+   window.INJ_MARKET_NAVIGATE('favorites');
+   return;
+  }
   try{localStorage.setItem('inj_node_intel_view_v1','favorites')}catch(_){}
   const intel=$('injIntelligenceMain');if(intel)intel.hidden=true;
   global.hidden=false;
