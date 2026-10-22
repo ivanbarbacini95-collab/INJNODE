@@ -1,4 +1,4 @@
-/* INJ Node · Market Pro v16.01.08
+/* INJ Node · Market Pro v16.07.20
    Per-asset chart controls. Binance 1m close series for available USDT pairs;
    CoinGecko fallback only at the historical sample frequency actually supplied.
    Streaming tick updates move the rightmost point; historical bars refresh
@@ -128,6 +128,11 @@
  }
  function inspectPoint(fraction){
   if(!active?.plot)return;
+  const scrub=$('detailHapticScrub');
+  if(scrub&&document.activeElement!==scrub){
+   const next=String(Math.max(0,Math.min(100,Math.round(fraction*100))));
+   if(scrub.value!==next)scrub.value=next;
+  }
   const plot=active.plot;
   const target=plot.view.start+fraction*(plot.view.end-plot.view.start);
   let nearest=null,delta=Infinity;
@@ -143,6 +148,11 @@
    tooltip.style.left=(px/v*100).toFixed(2)+'%';
    tooltip.classList.toggle('align-right',px>plot.W*.58);
   }
+ }
+ function scrubAt(fraction){
+  if(!active?.series?.length||!modal.open)return;
+  selectedPointer=Math.max(0,Math.min(1,Number(fraction)||0));
+  inspectPoint(selectedPointer);
  }
  function zoom(scale,position=.5){
   if(!active)return;
@@ -345,5 +355,5 @@
  document.addEventListener('visibilitychange',()=>{
   if(!document.hidden&&active&&modal.open&&Date.now()-active.lastFetch>60000)void loadChart();
  });
- window.MARKET_PRO={open,close,updateCoin,priceTick,languageChange};
+ window.MARKET_PRO={open,close,updateCoin,priceTick,languageChange,scrubAt};
 })();
