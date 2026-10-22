@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.06.25-ownership-atl-holders';
+const CACHE_NAME = 'inj-node-v16.06.26-compact-settings';
 const APP_SHELL = [
   './navigation.css?v=160090',
   './navigation.css?v=160080',
@@ -18,7 +18,7 @@ const APP_SHELL = [
   './scroll-edges.js?v=160143',
   './wallet-edge-scroll-stability.css?v=160143',
   './dashboard-native-scroll.css?v=160525',
-  './menu-accordion.css?v=160145',
+  './menu-accordion.css?v=160626',
   './home-mobile-launcher-fix.css?v=160204',
   './section-heading-harmony.css?v=160131',
   './unified-navigation.css?v=160138',
