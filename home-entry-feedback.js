@@ -1,4 +1,4 @@
-/* INJ Node · Home launch micro-feedback v16.07.15.
+/* INJ Node · Home launch micro-feedback v16.07.18.
  * Runs only on a genuine section-launch gesture, never on live data or timers.
  * iOS Safari has no navigator.vibrate; no unsafe switch/checkbox overlays. */
 (()=>{
@@ -71,13 +71,27 @@
    hap.querySelector('.menu-action-value').textContent=supported?(on?'ON':'OFF'):tr('N/D','N/A');
   }
  }
+ // INJ Node effects are interface feedback, not media playback.
+ // Ambient audio follows the iPhone Ring/Silent switch automatically:
+ // muted while Silent is active, audible again after Ring is restored.
+ // Safari does not disclose the switch state, so never persist a false mute.
+ function useSystemAudioMode(){
+  try{
+   const session=navigator.audioSession;
+   if(session&&session.type!=='ambient')session.type='ambient';
+  }catch(_){/* Older WebKit: retain its default Ring/Silent behavior. */}
+ }
  function playSound(){
   if(!read(SOUND_KEY)||volume()===0)return;
   try{
+   useSystemAudioMode();
    const Ctx=window.AudioContext||window.webkitAudioContext;
    if(!Ctx)return;
    if(!audio||audio.state==='closed')audio=new Ctx({latencyHint:'interactive'});
-   if(audio.state==='suspended')void audio.resume().catch(()=>{});
+   if(audio.state==='suspended'||audio.state==='interrupted'){
+    const resumed=audio.resume();
+    if(resumed?.catch)void resumed.catch(()=>{});
+   }
    const t=audio.currentTime;
    const oscillator=audio.createOscillator(),gain=audio.createGain();
    oscillator.type='sine';
