@@ -42,6 +42,13 @@
   }
   if(volumeControl)volumeControl.disabled=!read(SOUND_KEY);
   if(volumeControl)volumeControl.setAttribute('aria-label',tr('Volume suono apertura','Opening sound volume'));
+  for(const [id,it,en] of [
+   ['menuFeedbackVolumeDown','Riduci volume','Decrease volume'],
+   ['menuFeedbackVolumeUp','Aumenta volume','Increase volume']
+  ]){
+   const button=document.getElementById(id);
+   if(button){button.disabled=!read(SOUND_KEY);button.setAttribute('aria-label',tr(it,en))}
+  }
   if(snd){
    const on=read(SOUND_KEY);
    snd.setAttribute('aria-pressed',String(on));
@@ -118,6 +125,14 @@
   update();
  });
  volumeInput()?.addEventListener('change',()=>{playSound()});
+ for(const [id,step] of [['menuFeedbackVolumeDown',-10],['menuFeedbackVolumeUp',10]]){
+  document.getElementById(id)?.addEventListener('click',()=>{
+   if(!read(SOUND_KEY))return;
+   writeVolume(Math.max(0,Math.min(100,volume()+step)));
+   update();
+   playSound();
+  });
+ }
  window.addEventListener('injnode:languagechange',update);
  window.addEventListener('storage',event=>{
   if([SOUND_KEY,HAPTIC_KEY,VOLUME_KEY,'inj_node_language_v1'].includes(event.key))update();
