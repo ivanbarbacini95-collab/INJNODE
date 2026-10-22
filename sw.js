@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.07.28-fixed-off-edge';
+const CACHE_NAME = 'inj-node-v16.07.29-real-visible-price-pulse';
 const APP_SHELL = [
   './dashboard-ipad-layout.css?v=160722',
   './market-favorites.css?v=160724',
@@ -92,7 +92,7 @@ const APP_SHELL = [
   './market-pro.css?v=160108',
   './market-pro.js?v=160720',
   './market-views.css?v=160716',
-  './market-views.js?v=160728',
+  './market-views.js?v=160729',
   './market-intelligence-summary.js?v=160724',
   './market-views.js?v=160716',
   './manifest.webmanifest?v=16.06.29',
