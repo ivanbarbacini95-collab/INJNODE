@@ -233,7 +233,8 @@
   pump();
  }
  function pump(){
-  if(!visible()||running>=2||time()<requestsSuspendedUntil)return;
+  if(!visible()||running>=2)return;
+  if(time()<requestsSuspendedUntil){setTimeout(pump,requestsSuspendedUntil-time()+100);return}
   while(running<2&&tasks.length){
    const job=tasks.shift(),key=memoryKey(job.id,job.period);
    queued.delete(key);
@@ -251,7 +252,10 @@
     }catch(_){/* Keep real prior points; missing historical data stays unknown. */}
     finally{
      running--;inflight.delete(key);
-     if(tasks.length)setTimeout(pump,450);
+     if(tasks.length){
+      const pause=Math.max(450,requestsSuspendedUntil-time());
+      setTimeout(pump,pause);
+     }
     }
    })();
   }
