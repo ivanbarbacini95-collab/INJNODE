@@ -75,7 +75,10 @@ function detail(id){
 // proseguono con aggiornamenti periodici CoinGecko e non vengono chiamate live.
 function updateConnectionStatus(){
  const when=state.last?new Date(state.last).toLocaleTimeString(marketLocale()):'—';
- $('status').textContent=state.liveCount>0?t('realtime')+state.liveCount+t('streamSuffix')+when:'● CoinGecko '+when+t('connectingStream');
+ const source=state.liveCount>0?t('realtime')+state.liveCount+t('streamSuffix')+when:
+  state.binancePairUpdated>0?'● CoinGecko '+when+(marketLocale()==='it-IT'?' · Binance Spot in attesa dati':' · Binance Spot awaiting data'):
+  '● CoinGecko '+when+(marketLocale()==='it-IT'?' · Binance non disponibile / verifica in corso':' · Binance unavailable / checking');
+ $('status').textContent=source;
 }
 function stopStreams(){
  streamGeneration++;
