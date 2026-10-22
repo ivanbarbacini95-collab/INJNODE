@@ -382,8 +382,13 @@
      // Percent/date updates or repeated quotes must not fire the bar.
      const previous=Number(element.dataset.previousPrice);
      const currentPrice=num(current.current_price);
+     // A quote change must also alter the displayed price: tiny rounding
+     // differences should never produce a seemingly random flashing bar.
+     const previousText=element.dataset.displayPrice||'';
+     const nextText=money(currentPrice);
      const changed=Number.isFinite(previous)&&previous>0
-       &&Number.isFinite(currentPrice)&&currentPrice>0&&currentPrice!==previous;
+       &&Number.isFinite(currentPrice)&&currentPrice>0
+       &&currentPrice!==previous&&previousText!==nextText;
      recolor(element,current);
      if(changed)priceFlash(element,currentPrice>previous?'up':'down',true);
      element.dataset.previousPrice=String(current.current_price);
