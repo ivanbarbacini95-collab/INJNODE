@@ -93,7 +93,7 @@
   const rank=finite(coin.market_cap_rank)?'#'+num(coin.market_cap_rank):'—';
   const symbol=String(coin.symbol||'').toUpperCase();
   return '<button type="button" class="mp-row" data-coin="'+escape(coin.id)+'" data-previous-price="'+escape(coin.current_price)+'" aria-label="'+escape(coin.name+' '+symbol)+'">'+
-  '<span class="mp-identity"><span class="mp-rank">'+rank+'</span><img loading="lazy" referrerpolicy="no-referrer" src="'+escape(coin.image||'')+'" alt=""><span class="mp-name"><strong>'+escape(coin.name)+'</strong><small>'+escape(symbol)+'</small></span></span>'+
+  '<span class="mp-identity"><span class="mp-rank">'+rank+'</span>'+(String(coin.image||'').trim()?'<img loading="lazy" referrerpolicy="no-referrer" src="'+escape(coin.image)+'" alt="">':'')+'<span class="mp-name"><strong>'+escape(coin.name)+'</strong><small>'+escape(symbol)+'</small></span></span>'+
   '<span class="mp-price"><strong class="mp-price-value">'+escape(money(coin.current_price))+'</strong><small class="mp-mobile-label">'+escape(money(coin.market_cap,true))+' Cap</small></span>'+
   '<span class="mp-change mp-hour">'+pctHtml(coin,'1h')+'</span>'+
   '<span class="mp-change mp-day">'+pctHtml(coin,'24h')+'</span>'+
@@ -251,6 +251,11 @@
   const b=e.target.closest('[data-heat-range]');if(b)setRange(b.dataset.heatRange);
  });
  $('marketProSort').addEventListener('change',requestRender);
+ // Remove broken/empty coin icons instead of exposing black image placeholders.
+ rows.addEventListener('error',event=>{
+  const image=event.target;
+  if(image?.tagName==='IMG'&&image.closest('.mp-identity'))image.remove();
+ },true);
  rows.addEventListener('click',e=>{const b=e.target.closest('[data-coin]');if(b)api()?.open?.(b.dataset.coin)});
  grid.addEventListener('click',e=>{const b=e.target.closest('[data-coin]');if(b)api()?.open?.(b.dataset.coin)});
  window.INJ_MARKET_VIEWS={render:requestRender,tick,setView,languageChange};
