@@ -43,6 +43,7 @@ function labels(){
  text('injIntelTabGlobal','Global Crypto');
  text('injIntelTabHeatmap','Heatmap');
   text('injFavoriteTabLabel',tr('Preferiti','Favorites'));
+  text('injIntelHeaderSuffix',view==='intel'?'INJ':view==='heatmap'?'HEATMAP':view==='favorites'?tr('PREFERITI','FAVORITES'):'TOP 200');
   window.INJ_MARKET_VIEWS?.languageChange?.();
  text('injIntelHeaderSubtitle',tr('Il centro di analisi di Injective','Injective market intelligence terminal'));
  text('injIntelPriceLabel',tr('PREZZO INJ','INJ PRICE'));
