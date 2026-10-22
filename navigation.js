@@ -42,9 +42,11 @@ function closeSection(fromHistory=false){
  sectionLauncher?.focus({preventScroll:true});
  // Section iframe is gone: hand the native scroll surface back to Home.
  window.INJ_SCROLL_GUARD?.refresh();
+ window.INJ_HOME_SCROLL?.restore();
 }
 window.INJ_OPEN_SECTION=function(url){
  if(!main || section)return;
+ window.INJ_HOME_SCROLL?.save();
  setHeaderMenuOpen(false);
  sectionLauncher=document.activeElement;
  sectionCover=document.createElement('div');
