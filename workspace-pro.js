@@ -239,7 +239,7 @@ function updateStatus(force){
  for(const node of grid.querySelectorAll('.ws-card')){
   const i=get(node.dataset.uid);if(!i)continue;
   let state='offline',source='',at=0;
-  if(A.marketType(i.type)){at=price.priceAt||0;source=price.priceSource||'Market';state=price.price>0&&at?(now-at<65000?'live':now-at<180000?'snapshot':'offline'):'offline';}
+  if(A.marketType(i.type)){at=price.priceAt||0;const directPrice=new Set(['chart','liveview','price','low24','high24','change24']);source=directPrice.has(i.type)?(price.priceSource||'Market'):T('Dati mercato · feed specifico','Market data · specific feed');state=price.price>0&&at?(directPrice.has(i.type)&&now-at<65000?'live':'snapshot'):'offline';}
   else{
    const rows=A.rowsFor(i),valid=rows.filter(r=>r&&Number.isFinite(r.updated));
    at=valid.length?Math.min(...valid.map(r=>r.updated)):0;
