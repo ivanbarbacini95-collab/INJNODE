@@ -292,13 +292,18 @@ html[data-inj-market] #marketHeatmap .heatmap-grid > .heatmap-tile:nth-child(n) 
  }
 }
 
-/* 16.07.36 · iPad / tablet: ensure the full price fits below the
-   centered logo, symbol, name and percentage. The original 120px
-   implicit tracks clipped the last flex item on tablet widths.
-   Keep mobile's dedicated compact layout and wide desktop untouched. */
+/* 16.07.41 · iPad / tablet stable tiles.
+   A fixed row height avoids Safari's auto track-height recalculation as
+   live labels refresh. Cards never animate; the ::after edge may still
+   flash once for an actual changed quote. */
 @media (min-width:600px) and (max-width:1399px){
   html[data-inj-market] #marketHeatmap .heatmap-grid{
-    grid-auto-rows:minmax(152px,auto)!important;
+    grid-auto-rows:162px!important;
+  }
+  html[data-inj-market] #marketHeatmap .heatmap-grid > .heatmap-tile:nth-child(n){
+    transition:none!important;
+    animation:none!important;
+    transform:none!important;
   }
   html[data-inj-market] #marketHeatmap .heatmap-grid > .heatmap-tile:nth-child(n) .hm-price{
     flex:0 0 auto!important;
