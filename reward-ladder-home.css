@@ -15,6 +15,8 @@ html[data-inj-page="index"] body #entryGate .entry-gate-shell:not(.first-access)
   height:76px!important;min-height:76px!important;max-height:none!important;
   gap:0!important;padding:12px 121px 12px 20px!important;
   margin:0!important;overflow:hidden!important;text-align:left!important;
+  text-decoration:none!important;text-decoration-line:none!important;
+  -webkit-text-decoration-line:none!important;
   border-radius:18px!important;
   border:1px solid color-mix(in srgb,var(--tile-accent) 25%,var(--line,transparent))!important;
   background:linear-gradient(118deg,
