@@ -93,7 +93,7 @@
       card.dataset.state = 'pending';
       card.innerHTML =
         '<div class="ladder-step-top"><div class="ladder-step-target"><span class="ladder-step-number"></span><strong class="ladder-step-money"></strong></div><span class="ladder-step-status"></span></div>' +
-        '<div class="ladder-track" role="progressbar" aria-valuemin="0" aria-valuemax="100"><div class="ladder-fill"></div></div>' +
+        '<div class="ladder-track" role="progressbar" aria-valuemin="0" aria-valuemax="100"><div class="ladder-fill"></div><span class="ladder-beacon" aria-hidden="true"></span></div>' +
         '<div class="ladder-step-foot"><span class="ladder-step-progress"></span><span class="ladder-step-eta"></span></div>';
       host.appendChild(card);
       const item = {
@@ -332,6 +332,7 @@
       const p=Math.max(0,Math.min(100,r.percent));
       const width=p.toFixed(3)+'%';
       if(item.fill.style.width!==width)item.fill.style.width=width;
+      if(item.track.style.getPropertyValue('--ladder-progress')!==width)item.track.style.setProperty('--ladder-progress',width);
       item.track.setAttribute('aria-valuenow',String(Math.round(p)));
       item.track.setAttribute('aria-label',usd(target,target<1?2:0)+' '+Math.round(p)+'%');
       set(item.status,r.state==='done'?t('COMPLETATO','COMPLETE'):r.state==='active'?t('IN CORSO','ACTIVE'):t('IN ATTESA','WAITING'));

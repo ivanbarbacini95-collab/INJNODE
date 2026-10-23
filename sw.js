@@ -1,8 +1,9 @@
-const CACHE_NAME = 'inj-node-v16.07.38-reward-ladder';
+const CACHE_NAME = 'inj-node-v16.07.39-reward-ladder-theme-bars';
 const APP_SHELL = [
+  './reward-ladder-home.css?v=160739',
   './reward-ladder.html',
-  './reward-ladder.css?v=160738',
-  './reward-ladder.js?v=160738',
+  './reward-ladder.css?v=160739',
+  './reward-ladder.js?v=160739',
   './morning-brief.css?v=160736',
   './morning-brief.js?v=160737',
   './dashboard-ipad-layout.css?v=160722',
@@ -47,7 +48,7 @@ const APP_SHELL = [
   './b-capital-group-brand.png',
   './section-heading-harmony.js?v=160131',
   './home-vitality.css?v=1.0.1',
-  './home-vitality.js?v=160121',
+  './home-vitality.js?v=160739',
   './home-vitality-v2.css?v=160096',
   './home-layout-polish.css?v=160099',
   './home-pnl-focus.css?v=160101',
