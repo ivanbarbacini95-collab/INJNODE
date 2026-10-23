@@ -1,10 +1,11 @@
-const CACHE_NAME = 'inj-node-v16.07.43-workspace';
+const CACHE_NAME = 'inj-node-v16.07.44-workspace-clean-charts';
 const APP_SHELL = [
   './workspace.html',
+  './workspace-values.js?v=160744',
   './workspace-home.css?v=160743',
-  './workspace.css?v=160743',
-  './workspace-model.js?v=160743',
-  './workspace.js?v=160743',
+  './workspace.css?v=160744',
+  './workspace-model.js?v=160744',
+  './workspace.js?v=160744',
   './navigation.js?v=160743',
   './reward-ladder-home.css?v=160739',
   './reward-ladder.html',
