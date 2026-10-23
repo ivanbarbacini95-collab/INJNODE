@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.07.39-reward-ladder-theme-bars';
+const CACHE_NAME = 'inj-node-v16.07.40-heatmap-ipad-price-fix';
 const APP_SHELL = [
   './reward-ladder-home.css?v=160739',
   './reward-ladder.html',
@@ -11,7 +11,7 @@ const APP_SHELL = [
   './market-favorites.css?v=160735',
   './market-heatmap-arctic.css?v=160725',
   './market-heatmap-live.css?v=160726',
-  './market-heatmap-aggressive.css?v=160732',
+  './market-heatmap-aggressive.css?v=160740',
   './chart-haptics.js?v=160720',
   './chart-haptics.css?v=160720',
   './home-scroll-memory.js?v=160719',
