@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.07.41-heatmap-stable';
+const CACHE_NAME = 'inj-node-v16.07.42-heatmap-reconcile';
 const APP_SHELL = [
   './reward-ladder-home.css?v=160739',
   './reward-ladder.html',
@@ -98,7 +98,7 @@ const APP_SHELL = [
   './market-pro.css?v=160108',
   './market-pro.js?v=160720',
   './market-views.css?v=160716',
-  './market-views.js?v=160741',
+  './market-views.js?v=160742',
   './market-intelligence-summary.js?v=160724',
   './market-views.js?v=160716',
   './manifest.webmanifest?v=16.06.29',
