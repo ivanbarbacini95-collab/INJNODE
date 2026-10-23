@@ -75,7 +75,7 @@ window.INJ_OPEN_SECTION=function(url){
 };
 if(main){
  document.addEventListener('click',event=>{
-  const link=event.target.closest('#entryTreasuryButton,#entryLiveRewardsButton,#entryComparisonButton,#entryVisualizeWealthButton');
+  const link=event.target.closest('#entryTreasuryButton,#entryLiveRewardsButton,#entryRewardLadderButton,#entryComparisonButton,#entryVisualizeWealthButton');
   if(!link || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey)return;
   event.preventDefault();event.stopImmediatePropagation();window.INJ_OPEN_SECTION(link.href);
  },true);
@@ -88,7 +88,7 @@ if(main){
  window.addEventListener('keydown',event=>{if(section && event.key==='Escape')closeSection();});
 }else if(parent!==window){
  document.addEventListener('click',event=>{
-  if(!event.target.closest('#treasuryClose,#rewardsClose,#liveChartsBack,#ccBack,#bookBack,#comparisonBack'))return;
+  if(!event.target.closest('#treasuryClose,#rewardsClose,#liveChartsBack,#ccBack,#bookBack,#ladderBack,#comparisonBack'))return;
   event.preventDefault();event.stopImmediatePropagation();home();
  },true);
  document.addEventListener('keydown',event=>{if(event.key==='Escape' && !document.querySelector('dialog[open]'))home();});

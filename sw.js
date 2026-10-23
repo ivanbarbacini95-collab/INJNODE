@@ -1,5 +1,8 @@
-const CACHE_NAME = 'inj-node-v16.07.37-morning-brief-wake-fix';
+const CACHE_NAME = 'inj-node-v16.07.38-reward-ladder';
 const APP_SHELL = [
+  './reward-ladder.html',
+  './reward-ladder.css?v=160738',
+  './reward-ladder.js?v=160738',
   './morning-brief.css?v=160736',
   './morning-brief.js?v=160737',
   './dashboard-ipad-layout.css?v=160722',
@@ -172,7 +175,7 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return;
 
   if (request.mode === 'navigate') {
-    const isolatedPath = ['live-charts.html', 'live-rewards.html', 'command-center.html', 'order-book.html', 'treasury.html', 'market.html', 'comparison.html', 'visualize-wealth.html', 'install-icon-minimal.html', 'install-icon-classic.html', 'install-icon-aurora.html', 'install-icon-pulse.html'].find((name) => url.pathname.endsWith('/' + name));
+    const isolatedPath = ['live-charts.html', 'live-rewards.html', 'command-center.html', 'order-book.html', 'treasury.html', 'market.html', 'comparison.html', 'visualize-wealth.html', 'reward-ladder.html', 'install-icon-minimal.html', 'install-icon-classic.html', 'install-icon-aurora.html', 'install-icon-pulse.html'].find((name) => url.pathname.endsWith('/' + name));
     event.respondWith(
       fetch(request, { cache: 'no-store' })
         .then((response) => {
