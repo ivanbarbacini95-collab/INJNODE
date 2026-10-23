@@ -9,6 +9,7 @@ const catalog=C.entries;
 const marketType=type=>C.byType[type].scope==='market';
 const title=i=>i.title||t(C.byType[i.type].it,C.byType[i.type].en);
 const previewOptions=new Map();
+let catalogSource='selected';
 let db,storageFailed=false;
 try{db=M.sanitize(read(KEY,null))}catch(_){db={version:1,presets:[{id:uid(),name:'Workspace 1',locked:false,items:[]}],active:'',defaultId:null};db.active=db.presets[0].id;}
 if(db.defaultId)db.active=db.defaultId;
@@ -24,8 +25,26 @@ function notice(msg){$('wsStatus').textContent=msg;clearTimeout(statusTimer);sta
 function persist(show=false){try{localStorage.setItem(KEY,JSON.stringify(db));storageFailed=false;if(show)notice(t('Preset salvato','Preset saved'))}catch(_){storageFailed=true;notice(t('Salvataggio non riuscito. Esporta il setup per conservarlo.','Save failed. Export your setup to keep it.'))}}
 function wallets(){const raw=read('inj_monitor_wallets_v1',[]);const list=Array.isArray(raw)?raw.filter(w=>/^inj1[a-z0-9]{38,60}$/.test(w.address||'')).map(w=>({address:w.address,label:w.label||w.address.slice(0,10)})):[];const legacy=localStorage.getItem('inj_monitor_address');if(legacy&&/^inj1[a-z0-9]{38,60}$/.test(legacy)&&!list.some(w=>w.address===legacy))list.push({address:legacy,label:'Wallet'});return list.filter((w,i)=>list.findIndex(x=>x.address===w.address)===i)}
 function selectedSnapshot(){try{return parent!==window?parent.INJ_GET_SELECTED_WALLET_SNAPSHOT?.():null}catch(_){return null}}
-function selected(){return selectedSnapshot()?.address||localStorage.getItem('inj_monitor_address')||wallets()[0]?.address||''}
-function sources(select,value='selected',market=false){select.replaceChildren();const list=market?[['market',t('Mercato INJ','INJ market')]]:[['selected',t('Segue wallet Home','Follow Home wallet')],['all',t('Tutti i wallet','All wallets')],...wallets().map(w=>[w.address,w.label])];if(!market&&value&&!list.some(x=>x[0]===value))list.push([value,t('Wallet non più salvato','Wallet no longer saved')]);for(const [v,label]of list){const o=document.createElement('option');o.value=v;o.textContent=label;select.append(o)}select.value=market?'market':value;}
+function selected(){return selectedSnapshot()?.address||localStorage.getItem('inj_node_comparison_selected_wallet_v1')||localStorage.getItem('inj_monitor_address')||wallets()[0]?.address||''}
+function sources(select,value='selected',market=false){
+ select.replaceChildren();
+ const option=(group,v,label)=>{const o=document.createElement('option');o.value=v;o.textContent=label;group.append(o)};
+ if(market){option(select,'market',t('Mercato · indipendente dai wallet','Market · independent of wallets'));select.value='market';return}
+ const modes=document.createElement('optgroup');modes.label=t('Modalità','Modes');option(modes,'selected',t('Wallet della Home · segue la selezione','Home wallet · follows selection'));option(modes,'all',t('Tutti i wallet','All wallets')+' ('+wallets().length+')');select.append(modes);
+ const single=document.createElement('optgroup');single.label=t('Wallet specifici · selezione fissa','Specific wallets · fixed selection');
+ for(const w of wallets())option(single,w.address,w.label+' · '+w.address.slice(0,8)+'…'+w.address.slice(-5));
+ if(!['all','selected'].includes(value)&&!wallets().some(w=>w.address===value))option(single,value,t('Wallet non più salvato','Wallet no longer saved'));
+ select.append(single);select.value=value;
+}
+function catalogSourceUI(){
+ const specific=!['all','selected'].includes(catalogSource),list=wallets();$('wsSpecificWallet').hidden=!specific;
+ document.querySelectorAll('[data-source-mode]').forEach(b=>{b.setAttribute('aria-pressed',String(b.dataset.sourceMode===(specific?'single':catalogSource)));if(b.dataset.sourceMode==='single')b.disabled=!list.length;b.textContent=b.dataset.sourceMode==='all'?t('Tutti i wallet','All wallets')+' ('+list.length+')':b.dataset.sourceMode==='selected'?t('Wallet della Home','Home wallet'):t('Wallet specifico','Specific wallet');});
+ $('wsSpecificWallet').setAttribute('aria-label',t('Scegli il wallet specifico','Choose a specific wallet'));
+ const address=specific?catalogSource:selected(),wallet=list.find(w=>w.address===address);
+ $('wsSourceSummary').textContent=catalogSource==='all'?t('La card userà la somma di tutti i wallet salvati.','The card will use the sum of all saved wallets.'):specific?t('Selezione fissa: ','Fixed selection: ')+(wallet?.label||t('Wallet non disponibile','Wallet unavailable'))+' · '+address.slice(0,8)+'…'+address.slice(-5):t('La card seguirà il wallet scelto nella Home: ','The card follows the wallet selected in Home: ')+(wallet?.label||t('nessun wallet','no wallet'));
+}
+function chooseCatalogSource(value){catalogSource=value;$('wsSource').value=value;if(!['all','selected'].includes(value))$('wsSpecificWallet').value=value;catalogSourceUI();renderCatalog();refresh();}
+
 function sourceLabel(i){if(marketType(i.type))return 'INJ / '+(localStorage.getItem('inj_monitor_currency')==='EUR'?'EUR':'USD');if(i.source==='all')return t('Tutti i wallet','All wallets')+' · '+wallets().length;const address=i.source==='selected'?selected():i.source;const label=wallets().find(w=>w.address===address)?.label||t('Wallet assente','Wallet unavailable');return (i.source==='selected'?t('Home · ','Home · '):'')+label}
 const finite=v=>typeof v==='number'&&Number.isFinite(v)?v:null;
 const num=(n,d=5)=>n===null?'—':n.toLocaleString(t('it-IT','en-US'),{minimumFractionDigits:d,maximumFractionDigits:d});
@@ -67,7 +86,7 @@ function add(type,source,options={}){
  if(active().items.length>=80)return notice(t('Massimo 80 card per preset','Maximum 80 cards per preset'));
  const item={...C.defaults(type),...options,uid:uid(),type,source:marketType(type)?'market':source,title:'',style:'solid',border:true,details:true,layouts:{}};
  const spec=C.byType[type];for(const [key,c]of [['desktop',12],['mobile',4]])item.layouts[key]=M.firstFree(active().items,key,c,spec.w,spec.h);
- active().items.push(item);active().locked=false;persist();layout();refresh();notice(t('Card aggiunta','Card added'));
+ active().items.push(item);active().locked=false;persist();layout();if($('wsCatalog').open)$('wsCatalog').close();refresh();notice(t('Card aggiunta','Card added'));requestAnimationFrame(()=>{const node=[...$('wsGrid').children].find(n=>n.dataset.uid===item.uid);if(node){node.tabIndex=-1;node.scrollIntoView({block:'nearest',behavior:'auto'});node.focus({preventScroll:true})}});
 }
 function previewChartControls(item,preview,body){
  const tools=el('div','ws-preview-controls');
@@ -82,14 +101,20 @@ function renderCatalog(){
  for(const section of [...new Set(filtered.map(c=>c.section))]){
   const group=el('details','ws-catalog-section');group.dataset.section=section;group.open=open.get(section)??true;group.append(el('summary','',section));const cards=el('div','ws-catalog-cards');
   for(const c of filtered.filter(c=>c.section===section)){
-   const preview=el('article','ws-preview'),saved=previewOptions.get(c.type)||C.defaults(c.type),item={...saved,type:c.type,source:marketType(c.type)?'market':$('wsSource').value,details:true};previewOptions.set(c.type,item);preview._item=item;preview.append(el('h3','',t(c.it,c.en)));
+   const preview=el('article','ws-preview'),saved=previewOptions.get(c.type)||C.defaults(c.type),item={...saved,type:c.type,source:marketType(c.type)?'market':$('wsSource').value,details:true};previewOptions.set(c.type,item);preview._item=item;preview.append(el('h3','',t(c.it,c.en)));preview.append(el('small','ws-preview-source',marketType(c.type)?t('Mercato · nessun wallet richiesto','Market · no wallet required'):sourceLabel(item)));
    const body=el('div','ws-card-body');preview.append(body);if(C.isChart(item.type))previewChartControls(item,preview,body);
    const button=el('button','ws-insert',t('＋ Inserisci','＋ Insert'));button.addEventListener('click',()=>{const options={};for(const k of Object.keys(C.defaults(item.type)))options[k]=item[k];add(c.type,$('wsSource').value,options)});preview.append(button);cards.append(preview);bodyFor(item,body);
   }group.append(cards);list.append(group);
  }if(!filtered.length)list.append(el('p','ws-sub',t('Nessuna card trovata','No cards found')));
 }
 
-function openCatalog(){sources($('wsSource'));$('wsCatalog').showModal();renderCatalog();refresh();}
+function openCatalog(){
+ if(!['selected','all'].includes(catalogSource)&&!wallets().some(w=>w.address===catalogSource))catalogSource='selected';
+ sources($('wsSource'),catalogSource);$('wsSpecificWallet').replaceChildren();for(const w of wallets()){const o=document.createElement('option');o.value=w.address;o.textContent=w.label+' · '+w.address.slice(0,8)+'…'+w.address.slice(-5);$('wsSpecificWallet').append(o)}$('wsSpecificWallet').value=!['selected','all'].includes(catalogSource)?catalogSource:wallets().find(w=>w.address===selected())?.address||wallets()[0]?.address||'';
+ catalogSourceUI();$('wsCatalog').showModal();renderCatalog();refresh();
+}
+$('wsSourceModes').addEventListener('click',e=>{const b=e.target.closest('[data-source-mode]');if(!b||b.disabled)return;chooseCatalogSource(b.dataset.sourceMode==='single'?$('wsSpecificWallet').value:b.dataset.sourceMode)});
+$('wsSpecificWallet').addEventListener('change',()=>chooseCatalogSource($('wsSpecificWallet').value));
 function configure(i){editingCard=i;$('wsConfigTitle').textContent=title(i);const form=$('wsConfigForm');for(const k of ['title','style','timeframe','chartStyle','goal'])form.elements[k].value=i[k];for(const k of ['border','details'])form.elements[k].checked=i[k];sources(form.elements.source,i.source,marketType(i.type));const r=i.layouts[mode()];form.elements.width.max=cols();form.elements.column.max=cols();form.elements.width.value=r.w;form.elements.height.value=r.h;form.elements.column.value=r.x+1;form.elements.row.value=r.y+1;form.elements.timeframe.closest('label').hidden=!C.isChart(i.type);form.elements.chartStyle.closest('label').hidden=!C.isChart(i.type);form.elements.goal.closest('label').hidden=i.type!=='ladder';$('wsConfig').showModal();}
 $('wsConfigForm').addEventListener('submit',e=>{e.preventDefault();if(!editingCard)return;const f=e.currentTarget,i=editingCard;for(const k of ['title','style','timeframe','chartStyle','source'])i[k]=f.elements[k].value;i.goal=Number(f.elements.goal.value);i.border=f.elements.border.checked;i.details=f.elements.details.checked;i.layouts[mode()]=M.normalize({x:Number(f.elements.column.value)-1,y:Number(f.elements.row.value)-1,w:f.elements.width.value,h:f.elements.height.value},cols());M.settle(active().items,mode(),cols(),i.uid);persist();layout();$('wsConfig').close();refresh();});
 $('wsGrid').addEventListener('change',e=>{const option=e.target.dataset.chartOption,node=e.target.closest('.ws-card'),i=active().items.find(i=>i.uid===node?.dataset.uid);if(!i||!['chartStyle','timeframe'].includes(option))return;i[option]=e.target.value;persist();bodyFor(i,node.querySelector('.ws-card-body'));refresh();});
