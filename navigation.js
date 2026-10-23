@@ -54,7 +54,7 @@ window.INJ_OPEN_SECTION=function(url){
  sectionCover.setAttribute('aria-hidden','true');
  sectionCover.innerHTML='<span class="inj-section-loading-mark">INJ NODE</span>';
  section=document.createElement('iframe');section.className='inj-content-frame';
- section.title='INJ Node';
+ section.title='INJ Node';section.allow='fullscreen';
  const currentSection=section;
  const targetPath=new URL(url,location.href).pathname;
  section.addEventListener('load',()=>{
@@ -75,7 +75,7 @@ window.INJ_OPEN_SECTION=function(url){
 };
 if(main){
  document.addEventListener('click',event=>{
-  const link=event.target.closest('#entryTreasuryButton,#entryLiveRewardsButton,#entryRewardLadderButton,#entryComparisonButton,#entryVisualizeWealthButton');
+  const link=event.target.closest('#entryWorkspaceButton,#entryTreasuryButton,#entryLiveRewardsButton,#entryRewardLadderButton,#entryComparisonButton,#entryVisualizeWealthButton');
   if(!link || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey)return;
   event.preventDefault();event.stopImmediatePropagation();window.INJ_OPEN_SECTION(link.href);
  },true);
@@ -88,7 +88,7 @@ if(main){
  window.addEventListener('keydown',event=>{if(section && event.key==='Escape')closeSection();});
 }else if(parent!==window){
  document.addEventListener('click',event=>{
-  if(!event.target.closest('#treasuryClose,#rewardsClose,#liveChartsBack,#ccBack,#bookBack,#ladderBack,#comparisonBack'))return;
+  if(!event.target.closest('#workspaceBack,#treasuryClose,#rewardsClose,#liveChartsBack,#ccBack,#bookBack,#ladderBack,#comparisonBack'))return;
   event.preventDefault();event.stopImmediatePropagation();home();
  },true);
  document.addEventListener('keydown',event=>{if(event.key==='Escape' && !document.querySelector('dialog[open]'))home();});

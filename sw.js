@@ -1,5 +1,11 @@
-const CACHE_NAME = 'inj-node-v16.07.42-heatmap-reconcile';
+const CACHE_NAME = 'inj-node-v16.07.43-workspace';
 const APP_SHELL = [
+  './workspace.html',
+  './workspace-home.css?v=160743',
+  './workspace.css?v=160743',
+  './workspace-model.js?v=160743',
+  './workspace.js?v=160743',
+  './navigation.js?v=160743',
   './reward-ladder-home.css?v=160739',
   './reward-ladder.html',
   './reward-ladder.css?v=160739',
@@ -176,7 +182,7 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return;
 
   if (request.mode === 'navigate') {
-    const isolatedPath = ['live-charts.html', 'live-rewards.html', 'command-center.html', 'order-book.html', 'treasury.html', 'market.html', 'comparison.html', 'visualize-wealth.html', 'reward-ladder.html', 'install-icon-minimal.html', 'install-icon-classic.html', 'install-icon-aurora.html', 'install-icon-pulse.html'].find((name) => url.pathname.endsWith('/' + name));
+    const isolatedPath = ['workspace.html', 'live-charts.html', 'live-rewards.html', 'command-center.html', 'order-book.html', 'treasury.html', 'market.html', 'comparison.html', 'visualize-wealth.html', 'reward-ladder.html', 'install-icon-minimal.html', 'install-icon-classic.html', 'install-icon-aurora.html', 'install-icon-pulse.html'].find((name) => url.pathname.endsWith('/' + name));
     event.respondWith(
       fetch(request, { cache: 'no-store' })
         .then((response) => {
