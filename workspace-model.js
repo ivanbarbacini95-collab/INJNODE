@@ -6,8 +6,20 @@ function parseKlines(rows){return (Array.isArray(rows)?rows:[]).map(r=>({t:Numbe
 const C=root.INJWorkspaceCatalog||(typeof require==='function'?require('./workspace-catalog.js'):null);
 const types=C.entries.map(e=>e.type);
 const clamp=(n,min,max)=>Math.max(min,Math.min(max,Math.round(Number(n)||min)));
-const rect=(r,cols)=>({x:clamp(r?.x,0,cols-1),y:clamp(r?.y,0,10000),w:clamp(r?.w,1,cols),h:clamp(r?.h,2,16)});
+const continuous=(n,min,max,fallback=min)=>Math.max(min,Math.min(max,Number.isFinite(Number(n))?Number(n):fallback));
+const rect=(r,cols)=>({x:continuous(r?.x,0,cols-.75),y:continuous(r?.y,0,10000),w:continuous(r?.w,.75,cols,4),h:continuous(r?.h,1.75,48,3)});
 function normalize(r,cols){r=rect(r,cols);r.x=Math.min(r.x,cols-r.w);return r;}
+// Fractional canvas units preserve pixel-precise positions across viewport changes.
+function transform(r,edge,dx,dy,cols,{snap=false,minW=.75,minH=1.75}={}){
+ const align=n=>snap?Math.round(n):n;
+ if(edge==='move')return normalize({...r,x:align(r.x+dx),y:align(r.y+dy)},cols);
+ let left=r.x,right=r.x+r.w,top=r.y,bottom=r.y+r.h;
+ if(edge.includes('w'))left=continuous(align(left+dx),0,right-minW);
+ if(edge.includes('e'))right=continuous(align(right+dx),left+minW,cols);
+ if(edge.includes('n'))top=continuous(align(top+dy),Math.max(0,bottom-48),bottom-minH);
+ if(edge.includes('s'))bottom=continuous(align(bottom+dy),top+minH,top+48);
+ return normalize({x:left,y:top,w:right-left,h:bottom-top},cols);
+}
 const overlaps=(a,b)=>a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;
 function settle(items,key,cols,priority){
  const placed=[];const ordered=priority?[...items.filter(i=>i.uid===priority),...items.filter(i=>i.uid!==priority)]:items;
@@ -32,10 +44,10 @@ function sanitize(input){
    if(!i||!types.includes(i.type)||typeof i.uid!=='string'||!i.uid||i.uid.length>100||seen.has(i.uid))throw Error('Invalid card');seen.add(i.uid);
    const source=C.byType[i.type].scope==='market'?'market':String(i.source||'selected');if(source==='market'&&C.byType[i.type].scope!=='market')throw Error('Invalid wallet source');if(!['selected','all','market'].includes(source)&&!/^inj1[a-z0-9]{38,60}$/.test(source))throw Error('Invalid wallet');
    return {uid:i.uid.slice(0,100),type:i.type,source,title:String(i.title||'').slice(0,60),style:['solid','glass','bare'].includes(i.style)?i.style:'solid',border:i.border!==false,details:i.details!==false,timeframe:Object.hasOwn(timeframes,i.timeframe)?i.timeframe:'1h',chartStyle:i.chartStyle==='candles'?'candles':'line',amount:Number.isFinite(Number(i.amount))?Math.max(0,Math.min(1e12,Number(i.amount))):1,scenarioPrice:Number.isFinite(Number(i.scenarioPrice))?Math.max(0,Math.min(1e9,Number(i.scenarioPrice))):100,targetCoin:/^[a-z0-9-]{1,100}$/.test(i.targetCoin||'')?i.targetCoin:'bitcoin',years:clamp(i.years||5,1,30),historyRange:['1d','7d','30d','all'].includes(i.historyRange)?i.historyRange:'30d',marketRange:['1h','24h','7d','30d'].includes(i.marketRange)?i.marketRange:'24h',targetAmount:Number.isFinite(Number(i.targetAmount))?Math.max(.000001,Math.min(1e12,Number(i.targetAmount))):1000,direction:i.direction==='fiatToInj'?'fiatToInj':'injToFiat',goal:[.5,1,3,5,10,15,20,30,50].includes(Number(i.goal))?Number(i.goal):1,layouts:{desktop:normalize(i.layouts?.desktop||{w:4,h:3},12),mobile:normalize(i.layouts?.mobile||{w:4,h:3},4)}};
-  });settle(items,'desktop',12);settle(items,'mobile',4);
-  return {id:p.id.slice(0,100),name:String(p.name||'Workspace').slice(0,50),locked:!!p.locked,items};
+  });if(p.snap){settle(items,'desktop',12);settle(items,'mobile',4);}
+  return {id:p.id.slice(0,100),name:String(p.name||'Workspace').slice(0,50),locked:!!p.locked,snap:!!p.snap,items};
  });
  if(!presets.length)throw Error('No presets');return {version:1,presets,active:presets.some(p=>p.id===input.active)?input.active:presets[0].id,defaultId:presets.some(p=>p.id===input.defaultId)?input.defaultId:null};
 }
-const api={timeframes,parseKlines,types,normalize,overlaps,settle,firstFree,aggregate,sanitize};if(typeof module!=='undefined')module.exports=api;root.INJWorkspaceModel=api;
+const api={timeframes,parseKlines,types,normalize,transform,overlaps,settle,firstFree,aggregate,sanitize};if(typeof module!=='undefined')module.exports=api;root.INJWorkspaceModel=api;
 })(globalThis);

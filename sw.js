@@ -1,16 +1,17 @@
-const CACHE_NAME = 'inj-node-v16.07.48-workspace-native-catalog';
+const CACHE_NAME = 'inj-node-v16.07.49-workspace-free-canvas';
 const APP_SHELL = [
   './workspace.html',
+  './workspace-layout.css?v=160749',
   './workspace-premium.css?v=160747','./workspace-widgets.css?v=160748',
   './workspace-live.js?v=160746',
   './workspace-charts.js?v=160746',
   './workspace-catalog.js?v=160748',
-  './workspace-sections.js?v=160748',
+  './workspace-sections.js?v=160749',
   './workspace-values.js?v=160744',
   './workspace-home.css?v=160743',
   './workspace.css?v=160746',
-  './workspace-model.js?v=160748',
-  './workspace.js?v=160748',
+  './workspace-model.js?v=160749',
+  './workspace.js?v=160749',
   './navigation.js?v=160743',
   './reward-ladder-home.css?v=160739',
   './reward-ladder.html',
