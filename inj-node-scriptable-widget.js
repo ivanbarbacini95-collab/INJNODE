@@ -1,4 +1,4 @@
-// INJ NODE · Scriptable iPhone Widget · v1.2 (fast-refresh best effort)
+// INJ NODE · Scriptable iPhone Widget · v1.3 (dual Lock Screen widgets)
 // Read-only: no seed phrases, no keys, no wallet connections.
 // Launch in Scriptable once to configure public inj1 addresses.
 (async function(){
@@ -39,7 +39,12 @@ async function configure(){
  settings.apr=rate;settings.currency=dialog.textFieldValue(2).trim().toUpperCase()==="USD"?"USD":"EUR";
  write("settings",settings);
 }
-const parameter=String(args.widgetParameter||"ALL").trim().toUpperCase();
+// Lock Screen: same Scriptable script added twice, Parameter PRICE or STATS.
+ // Optional STATS:1 selects wallet 1 instead of all saved wallets.
+const rawParameter=String(args.widgetParameter||"ALL").trim().toUpperCase();
+const roleMatch=/^(PRICE|STATS)(?::(ALL|[1-9]\d?))?$/.exec(rawParameter);
+const lockRole=roleMatch?roleMatch[1]:"";
+const parameter=roleMatch?(roleMatch[2]||"ALL"):rawParameter;
 const index=/^[1-9]\d?$/.test(parameter)?Number(parameter)-1:-1;
 const selected=index>=0&&index<settings.addresses.length?[settings.addresses[index]]:settings.addresses.slice();
 const selectedLabel=index>=0&&index<settings.addresses.length?"WALLET "+(index+1):selected.length+" WALLET";
@@ -233,17 +238,110 @@ function render(result,rate,family){
  if(!selected.length){w.addSpacer(4);txt(w,"APRI SCRIPTABLE PER CONFIGURARE",9,palette.red,true)}
  return w;
 }
+// Dedicated accessory widget layouts: lightweight and independently refreshed.
+// PRICE fetches only the quote, STATS fetches 24-hour % and on-chain rewards.
+function splitWidget(role,data){
+ const w=new ListWidget();
+ // Keep the accessory background under iOS control, maximizing usable space.
+ w.setPadding(1,2,0,2);
+ w.refreshAfterDate=new Date(Date.now()+60*1000);
+ try{
+  const url=URLScheme.forRunningScript();
+  if(url)w.url=url+(url.includes("?")?"&":"?")+"refresh=1&role="+encodeURIComponent(role);
+ }catch(_){}
+ if(role==="PRICE"){
+  const title=w.addStack();title.layoutHorizontally();
+  txt(title,"INJ / "+settings.currency,11,palette.soft,true);
+  title.addSpacer();
+  txt(title,data.cached?"CACHE":"●",9,data.cached?palette.soft:palette.green,true);
+  w.addSpacer(3);
+  // Price takes the entire available width of its own rectangular widget.
+  txt(w,data.quote?money(data.quote.usd,data.fx):"—",28,palette.white,true);
+  w.addSpacer(3);
+  txt(w,"AGG. "+(data.quote?clock(data.priceAt):"—"),9,palette.soft,false);
+  return w;
+ }
+ const dayPct=data.quote?v(data.quote.day24):null;
+ const dayStr=dayPct===null?"—":(dayPct>=0?"+":"")+fixed(dayPct,2)+"%";
+ const dayColor=dayPct===null?palette.soft:dayPct>=0?palette.green:palette.red;
+ const h=w.addStack();h.layoutHorizontally();
+ txt(h,"24H",10,palette.soft,true);
+ h.addSpacer();
+ txt(h,data.cached||data.walletCached?"CACHE":"●",8,data.cached||data.walletCached?palette.soft:palette.blue,true);
+ w.addSpacer(1);
+ txt(w,dayStr,23,dayColor,true);
+ w.addSpacer(3);
+ const line=w.addStack();line.layoutHorizontally();line.centerAlignContent();
+ txt(line,"REWARD",9,palette.soft,true);
+ line.addSpacer(5);
+ txt(line,data.rewards===null?"—":fixed(data.rewards,data.rewards<.01?5:4)+" INJ",13,palette.white,true);
+ if(!selected.length){
+  w.addSpacer(2);txt(w,"CONFIGURA WALLET",8,palette.red,true);
+ }
+ return w;
+}
+async function runSplit(role){
+ // Separate local caches avoid the PRICE widget overwriting wallet history.
+ const existingPrice=read("split-price",null);
+ const key="split-wallet-"+(index>=0?String(index+1):"all");
+ const existingWallet=read(key,null);
+ const [livePrice,liveWallets,fx]=await Promise.all([
+  price(),
+  role==="STATS"&&selected.length?inspectAll():Promise.resolve([]),
+  euro()
+ ]);
+ const now=Date.now();
+ if(livePrice)write("split-price",{quote:livePrice,at:now});
+ const quote=livePrice||(existingPrice&&existingPrice.quote)||null;
+ const priceAt=livePrice?now:existingPrice?.at||null;
+ const walletReady=role==="STATS"&&selected.length>0&&
+     liveWallets.length===selected.length&&liveWallets.every(Boolean);
+ let rewards=null;
+ if(walletReady){
+  rewards=liveWallets.reduce((total,item)=>total+item.rewards,0);
+  write(key,{rewards,at:now});
+ }else if(existingWallet&&Number.isFinite(existingWallet.rewards)){
+  rewards=existingWallet.rewards;
+ }
+ const widget=splitWidget(role,{
+  quote,priceAt,fx,
+  cached:!livePrice,
+  rewards,
+  walletCached:role==="STATS"&&selected.length>0&&!walletReady
+ });
+ Script.setWidget(widget);
+ if(!config.runsInWidget)await widget.presentAccessoryRectangular();
+ Script.complete();
+}
 let preview="medium";
+let demoRole="";
 const quickRefresh=String(args.queryParameters?.refresh||"")==="1";
-if(quickRefresh)preview="accessoryRectangular";
+const urlRole=String(args.queryParameters?.role||"").trim().toUpperCase();
+if(quickRefresh){
+ preview="accessoryRectangular";
+ if(urlRole==="PRICE"||urlRole==="STATS")demoRole=urlRole;
+}
 if(!config.runsInWidget&&!quickRefresh){
  const menu=new Alert();menu.title="INJ NODE · WIDGET";
- menu.message="I wallet vanno configurati una volta: Scriptable non può leggere quelli memorizzati in Safari.";
- menu.addAction("Anteprima blocco schermo");menu.addAction("Anteprima media");menu.addAction("Configura / modifica");menu.addAction("Anteprima grande");menu.addAction("Anteprima piccola");menu.addCancelAction("Esci");
+ menu.message="Per due widget separati sotto l'orologio, aggiungi Scriptable due volte: Parametro PRICE nel primo, STATS nel secondo.";
+ menu.addAction("Anteprima PREZZO (blocco)");
+ menu.addAction("Anteprima 24H + REWARD (blocco)");
+ menu.addAction("Anteprima classica (blocco)");
+ menu.addAction("Configura / modifica wallet");
+ menu.addAction("Anteprima media (Home)");
+ menu.addAction("Anteprima grande (Home)");
+ menu.addCancelAction("Esci");
  const action=await menu.presentSheet();
- if(action===5||action<0){Script.complete();return;}
- if(action===2)await configure();
- preview=action===0?"accessoryRectangular":action===3?"large":action===4?"small":"medium";
+ if(action===6||action<0){Script.complete();return;}
+ if(action===3)await configure();
+ if(action===0)demoRole="PRICE";
+ if(action===1)demoRole="STATS";
+ preview=action===0||action===1||action===2?"accessoryRectangular":action===5?"large":"medium";
+}
+const currentRole=demoRole||(config.runsInWidget&&config.widgetFamily==="accessoryRectangular"?lockRole:"");
+if(currentRole==="PRICE"||currentRole==="STATS"){
+ await runSplit(currentRole);
+ return;
 }
 const start=nightAt(Date.now()),cached=read("last",null);
 const [quote,night,rows,fx]=await Promise.all([price(),nightSeries(start),inspectAll(),euro()]);

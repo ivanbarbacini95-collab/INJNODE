@@ -38,3 +38,23 @@ AGGIORNAMENTO VELOCE (v1.2)
 - Tocca il widget per avviare lo script e visualizzare una nuova anteprima con i dati aggiornati (può essere necessario sbloccare l'iPhone). Questo non obbliga iOS a ridisegnare subito il widget nella schermata di blocco.
 - Sulla schermata di blocco viene mostrato anche l'orario di acquisizione del prezzo; se è in cache, l'orario resta quello dell'ultima acquisizione reale.
 - Per applicare la versione, sostituisci il codice esistente in Scriptable; gli indirizzi già inseriti rimangono nella configurazione locale.
+
+
+DUE WIDGET SEPARATI SULLA SCHERMATA DI BLOCCO (v1.3)
+1. Apri lo script INJ Node in Scriptable e sostituisci il codice con la nuova versione.
+2. Tocca Play in Scriptable per vedere "Anteprima PREZZO (blocco)" oppure "Anteprima 24H + REWARD (blocco)".
+3. Su iPhone tieni premuta la schermata di blocco > Personalizza > Schermata di blocco.
+4. Nell'area widget sotto l'orologio, aggiungi Scriptable (formato RETTANGOLARE) DUE VOLTE.
+5. Tocca il PRIMO widget Scriptable e seleziona:
+   Script: INJ Node
+   Parameter/Parametro: PRICE
+6. Tocca il SECONDO widget Scriptable e seleziona:
+   Script: INJ Node
+   Parameter/Parametro: STATS
+7. Conferma la schermata di blocco.
+
+I due widget sono indipendenti: PRICE mostra solo il prezzo INJ/USD e l'orario dell'ultimo aggiornamento; STATS mostra l'effettiva variazione rolling 24 ore (non da mezzanotte o dalle 23) e la somma dei reward non riscossi dei wallet configurati.
+Opzionale: nel widget STATS, scrivi STATS:1 per visualizzare soltanto i reward del primo wallet, STATS:2 per il secondo e così via.
+Le configurazioni degli indirizzi e della valuta sono condivise tra i due widget. Gli indirizzi locali già configurati non vanno reinseriti.
+
+Aggiornamento: entrambi richiedono il primo refresh disponibile dopo 1 minuto, ma Apple decide quando aggiornarli effettivamente; non è un flusso real-time. Il prezzo viene letto separatamente dal wallet e può aggiornarsi in momenti diversi. Se una fonte non risponde, il widget mostra CACHE quando utilizza valori precedenti.
