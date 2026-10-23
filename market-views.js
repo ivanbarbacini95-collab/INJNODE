@@ -324,7 +324,6 @@
   const sameOrder=coins.length>0&&grid.children.length===coins.length
    &&coins.every((coin,i)=>grid.children[i]?.dataset.coin===coin.id);
   if(coins.length){
-   const fragment=sameOrder?null:document.createDocumentFragment();
    for(const coin of coins){
     const el=mapTiles.get(coin.id)||tile(coin);
     recolor(el,coin);
@@ -336,11 +335,18 @@
     const newRank=finite(coin.market_cap_rank)?'#'+Math.trunc(num(coin.market_cap_rank)):'';
     if(rank&&rank.textContent!==newRank)rank.textContent=newRank;
     next.set(coin.id,el);
-    if(fragment)fragment.append(el);
    }
-   // Filters and rank changes can alter the layout, but identical frames
-   // should never detach and re-create 200 cards.
-   if(fragment)grid.replaceChildren(fragment);
+   // When ranks change, move only cards that actually changed position.
+   // Never replace the full grid (even when a couple of rankings swap).
+   if(!sameOrder){
+    for(let i=0;i<coins.length;i++){
+     const el=next.get(coins[i].id),at=grid.children[i]||null;
+     if(at!==el)grid.insertBefore(el,at);
+    }
+    for(const child of Array.from(grid.children)){
+     if(!next.has(child.dataset.coin))child.remove();
+    }
+   }
   }else{
    const message=section==='favorites'&&favorites.size===0
     ?tr('Nessuna crypto salvata. Tocca una stella in Global Crypto.','No saved cryptos yet. Tap a star in Global Crypto.')
