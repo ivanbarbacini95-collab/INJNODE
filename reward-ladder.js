@@ -301,7 +301,7 @@
   // progresses; higher goals remain at zero until their interval is reached.
   function rung(current,previous,target){
     if(current>=target)return {state:'done',percent:100};
-    if(current<=previous)return {state:current===previous&&previous===0?'active':'pending',percent:0};
+    if(current<=previous)return {state:current===previous?'active':'pending',percent:0};
     return {state:'active',percent:100*(current-previous)/(target-previous)};
   }
   function render(){
