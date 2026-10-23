@@ -1,7 +1,7 @@
 /* Pure layout and import model shared by the Workspace UI and its checks. */
 (function(root){
 'use strict';
-const timeframes={'5m':{interval:'1s',limit:300,ms:300000},'15m':{interval:'1m',limit:15,ms:900000},'1h':{interval:'1m',limit:60,ms:3600000},'4h':{interval:'5m',limit:48,ms:14400000},'24h':{interval:'15m',limit:96,ms:86400000},'7d':{interval:'1h',limit:168,ms:604800000},'30d':{interval:'4h',limit:180,ms:2592000000}};
+const timeframes={'5m':{interval:'1s',limit:1000,bucketMs:5000,ms:300000},'15m':{interval:'1s',limit:1000,bucketMs:15000,ms:900000},'1h':{interval:'1m',limit:260,ms:3600000},'4h':{interval:'5m',limit:260,ms:14400000},'24h':{interval:'30m',limit:260,ms:86400000},'7d':{interval:'4h',limit:260,ms:604800000},'30d':{interval:'12h',limit:260,ms:2592000000}};
 function parseKlines(rows){return (Array.isArray(rows)?rows:[]).map(r=>({t:Number(r[0]),o:Number(r[1]),h:Number(r[2]),l:Number(r[3]),c:Number(r[4])})).filter(r=>Object.values(r).every(Number.isFinite)&&r.t>=0&&Math.min(r.o,r.h,r.l,r.c)>0&&r.h>=Math.max(r.o,r.c)&&r.l<=Math.min(r.o,r.c)&&r.h>=r.l).sort((a,b)=>a.t-b.t);}
 const C=root.INJWorkspaceCatalog||(typeof require==='function'?require('./workspace-catalog.js'):null);
 const types=C.entries.map(e=>e.type);

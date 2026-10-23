@@ -1,13 +1,15 @@
-const CACHE_NAME = 'inj-node-v16.07.45-workspace-full-catalog';
+const CACHE_NAME = 'inj-node-v16.07.46-workspace-chart-axes';
 const APP_SHELL = [
   './workspace.html',
+  './workspace-live.js?v=160746',
+  './workspace-charts.js?v=160746',
   './workspace-catalog.js?v=160745',
-  './workspace-sections.js?v=160745',
+  './workspace-sections.js?v=160746',
   './workspace-values.js?v=160744',
   './workspace-home.css?v=160743',
-  './workspace.css?v=160745',
-  './workspace-model.js?v=160745',
-  './workspace.js?v=160745',
+  './workspace.css?v=160746',
+  './workspace-model.js?v=160746',
+  './workspace.js?v=160746',
   './navigation.js?v=160743',
   './reward-ladder-home.css?v=160739',
   './reward-ladder.html',
