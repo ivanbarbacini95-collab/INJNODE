@@ -173,11 +173,11 @@ function alignGuide(d,rect){
  const yedges=d.action==='move'?['y','bottom']:d.edge.includes('s')?['bottom']:d.edge.includes('n')?['y']:[];
  const xof=(r,edge)=>edge==='right'?r.x+r.w:r.x;
  const yof=(r,edge)=>edge==='bottom'?r.y+r.h:r.y;
- for(const other of candidates){
-  for(const edge of xedges)for(const target of [other.x,other.x+other.w]){
+ for(const other of [...candidates,{x:0,y:0,w:A.cols(),h:Math.max(20,grid.clientHeight/56)}]){
+  for(const edge of xedges)for(const target of [other.x,other.x+other.w,other.x+other.w/2]){
    const dist=target-xof(rect,edge);if(Math.abs(dist)<=thresholdX&&(!bestX||Math.abs(dist)<Math.abs(bestX.dist)))bestX={dist,target,edge};
   }
-  for(const edge of yedges)for(const target of [other.y,other.y+other.h]){
+  for(const edge of yedges)for(const target of [other.y,other.y+other.h,other.y+other.h/2]){
    const dist=target-yof(rect,edge);if(Math.abs(dist)<=thresholdY&&(!bestY||Math.abs(dist)<Math.abs(bestY.dist)))bestY={dist,target,edge};
   }
  }
@@ -212,6 +212,20 @@ window.INJWorkspaceProHooks={
    if(!selected.has(i.uid)||i.uid===d.item.uid||i.cardLocked)continue;
    const original=d.snapshot.find(x=>x.uid===i.uid);
    if(original)i.layouts[d.key]=A.model.normalize({...original.layouts[d.key],x:original.layouts[d.key].x+dx,y:original.layouts[d.key].y+dy},A.cols());
+  }
+  if(preset().snap){
+   const chosen=items().filter(i=>selected.has(i.uid)&&!i.cardLocked);
+   const others=items().filter(i=>!selected.has(i.uid));
+   // Move the group as one rectangle: preserve member offsets instead of settling them independently.
+   for(let n=0;n<30;n++){
+    let shift=0;
+    for(const i of chosen)for(const other of others){
+     const a=i.layouts[d.key],b=other.layouts[d.key];
+     if(A.model.overlaps(a,b))shift=Math.max(shift,b.y+b.h-a.y);
+    }
+    if(shift<=0)break;
+    for(const i of chosen)i.layouts[d.key].y+=shift;
+   }
   }
   return true;
  },
@@ -268,7 +282,7 @@ monitorBtn.addEventListener('click',toggleMonitor);monitorFloat.addEventListener
 monitorDialog.querySelector('[data-pro-close]').addEventListener('click',()=>{monitorOpen=false;monitorDialog.hidden=true;});
 monitorDialog.addEventListener('change',e=>{
  const field=e.target.name;
- mutate(()=>{const m=monitor();if(field==='density')m.density=e.target.checked?'compact':'comfortable';else m[field]=e.target.checked;});
+ pushHistory();const m=monitor();if(field==='density')m.density=e.target.checked?'compact':'comfortable';else m[field]=e.target.checked;A.persist();renderMonitor();
 });
 $('wsFull').addEventListener('click',()=>requestAnimationFrame(renderMonitor));
 function thumbnail(itemsList){
