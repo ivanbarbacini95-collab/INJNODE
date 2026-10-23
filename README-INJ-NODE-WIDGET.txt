@@ -31,3 +31,10 @@ SCHERMATA DI BLOCCO (iOS)
 - In Scriptable scegli "Anteprima blocco schermo" per una simulazione (iOS può renderla diversamente a seconda dello sfondo).
 - Per applicare la modifica su iPhone, SOSTITUISCI il vecchio codice dello script INJ Node con quello aggiornato dal repository. I wallet già salvati localmente restano configurati.
 - Lo spazio dei widget nella schermata di blocco è fissato da iOS. Per una vista fisicamente più grande, usa il widget medio/grande sulla Home.
+
+AGGIORNAMENTO VELOCE (v1.2)
+- Il widget chiede a iOS un aggiornamento non prima di 1 minuto. È SOLO una richiesta: iOS decide quando consentirlo, spesso molto meno frequentemente (circa 15-60 minuti).
+- Le chiamate API hanno timeout ridotto a 5 secondi e fino a cinque wallet vengono letti in parallelo per accelerare l'elaborazione.
+- Tocca il widget per avviare lo script e visualizzare una nuova anteprima con i dati aggiornati (può essere necessario sbloccare l'iPhone). Questo non obbliga iOS a ridisegnare subito il widget nella schermata di blocco.
+- Sulla schermata di blocco viene mostrato anche l'orario di acquisizione del prezzo; se è in cache, l'orario resta quello dell'ultima acquisizione reale.
+- Per applicare la versione, sostituisci il codice esistente in Scriptable; gli indirizzi già inseriti rimangono nella configurazione locale.

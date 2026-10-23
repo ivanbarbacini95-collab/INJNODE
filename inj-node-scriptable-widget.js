@@ -1,4 +1,4 @@
-// INJ NODE · Scriptable iPhone Widget · v1.0
+// INJ NODE · Scriptable iPhone Widget · v1.2 (fast-refresh best effort)
 // Read-only: no seed phrases, no keys, no wallet connections.
 // Launch in Scriptable once to configure public inj1 addresses.
 (async function(){
@@ -44,7 +44,7 @@ const index=/^[1-9]\d?$/.test(parameter)?Number(parameter)-1:-1;
 const selected=index>=0&&index<settings.addresses.length?[settings.addresses[index]]:settings.addresses.slice();
 const selectedLabel=index>=0&&index<settings.addresses.length?"WALLET "+(index+1):selected.length+" WALLET";
 async function getJSON(url){
- const req=new Request(url);req.timeoutInterval=7;
+ const req=new Request(url);req.timeoutInterval=5;
  const obj=await req.loadJSON();
  if(req.response&&req.response.statusCode>=400)throw Error("HTTP "+req.response.statusCode);
  return obj;
@@ -79,7 +79,7 @@ async function inspectWallet(address){
 }
 async function inspectAll(){
  const rows=Array(selected.length);let cursor=0;
- await Promise.all(Array.from({length:Math.min(3,selected.length)},async()=>{
+ await Promise.all(Array.from({length:Math.min(5,selected.length)},async()=>{
   while(cursor<selected.length){const i=cursor++;rows[i]=await inspectWallet(selected[i]);}
  }));
  return rows;
@@ -138,8 +138,11 @@ function render(result,rate,family){
  const w=new ListWidget(),g=new LinearGradient();
  g.colors=[new Color("#060e1c"),new Color("#102b3a"),new Color("#07121e")];g.locations=[0,.58,1];g.startPoint=new Point(0,0);g.endPoint=new Point(1,1);
  w.backgroundGradient=g;w.setPadding(isSmall?12:16,isSmall?13:17,isSmall?11:15,isSmall?13:17);
- w.refreshAfterDate=new Date(Date.now()+15*60*1000);
- if(/^https:\/\/\S+$/.test(settings.site||""))w.url=settings.site;
+ // Earliest permitted refresh (not a 1-minute guarantee; iOS applies its own budget).
+ w.refreshAfterDate=new Date(Date.now()+60*1000);
+ // A tap opens and runs the same script for an immediate fresh preview in Scriptable.
+ // iOS may still delay updating the Lock Screen snapshot itself.
+ try { const runLink=URLScheme.forRunningScript(); if(runLink)w.url=runLink+(runLink.includes("?")?"&":"?")+"refresh=1"; }catch(_){}
  // Lock Screen has its own fixed iOS accessory sizes; maximize typography instead of
  // rendering the much taller Home Screen layout, which was being shrunk/clipped.
  if(family==="accessoryRectangular"){
@@ -148,7 +151,7 @@ function render(result,rate,family){
   const change=result.change===null?"—":(result.change>=0?"+":"")+fixed(result.change,2)+"%";
   const tint=result.change===null?palette.soft:result.change>=0?palette.green:palette.red;
   const row=w.addStack();row.layoutHorizontally();row.centerAlignContent();
-  txt(row,"INJ",10,palette.soft,true);row.addSpacer(6);
+  txt(row,"INJ "+clock(result.priceAt||result.at),9,palette.soft,true);row.addSpacer(6);
   txt(row,p,19,palette.white,true);
   w.addSpacer(3);
   const trend=w.addStack();trend.layoutHorizontally();trend.centerAlignContent();
@@ -231,7 +234,9 @@ function render(result,rate,family){
  return w;
 }
 let preview="medium";
-if(!config.runsInWidget){
+const quickRefresh=String(args.queryParameters?.refresh||"")==="1";
+if(quickRefresh)preview="accessoryRectangular";
+if(!config.runsInWidget&&!quickRefresh){
  const menu=new Alert();menu.title="INJ NODE · WIDGET";
  menu.message="I wallet vanno configurati una volta: Scriptable non può leggere quelli memorizzati in Safari.";
  menu.addAction("Anteprima blocco schermo");menu.addAction("Anteprima media");menu.addAction("Configura / modifica");menu.addAction("Anteprima grande");menu.addAction("Anteprima piccola");menu.addCancelAction("Esci");
