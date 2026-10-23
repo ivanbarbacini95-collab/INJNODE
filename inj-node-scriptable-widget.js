@@ -140,6 +140,40 @@ function render(result,rate,family){
  w.backgroundGradient=g;w.setPadding(isSmall?12:16,isSmall?13:17,isSmall?11:15,isSmall?13:17);
  w.refreshAfterDate=new Date(Date.now()+15*60*1000);
  if(/^https:\/\/\S+$/.test(settings.site||""))w.url=settings.site;
+ // Lock Screen has its own fixed iOS accessory sizes; maximize typography instead of
+ // rendering the much taller Home Screen layout, which was being shrunk/clipped.
+ if(family==="accessoryRectangular"){
+  w.setPadding(1,2,0,2);
+  const p=result.quote?money(result.quote.usd,rate):"—";
+  const change=result.change===null?"—":(result.change>=0?"+":"")+fixed(result.change,2)+"%";
+  const tint=result.change===null?palette.soft:result.change>=0?palette.green:palette.red;
+  const row=w.addStack();row.layoutHorizontally();row.centerAlignContent();
+  txt(row,"INJ",10,palette.soft,true);row.addSpacer(6);
+  txt(row,p,19,palette.white,true);
+  w.addSpacer(3);
+  const trend=w.addStack();trend.layoutHorizontally();trend.centerAlignContent();
+  txt(trend,"DALLE 23",9,palette.soft,true);trend.addSpacer(5);
+  txt(trend,change,12,tint,true);
+  w.addSpacer(3);
+  const reward=w.addStack();reward.layoutHorizontally();reward.centerAlignContent();
+  txt(reward,"REWARD",9,palette.soft,true);reward.addSpacer(5);
+  txt(reward,result.reward===null?"—":fixed(result.reward,4)+" INJ",12,palette.white,true);
+  return w;
+ }
+ if(family==="accessoryInline"){
+  w.setPadding(0,0,0,0);
+  const p=result.quote?money(result.quote.usd,rate):"—";
+  const change=result.change===null?"":(" "+(result.change>=0?"+":"")+fixed(result.change,1)+"%");
+  txt(w,"INJ "+p+change,12,palette.white,true);
+  return w;
+ }
+ if(family==="accessoryCircular"){
+  w.setPadding(1,0,0,0);
+  const p=result.quote?money(result.quote.usd,rate):"—";
+  txt(w,"INJ",11,palette.soft,true);w.addSpacer(3);
+  txt(w,p,17,palette.white,true);
+  return w;
+ }
  const header=w.addStack();header.layoutHorizontally();txt(header,"◈ INJ NODE",isSmall?10:11,palette.white,true);header.addSpacer();
  txt(header,result.stale?"● CACHE":"● SYNC",8,result.stale?palette.soft:palette.blue,true);
  w.addSpacer(isSmall?10:14);
@@ -200,11 +234,11 @@ let preview="medium";
 if(!config.runsInWidget){
  const menu=new Alert();menu.title="INJ NODE · WIDGET";
  menu.message="I wallet vanno configurati una volta: Scriptable non può leggere quelli memorizzati in Safari.";
- menu.addAction("Anteprima media");menu.addAction("Configura / modifica");menu.addAction("Anteprima grande");menu.addAction("Anteprima piccola");menu.addCancelAction("Esci");
+ menu.addAction("Anteprima blocco schermo");menu.addAction("Anteprima media");menu.addAction("Configura / modifica");menu.addAction("Anteprima grande");menu.addAction("Anteprima piccola");menu.addCancelAction("Esci");
  const action=await menu.presentSheet();
- if(action===4||action<0){Script.complete();return;}
- if(action===1)await configure();
- preview=action===2?"large":action===3?"small":"medium";
+ if(action===5||action<0){Script.complete();return;}
+ if(action===2)await configure();
+ preview=action===0?"accessoryRectangular":action===3?"large":action===4?"small":"medium";
 }
 const start=nightAt(Date.now()),cached=read("last",null);
 const [quote,night,rows,fx]=await Promise.all([price(),nightSeries(start),inspectAll(),euro()]);
@@ -229,7 +263,10 @@ if(quote||walletOk){
 const family=config.runsInWidget?(config.widgetFamily||"medium"):preview;
 const widget=render(result,fx,family);Script.setWidget(widget);
 if(!config.runsInWidget){
- if(family==="large")await widget.presentLarge();else if(family==="small")await widget.presentSmall();else await widget.presentMedium();
+ if(family==="accessoryRectangular")await widget.presentAccessoryRectangular();
+ else if(family==="large")await widget.presentLarge();
+ else if(family==="small")await widget.presentSmall();
+ else await widget.presentMedium();
 }
 Script.complete();
 })().catch(e=>{console.error("INJ NODE: "+String(e));Script.complete();});

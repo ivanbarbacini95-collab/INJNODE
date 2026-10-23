@@ -25,3 +25,9 @@ PRECISIONE:
 Aggiornamento: Scriptable chiede un refresh dopo 15 minuti, ma iOS decide la frequenza effettiva. Un widget Scriptable NON invia notifiche push automatiche a un'ora esatta quando l'app è chiusa. Per notifiche mattutine garantite serve un sistema separato.
 
 Mai incollare chiavi private, seed phrase o password. Solo indirizzi pubblici inj1.
+
+SCHERMATA DI BLOCCO (iOS)
+- La nuova versione ottimizza il widget rettangolare sotto l'orologio, con prezzo più grande, variazione dalle 23:00 e reward leggibili.
+- In Scriptable scegli "Anteprima blocco schermo" per una simulazione (iOS può renderla diversamente a seconda dello sfondo).
+- Per applicare la modifica su iPhone, SOSTITUISCI il vecchio codice dello script INJ Node con quello aggiornato dal repository. I wallet già salvati localmente restano configurati.
+- Lo spazio dei widget nella schermata di blocco è fissato da iOS. Per una vista fisicamente più grande, usa il widget medio/grande sulla Home.
