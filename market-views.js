@@ -318,22 +318,38 @@
   node.title=text;
  }
  function renderMap(items){
-  const coins=ranked(items),fragment=document.createDocumentFragment(),next=new Map();
+  const coins=ranked(items),next=new Map();
+  // Preserve each card, logo and its composited background between feeds:
+  // replacing the whole grid every 90s makes iPad Safari visibly flash.
+  const sameOrder=coins.length>0&&grid.children.length===coins.length
+   &&coins.every((coin,i)=>grid.children[i]?.dataset.coin===coin.id);
   if(coins.length){
+   const fragment=sameOrder?null:document.createDocumentFragment();
    for(const coin of coins){
-    const el=tile(coin);
-    fragment.append(el);
+    const el=mapTiles.get(coin.id)||tile(coin);
+    recolor(el,coin);
+    el.dataset.previousPrice=String(coin.current_price);
+    const symbol=el.querySelector('.hm-symbol'),name=el.querySelector('.hm-name'),rank=el.querySelector('.hm-rank');
+    const newSymbol=String(coin.symbol||'').toUpperCase(),newName=String(coin.name||'');
+    if(symbol&&symbol.textContent!==newSymbol)symbol.textContent=newSymbol;
+    if(name&&name.textContent!==newName)name.textContent=newName;
+    const newRank=finite(coin.market_cap_rank)?'#'+Math.trunc(num(coin.market_cap_rank)):'';
+    if(rank&&rank.textContent!==newRank)rank.textContent=newRank;
     next.set(coin.id,el);
+    if(fragment)fragment.append(el);
    }
+   // Filters and rank changes can alter the layout, but identical frames
+   // should never detach and re-create 200 cards.
+   if(fragment)grid.replaceChildren(fragment);
   }else{
-   const empty=document.createElement('div');empty.className='heatmap-empty';
-   empty.textContent=section==='favorites'&&favorites.size===0
+   const message=section==='favorites'&&favorites.size===0
     ?tr('Nessuna crypto salvata. Tocca una stella in Global Crypto.','No saved cryptos yet. Tap a star in Global Crypto.')
     :all().length?tr('Nessuna crypto con dati disponibili per questo periodo','No cryptos with available data for this period')
     :tr('Caricamento dati di mercato…','Loading market data…');
-   fragment.append(empty);
+   let empty=grid.querySelector('.heatmap-empty');
+   if(!empty){empty=document.createElement('div');empty.className='heatmap-empty';grid.replaceChildren(empty);}
+   if(empty.textContent!==message)empty.textContent=message;
   }
-  grid.replaceChildren(fragment);
   mapTiles=next;
   $('heatmapCount').textContent=tr('Crypto visualizzate: ','Displayed assets: ')+coins.length;
  }
