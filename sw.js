@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.07.49-workspace-free-canvas';
+const CACHE_NAME = 'inj-node-v16.08.00-workspace-pro';
 const APP_SHELL = [
   './workspace.html',
   './workspace-layout.css?v=160749',
@@ -10,8 +10,10 @@ const APP_SHELL = [
   './workspace-values.js?v=160744',
   './workspace-home.css?v=160743',
   './workspace.css?v=160746',
-  './workspace-model.js?v=160749',
-  './workspace.js?v=160749',
+  './workspace-model.js?v=160800',
+  './workspace.js?v=160800',
+  './workspace-pro.js?v=160800',
+  './workspace-pro.css?v=160800',
   './navigation.js?v=160743',
   './reward-ladder-home.css?v=160739',
   './reward-ladder.html',
