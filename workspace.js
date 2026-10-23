@@ -137,8 +137,8 @@ function moveDrag(clientX,clientY){if(!drag)return;const d=drag,dx=(clientX-d.st
  if(Math.abs(dx*d.unit)<2&&Math.abs(dy*ROW)<2&&!d.moved)return;d.moved=true;
  for(const i of active().items){const old=d.snapshot.find(x=>x.uid===i.uid);i.layouts[d.key]={...old.layouts[d.key]};}
  d.item.layouts[d.key]=M.transform(d.rect,d.action==='move'?'move':d.edge,dx,dy,cols(),{snap:!!active().snap,minW:Math.min(cols(),108/d.unit),minH:98/ROW});
- window.INJWorkspaceProHooks?.dragMove?.(d);
- if(active().snap)M.settle(active().items,d.key,cols(),d.item.uid);
+ const movingGroup=window.INJWorkspaceProHooks?.dragMove?.(d);
+ if(active().snap&&!movingGroup)M.settle(active().items,d.key,cols(),d.item.uid);
  for(const i of active().items)geometry([...$('wsGrid').children].find(n=>n.dataset.uid===i.uid),i);
  const end=Math.max(...active().items.map(i=>i.layouts[d.key].y+i.layouts[d.key].h));$('wsGrid').style.height=Math.max(end*ROW,innerHeight*.7)+'px';
 }
@@ -192,7 +192,7 @@ const feed=Live.createFeed((price,time)=>{if(time<data.lastTradeAt)return;data.l
 function refresh(){feed.watch(active().items.some(i=>C.isChart(i.type))||$('wsCatalog').open);sections.refresh([...active().items,...($('wsCatalog').open?[...document.querySelectorAll('.ws-preview')].map(n=>n._item):[])]);refreshWallets();refreshMarket();const tfs=new Set(active().items.filter(i=>C.isChart(i.type)).map(i=>i.timeframe));if($('wsCatalog').open)for(const i of [...document.querySelectorAll('.ws-preview')].map(n=>n._item))if(C.isChart(i.type))tfs.add(i.timeframe);tfs.forEach(chart);}
 window.addEventListener('resize',()=>{if(drag)endDrag(true);if(lastMode!==mode())lastMode=mode();layout()});window.addEventListener('storage',e=>{if(e.key===KEY){try{db=M.sanitize(read(KEY,null));layout()}catch(_){}}else{language();refresh()}});document.addEventListener('visibilitychange',()=>{if(!document.hidden){feed.resume();refresh();updateValues()}else feed.pause()});
 window.addEventListener('keydown',e=>{if(e.key==='Escape'&&drag)endDrag(true)});
-function changeSectionOption(item,key,value){item[key]=value;if(key==='targetAmount')item._targetEdited=true;const actual=active().items.find(i=>i===item);if(actual){window.INJWorkspaceProHooks?.beforeChange?.();persist();}else previewOptions.set(item.type,item);updateValues();refresh();}
+function changeSectionOption(item,key,value){const actual=active().items.find(i=>i===item);if(actual)window.INJWorkspaceProHooks?.beforeChange?.();item[key]=value;if(key==='targetAmount')item._targetEdited=true;if(actual)persist();else previewOptions.set(item.type,item);updateValues();refresh();}
 const sections=INJWorkspaceSections.create({M,C,t,read,el,money,quantity,num,metrics,rowsFor,selected,wallets,paint:INJWorkspaceValues.paint,json,lcd,supplement:(address,patch)=>{data.supplements[address]={...data.supplements[address],...patch};updateValues()},
  price:()=>Date.now()-data.priceAt<120000?data.price:null,priceAt:()=>data.priceAt,marketChange:()=>Number.isFinite(data.change)?data.change:null,
  currency:()=>localStorage.getItem('inj_monitor_currency')==='EUR'?'EUR':'USD',fx:()=>localStorage.getItem('inj_monitor_currency')==='EUR'?Number(localStorage.getItem('inj_monitor_eur_rate')):1,
