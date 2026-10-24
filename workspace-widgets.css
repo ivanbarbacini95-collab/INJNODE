@@ -183,3 +183,16 @@ html[data-inj-page="workspace"] .reward-row.velocity-expanded .reward-velocity-t
 .ws-spot-change{font-size:clamp(14px,1.7vw,22px);font-weight:700}
 .ws-spot-tile.ws-up{color:var(--ws-positive,#32d6a0)}.ws-spot-tile.ws-down{color:var(--ws-negative,#ff6175)}
 @media(hover:none){.ws-selection-done{opacity:.5}}
+
+/* Isolate coin edit from card actions: close/remove has its own reserved area. */
+.ws-card[data-type="coinspot"] .ws-selection-done{right:72px;top:2px;z-index:2}
+.ws-card[data-type="coinspot"] .ws-card-controls{position:relative;z-index:12}
+.ws-card[data-type="coinspot"] .ws-card-controls [data-action="remove"]{position:relative;z-index:15;pointer-events:auto}
+.ws-book-stacked .ws-book-ask{display:flex;flex-direction:column;justify-content:flex-end}
+.ws-book-stacked .ws-book-ask .ws-book-level{color:var(--ws-negative,#ff6175)}
+.ws-book-stacked .ws-book-bid .ws-book-level{color:var(--ws-positive,#32d6a0)}
+.ws-book-live-price{font-size:clamp(20px,5cqw,34px);font-variant-numeric:tabular-nums}
+.ws-book-price{text-align:center;display:flex;justify-content:center;align-items:center;gap:9px}
+.ws-book-live-arrow{font-size:22px;opacity:.8}
+.ws-book-price[data-trend="up"]{color:var(--ws-positive,#32d6a0)}
+.ws-book-price[data-trend="down"]{color:var(--ws-negative,#ff6175)}
