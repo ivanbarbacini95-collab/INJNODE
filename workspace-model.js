@@ -28,6 +28,22 @@ function settle(items,key,cols,priority){
 function firstFree(items,key,cols,w,h){
  w=Math.min(w,cols);for(let y=0;y<12000;y++)for(let x=0;x<=cols-w;x++){const r={x,y,w,h};if(!items.some(i=>overlaps(r,i.layouts[key])))return r;}return {x:0,y:12000,w,h};
 }
+// Copy card-specific options and allocate independent nonoverlapping rectangles.
+function cloneCard(source,existing,uid){
+ const copy=structuredClone(source);copy.uid=uid;copy.cardLocked=false;copy.group='';
+ for(const [key,cols] of [['desktop',12],['mobile',4]]){
+  const original=normalize(source.layouts[key],cols);
+  const target={...original,y:original.y+original.h};
+  let safety=0;
+  while(safety++<10000){
+   const obstacles=existing.filter(i=>i.layouts?.[key]&&overlaps(target,normalize(i.layouts[key],cols)));
+   if(!obstacles.length)break;
+   target.y=Math.max(target.y,...obstacles.map(i=>normalize(i.layouts[key],cols).y+normalize(i.layouts[key],cols).h));
+  }
+  copy.layouts[key]=normalize(target,cols);
+ }
+ return copy;
+}
 function aggregate(rows){
  if(!rows.length||!rows.every(r=>r&&['staked','available','rewards'].every(k=>typeof r[k]==='number'&&Number.isFinite(r[k])&&r[k]>=0)))return null;
  const sum=k=>rows.reduce((a,r)=>a+r[k],0),staked=sum('staked'),available=sum('available'),rewards=sum('rewards');
@@ -49,5 +65,5 @@ function sanitize(input){
  });
  if(!presets.length)throw Error('No presets');return {version:1,presets,active:presets.some(p=>p.id===input.active)?input.active:presets[0].id,defaultId:presets.some(p=>p.id===input.defaultId)?input.defaultId:null};
 }
-const api={timeframes,parseKlines,types,normalize,transform,overlaps,settle,firstFree,aggregate,sanitize};if(typeof module!=='undefined')module.exports=api;root.INJWorkspaceModel=api;
+const api={timeframes,parseKlines,types,normalize,transform,overlaps,settle,firstFree,cloneCard,aggregate,sanitize};if(typeof module!=='undefined')module.exports=api;root.INJWorkspaceModel=api;
 })(globalThis);

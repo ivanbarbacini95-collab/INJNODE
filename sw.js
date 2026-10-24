@@ -1,5 +1,9 @@
-const CACHE_NAME = 'inj-node-v16.10.24-workspace-favorites-1';
+const CACHE_NAME = 'inj-node-v16.10.24-workspace-fullscreen-clone-1';
 const APP_SHELL = [
+  './workspace-fullscreen-lock.css?v=16102412',
+  './workspace.js?v=16102412',
+  './workspace-pro.js?v=16102412',
+  './workspace-model.js?v=16102412',
   './workspace-favorites-controls.css?v=16102411',
   './workspace-sections.js?v=16102411',
   './card-titles-uppercase.css?v=20261024',

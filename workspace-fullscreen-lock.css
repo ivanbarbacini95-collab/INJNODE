@@ -1,0 +1,7 @@
+/* Fullscreen locks geometry without disabling data interactions. */
+body.ws-immersive #wsGrid .ws-card{cursor:default!important}
+body.ws-immersive #wsGrid .ws-card-head{cursor:default!important;touch-action:pan-y!important}
+body.ws-immersive #wsGrid :is(.ws-card-controls,.ws-drag,.ws-resize,.ws-pro-context,.ws-pro-history-bar){
+ display:none!important;pointer-events:none!important
+}
+body.ws-immersive #wsGrid .ws-card-head :is(button,[data-action]){pointer-events:none!important}

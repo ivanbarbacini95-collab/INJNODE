@@ -13,7 +13,8 @@ const snapshot=()=>JSON.stringify(A.getDb());
 const preset=()=>A.active();
 const items=()=>preset().items;
 const get=id=>items().find(i=>i.uid===id);
-const allowed=()=>!preset().locked;
+const sealed=()=>document.body.classList.contains('ws-immersive');
+const allowed=()=>!preset().locked&&!sealed();
 const notice=A.notice;
 function pushHistory(before=snapshot()){
  if(undoStack.at(-1)!==before){undoStack.push(before);if(undoStack.length>80)undoStack.shift();}
@@ -28,14 +29,15 @@ function restore(json){
   A.persist();A.layout();A.refresh();buttons();updateStatus(true);
  }catch(err){console.warn('Workspace history restore skipped',err);}
 }
-function undo(){if(!undoStack.length)return;const current=snapshot(),previous=undoStack.pop();redoStack.push(current);restore(previous);}
-function redo(){if(!redoStack.length)return;const current=snapshot(),next=redoStack.pop();undoStack.push(current);restore(next);}
+function undo(){if(sealed()||!undoStack.length)return;const current=snapshot(),previous=undoStack.pop();redoStack.push(current);restore(previous);}
+function redo(){if(sealed()||!redoStack.length)return;const current=snapshot(),next=redoStack.pop();undoStack.push(current);restore(next);}
 function mutate(fn){
  if(!allowed())return notice(T('Sblocca il layout per modificare','Unlock the layout to edit'));
  if(selection().some(i=>i.cardLocked))return notice(T('Sblocca le card selezionate prima di modificarle','Unlock selected cards before editing'));
  pushHistory();$('wsConfig').close();fn();A.persist();A.layout();A.refresh();buttons();
 }
 function select(uid,additive){
+ if(sealed())return;
  const item=get(uid);if(!item)return;
  const group=item.group||'';
  const groupIds=group?items().filter(x=>x.group===group).map(x=>x.uid):[uid];
@@ -104,18 +106,9 @@ function resizeView(v){
  });
 }
 function duplicate(){
- if(items().length+selected.size>80)return notice(T('Limite di 80 card per preset','80 cards per preset limit'));
- mutate(()=>{
-  const groupMap=new Map(),created=[];
-  for(const i of selection()){
-   const copy=structuredClone(i);copy.uid=A.uid();copy.cardLocked=false;
-   if(copy.group){if(!groupMap.has(copy.group))groupMap.set(copy.group,A.uid());copy.group=groupMap.get(copy.group);}
-   for(const key of ['desktop','mobile'])copy.layouts[key].y+=copy.layouts[key].h;
-   items().push(copy);created.push(copy);
-  }
-  selected.clear();created.forEach(i=>selected.add(i.uid));
-  if(preset().snap)for(const [key,c] of [['desktop',12],['mobile',4]])A.model.settle(items(),key,c);
- });
+ if(!allowed())return;
+ const created=A.duplicateCards(selection());
+ if(created.length){selected.clear();created.forEach(i=>selected.add(i.uid));buttons();}
 }
 function group(set){
  mutate(()=>{
@@ -145,6 +138,7 @@ function distribute(){
 bar.addEventListener('click',e=>{const a=e.target.closest('[data-pro-action]')?.dataset.proAction;if(a)run(a);});
 historyBar.addEventListener('click',e=>{const a=e.target.closest('[data-pro-action]')?.dataset.proAction;if(a)run(a);});
 function run(a){
+ if(sealed())return;
  if(a==='undo')return undo();
  if(a==='redo')return redo();
  if(['compact','standard','expanded'].includes(a))return resizeView(a);
@@ -159,11 +153,13 @@ function run(a){
  if(a==='cardlock'&&allowed()){pushHistory();const lock=!selection().every(i=>i.cardLocked);for(const i of selection())i.cardLocked=lock;A.persist();A.layout();}
 }
 grid.addEventListener('pointerdown',e=>{
+ if(sealed())return;
  const node=e.target.closest('.ws-card');if(!node||e.target.closest('button,input,select,a,.ws-section-controls,.ws-interactive-chart,.ws-plot'))return;
  if(e.shiftKey||e.ctrlKey||e.metaKey){select(node.dataset.uid,true);e.stopImmediatePropagation();e.preventDefault();}
  else if(!e.target.closest('.ws-card-head')||get(node.dataset.uid)?.cardLocked)select(node.dataset.uid,false);
 },true);
 document.addEventListener('keydown',e=>{
+ if(sealed())return;
  const el=e.target,isTyping=el?.matches?.('input,textarea,select,[contenteditable]')||el?.closest?.('dialog');
  if(isTyping)return;
  const cmd=e.ctrlKey||e.metaKey;
@@ -210,12 +206,14 @@ function alignGuide(d,rect){
 window.INJWorkspaceProHooks={
  beforeChange(){pushHistory();},
  pointerSelect(e,item){
+  if(sealed())return true;
   if(e.shiftKey||e.metaKey||e.ctrlKey){select(item.uid,true);return true;}
   if(!selected.has(item.uid))select(item.uid,false);
   return false;
  },
- dragStart(d){dragBefore=snapshot();$('wsConfig').close();if(!selected.has(d.item.uid))select(d.item.uid,false);},
+ dragStart(d){if(sealed())return;dragBefore=snapshot();$('wsConfig').close();if(!selected.has(d.item.uid))select(d.item.uid,false);},
  dragMove(d){
+  if(sealed())return false;
   const moving=d.item.layouts[d.key];
   d.item.layouts[d.key]=alignGuide(d,{...moving});
   if(d.action!=='move'||selected.size<2||!selected.has(d.item.uid))return false;
@@ -245,6 +243,7 @@ window.INJWorkspaceProHooks={
   return true;
  },
  dragEnd(d,cancel){guides();if(!cancel&&d.moved&&dragBefore)pushHistory(dragBefore);dragBefore=null;},
+ immersiveChange(on){if(on){selected.clear();dragBefore=null;guides();$('wsConfig').close();}buttons();},
  afterLayout(){buttons();updateStatus();renderMonitor();},
  refreshStatus(){updateStatus();}
 };

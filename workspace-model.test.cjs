@@ -27,3 +27,41 @@ test('resizing north and west keeps opposite edges anchored and enforces minimum
 test('free transforms remain inside the canvas while grid snapping is optional',()=>{const r={x:1,y:2,w:4,h:3};assert.equal(M.transform(r,'move',.4,.4,12).x,1.4);assert.equal(M.transform(r,'move',.4,.4,12,{snap:true}).x,1);assert.equal(M.transform(r,'e',100,0,12).w,11);assert.equal(M.transform(r,'move',100,-100,12).x,8);assert.equal(M.transform(r,'move',100,-100,12).y,0)});
 test('grid presets retain collision avoidance; older presets keep their exact arrangement',()=>{const items=[card('a',{x:0,y:0,w:6,h:3}),card('b',{x:4,y:0,w:4,h:3})],wrap=snap=>({version:1,presets:[{id:'p',snap,items}]});assert.equal(M.sanitize(wrap(true)).presets[0].items[1].layouts.desktop.y,3);assert.equal(M.sanitize(wrap(undefined)).presets[0].items[1].layouts.desktop.y,0)});
 test('enabling the grid aligns absolute coordinates after earlier free movement',()=>{const moved=M.transform({x:1.137,y:.323,w:4,h:3},'move',.1,.1,12,{snap:true});assert.equal(moved.x,1);assert.equal(moved.y,0)});
+
+
+test('all catalog cards duplicate as independent instances, keeping data options and nonoverlapping layouts',()=>{
+ for(const spec of C.entries){
+  const original={
+   ...C.defaults(spec.type),uid:'original',type:spec.type,
+   source:spec.scope==='market'?'market':'selected',title:'CUSTOM',cardLocked:false,
+   marketRange:'7d',historyRange:'7d',timeframe:'4h',chartStyle:'candles',
+   heatmapCoins:['bitcoin','injective-protocol'],bookStep:0.01,
+   layouts:{
+    desktop:{x:0,y:0,w:Math.min(12,spec.w),h:spec.h},
+    mobile:{x:0,y:0,w:Math.min(4,spec.w),h:spec.h}
+   }
+  };
+  const existing=[original,{...original,uid:'other',layouts:{
+   desktop:{...original.layouts.desktop,y:original.layouts.desktop.h},
+   mobile:{...original.layouts.mobile,y:original.layouts.mobile.h}
+  }}];
+  const copy=M.cloneCard(original,existing,'copy');
+  assert.equal(copy.uid,'copy',spec.type);
+  assert.equal(copy.type,spec.type);
+  assert.equal(copy.source,original.source);
+  assert.equal(copy.cardLocked,false);
+  assert.equal(copy.group,'');
+  assert.notEqual(copy.heatmapCoins,original.heatmapCoins);
+  assert.deepEqual(copy.heatmapCoins,original.heatmapCoins);
+  for(const key of ['desktop','mobile']){
+   assert.ok(existing.every(item=>!M.overlaps(item.layouts[key],copy.layouts[key])),spec.type+' '+key);
+  }
+  const saved=M.sanitize({version:1,presets:[{id:'p',items:[original,copy]}]}).presets[0].items;
+  assert.equal(saved[1].marketRange,'7d');
+  assert.equal(saved[1].historyRange,'7d');
+  assert.equal(saved[1].timeframe,'4h');
+  assert.equal(saved[1].chartStyle,'candles');
+  assert.equal(saved[1].bookStep,.01);
+  assert.deepEqual(saved[1].heatmapCoins,original.heatmapCoins);
+ }
+});
