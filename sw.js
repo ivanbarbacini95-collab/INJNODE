@@ -1,8 +1,8 @@
-const CACHE_NAME = 'inj-node-v16.10.24-workspace-fullscreen-clone-1';
+const CACHE_NAME = 'inj-node-v16.10.24-workspace-mobile-edit-1';
 const APP_SHELL = [
-  './workspace-fullscreen-lock.css?v=16102412',
-  './workspace.js?v=16102412',
-  './workspace-pro.js?v=16102412',
+  './workspace-fullscreen-lock.css?v=16102413',
+  './workspace.js?v=16102413',
+  './workspace-pro.js?v=16102413',
   './workspace-model.js?v=16102412',
   './workspace-favorites-controls.css?v=16102411',
   './workspace-sections.js?v=16102411',
