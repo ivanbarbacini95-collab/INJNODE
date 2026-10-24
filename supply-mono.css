@@ -15,9 +15,9 @@
    Do not touch SVG descendants: chart lettering and icons are owned by SVG. */
 html,
 body,
-body :not(svg):not(svg *),
+body :not(svg):not(svg *):not(.material-icons):not(.material-symbols-outlined):not(.material-symbols-rounded):not(.fa):not(.fas):not(.far):not(.fab):not(.fal):not(.fad),
 dialog,
-dialog :not(svg):not(svg *) {
+dialog :not(svg):not(svg *):not(.material-icons):not(.material-symbols-outlined):not(.material-symbols-rounded):not(.fa):not(.fas):not(.far):not(.fab):not(.fal):not(.fad) {
   font-family: var(--inj-node-terminal-font) !important;
   font-variant-numeric: tabular-nums lining-nums;
 }
@@ -27,7 +27,4 @@ html :is(button, input, select, option, textarea) {
   font-family: var(--inj-node-terminal-font) !important;
 }
 
-/* Icon-font components should retain their own glyph mapping. */
-html :is(.material-icons, .material-symbols-outlined, .material-symbols-rounded, .fa, .fas, .far, .fab, .fal, .fad) {
-  font-family: revert !important;
-}
+/* Existing icon-font family rules are intentionally preserved. */
