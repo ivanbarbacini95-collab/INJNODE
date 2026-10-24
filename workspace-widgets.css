@@ -170,3 +170,16 @@ html[data-inj-page="workspace"] .reward-row.velocity-expanded .reward-velocity-t
 .ws-book-columns{color:var(--ws-muted);font-size:9px}.ws-book-level{background:linear-gradient(to left,color-mix(in srgb,currentColor 12%,transparent) var(--depth),transparent var(--depth));font-variant-numeric:tabular-nums}
 .ws-book-price{border-block:1px solid var(--ws-line);padding:10px 0;color:var(--ws-fg)}.ws-book-price .ws-section-row{justify-content:center;flex-direction:column;border:0}.ws-book-price .ws-section-value{font-size:clamp(18px,5cqw,30px)}
 .ws-coin-picker-list{max-height:45dvh;overflow:auto;margin:12px 0;border-block:1px solid var(--ws-line)}.ws-coin-picker-list label{display:flex;align-items:center;gap:10px;padding:9px 4px;font-size:12px}.ws-coin-picker-list label[hidden]{display:none}.ws-coin-picker-list input{width:16px;min-height:16px;accent-color:var(--ws-accent)}.ws-coin-picker-actions{display:flex;gap:8px;margin-top:8px}.ws-coin-picker>input{width:100%}.ws-heatmap-controls{flex-shrink:0}.ws-coin-picker h2{font-size:16px}
+
+/* Minimal coin tiles: the selector is visible on initial setup, then on hover/focus. */
+.ws-selection-done{position:absolute;right:8px;top:8px;z-index:3;opacity:0;transition:opacity .16s ease}
+.ws-section-body:hover>.ws-selection-done,.ws-section-body:focus-within>.ws-selection-done,.ws-preview .ws-selection-done{opacity:1}
+.ws-selection-done button{font-size:10px!important;padding:4px 8px!important}
+.ws-section-body[data-widget='coinspot']{position:relative;display:flex;flex-direction:column;justify-content:center;min-height:100%}
+.ws-spot-tile{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:7px;min-width:0;text-align:center}
+.ws-spot-symbol{font-size:clamp(18px,2.3vw,30px);letter-spacing:.1em}
+.ws-spot-name{opacity:.55;font-size:11px}
+.ws-spot-price{font-size:clamp(18px,2.8vw,36px);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.ws-spot-change{font-size:clamp(14px,1.7vw,22px);font-weight:700}
+.ws-spot-tile.ws-up{color:var(--ws-positive,#32d6a0)}.ws-spot-tile.ws-down{color:var(--ws-negative,#ff6175)}
+@media(hover:none){.ws-selection-done{opacity:.5}}
