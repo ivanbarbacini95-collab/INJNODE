@@ -137,6 +137,12 @@ function create(api){
  }
  }
  function render(i,host){if(!supported.includes(i.type))return false;
+  let oldBook=null;
+  if(i.type==='orderbook'){
+   const ask=host.querySelector?.('.ws-book-ask'),bid=host.querySelector?.('.ws-book-bid');
+   oldBook={ask:ask?{top:ask.scrollTop,pinned:ask.scrollHeight-ask.clientHeight-ask.scrollTop<30}:null,
+            bid:bid?{top:bid.scrollTop,pinned:bid.scrollTop<30}:null};
+  }
  const d=dataFor(i),{m,p,values:v}=d;host.replaceChildren();host.classList.add('ws-section-body');host.classList.toggle('ws-sensitive',api.C.byType[i.type].scope!=='market');
  host.dataset.widget=i.type;
  if(extra.includes(i.type)&&i.type!=='favoritesheatmap'){renderExtra(i,host,d);
@@ -164,12 +170,57 @@ function create(api){
    tile.append(el('strong','ws-spot-price',money(safe(coin.current_price))),el('span','ws-spot-change',change===null?'—':(change>0?'+':'')+num(change,2)+'%'));
    host.append(tile);}
  }else if(i.type==='orderbook'){
-  if(!state.depth)empty(host);else{
+  if(!state.depth)empty(host);
+  else{
+   // One vertical stack, like the standalone Order Book in Home.
    const grid=el('div','ws-book ws-book-stacked');
-   const side=(key,rows,label)=>{const col=el('section','ws-book-'+key);col.append(el('h3','',label));const head=el('div','ws-book-columns');head.append(el('span','',t('Prezzo','Price')+' · '+api.currency()),el('span','',t('Quantità INJ','Amount INJ')));col.append(head);const visible=rows.slice(0,20).sort((a,b)=>key==='ask'?Number(b[0])-Number(a[0]):Number(b[0])-Number(a[0])),max=Math.max(...visible.map(r=>Number(r[1])),1);for(const [j,r]of visible.entries()){const row=el('div','ws-book-level');row.style.setProperty('--depth',Number(r[1])/max*100+'%');const price=el('strong'),amount=el('span');paint(price,money(Number(r[0]),5),Number(r[0]),{});paint(amount,quantity(Number(r[1])),Number(r[1]),{});row.append(price,amount);col.append(row);}return col;};
-   grid.append(side('ask',d.asks,t('Vendite','Sell orders')));
-   const center=el('div','ws-book-price');const old=host._wsBookPrice,trend=p!==null&&old!==undefined?(p>old?'up':p<old?'down':'flat'):'flat';if(p!==null)host._wsBookPrice=p;center.dataset.trend=trend;const centerPrice=el('strong','ws-book-live-price',money(p,5));center.append(centerPrice,el('span','ws-book-live-arrow',trend==='up'?'↑':trend==='down'?'↓':'•'));grid.append(center);
-   grid.append(side('bid',d.bids,t('Acquisti','Buy orders')));host.append(grid);
+   const makeSide=(key,rows,label)=>{
+    const section=el('section','ws-book-'+key);
+    section.setAttribute('aria-label',label);
+    section.append(el('h3','',label));
+    const columns=el('div','ws-book-columns');
+    columns.append(el('span','',t('PREZZO','PRICE')+' · '+api.currency()),el('span','','SIZE INJ'),el('span','',t('TOTALE','TOTAL')+' · '+api.currency()));
+    section.append(columns);
+    const levels=rows.map(r=>({price:Number(r[0]),size:Number(r[1])})).filter(r=>r.price>0&&r.size>0).sort((a,b)=>key==='ask'?a.price-b.price:b.price-a.price).slice(0,100);
+    let cumulative=0;
+    const enriched=levels.map(r=>({...r,total:(cumulative+=r.price*r.size)}));
+    const max=Math.max(1,...enriched.map(r=>r.size));
+    for(const r of key==='ask'?enriched.reverse():enriched){
+     const line=el('div','ws-book-level');
+     line.style.setProperty('--depth',(r.size/max*100)+'%');
+     const price=el('strong','ws-book-level-price');
+     const size=el('span','ws-book-level-size');
+     const total=el('span','ws-book-level-total');
+     paint(price,money(r.price,5),r.price,{});
+     paint(size,num(r.size,4),r.size,{});
+     paint(total,money(r.total,2),r.total,{});
+     line.append(price,size,total);
+     section.append(line);
+    }
+    return section;
+   };
+   const asks=makeSide('ask',d.asks,t('Ordini di vendita','Sell orders'));
+   grid.append(asks);
+   const topAsk=Number(d.asks[0]?.[0]),topBid=Number(d.bids[0]?.[0]);
+   const live=p!==null?p:topAsk>0&&topBid>0?(topAsk+topBid)/2:null;
+   const old=host._wsBookPrice;
+   const trend=live!==null&&old!==undefined?(live>old?'up':live<old?'down':'flat'):'flat';
+   if(live!==null)host._wsBookPrice=live;
+   const priceRow=el('div','ws-book-price');
+   priceRow.dataset.trend=trend;
+   priceRow.append(el('small','ws-book-price-label',p!==null?'LAST TRADE':'MID PRICE'));
+   const line=el('div','ws-book-price-line');
+   line.append(el('strong','ws-book-live-price',money(live,5)),el('span','ws-book-live-arrow',trend==='up'?'↑':trend==='down'?'↓':'•'));
+   priceRow.append(line);
+   grid.append(priceRow);
+   const bids=makeSide('bid',d.bids,t('Ordini di acquisto','Buy orders'));
+   grid.append(bids);
+   host.append(grid);
+   if(typeof requestAnimationFrame==='function')requestAnimationFrame(()=>{
+    if(!asks.isConnected||!bids.isConnected)return;
+    asks.scrollTop=oldBook?.ask&&!oldBook.ask.pinned?oldBook.ask.top:asks.scrollHeight;
+    bids.scrollTop=oldBook?.bid&&!oldBook.bid.pinned?oldBook.bid.top:0;
+   });
   }
  }else if(['marketlist','heatmap','favorites','favoritesheatmap','marketleaders','marketlosers'].includes(i.type)){
   const isFavorite=['favorites','favoritesheatmap'].includes(i.type),heat=['heatmap','favoritesheatmap'].includes(i.type),range=i.marketRange||'24h';marketControls(i,host);
@@ -223,7 +274,7 @@ function create(api){
    if(Object.keys(patch).length)api.supplement(address,patch);state['detail:'+address+'At']=Date.now();
   });
  }
- function refresh(items){if(document.hidden)return;hydrate();if(items.some(i=>['favorites','favoritesheatmap'].includes(i.type))){const saved=read('inj_node_crypto_favorites_v1',[]),ids=(Array.isArray(saved)?saved:[]).map(c=>c.id).filter(id=>/^[a-z0-9][a-z0-9_.-]{0,99}$/i.test(id)).slice(0,250),key=ids.slice().sort().join(',');if(state.favoriteKey!==key){state.favoriteKey=key;state.favorites=[];state.favoritesAt=0;}if(ids.length)feed('favorites',120000,async()=>{const d=await json('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids='+encodeURIComponent(key)+'&per_page=250&sparkline=true&price_change_percentage=1h,24h,7d,30d');if(Array.isArray(d)&&state.favoriteKey===key){state.favorites=d;state.favoritesAt=Date.now()}});} record(items);const types=new Set(items.map(i=>i.type));refreshWalletDetails(items);if([...types].some(x=>['networkstake','nativesupply','supplydistribution','marketintelligence'].includes(x)))feed('chain',300000,async()=>{const calls=[['networkstake','/cosmos/staking/v1beta1/pool'],['nativesupply','/cosmos/bank/v1beta1/supply/inj']].filter(([type])=>types.has(type)||types.has('supplydistribution')||types.has('marketintelligence'));for(const [type,path]of calls){const d=await api.lcd(path),n=Number(type==='networkstake'?d.pool?.bonded_tokens:d.amount?.amount)/1e18;if(!(n>0))continue;try{if(type==='networkstake'){const old=read('inj_node_intel_chain_snapshot_v2',{});localStorage.setItem('inj_node_intel_chain_snapshot_v2',JSON.stringify({at:Date.now(),data:{...old.data,bonded:n}}))}else localStorage.setItem('inj_node_intel_native_supply_v1',JSON.stringify({at:Date.now(),amount:n}))}catch(_){}}state.chainAt=Date.now()});if([...types].some(x=>['coinspot','marketlist','heatmap','favorites','favoritesheatmap','marketleaders','marketlosers','comparison','marketcap','volume24','circulating','fullydiluted','dominance','low24','high24','priceposition','athrecovery','atlrecovery','supplydistribution','marketbreadth','marketintelligence'].includes(x)))feed('coins',120000,async()=>{const d=await json('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=200&page=1&sparkline=true&price_change_percentage=1h,24h,7d,30d');if(!Array.isArray(d))throw Error();state.coins=d.filter(c=>c&&typeof c.id==='string');state.coinsAt=Date.now()});if([...types].some(x=>['globalcap','globalvolume','btcdom','dominance','globaloverview','marketintelligence'].includes(x)))feed('global',120000,async()=>{const d=await json('https://api.coingecko.com/api/v3/global');if(!d.data)throw Error();state.global=d.data;state.globalAt=Date.now()});if([...types].some(x=>['bid','ask','spread','orderbook','levels','bookbalance'].includes(x)))feed('depth',12000,async()=>{for(const base of ['https://api.binance.com','https://data-api.binance.vision','https://api1.binance.com'])try{const d=await json(base+'/api/v3/depth?symbol=INJUSDT&limit=20');if(Array.isArray(d.bids)&&Array.isArray(d.asks)){state.depth=d;state.depthAt=Date.now();return}}catch(_){}throw Error()});}
+ function refresh(items){if(document.hidden)return;hydrate();if(items.some(i=>['favorites','favoritesheatmap'].includes(i.type))){const saved=read('inj_node_crypto_favorites_v1',[]),ids=(Array.isArray(saved)?saved:[]).map(c=>c.id).filter(id=>/^[a-z0-9][a-z0-9_.-]{0,99}$/i.test(id)).slice(0,250),key=ids.slice().sort().join(',');if(state.favoriteKey!==key){state.favoriteKey=key;state.favorites=[];state.favoritesAt=0;}if(ids.length)feed('favorites',120000,async()=>{const d=await json('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids='+encodeURIComponent(key)+'&per_page=250&sparkline=true&price_change_percentage=1h,24h,7d,30d');if(Array.isArray(d)&&state.favoriteKey===key){state.favorites=d;state.favoritesAt=Date.now()}});} record(items);const types=new Set(items.map(i=>i.type));refreshWalletDetails(items);if([...types].some(x=>['networkstake','nativesupply','supplydistribution','marketintelligence'].includes(x)))feed('chain',300000,async()=>{const calls=[['networkstake','/cosmos/staking/v1beta1/pool'],['nativesupply','/cosmos/bank/v1beta1/supply/inj']].filter(([type])=>types.has(type)||types.has('supplydistribution')||types.has('marketintelligence'));for(const [type,path]of calls){const d=await api.lcd(path),n=Number(type==='networkstake'?d.pool?.bonded_tokens:d.amount?.amount)/1e18;if(!(n>0))continue;try{if(type==='networkstake'){const old=read('inj_node_intel_chain_snapshot_v2',{});localStorage.setItem('inj_node_intel_chain_snapshot_v2',JSON.stringify({at:Date.now(),data:{...old.data,bonded:n}}))}else localStorage.setItem('inj_node_intel_native_supply_v1',JSON.stringify({at:Date.now(),amount:n}))}catch(_){}}state.chainAt=Date.now()});if([...types].some(x=>['coinspot','marketlist','heatmap','favorites','favoritesheatmap','marketleaders','marketlosers','comparison','marketcap','volume24','circulating','fullydiluted','dominance','low24','high24','priceposition','athrecovery','atlrecovery','supplydistribution','marketbreadth','marketintelligence'].includes(x)))feed('coins',120000,async()=>{const d=await json('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=200&page=1&sparkline=true&price_change_percentage=1h,24h,7d,30d');if(!Array.isArray(d))throw Error();state.coins=d.filter(c=>c&&typeof c.id==='string');state.coinsAt=Date.now()});if([...types].some(x=>['globalcap','globalvolume','btcdom','dominance','globaloverview','marketintelligence'].includes(x)))feed('global',120000,async()=>{const d=await json('https://api.coingecko.com/api/v3/global');if(!d.data)throw Error();state.global=d.data;state.globalAt=Date.now()});if([...types].some(x=>['bid','ask','spread','orderbook','levels','bookbalance'].includes(x)))feed('depth',12000,async()=>{for(const base of ['https://api.binance.com','https://data-api.binance.vision','https://api1.binance.com'])try{const d=await json(base+'/api/v3/depth?symbol=INJUSDT&limit=100');if(Array.isArray(d.bids)&&Array.isArray(d.asks)){state.depth=d;state.depthAt=Date.now();return}}catch(_){}throw Error()});}
  function feedInfo(i){
  const type=i.type;
  if(['bid','ask','spread','orderbook','bookbalance','levels'].includes(type))return {at:state.depthAt,source:'Binance order book',fresh:30000};
