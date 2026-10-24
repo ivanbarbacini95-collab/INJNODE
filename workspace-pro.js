@@ -14,7 +14,7 @@ const preset=()=>A.active();
 const items=()=>preset().items;
 const get=id=>items().find(i=>i.uid===id);
 const sealed=()=>document.body.classList.contains('ws-immersive');
-const allowed=()=>!preset().locked&&!sealed();
+const allowed=()=>A.canEdit()&&!sealed();
 const notice=A.notice;
 function pushHistory(before=snapshot()){
  if(undoStack.at(-1)!==before){undoStack.push(before);if(undoStack.length>80)undoStack.shift();}
@@ -29,15 +29,15 @@ function restore(json){
   A.persist();A.layout();A.refresh();buttons();updateStatus(true);
  }catch(err){console.warn('Workspace history restore skipped',err);}
 }
-function undo(){if(sealed()||!undoStack.length)return;const current=snapshot(),previous=undoStack.pop();redoStack.push(current);restore(previous);}
-function redo(){if(sealed()||!redoStack.length)return;const current=snapshot(),next=redoStack.pop();undoStack.push(current);restore(next);}
+function undo(){if(!allowed()||!undoStack.length)return;const current=snapshot(),previous=undoStack.pop();redoStack.push(current);restore(previous);}
+function redo(){if(!allowed()||!redoStack.length)return;const current=snapshot(),next=redoStack.pop();undoStack.push(current);restore(next);}
 function mutate(fn){
  if(!allowed())return notice(T('Sblocca il layout per modificare','Unlock the layout to edit'));
  if(selection().some(i=>i.cardLocked))return notice(T('Sblocca le card selezionate prima di modificarle','Unlock selected cards before editing'));
  pushHistory();$('wsConfig').close();fn();A.persist();A.layout();A.refresh();buttons();
 }
 function select(uid,additive){
- if(sealed())return;
+ if(!allowed())return;
  const item=get(uid);if(!item)return;
  const group=item.group||'';
  const groupIds=group?items().filter(x=>x.group===group).map(x=>x.uid):[uid];
@@ -82,8 +82,8 @@ function buttons(){
  }
  for(const btn of document.querySelectorAll('[data-pro-action]')){
   const a=btn.dataset.proAction;
-  if(a==='undo')btn.disabled=!undoStack.length;
-  else if(a==='redo')btn.disabled=!redoStack.length;
+  if(a==='undo')btn.disabled=!undoStack.length||!allowed();
+  else if(a==='redo')btn.disabled=!redoStack.length||!allowed();
   else if(a.startsWith('template-'))btn.disabled=A.getDb().presets.length>=50;
   else if(a==='distribute')btn.disabled=chosen.length<3;
   else if(a!=='monitor')btn.disabled=!chosen.length||!allowed();
@@ -153,7 +153,7 @@ function run(a){
  if(a==='cardlock'&&allowed()){pushHistory();const lock=!selection().every(i=>i.cardLocked);for(const i of selection())i.cardLocked=lock;A.persist();A.layout();}
 }
 grid.addEventListener('pointerdown',e=>{
- if(sealed())return;
+ if(!allowed())return;
  const node=e.target.closest('.ws-card');if(!node||e.target.closest('button,input,select,a,.ws-section-controls,.ws-interactive-chart,.ws-plot'))return;
  if(e.shiftKey||e.ctrlKey||e.metaKey){select(node.dataset.uid,true);e.stopImmediatePropagation();e.preventDefault();}
  else if(!e.target.closest('.ws-card-head')||get(node.dataset.uid)?.cardLocked)select(node.dataset.uid,false);
@@ -206,7 +206,7 @@ function alignGuide(d,rect){
 window.INJWorkspaceProHooks={
  beforeChange(){pushHistory();},
  pointerSelect(e,item){
-  if(sealed())return true;
+  if(!allowed())return true;
   if(e.shiftKey||e.metaKey||e.ctrlKey){select(item.uid,true);return true;}
   if(!selected.has(item.uid))select(item.uid,false);
   return false;
@@ -244,6 +244,7 @@ window.INJWorkspaceProHooks={
  },
  dragEnd(d,cancel){guides();if(!cancel&&d.moved&&dragBefore)pushHistory(dragBefore);dragBefore=null;},
  immersiveChange(on){if(on){selected.clear();dragBefore=null;guides();$('wsConfig').close();}buttons();},
+ editModeChange(on){if(!on){selected.clear();dragBefore=null;guides();if($('wsConfig').open)$('wsConfig').close();}buttons();},
  afterLayout(){buttons();updateStatus();renderMonitor();},
  refreshStatus(){updateStatus();}
 };
