@@ -1,5 +1,6 @@
-const CACHE_NAME = 'inj-node-v16.10.24-four-decimal-tick-motion';
+const CACHE_NAME = 'inj-node-v16.10.24-supply-mono-rollout-1';
 const APP_SHELL = [
+  './supply-mono.css?v=20261024',
   './workspace.html',
   './workspace-layout.css?v=160749',
   './workspace-premium.css?v=160747','./workspace-widgets.css?v=1610245',
