@@ -166,10 +166,10 @@ function create(api){
  }else if(i.type==='orderbook'){
   if(!state.depth)empty(host);else{
    const grid=el('div','ws-book ws-book-stacked');
-   const side=(key,rows,label)=>{const col=el('section','ws-book-'+key);col.append(el('h3','',label));const head=el('div','ws-book-columns');head.append(el('span','',t('Prezzo','Price')+' · '+api.currency()),el('span','',t('Quantità INJ','Amount INJ')));col.append(head);const visible=rows.slice(0,20).sort((a,b)=>Number(a[0])-Number(b[0])),max=Math.max(...visible.map(r=>Number(r[1])),1);for(const [j,r]of visible.entries()){const row=el('div','ws-book-level');row.style.setProperty('--depth',Number(r[1])/max*100+'%');const price=el('strong'),amount=el('span');paint(price,money(Number(r[0]),5),Number(r[0]),{});paint(amount,quantity(Number(r[1])),Number(r[1]),{});row.append(price,amount);col.append(row);}return col;};
-   grid.append(side('bid',d.bids,t('Acquisti','Buy orders')));
-   const center=el('div','ws-book-price');value(center,i,'bookprice',t('Prezzo INJ','INJ price'),money(p,5),p);grid.append(center);
-   grid.append(side('ask',d.asks,t('Vendite','Sell orders')));host.append(grid);
+   const side=(key,rows,label)=>{const col=el('section','ws-book-'+key);col.append(el('h3','',label));const head=el('div','ws-book-columns');head.append(el('span','',t('Prezzo','Price')+' · '+api.currency()),el('span','',t('Quantità INJ','Amount INJ')));col.append(head);const visible=rows.slice(0,20).sort((a,b)=>key==='ask'?Number(b[0])-Number(a[0]):Number(b[0])-Number(a[0])),max=Math.max(...visible.map(r=>Number(r[1])),1);for(const [j,r]of visible.entries()){const row=el('div','ws-book-level');row.style.setProperty('--depth',Number(r[1])/max*100+'%');const price=el('strong'),amount=el('span');paint(price,money(Number(r[0]),5),Number(r[0]),{});paint(amount,quantity(Number(r[1])),Number(r[1]),{});row.append(price,amount);col.append(row);}return col;};
+   grid.append(side('ask',d.asks,t('Vendite','Sell orders')));
+   const center=el('div','ws-book-price');const old=host._wsBookPrice,trend=p!==null&&old!==undefined?(p>old?'up':p<old?'down':'flat'):'flat';if(p!==null)host._wsBookPrice=p;center.dataset.trend=trend;const centerPrice=el('strong','ws-book-live-price',money(p,5));center.append(centerPrice,el('span','ws-book-live-arrow',trend==='up'?'↑':trend==='down'?'↓':'•'));grid.append(center);
+   grid.append(side('bid',d.bids,t('Acquisti','Buy orders')));host.append(grid);
   }
  }else if(['marketlist','heatmap','favorites','favoritesheatmap','marketleaders','marketlosers'].includes(i.type)){
   const isFavorite=['favorites','favoritesheatmap'].includes(i.type),heat=['heatmap','favoritesheatmap'].includes(i.type),range=i.marketRange||'24h';marketControls(i,host);
