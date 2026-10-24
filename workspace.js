@@ -55,8 +55,8 @@ function useSharedMarket(){const s=sharedSource();if(s&&s.price>0&&Date.now()-s.
 function rowsFor(i){const ws=wallets(),addresses=i.source==='all'?ws.map(w=>w.address):[i.source==='selected'?selected():i.source];const cached=read('inj_monitor_summaries_v1',{}),snapshot=selectedSnapshot();if(snapshot?.address&&snapshot.updated>0&&Number.isFinite(snapshot.total))cached[snapshot.address]={...cached[snapshot.address],...snapshot};return addresses.filter(Boolean).map(a=>{const row=data.rows[a]&&(!cached[a]||data.rows[a].updated>cached[a].updated)?data.rows[a]:cached[a]||null;return row?{...row,...data.supplements[a]}:null})}
 function metrics(i){return M.aggregate(rowsFor(i));}
 function el(tag,cls,text){const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n}
-function bodyFor(i,host){const sig=JSON.stringify([i,sections.stamp(),marketType(i.type)?null:rowsFor(i),sourceLabel(i),data.price,data.priceAt,data.change,data.charts[i.timeframe]?.at,localStorage.getItem('inj_monitor_currency'),localStorage.getItem('inj_monitor_eur_rate'),localStorage.getItem('inj_node_language_v1'),Math.floor(Date.now()/(['target','velocity','accumulation'].includes(i.type)?1000:60000))]);if(host._wsSignature===sig)return;host._wsSignature=sig;host.classList.toggle('ws-center-value',!C.isChart(i.type)&&!['ratio','ladder'].includes(i.type)&&!sections.supported.includes(i.type));host.classList.toggle('ws-price-body',i.type==='price');if(sections.render(i,host))return;if(C.isChart(i.type)){const key=[i.timeframe,i.chartStyle,localStorage.getItem('inj_monitor_currency'),localStorage.getItem('inj_node_language_v1')].join('|');if(host._chartController&&host._chartKey===key)return;host._chartController?.destroy();host._chartKey=key;host.replaceChildren();renderChart(i,host,'');return;}const priorValue=host.querySelector(':scope > .ws-value'),priorSub=host.querySelector(':scope > .ws-sub');host.replaceChildren();const market=marketType(i.type),m=market?null:metrics(i),p=Date.now()-data.priceAt<120000?data.price:null;let value='—',sub='',status='',numeric=null,subNumeric=null;
-if(market){numeric=p;value=money(p);sub=data.change===null?'INJ':num(data.change,2)+'% · 24h';status=p===null?t('Mercato in attesa','Waiting for market'):data.priceSource+' · '+new Date(data.priceAt).toLocaleTimeString();}
+function bodyFor(i,host){const sig=JSON.stringify([i,sections.stamp(),marketType(i.type)?null:rowsFor(i),sourceLabel(i),data.price,data.priceAt,data.change,data.charts[i.timeframe]?.at,localStorage.getItem('inj_monitor_currency'),localStorage.getItem('inj_monitor_eur_rate'),localStorage.getItem('inj_node_language_v1'),Math.floor(Date.now()/(['target','velocity','accumulation'].includes(i.type)?1000:60000))]);if(host._wsSignature===sig)return;host._wsSignature=sig;host.classList.toggle('ws-center-value',!C.isChart(i.type)&&!['ratio','ladder'].includes(i.type)&&!sections.supported.includes(i.type));host.classList.toggle('ws-price-body',i.type==='price');if(sections.render(i,host))return;if(C.isChart(i.type)){const key=[i.timeframe,i.chartStyle,localStorage.getItem('inj_monitor_currency'),localStorage.getItem('inj_node_language_v1')].join('|');if(host._chartController&&host._chartKey===key)return;host._chartController?.destroy();host._chartKey=key;host.replaceChildren();renderChart(i,host,'');return;}const priorValue=host.querySelector(':scope > .ws-value, :scope > .ws-price-main > .ws-value'),priorArrow=host.querySelector(':scope > .ws-price-main > .ws-price-arrow'),priorSub=host.querySelector(':scope > .ws-sub');host.replaceChildren();const market=marketType(i.type),m=market?null:metrics(i),p=Date.now()-data.priceAt<120000?data.price:null;let value='—',sub='',status='',numeric=null,subNumeric=null;
+if(market){numeric=p;value=money(p,i.type==='price'?4:2);sub=data.change===null?'INJ':num(data.change,2)+'% · 24h';status=p===null?t('Mercato in attesa','Waiting for market'):data.priceSource+' · '+new Date(data.priceAt).toLocaleTimeString();}
 else if(!m){sub=t('Dati wallet incompleti o assenti','Wallet data incomplete or unavailable');status=t('In attesa della sincronizzazione','Waiting for sync');}
 else{const v={worth:p===null?null:m.total*p,total:m.total,staked:m.staked,available:m.available,rewards:m.rewards,daily:m.daily,ratio:m.total?m.staked/m.total*100:0};numeric=v[i.type]??null;subNumeric=p!==null&&numeric!==null?numeric*p:null;value=i.type==='worth'?money(v.worth):i.type==='ratio'?num(v.ratio,2)+'%':quantity(v[i.type]??null,i.type==='available'?5:4);sub=i.type==='ratio'?quantity(m.staked)+' / '+quantity(m.total):i.type==='worth'?quantity(m.total):i.type==='daily'?t('Stima con APR netto disponibile','Estimate using available net APR')+' · '+money(m.daily!==null&&p!==null?m.daily*p:null):p!==null?money((v[i.type]??0)*p):'';
 status=(Date.now()-m.at>90000?t('Snapshot · ','Snapshot · '):m.verified?t('On-chain · ','On-chain · '):t('Cache · ','Cache · '))+(m.at?new Date(m.at).toLocaleTimeString():'—');
@@ -64,14 +64,41 @@ if(i.type==='ratio'){const track=el('div','ws-track'),fill=el('i');fill.style.wi
 if(i.type==='ladder'){const fiat=m.rewards*(p??NaN),daily=(m.daily??NaN)*(p??NaN);numeric=Number.isFinite(fiat)?fiat:null;value=money(Number.isFinite(fiat)?fiat:null)+' / '+money(i.goal);const percent=Number.isFinite(fiat)?Math.min(100,fiat/i.goal*100):0;const track=el('div','ws-track'),fill=el('i');fill.style.width=percent+'%';track.setAttribute('role','progressbar');track.setAttribute('aria-valuenow',String(Math.round(percent)));track.setAttribute('aria-valuemin','0');track.setAttribute('aria-valuemax','100');track.append(fill);host.append(track);const seconds=Math.max(0,(i.goal-fiat)/daily*86400);sub=fiat>=i.goal?t('Traguardo raggiunto','Milestone reached'):Number.isFinite(seconds)&&daily>0?t('Stima: ','Estimate: ')+Math.floor(seconds/86400)+'d '+Math.floor(seconds%86400/3600)+'h '+Math.floor(seconds%3600/60)+'m':t('Countdown non disponibile','Countdown unavailable');}
 }
 const identity=[i.type,i.source,market?'market':i.source==='all'?wallets().map(w=>w.address).join(','):i.source==='selected'?selected():i.source,localStorage.getItem('inj_monitor_currency'),localStorage.getItem('inj_node_language_v1')].join('|');
-const v=priorValue||el('div');v.className='ws-value'+(!market?' ws-sensitive':'')+(i.type==='rewards'?' ws-reward-value':'');host.prepend(v);
+const v=priorValue||el('div');v.className='ws-value'+(!market?' ws-sensitive':'')+(i.type==='rewards'?' ws-reward-value':'');
 if(i.type==='price'){
- const change=p!==null&&Number.isFinite(data.change)?data.change:null;
- const trend=change===null?'neutral':change>0?'up':change<0?'down':'neutral';
- host.dataset.priceTrend=trend;
+ // Only visible price ticks trigger a directional cue. Static 24h direction stays in its own badge.
  const card=host.closest('.ws-card, .ws-preview');
- if(card)card.dataset.priceTrend=trend;
-}
+ const currency=localStorage.getItem('inj_monitor_currency')==='EUR'?'EUR':'USD';
+ const rate=currency==='EUR'?Number(localStorage.getItem('inj_monitor_eur_rate')):1;
+ const displayed=p!==null&&rate>0?Math.round(p*rate*10000)/10000:null;
+ const prev=host._wsPriceShown,now=Date.now(),sameCurrency=host._wsPriceCurrency===currency;
+ const moved=sameCurrency&&displayed!==null&&Number.isFinite(prev)&&displayed!==prev;
+ if(moved&&now-(host._wsPriceCueAt||0)>=950){
+  const direction=displayed>prev?'up':'down';
+  host._wsPriceCueAt=now;
+  host.dataset.priceTrend=direction;
+  if(card)card.dataset.priceTrend=direction;
+  clearTimeout(host._wsPriceCueTimer);
+  host._wsPriceCueTimer=setTimeout(()=>{
+   host.dataset.priceTrend='neutral';
+   if(card?.isConnected)card.dataset.priceTrend='neutral';
+   const arrow=host.querySelector('.ws-price-arrow');
+   if(arrow)arrow.dataset.direction='neutral';
+  },820);
+ }else if(!host.dataset.priceTrend){
+  host.dataset.priceTrend='neutral';
+  if(card)card.dataset.priceTrend='neutral';
+ }
+ host._wsPriceCurrency=currency;
+ host._wsPriceShown=displayed;
+ const group=el('div','ws-price-main');
+ const arrow=priorArrow||el('span','ws-price-arrow');
+ const direction=host.dataset.priceTrend||'neutral';
+ arrow.dataset.direction=direction;
+ arrow.textContent=direction==='up'?'↑':direction==='down'?'↓':'•';
+ arrow.setAttribute('aria-hidden','true');
+ group.append(v,arrow);host.prepend(group);
+}else host.prepend(v);
 INJWorkspaceValues.paint(v,value,numeric,{calm:i.type==='rewards',identity});
 if(i.details){const detail=priorSub||el('div');detail.className='ws-sub'+(!market?' ws-sensitive':'')+(i.type==='price'?' ws-price-change':'');if(i.type==='price'){const change=p!==null?data.change:null;detail.dataset.trend=change>0?'up':change<0?'down':'neutral';sub=change===null?'— · 24H':(change>0?'↗ +':change<0?'↘ ':'')+num(change,2)+'% · 24H';}INJWorkspaceValues.paint(detail,sub,subNumeric,{calm:i.type==='rewards',identity});host.append(detail);}
 if(C.isChart(i.type))status=renderChart(i,host,status);
@@ -197,7 +224,7 @@ const earlierBusy=new Set();
 async function loadEarlier(tf,before){if(earlierBusy.has(tf))return;earlierBusy.add(tf);try{const config=M.timeframes[tf];for(const base of ['https://api.binance.com','https://data-api.binance.vision','https://api1.binance.com'])try{const raw=await json(base+'/api/v3/klines?symbol=INJUSDT&interval='+config.interval+'&limit=500&endTime='+(Math.floor(before)-1));const rows=Live.aggregate(M.parseKlines(raw),config.bucketMs||Live.intervalMs(config.interval));if(rows.length){Live.merge(data.charts[tf],rows);return}}catch(_){}}finally{earlierBusy.delete(tf)}}
 const feed=Live.createFeed((price,time)=>{if(time<data.lastTradeAt)return;data.lastTradeAt=time;data.price=price;data.priceAt=Date.now();data.priceSource='Binance live';for(const [tf,h]of Object.entries(data.charts))Live.apply(h,price,time,M.timeframes[tf].bucketMs||Live.intervalMs(M.timeframes[tf].interval));});
 
-function refresh(){feed.watch(active().items.some(i=>C.isChart(i.type))||$('wsCatalog').open);sections.refresh([...active().items,...($('wsCatalog').open?[...document.querySelectorAll('.ws-preview')].map(n=>n._item):[])]);refreshWallets();refreshMarket();const tfs=new Set(active().items.filter(i=>C.isChart(i.type)).map(i=>i.timeframe));if($('wsCatalog').open)for(const i of [...document.querySelectorAll('.ws-preview')].map(n=>n._item))if(C.isChart(i.type))tfs.add(i.timeframe);tfs.forEach(chart);}
+function refresh(){feed.watch(active().items.some(i=>C.isChart(i.type)||i.type==='price')||$('wsCatalog').open);sections.refresh([...active().items,...($('wsCatalog').open?[...document.querySelectorAll('.ws-preview')].map(n=>n._item):[])]);refreshWallets();refreshMarket();const tfs=new Set(active().items.filter(i=>C.isChart(i.type)).map(i=>i.timeframe));if($('wsCatalog').open)for(const i of [...document.querySelectorAll('.ws-preview')].map(n=>n._item))if(C.isChart(i.type))tfs.add(i.timeframe);tfs.forEach(chart);}
 window.addEventListener('resize',()=>{if(drag)endDrag(true);if(lastMode!==mode())lastMode=mode();layout()});window.addEventListener('storage',e=>{if(e.key===KEY){try{db=M.sanitize(read(KEY,null));layout()}catch(_){}}else{language();refresh()}});document.addEventListener('visibilitychange',()=>{if(!document.hidden){feed.resume();refresh();updateValues()}else feed.pause()});
 window.addEventListener('keydown',e=>{if(e.key==='Escape'&&drag)endDrag(true)});
 function changeSectionOption(item,key,value){const actual=active().items.find(i=>i===item);if(actual)window.INJWorkspaceProHooks?.beforeChange?.();item[key]=value;if(key==='targetAmount')item._targetEdited=true;if(actual)persist();else previewOptions.set(item.type,item);updateValues();refresh();}
