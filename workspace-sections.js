@@ -174,6 +174,10 @@ function create(api){
   else{
    // One vertical stack, like the standalone Order Book in Home.
    const grid=el('div','ws-book ws-book-stacked');
+    // Force a single column even if shared workspace .ws-book CSS defines two columns.
+    grid.style.gridTemplateColumns='minmax(0,1fr)';
+    grid.style.gridTemplateRows='minmax(0,1fr) auto minmax(0,1fr)';
+    grid.style.gridAutoFlow='row';
    const makeSide=(key,rows,label)=>{
     const section=el('section','ws-book-'+key);
     section.setAttribute('aria-label',label);
@@ -200,7 +204,7 @@ function create(api){
     return section;
    };
    const asks=makeSide('ask',d.asks,t('Ordini di vendita','Sell orders'));
-   grid.append(asks);
+   asks.style.gridColumn='1 / -1';grid.append(asks);
    const topAsk=Number(d.asks[0]?.[0]),topBid=Number(d.bids[0]?.[0]);
    const live=p!==null?p:topAsk>0&&topBid>0?(topAsk+topBid)/2:null;
    const old=host._wsBookPrice;
@@ -212,9 +216,9 @@ function create(api){
    const line=el('div','ws-book-price-line');
    line.append(el('strong','ws-book-live-price',money(live,5)),el('span','ws-book-live-arrow',trend==='up'?'↑':trend==='down'?'↓':'•'));
    priceRow.append(line);
-   grid.append(priceRow);
+   priceRow.style.gridColumn='1 / -1';grid.append(priceRow);
    const bids=makeSide('bid',d.bids,t('Ordini di acquisto','Buy orders'));
-   grid.append(bids);
+   bids.style.gridColumn='1 / -1';grid.append(bids);
    host.append(grid);
    if(typeof requestAnimationFrame==='function')requestAnimationFrame(()=>{
     if(!asks.isConnected||!bids.isConnected)return;
