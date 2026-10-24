@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.10.24-sparse-centered-price-glow';
+const CACHE_NAME = 'inj-node-v16.10.24-four-decimal-tick-motion';
 const APP_SHELL = [
   './workspace.html',
   './workspace-layout.css?v=160749',
@@ -12,9 +12,9 @@ const APP_SHELL = [
   './workspace-home.css?v=160743',
   './workspace.css?v=160746',
   './workspace-model.js?v=1610247',
-  './workspace.js?v=1610248',
+  './workspace.js?v=1610249',
   './workspace-pro.js?v=160801',
-  './workspace-pro.css?v=1610248',
+  './workspace-pro.css?v=1610249',
   './navigation.js?v=160743',
   './reward-ladder-home.css?v=160739',
   './reward-ladder.html',
