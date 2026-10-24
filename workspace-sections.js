@@ -175,7 +175,7 @@ function create(api){
    return true;
   }
  }
- host.replaceChildren();host.classList.add('ws-section-body');host.classList.toggle('ws-sensitive',api.C.byType[i.type].scope!=='market');
+ host.replaceChildren();host.classList.add('ws-section-body');host.classList.toggle('ws-sensitive',api.C.byType[i.type].scope!=='market');host.classList.toggle('ws-single-metric',simple.includes(i.type));
  host.dataset.widget=i.type;
  if(extra.includes(i.type)&&i.type!=='favoritesheatmap'){renderExtra(i,host,d);
  }else if(simple.includes(i.type)){
