@@ -1,5 +1,8 @@
-const CACHE_NAME = 'inj-node-v16.10.24-supply-mono-rollout-1';
+const CACHE_NAME = 'inj-node-v16.10.24-market-resilience-card-titles-1';
 const APP_SHELL = [
+  './card-titles-uppercase.css?v=20261024',
+  './market.js?v=16102450',
+  './market-portal.js?v=16102450',
   './supply-mono.css?v=20261024',
   './workspace.html',
   './workspace-layout.css?v=160749',

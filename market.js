@@ -1,9 +1,55 @@
-(()=>{'use strict';const $=id=>document.getElementById(id);const t=(key,vars)=>window.MARKET_I18N?.t(key,vars)||key;const marketLocale=()=>window.MARKET_I18N?.getLanguage()==='en'?'en-US':'it-IT';const API='https://api.coingecko.com/api/v3';const state={coins:[],currency:'usd',sort:'market_cap_rank',desc:false,range:'1h',busy:false,last:0,selected:null,previousPercentages:new Map(),scrollDirections:new Map(),sockets:[],socketTimer:null,liveCount:0,priceSnapshot:new Map(),pairCoins:new Map(),livePriceTimes:new Map(),globalData:null,globalAt:0,top200Volume:NaN,tickerSignature:'',binancePairs:null,binancePairUpdated:0};try{state.currency=localStorage.getItem('inj_monitor_currency')?.toLowerCase()==='eur'?'eur':'usd'}catch(_){}$('currency').textContent=state.currency.toUpperCase()+' '+(state.currency==='eur'?'€':'$');const sym=()=>state.currency==='eur'?'€':'$';const money=(v,compact=false)=>{if(!Number.isFinite(v))return '—';if(compact&&Math.abs(v)>=1e12)return sym()+(v/1e12).toFixed(2)+'T';if(compact&&Math.abs(v)>=1e9)return sym()+(v/1e9).toFixed(2)+'B';if(compact&&Math.abs(v)>=1e6)return sym()+(v/1e6).toFixed(2)+'M';return new Intl.NumberFormat(marketLocale(),{style:'currency',currency:state.currency.toUpperCase(),maximumFractionDigits:v<0.01?8:v<1?5:2}).format(v)};const pct=v=>Number.isFinite(v)?(v>0?'+':'')+new Intl.NumberFormat(marketLocale(),{minimumFractionDigits:2,maximumFractionDigits:2}).format(v)+'%':'—';const tone=v=>!Number.isFinite(v)?'neutral':v>0?'up':v<0?'down':'neutral';const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));const seriesSvg=(values,w=100,h=30)=>{let a=values.filter(Number.isFinite);if(a.length<2)return '<span class="neutral">—</span>';let lo=Math.min(...a),hi=Math.max(...a),span=hi-lo||1,points=a.map((v,i)=>((i/(a.length-1))*w).toFixed(1)+','+((h-3)-((v-lo)/span)*(h-6)).toFixed(1)).join(' ');return '<svg class="spark" viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none" aria-label="'+t('chart')+'"><polyline class="'+(a.at(-1)>=a[0]?'up':'down')+'" style="stroke:var(--'+(a.at(-1)>=a[0]?'positive':'negative')+')" points="'+points+'"/></svg>'};const change=(c,k)=>c['price_change_percentage_'+k+'_in_currency'];const frames=['1h','24h','7d','30d'];const performanceHeat=v=>Number.isFinite(v)?Math.min(.18,Math.abs(v)/30*.18).toFixed(3):'0';function comparePercentages(coins){const next=new Map(),scrolls=new Map();for(const c of coins){for(const k of frames){const id=c.id+':'+k,val=change(c,k),before=state.previousPercentages.get(id);next.set(id,val);if(Number.isFinite(val)&&Number.isFinite(before)&&pct(val)!==pct(before)){scrolls.set(id,val>before?'rise':'fall');}}}state.previousPercentages=next;state.scrollDirections=scrolls;}function render(){const q=$('search').value.toLowerCase().trim(),limit=+$('scope').value,d=$('direction').value;let items=state.coins.slice(0,limit).filter(c=>(!q||(c.name+' '+c.symbol).toLowerCase().includes(q))&&(d==='all'||(d==='up'?change(c,'24h')>=0:change(c,'24h')<0)));items.sort((a,b)=>{const va=state.sort==='name'?a.name.toLowerCase():a[state.sort],vb=state.sort==='name'?b.name.toLowerCase():b[state.sort];let cmp=(va==null)-(vb==null);if(!cmp)cmp=typeof va==='string'?va.localeCompare(vb):((va??0)-(vb??0));return state.desc?-cmp:cmp});$('rows').innerHTML=items.length?items.map(c=>{const spark=c.sparkline_in_7d?.price||[];return '<tr data-coin="'+escape(c.id)+'" tabindex="0" class="'+(c.symbol==='inj'?'inj':'')+'"><td>'+c.market_cap_rank+'</td><td><button class="asset" data-id="'+escape(c.id)+'"><img src="'+escape(c.image)+'" alt="" loading="lazy" referrerpolicy="no-referrer"><span><strong>'+escape(c.name)+'</strong><small>'+escape(c.symbol.toUpperCase())+'</small></span></button></td><td class="live-price-cell"><span class="live-price'+(state.priceRefreshDirections?.get(c.id)?' price-pulse price-'+state.priceRefreshDirections.get(c.id):'')+'"><span class="price-amount">'+money(c.current_price)+'</span><span class="price-tick-arrow" aria-hidden="true">'+(state.priceRefreshDirections?.get(c.id)==='rise'?'↗':state.priceRefreshDirections?.get(c.id)==='fall'?'↘':'')+'</span></span></td>'+frames.map(k=>{return '<td class="percent-cell '+tone(change(c,k))+'" style="--perf-alpha:'+performanceHeat(change(c,k))+'"><span data-frame="'+k+'" class="percent-value">'+pct(change(c,k))+'</span></td>'}).join('')+'<td>'+money(c.market_cap,true)+'</td><td>'+money(c.total_volume,true)+'</td><td><button class="chartbtn" data-id="'+escape(c.id)+'" title="'+t('chartOpen')+escape(c.name)+'" style="background:none;border:0;padding:0;cursor:pointer">'+(spark.length?seriesSvg(spark):'<span style="color:var(--muted)">'+t('open')+'</span>')+'</button></td></tr>'}).join(''):'<tr><td colspan="10" class="empty">'+(state.coins.length?t('noResults'):t('noMarket'))+'</td></tr>';window.INJ_MARKET_VIEWS?.render?.(); }function summary(){let a=state.coins,up=a.filter(c=>change(c,'24h')>0).length,down=a.filter(c=>change(c,'24h')<0).length;$('breadth').textContent=a.length?up+' ↑ / '+down+' ↓':'—';$('breadthMeta').textContent=t('rising');$('currency').textContent=state.currency.toUpperCase()+' '+sym();$('foot').textContent=state.last?t('updated')+new Date(state.last).toLocaleTimeString(marketLocale())+t('nontick'):t('provider');updateGlobalTicker();}async function getJson(url,signal){let r=await fetch(url,{headers:{accept:'application/json'},cache:'no-store',signal});if(!r.ok)throw new Error(r.status===429?t('limit'):'HTTP '+r.status);return r.json()}/* Currency-safe market loading: CoinGecko supplies actual vs_currency prices,
+(()=>{'use strict';const $=id=>document.getElementById(id);const t=(key,vars)=>window.MARKET_I18N?.t(key,vars)||key;const marketLocale=()=>window.MARKET_I18N?.getLanguage()==='en'?'en-US':'it-IT';const API='https://api.coingecko.com/api/v3';const state={coins:[],currency:'usd',sort:'market_cap_rank',desc:false,range:'1h',busy:false,last:0,selected:null,previousPercentages:new Map(),scrollDirections:new Map(),sockets:[],socketTimer:null,liveCount:0,priceSnapshot:new Map(),pairCoins:new Map(),livePriceTimes:new Map(),globalData:null,globalAt:0,top200Volume:NaN,tickerSignature:'',cached:false,binancePairs:null,binancePairUpdated:0};try{state.currency=localStorage.getItem('inj_monitor_currency')?.toLowerCase()==='eur'?'eur':'usd'}catch(_){}$('currency').textContent=state.currency.toUpperCase()+' '+(state.currency==='eur'?'€':'$');const sym=()=>state.currency==='eur'?'€':'$';const money=(v,compact=false)=>{if(!Number.isFinite(v))return '—';if(compact&&Math.abs(v)>=1e12)return sym()+(v/1e12).toFixed(2)+'T';if(compact&&Math.abs(v)>=1e9)return sym()+(v/1e9).toFixed(2)+'B';if(compact&&Math.abs(v)>=1e6)return sym()+(v/1e6).toFixed(2)+'M';return new Intl.NumberFormat(marketLocale(),{style:'currency',currency:state.currency.toUpperCase(),maximumFractionDigits:v<0.01?8:v<1?5:2}).format(v)};const pct=v=>Number.isFinite(v)?(v>0?'+':'')+new Intl.NumberFormat(marketLocale(),{minimumFractionDigits:2,maximumFractionDigits:2}).format(v)+'%':'—';const tone=v=>!Number.isFinite(v)?'neutral':v>0?'up':v<0?'down':'neutral';const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));const seriesSvg=(values,w=100,h=30)=>{let a=values.filter(Number.isFinite);if(a.length<2)return '<span class="neutral">—</span>';let lo=Math.min(...a),hi=Math.max(...a),span=hi-lo||1,points=a.map((v,i)=>((i/(a.length-1))*w).toFixed(1)+','+((h-3)-((v-lo)/span)*(h-6)).toFixed(1)).join(' ');return '<svg class="spark" viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none" aria-label="'+t('chart')+'"><polyline class="'+(a.at(-1)>=a[0]?'up':'down')+'" style="stroke:var(--'+(a.at(-1)>=a[0]?'positive':'negative')+')" points="'+points+'"/></svg>'};const change=(c,k)=>c['price_change_percentage_'+k+'_in_currency'];const frames=['1h','24h','7d','30d'];const performanceHeat=v=>Number.isFinite(v)?Math.min(.18,Math.abs(v)/30*.18).toFixed(3):'0';function comparePercentages(coins){const next=new Map(),scrolls=new Map();for(const c of coins){for(const k of frames){const id=c.id+':'+k,val=change(c,k),before=state.previousPercentages.get(id);next.set(id,val);if(Number.isFinite(val)&&Number.isFinite(before)&&pct(val)!==pct(before)){scrolls.set(id,val>before?'rise':'fall');}}}state.previousPercentages=next;state.scrollDirections=scrolls;}function render(){const q=$('search').value.toLowerCase().trim(),limit=+$('scope').value,d=$('direction').value;let items=state.coins.slice(0,limit).filter(c=>(!q||(c.name+' '+c.symbol).toLowerCase().includes(q))&&(d==='all'||(d==='up'?change(c,'24h')>=0:change(c,'24h')<0)));items.sort((a,b)=>{const va=state.sort==='name'?a.name.toLowerCase():a[state.sort],vb=state.sort==='name'?b.name.toLowerCase():b[state.sort];let cmp=(va==null)-(vb==null);if(!cmp)cmp=typeof va==='string'?va.localeCompare(vb):((va??0)-(vb??0));return state.desc?-cmp:cmp});$('rows').innerHTML=items.length?items.map(c=>{const spark=c.sparkline_in_7d?.price||[];return '<tr data-coin="'+escape(c.id)+'" tabindex="0" class="'+(c.symbol==='inj'?'inj':'')+'"><td>'+c.market_cap_rank+'</td><td><button class="asset" data-id="'+escape(c.id)+'"><img src="'+escape(c.image)+'" alt="" loading="lazy" referrerpolicy="no-referrer"><span><strong>'+escape(c.name)+'</strong><small>'+escape(c.symbol.toUpperCase())+'</small></span></button></td><td class="live-price-cell"><span class="live-price'+(state.priceRefreshDirections?.get(c.id)?' price-pulse price-'+state.priceRefreshDirections.get(c.id):'')+'"><span class="price-amount">'+money(c.current_price)+'</span><span class="price-tick-arrow" aria-hidden="true">'+(state.priceRefreshDirections?.get(c.id)==='rise'?'↗':state.priceRefreshDirections?.get(c.id)==='fall'?'↘':'')+'</span></span></td>'+frames.map(k=>{return '<td class="percent-cell '+tone(change(c,k))+'" style="--perf-alpha:'+performanceHeat(change(c,k))+'"><span data-frame="'+k+'" class="percent-value">'+pct(change(c,k))+'</span></td>'}).join('')+'<td>'+money(c.market_cap,true)+'</td><td>'+money(c.total_volume,true)+'</td><td><button class="chartbtn" data-id="'+escape(c.id)+'" title="'+t('chartOpen')+escape(c.name)+'" style="background:none;border:0;padding:0;cursor:pointer">'+(spark.length?seriesSvg(spark):'<span style="color:var(--muted)">'+t('open')+'</span>')+'</button></td></tr>'}).join(''):'<tr><td colspan="10" class="empty">'+(state.coins.length?t('noResults'):t('noMarket'))+'</td></tr>';window.INJ_MARKET_VIEWS?.render?.(); }function summary(){let a=state.coins,up=a.filter(c=>change(c,'24h')>0).length,down=a.filter(c=>change(c,'24h')<0).length;$('breadth').textContent=a.length?up+' ↑ / '+down+' ↓':'—';$('breadthMeta').textContent=t('rising');$('currency').textContent=state.currency.toUpperCase()+' '+sym();$('foot').textContent=state.cached?cacheNotice():(state.last?t('updated')+new Date(state.last).toLocaleTimeString(marketLocale())+t('nontick'):t('provider'));updateGlobalTicker();}async function getJson(url,signal){let r=await fetch(url,{headers:{accept:'application/json'},cache:'no-store',signal});if(!r.ok){const e=new Error(r.status===429?t('limit'):'HTTP '+r.status);e.status=r.status;throw e;}return r.json()}/* Currency-safe market loading: CoinGecko supplies actual vs_currency prices,
    caps and volumes. Never relabel stale USD values as EUR (or vice versa). */
+const MARKET_CACHE_KEY='inj_node_market_verified_top200_v1';
+const MARKET_CACHE_TTL=48*60*60*1000;
+let marketRetryAfter=0,marketFailures=0;
+function cacheNotice(){
+ const stamped=state.last?new Date(state.last).toLocaleString(marketLocale()):'—';
+ return (marketLocale()==='it-IT'?'ULTIMI DATI VERIFICATI · ':'LAST VERIFIED DATA · ')+stamped+
+   (marketLocale()==='it-IT'?' · NON LIVE':' · NOT LIVE');
+}
+function persistMarket(coins,currency,at){
+ try{
+  const fields=['id','symbol','name','image','current_price','market_cap','market_cap_rank','total_volume',
+   'price_change_percentage_1h_in_currency','price_change_percentage_24h_in_currency',
+   'price_change_percentage_7d_in_currency','price_change_percentage_30d_in_currency',
+   'price_change_percentage_24h','ath','atl','high_24h','low_24h','circulating_supply','total_supply','max_supply'];
+  const compact=coins.slice(0,200).map(c=>{
+   const record={};for(const key of fields)if(c[key]!==undefined)record[key]=c[key];
+   const points=c.sparkline_in_7d?.price;
+   if(Array.isArray(points)&&points.length>1){
+    const stride=Math.max(1,Math.ceil(points.length/48));
+    record.sparkline_in_7d={price:points.filter((_,i)=>i===0||i===points.length-1||i%stride===0)};
+   }
+   return record;
+  });
+  localStorage.setItem(MARKET_CACHE_KEY,JSON.stringify({version:1,at,currency,coins:compact}));
+ }catch(_){/* Private mode/quota: live feed continues without persistence. */}
+}
+function hydrateMarket(){
+ try{
+  const saved=JSON.parse(localStorage.getItem(MARKET_CACHE_KEY)||'null');
+  if(saved?.version!==1||saved.currency!==state.currency||!Number.isFinite(saved.at)||
+    Date.now()-saved.at>MARKET_CACHE_TTL||saved.at>Date.now()+60000||
+    !Array.isArray(saved.coins)||saved.coins.length<25)return;
+  if(!saved.coins.every(c=>c?.id&&c?.symbol&&Number.isFinite(c.current_price)&&c.current_price>0))return;
+  state.coins=saved.coins;state.last=saved.at;state.cached=true;
+  state.priceSnapshot=new Map(saved.coins.map(c=>[c.id,{
+    price:c.current_price,percent:Object.fromEntries(frames.map(k=>[k,change(c,k)]))}]));
+  state.top200Volume=saved.coins.reduce((sum,c)=>sum+(Number.isFinite(c.total_volume)&&c.total_volume>0?c.total_volume:0),0);
+  render();summary();$('status').textContent=cacheNotice();
+ }catch(_){/* Never let an invalid cache prevent a fresh live request. */}
+}
 let activeMarketLoad=null;
 function load(force=false,targetCurrency=state.currency){
  if(activeMarketLoad)return activeMarketLoad;
  if(!force&&document.hidden)return Promise.resolve(false);
+ if(Date.now()<marketRetryAfter){
+   if(force)$('status').textContent=(state.cached?cacheNotice()+' · ':'')+
+     (marketLocale()==='it-IT'?'Limite API: nuovo tentativo tra ':'API cooldown: retry in ')+
+     Math.ceil((marketRetryAfter-Date.now())/1000)+'s';
+   return Promise.resolve(false);
+ }
  const task=fetchMarket(targetCurrency);
  activeMarketLoad=task;
  void task.finally(()=>{if(activeMarketLoad===task)activeMarketLoad=null});
@@ -32,7 +78,9 @@ async function fetchMarket(targetCurrency){
   }
   state.currency=targetCurrency;
   state.coins=response;
-  state.last=Date.now();
+  state.last=Date.now();state.cached=false;
+  marketFailures=0;marketRetryAfter=0;
+  persistMarket(response,targetCurrency,state.last);
   state.priceSnapshot=new Map(response.map(c=>[c.id,{price:c.current_price,percent:Object.fromEntries(frames.map(k=>[k,change(c,k)]))}]));
   state.top200Volume=response.reduce((sum,c)=>sum+(Number.isFinite(c.total_volume)&&c.total_volume>0?c.total_volume:0),0);
   try{
@@ -51,8 +99,16 @@ async function fetchMarket(targetCurrency){
   updateConnectionStatus();
   return true;
  }catch(e){
-  $('status').textContent='⚠ '+(e.name==='AbortError'?t('timeout'):e.message)+' · '+t('retry');
-  // Existing coins retain their original currency if the new quote fails.
+  marketFailures++;
+  // Rate limits are shared per public API/IP. Avoid repeating doomed calls.
+  const restricted=[401,403,418,429].includes(e.status);
+  const seconds=restricted?Math.min(900,120*Math.pow(2,Math.min(marketFailures-1,3))):
+    Math.min(240,30*Math.pow(2,Math.min(marketFailures-1,3)));
+  marketRetryAfter=Date.now()+seconds*1000;
+  const reason=e.name==='AbortError'?t('timeout'):(e.message||t('retry'));
+  $('status').textContent='⚠ '+reason+' · '+(state.cached?cacheNotice()+' · ':'')+
+    (marketLocale()==='it-IT'?'Riprovo tra ':'Retry in ')+seconds+'s';
+  // Display only previously verified quotes, clearly marked as not live.
   render();
   return false;
  }finally{
@@ -152,6 +208,7 @@ function detail(id){
 // per tutte le 200 crypto, ranking, capitalizzazione e volumi. Le coppie assenti
 // proseguono con aggiornamenti periodici CoinGecko e non vengono chiamate live.
 function updateConnectionStatus(){
+ if(state.cached){$('status').textContent=cacheNotice();return;}
  const when=state.last?new Date(state.last).toLocaleTimeString(marketLocale()):'—';
  const source=state.liveCount>0?t('realtime')+state.liveCount+t('streamSuffix')+when:
   state.binancePairUpdated>0?'● CoinGecko '+when+(marketLocale()==='it-IT'?' · Binance Spot in attesa dati':' · Binance Spot awaiting data'):
@@ -306,4 +363,4 @@ window.INJ_MARKET_READONLY_SNAPSHOT=()=>({
  global:state.globalData||null,
  updated:Math.max(state.last||0,state.globalAt||0)
 });
-window.marketOnLanguageChange=()=>{window.INJ_MARKET_VIEWS?.languageChange?.();if(state.coins.length){render();summary();renderGlobal();updateConnectionStatus();window.MARKET_PRO?.languageChange?.()}else{const placeholder=$('rows').querySelector('.empty');if(placeholder)placeholder.textContent=t('loading');$('status').textContent=t('connectingCg');$('foot').textContent=t('provider');}};$('rows').addEventListener('click',e=>{const el=e.target.closest('[data-id]')||e.target.closest('tr[data-coin]');if(el)detail(el.dataset.id||el.dataset.coin)});$('rows').addEventListener('keydown',e=>{if(e.key!=='Enter'&&e.key!==' ')return;const row=e.target.closest('tr[data-coin]');if(!row)return;e.preventDefault();detail(row.dataset.coin)});$('closeDetail').onclick=()=>{$('detail').close();state.selected=null;window.MARKET_PRO?.close?.()};$('detail').addEventListener('close',()=>{state.selected=null;window.MARKET_PRO?.close?.()});$('search').oninput=render;$('scope').onchange=render;$('direction').onchange=render;document.querySelectorAll('[data-sort]').forEach(b=>b.onclick=()=>{if(state.sort===b.dataset.sort)state.desc=!state.desc;else{state.sort=b.dataset.sort;state.desc=state.sort!=='market_cap_rank'&&state.sort!=='name'}render()});$('currency').onclick=()=>{void switchCurrency(state.currency==='usd'?'eur':'usd')};$('refresh').onclick=()=>{load(true);global()};load(true);global();setInterval(()=>load(),90000);setInterval(()=>{if(!document.hidden)global()},300000);document.addEventListener('visibilitychange',()=>{if(document.hidden){stopStreams()}else{if(Date.now()-state.last>90000)load();else void startStreams()}});})();
+window.marketOnLanguageChange=()=>{window.INJ_MARKET_VIEWS?.languageChange?.();if(state.coins.length){render();summary();renderGlobal();updateConnectionStatus();window.MARKET_PRO?.languageChange?.()}else{const placeholder=$('rows').querySelector('.empty');if(placeholder)placeholder.textContent=t('loading');$('status').textContent=t('connectingCg');$('foot').textContent=t('provider');}};$('rows').addEventListener('click',e=>{const el=e.target.closest('[data-id]')||e.target.closest('tr[data-coin]');if(el)detail(el.dataset.id||el.dataset.coin)});$('rows').addEventListener('keydown',e=>{if(e.key!=='Enter'&&e.key!==' ')return;const row=e.target.closest('tr[data-coin]');if(!row)return;e.preventDefault();detail(row.dataset.coin)});$('closeDetail').onclick=()=>{$('detail').close();state.selected=null;window.MARKET_PRO?.close?.()};$('detail').addEventListener('close',()=>{state.selected=null;window.MARKET_PRO?.close?.()});$('search').oninput=render;$('scope').onchange=render;$('direction').onchange=render;document.querySelectorAll('[data-sort]').forEach(b=>b.onclick=()=>{if(state.sort===b.dataset.sort)state.desc=!state.desc;else{state.sort=b.dataset.sort;state.desc=state.sort!=='market_cap_rank'&&state.sort!=='name'}render()});$('currency').onclick=()=>{void switchCurrency(state.currency==='usd'?'eur':'usd')};$('refresh').onclick=()=>{void load(true);void global()};hydrateMarket();void load(true);void global();setInterval(()=>load(),90000);setInterval(()=>{if(!document.hidden)global()},300000);document.addEventListener('visibilitychange',()=>{if(document.hidden){stopStreams()}else{if(Date.now()-state.last>90000)load();else void startStreams()}});})();
