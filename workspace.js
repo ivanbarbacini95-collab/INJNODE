@@ -65,7 +65,7 @@ if(i.type==='ladder'){const fiat=m.rewards*(p??NaN),daily=(m.daily??NaN)*(p??NaN
 }
 const identity=[i.type,i.source,market?'market':i.source==='all'?wallets().map(w=>w.address).join(','):i.source==='selected'?selected():i.source,localStorage.getItem('inj_monitor_currency'),localStorage.getItem('inj_node_language_v1')].join('|');
 const v=priorValue||el('div');v.className='ws-value'+(!market?' ws-sensitive':'')+(i.type==='rewards'?' ws-reward-value':'');host.prepend(v);INJWorkspaceValues.paint(v,value,numeric,{calm:i.type==='rewards',identity});
-if(i.details){const detail=priorSub||el('div');detail.className='ws-sub'+(!market?' ws-sensitive':'');INJWorkspaceValues.paint(detail,sub,subNumeric,{calm:i.type==='rewards',identity});host.append(detail);}
+if(i.details){const detail=priorSub||el('div');detail.className='ws-sub'+(!market?' ws-sensitive':'')+(i.type==='price'?' ws-price-change':'');if(i.type==='price'){const change=p!==null?data.change:null;detail.dataset.trend=change>0?'up':change<0?'down':'neutral';sub=change===null?'— · 24H':(change>0?'↗ +':change<0?'↘ ':'')+num(change,2)+'% · 24H';}INJWorkspaceValues.paint(detail,sub,subNumeric,{calm:i.type==='rewards',identity});host.append(detail);}
 if(C.isChart(i.type))status=renderChart(i,host,status);
 host.append(el('div','ws-data-status',status));}
 function renderChart(i,host,status){
