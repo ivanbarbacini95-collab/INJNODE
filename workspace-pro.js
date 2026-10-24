@@ -24,6 +24,7 @@ function restore(json){
   const replacement=A.model.sanitize(JSON.parse(json)),db=A.getDb();
   Object.keys(db).forEach(k=>delete db[k]);
   Object.assign(db,replacement);selected.clear();dragBefore=null;
+  $('wsConfig').close();
   A.persist();A.layout();A.refresh();buttons();updateStatus(true);
  }catch(err){console.warn('Workspace history restore skipped',err);}
 }
@@ -31,7 +32,8 @@ function undo(){if(!undoStack.length)return;const current=snapshot(),previous=un
 function redo(){if(!redoStack.length)return;const current=snapshot(),next=redoStack.pop();undoStack.push(current);restore(next);}
 function mutate(fn){
  if(!allowed())return notice(T('Sblocca il layout per modificare','Unlock the layout to edit'));
- pushHistory();fn();A.persist();A.layout();A.refresh();buttons();
+ if(selection().some(i=>i.cardLocked))return notice(T('Sblocca le card selezionate prima di modificarle','Unlock selected cards before editing'));
+ pushHistory();$('wsConfig').close();fn();A.persist();A.layout();A.refresh();buttons();
 }
 function select(uid,additive){
  const item=get(uid);if(!item)return;
@@ -41,6 +43,8 @@ function select(uid,additive){
  if(additive&&selected.has(uid))groupIds.forEach(x=>selected.delete(x));
  else groupIds.forEach(x=>selected.add(x));
  buttons();
+ if(selected.size===1&&!item.cardLocked&&allowed()&&!document.body.classList.contains('ws-immersive'))A.configure(item);
+ else $('wsConfig').close();
 }
 function selection(){return items().filter(i=>selected.has(i.uid));}
 function languageButton(it,en){return T(it,en);}
@@ -55,6 +59,7 @@ const actions=[
  ['Compatta','Compact','compact'],['Standard','Standard','standard'],['Espansa','Expanded','expanded'],
  ['Raggruppa','Group','group'],['Separa','Ungroup','ungroup'],['Allinea X','Align left','left'],
  ['Allinea Y','Align top','top'],['Distribuisci','Distribute','distribute'],
+ ['Stessa larghezza','Equal width','width'],['Stessa altezza','Equal height','height'],['Distribuisci verticale','Distribute vertically','vertical'],
  ['Duplica','Duplicate','duplicate'],['Blocca/Sblocca','Lock/Unlock','cardlock'],
  ['Annulla','Undo','undo'],['Ripristina','Redo','redo']
 ];
@@ -77,6 +82,7 @@ function buttons(){
   const a=btn.dataset.proAction;
   if(a==='undo')btn.disabled=!undoStack.length;
   else if(a==='redo')btn.disabled=!redoStack.length;
+  else if(a.startsWith('template-'))btn.disabled=A.getDb().presets.length>=50;
   else if(a==='distribute')btn.disabled=chosen.length<3;
   else if(a!=='monitor')btn.disabled=!chosen.length||!allowed();
  }
@@ -130,8 +136,9 @@ function distribute(){
  if(selection().length<3)return;
  mutate(()=>{
   const key=A.mode(),sorted=selection().sort((a,b)=>a.layouts[key].x-b.layouts[key].x);
-  const l=sorted[0].layouts[key].x,r=sorted.at(-1).layouts[key].x;
-  sorted.slice(1,-1).forEach((i,index)=>{i.layouts[key].x=Math.min(A.cols()-i.layouts[key].w,Math.max(0,l+(r-l)*(index+1)/(sorted.length-1)));});
+  const l=sorted[0].layouts[key].x,r=sorted.at(-1).layouts[key].x+sorted.at(-1).layouts[key].w;
+  const gap=(r-l-sorted.reduce((sum,i)=>sum+i.layouts[key].w,0))/(sorted.length-1);
+  let cursor=l;for(const i of sorted){i.layouts[key].x=cursor;cursor+=i.layouts[key].w+gap;}
   if(preset().snap)A.model.settle(items(),key,A.cols());
  });
 }
@@ -147,10 +154,12 @@ function run(a){
  if(a==='left')return align('x');
  if(a==='top')return align('y');
  if(a==='distribute')return distribute();
- if(a==='cardlock')return mutate(()=>{const lock=!selection().every(i=>i.cardLocked);for(const i of selection())i.cardLocked=lock;});
+ if(a==='width'||a==='height')return mutate(()=>{const key=A.mode(),field=a==='width'?'w':'h',value=selection()[0].layouts[key][field];for(const i of selection())i.layouts[key]=A.model.normalize({...i.layouts[key],[field]:value},A.cols());});
+ if(a==='vertical')return mutate(()=>{const key=A.mode(),list=selection().sort((a,b)=>a.layouts[key].y-b.layouts[key].y);if(list.length<3)return;const first=list[0].layouts[key],last=list.at(-1).layouts[key];const gap=(last.y+last.h-first.y-list.reduce((s,i)=>s+i.layouts[key].h,0))/(list.length-1);let y=first.y;for(const i of list){i.layouts[key].y=y;y+=i.layouts[key].h+gap;}});
+ if(a==='cardlock'&&allowed()){pushHistory();const lock=!selection().every(i=>i.cardLocked);for(const i of selection())i.cardLocked=lock;A.persist();A.layout();}
 }
 grid.addEventListener('pointerdown',e=>{
- const node=e.target.closest('.ws-card');if(!node||e.target.closest('button,input,select,a,.ws-section-controls'))return;
+ const node=e.target.closest('.ws-card');if(!node||e.target.closest('button,input,select,a,.ws-section-controls,.ws-interactive-chart,.ws-plot'))return;
  if(e.shiftKey||e.ctrlKey||e.metaKey){select(node.dataset.uid,true);e.stopImmediatePropagation();e.preventDefault();}
  else if(!e.target.closest('.ws-card-head')||get(node.dataset.uid)?.cardLocked)select(node.dataset.uid,false);
 },true);
@@ -163,11 +172,14 @@ document.addEventListener('keydown',e=>{
  else if(cmd&&e.key.toLowerCase()==='d'&&selection().length){e.preventDefault();duplicate();}
  else if(e.key==='Escape'&&!document.querySelector('dialog[open]')&&!document.body.classList.contains('ws-immersive')){selected.clear();buttons();}
 });
-const guides=()=>{grid.classList.remove('ws-guide-x','ws-guide-y');grid.style.removeProperty('--ws-guide-x');grid.style.removeProperty('--ws-guide-y');};
+const measurement=document.createElement('output');measurement.className='ws-pro-measure';measurement.hidden=true;grid.insertAdjacentElement('afterend',measurement);
+const guides=()=>{measurement.hidden=true;grid.classList.remove('ws-guide-x','ws-guide-y');grid.style.removeProperty('--ws-guide-x');grid.style.removeProperty('--ws-guide-y');};
 function alignGuide(d,rect){
  if(preset().snap){guides();return rect;}
  const unit=d.unit,thresholdX=8/unit,thresholdY=8/56;
  const candidates=items().filter(i=>i.uid!==d.item.uid&&!selected.has(i.uid)).map(i=>i.layouts[d.key]);
+ const gaps=candidates.flatMap(r=>{const out=[];if(rect.y<r.y+r.h&&rect.y+rect.h>r.y){const g=Math.max(r.x-rect.x-rect.w,rect.x-r.x-r.w);if(g>=0)out.push(g*unit+8);}if(rect.x<r.x+r.w&&rect.x+rect.w>r.x){const g=Math.max(r.y-rect.y-rect.h,rect.y-r.y-r.h);if(g>=0)out.push(g*56+8);}return out;});
+ measurement.hidden=false;measurement.textContent='X '+Math.round(rect.x*unit)+' · Y '+Math.round(rect.y*56)+' px'+(gaps.length?' · '+T('Spazio','Gap')+' '+Math.round(Math.min(...gaps))+' px':'');
  let bestX=null,bestY=null;
  const xedges=d.action==='move'?['x','right']:d.edge.includes('e')?['right']:d.edge.includes('w')?['x']:[];
  const yedges=d.action==='move'?['y','bottom']:d.edge.includes('s')?['bottom']:d.edge.includes('n')?['y']:[];
@@ -202,12 +214,15 @@ window.INJWorkspaceProHooks={
   if(!selected.has(item.uid))select(item.uid,false);
   return false;
  },
- dragStart(d){dragBefore=snapshot();if(!selected.has(d.item.uid))select(d.item.uid,false);},
+ dragStart(d){dragBefore=snapshot();$('wsConfig').close();if(!selected.has(d.item.uid))select(d.item.uid,false);},
  dragMove(d){
   const moving=d.item.layouts[d.key];
   d.item.layouts[d.key]=alignGuide(d,{...moving});
   if(d.action!=='move'||selected.size<2||!selected.has(d.item.uid))return false;
-  const dx=d.item.layouts[d.key].x-d.rect.x,dy=d.item.layouts[d.key].y-d.rect.y;
+  const originals=d.snapshot.filter(i=>selected.has(i.uid)&&!i.cardLocked).map(i=>i.layouts[d.key]);
+  const dx=Math.max(-Math.min(...originals.map(r=>r.x)),Math.min(A.cols()-Math.max(...originals.map(r=>r.x+r.w)),d.item.layouts[d.key].x-d.rect.x));
+  const dy=Math.max(-Math.min(...originals.map(r=>r.y)),d.item.layouts[d.key].y-d.rect.y);
+  d.item.layouts[d.key]={...d.rect,x:d.rect.x+dx,y:d.rect.y+dy};
   for(const i of items()){
    if(!selected.has(i.uid)||i.uid===d.item.uid||i.cardLocked)continue;
    const original=d.snapshot.find(x=>x.uid===i.uid);
@@ -247,6 +262,8 @@ function updateStatus(force){
    state=valid.length===rows.length&&at>0?(now-at<90000&&valid.every(r=>r.verified)?'live':'snapshot'):'offline';
    if(state!=='offline'&&estimates.has(i.type))state='estimate';
   }
+  const feed=A.feedInfo(i);if(feed){at=feed.at;source=feed.source;state=at?'snapshot':'offline';}
+  if(navigator.onLine===false)state='offline';
   const words={live:'LIVE',snapshot:'SNAPSHOT',estimate:T('STIMA','ESTIMATE'),offline:'OFFLINE'};
   const head=node.querySelector('.ws-card-heading');if(!head)continue;
   let badge=head.querySelector('.ws-pro-data');
@@ -287,8 +304,9 @@ monitorDialog.addEventListener('change',e=>{
 $('wsFull').addEventListener('click',()=>requestAnimationFrame(renderMonitor));
 function thumbnail(itemsList){
  const thumb=document.createElement('div');thumb.className='ws-pro-preset-thumb';thumb.setAttribute('aria-hidden','true');
- const n=Math.min(9,itemsList.length);
- for(let j=0;j<n;j++){const tile=document.createElement('span');tile.className='ws-pro-preset-tile';tile.style.flexGrow=String((j%3)+1);thumb.append(tile);}
+ const arranged=[];for(const entry of itemsList){if(typeof entry==='string'){const spec=A.catalog.byType[entry];arranged.push({layouts:{desktop:A.model.firstFree(arranged,'desktop',12,spec.w,spec.h)}});}else arranged.push(entry);}
+ const height=Math.max(1,...arranged.map(i=>i.layouts.desktop.y+i.layouts.desktop.h));
+ for(const i of arranged){const r=i.layouts.desktop,tile=document.createElement('span');tile.className='ws-pro-preset-tile';Object.assign(tile.style,{left:r.x/12*100+'%',top:r.y/height*100+'%',width:r.w/12*100+'%',height:r.h/height*100+'%'});thumb.append(tile);}
  return thumb;
 }
 const templates=[
@@ -323,8 +341,7 @@ function buildTemplate(tmpl){
 function previewPresets(){
  for(const row of $('wsPresetList').querySelectorAll('.ws-preset-row')){
   if(row.querySelector('.ws-pro-preset-thumb'))continue;
-  const name=row.querySelector('strong')?.textContent||'';
-  const p=A.getDb().presets.find(p=>name.startsWith(p.name));
+  const p=A.getDb().presets.find(p=>p.id===row.dataset.presetId);
   if(p)row.insertBefore(thumbnail(p.items),row.firstChild);
  }
 }

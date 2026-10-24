@@ -1,4 +1,8 @@
 /* INJ Workspace PRO — surface chrome only; keep the six native INJ Node themes and widget colors. */
+#wsConfig[open]{position:fixed;inset:80px 12px 12px auto;margin:0;width:min(340px,calc(100vw - 24px));max-height:calc(100dvh - 92px);z-index:10000;box-shadow:0 16px 60px color-mix(in srgb,var(--ws-bg) 70%,transparent)}
+#wsConfig h2{font:700 13px ui-monospace,monospace;color:var(--ws-accent);text-transform:uppercase}
+.ws-pro-measure{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:10001;background:var(--ws-panel);border:1px solid var(--ws-accent);border-radius:6px;padding:8px 12px;font:11px ui-monospace,monospace;pointer-events:none}
+.ws-pro-measure[hidden]{display:none}
 .ws-pro-context{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:0 clamp(12px,3vw,38px) 10px;padding:8px 10px;border:1px solid color-mix(in srgb,var(--ws-accent) 24%,var(--ws-line));border-radius:11px;background:color-mix(in srgb,var(--ws-panel) 94%,transparent);box-shadow:0 12px 36px color-mix(in srgb,var(--ws-bg) 25%,transparent);position:relative;z-index:9}
 .ws-pro-context[hidden],.ws-pro-monitor-options[hidden]{display:none!important}
 .ws-pro-context #wsProSelection{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:10px;color:var(--ws-accent);font-weight:700;letter-spacing:.06em;white-space:nowrap;margin-right:5px}
@@ -49,10 +53,13 @@ body.ws-immersive .ws-pro-monitor-float:hover,body.ws-immersive .ws-pro-monitor-
 .ws-pro-preset-thumb{display:flex;align-items:stretch;gap:2px;width:100%;height:35px;padding:4px;border-radius:6px;border:1px solid color-mix(in srgb,var(--ws-accent) 20%,var(--ws-line));background:color-mix(in srgb,var(--ws-bg) 80%,var(--ws-panel));overflow:hidden}
 .ws-pro-template .ws-pro-preset-thumb{height:46px}
 .ws-pro-preset-tile{min-width:3px;border:1px solid color-mix(in srgb,var(--ws-accent) 45%,transparent);border-radius:3px;background:color-mix(in srgb,var(--ws-accent) 11%,var(--ws-panel))}
+.ws-pro-preset-thumb{position:relative;display:block;padding:0}
+.ws-pro-preset-tile{position:absolute;box-sizing:border-box;min-width:0;transform:scale(.94)}
 .ws-preset-row .ws-pro-preset-thumb{width:56px;min-width:56px;height:35px}
 body.ws-immersive .ws-pro-context,body.ws-immersive .ws-pro-history-bar{display:none!important}
 body.ws-immersive.ws-monitor-no-controls .ws-card-controls,body.ws-immersive.ws-monitor-no-controls .ws-resize{display:none!important}
 body.ws-immersive:not(.ws-monitor-no-controls) .ws-card-controls{opacity:.07;transition:opacity .2s}
+body.ws-immersive:not(.ws-monitor-no-controls) .ws-card.editable:not(.pro-card-locked) .ws-card-controls{display:flex!important}
 body.ws-immersive:not(.ws-monitor-no-controls) .ws-card:hover .ws-card-controls,body.ws-immersive:not(.ws-monitor-no-controls) .ws-card:focus-within .ws-card-controls{opacity:1}
 body.ws-immersive.ws-monitor-no-headings .ws-card-head{display:none!important}
 body.ws-immersive.ws-monitor-no-status .ws-pro-data,body.ws-immersive.ws-monitor-no-status .ws-data-status{display:none!important}
