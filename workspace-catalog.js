@@ -31,7 +31,7 @@ const lists=new Set(['validators','orderbook','marketlist','favorites','marketle
 for(const e of entries){e.kind=graphs.has(e.type)?'chart':maps.has(e.type)?'heatmap':bars.has(e.type)?'bar':lists.has(e.type)?'list':e.w>=6?'panel':'metric';}
 const byType=Object.fromEntries(entries.map(e=>[e.type,e]));
 const isChart=t=>['chart','liveview'].includes(t);
-const defaults=type=>({heatmapCoins:null,timeframe:'1h',chartStyle:'line',goal:1,amount:1,scenarioPrice:100,targetCoin:'bitcoin',years:5,historyRange:'30d',direction:'injToFiat',marketRange:'24h',targetAmount:1000,...(type==='liveview'?{timeframe:'1h'}:{})});
+const defaults=type=>({heatmapCoins:null,timeframe:'1h',chartStyle:'line',goal:1,amount:1,scenarioPrice:100,targetCoin:'bitcoin',years:5,historyRange:'30d',direction:'injToFiat',marketRange:'24h',bookStep:0.001,targetAmount:1000,...(type==='liveview'?{timeframe:'1h'}:{})});
 const treasuryWallets=[
   'inj1cqvjau8tl4ge874crfaj6gkw55pnn6n2vmwdhv',
   'inj1ewp22h79mx9ln494nnx08laan4u2x7xyf37ceu',
