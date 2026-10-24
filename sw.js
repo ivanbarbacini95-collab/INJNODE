@@ -1,17 +1,17 @@
-const CACHE_NAME = 'inj-node-v16.10.24-orderbook-column-fix';
+const CACHE_NAME = 'inj-node-v16.10.24-book-readable-size-v1';
 const APP_SHELL = [
   './workspace.html',
   './workspace-layout.css?v=160749',
   './workspace-premium.css?v=160747','./workspace-widgets.css?v=1610245',
-  './workspace-orderbook-adaptive.css?v=1610245',
+  './workspace-orderbook-adaptive.css?v=1610247',
   './workspace-live.js?v=160746',
   './workspace-charts.js?v=160746',
-  './workspace-catalog.js?v=161024',
-  './workspace-sections.js?v=1610245',
+  './workspace-catalog.js?v=1610247',
+  './workspace-sections.js?v=1610247',
   './workspace-values.js?v=160744',
   './workspace-home.css?v=160743',
   './workspace.css?v=160746',
-  './workspace-model.js?v=160802',
+  './workspace-model.js?v=1610247',
   './workspace.js?v=160803',
   './workspace-pro.js?v=160801',
   './workspace-pro.css?v=160803',
