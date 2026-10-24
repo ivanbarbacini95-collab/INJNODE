@@ -4,7 +4,7 @@
 'use strict';
 const simple=['apr','unbonding','hourly','weekly','monthly','yearly','pnl','pnl24','avgprice','low24','high24','change24','volume24','marketcap','circulating','fullydiluted','dominance','globalcap','globalvolume','btcdom','networkstake','nativesupply','walletcount','bid','ask','spread','periodpnl','bestday','worstday'];
 const rich=['validators','milestone','orderbook','timeline','converter','levels','session','production','rewardwallets','marketlist','heatmap','favorites','marketleaders','marketlosers','comparison','potential','potentialstake','potentialincome','growth','composition','ownership','walletlist','treasurygrowth','worthhistory','ladderall'];
-const extra=['marketintelligence','genesis','holdertiers','incomeperiods','allpotential','portfolio','target','usdc','rewardoverview','velocity','accumulation','productionlevel','favoritesheatmap','priceposition','athrecovery','atlrecovery','supplydistribution','globaloverview','marketbreadth','treasuryoverview','treasuryallocation','treasuryproduction','treasurymilestone','treasuryperformance','position','bookbalance','growthsimple'];
+const extra=['walletpnl','marketintelligence','genesis','holdertiers','incomeperiods','allpotential','portfolio','target','usdc','rewardoverview','velocity','accumulation','productionlevel','favoritesheatmap','priceposition','athrecovery','atlrecovery','supplydistribution','globaloverview','marketbreadth','treasuryoverview','treasuryallocation','treasuryproduction','treasurymilestone','treasuryperformance','position','bookbalance','growthsimple'];
 const supported=[...simple,...rich,...extra];
 const marketChange=(coin,range)=>{const v=coin?.['price_change_percentage_'+range+'_in_currency']??(range==='24h'?coin?.price_change_percentage_24h:null);return typeof v==='number'&&Number.isFinite(v)?v:null};
 const boundedPercent=(a,b)=>Number.isFinite(a)&&Number.isFinite(b)&&b>0?Math.max(0,Math.min(100,a/b*100)):null;
@@ -105,6 +105,16 @@ function create(api){
  }else if(type==='target'){
   const aa=addresses(i),stored=read('inj_monitor_targets_v1',{}),native=aa.length===1?Number(stored[aa[0]]):null;if(host.closest('.ws-preview')){if(native>0&&!i._targetEdited)i.targetAmount=native;controls(i,host,[{key:'targetAmount',label:t('Obiettivo INJ','INJ goal')}]);}
   const target=i.targetAmount,elapsed=m?Math.min(120000,Math.max(0,Date.now()-m.at)):0,total=m?m.total+(m.daily??0)*elapsed/864e5:null;gauge(host,i,'target',t('Obiettivo INJ','INJ goal'),total,target);metric(host,i,'remaining',t('INJ mancanti','Remaining INJ'),total===null?null:Math.max(0,target-total));const rate=v.apr===null?null:v.apr/100/365,principal=m?m.staked+m.rewards:null,days=total!==null&&total>=target?0:rate>0&&principal>0?Math.ceil(Math.log((target-m.available)/principal)/Math.log(1+rate)):null;note(host,'ETA · '+(days!==null&&days<=14600?Math.max(0,days)+' '+t('giorni','days'):t('non disponibile','unavailable'))+' · '+t('stima con reinvestimento giornaliero','daily reinvestment estimate'));
+ }else if(type==='walletpnl'){
+  const periods=[['1d','24H'],['7d','7D'],['30d','30D'],['all','ALL']];
+  controls(i,host,[{key:'historyRange',label:t('Periodo P&L','P&L period'),options:periods}]);
+  const history=d.period,observed=history.length,amount=observed?history.reduce((n,r)=>n+r.value,0):null;
+  const tone=amount===null?'accent':amount<0?'down':'up';
+  metric(host,i,'recorded',t('P/L registrato','Recorded P/L'),amount,money,tone);
+  if(i.historyRange==='1d')metric(host,i,'price24',t('Variazione prezzo 24H · stima','24H price movement · estimate'),v.pnl24,money,v.pnl24<0?'down':'up');
+  if(observed>1)pathChart(host,history,t('Storico P/L','P/L history'));
+  note(host,t('Fonte: storico giornaliero salvato da INJ Node. I giorni mancanti non sono stimati. Il P/L da prezzo non include i flussi di capitale.','Source: daily history saved by INJ Node. Missing days are not estimated. Price-based P/L excludes capital flows.'));
+  if(amount===null)empty(host);
  }else if(type==='treasuryproduction'){render({...i,type:'production'},host);metric(host,i,'apr','APR',v.apr,x=>num(x,3)+'%','staking');
  }else if(type==='treasurymilestone'){render({...i,type:'milestone'},host);
  }else if(type==='treasuryperformance'){
