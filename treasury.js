@@ -1736,6 +1736,64 @@ function ownershipSavedNames(){
    .map(w=>[String(w.address),String(w.label||'').trim()]));
 }
 function ownershipPercent(value,total){return total>0&&Number.isFinite(value)?Math.max(0,Math.min(100,value/total*100)):NaN}
+function ownershipIsEnglish(){
+ try{return localStorage.getItem('inj_node_language_v1')==='en';}catch(_){return document.documentElement.lang==='en';}
+}
+function ownershipFallbackCopy(address){
+ // Compatibility path for Safari / installed PWAs without Clipboard API access.
+ const field=document.createElement('textarea'),previous=document.activeElement;
+ field.value=address;field.readOnly=true;field.setAttribute('aria-hidden','true');
+ Object.assign(field.style,{position:'fixed',top:'0',left:'-9999px',opacity:'0',fontSize:'16px'});
+ document.body.appendChild(field);
+ try{
+  field.focus({preventScroll:true});field.select();field.setSelectionRange(0,address.length);
+  return Boolean(document.execCommand('copy'));
+ }catch(_){return false}
+ finally{
+  field.remove();
+  try{previous?.focus({preventScroll:true})}catch(_){}
+ }
+}
+let ownershipCopyFeedbackTimer=0;
+function ownershipCopyFeedback(message,isError=false){
+ let toast=$('treasuryOwnerCopyFeedback');
+ if(!toast){
+  toast=document.createElement('div');
+  toast.id='treasuryOwnerCopyFeedback';
+  toast.className='treasury-owner-copy-feedback';
+  toast.setAttribute('role','status');
+  toast.setAttribute('aria-live','polite');
+  document.body.appendChild(toast);
+ }
+ toast.textContent=message;
+ toast.classList.toggle('is-error',isError);
+ toast.classList.add('is-visible');
+ clearTimeout(ownershipCopyFeedbackTimer);
+ ownershipCopyFeedbackTimer=setTimeout(()=>toast.classList.remove('is-visible'),2400);
+}
+async function copyOwnershipAddress(address,chip){
+ let copied=false;
+ if(navigator.clipboard?.writeText){
+  try{await navigator.clipboard.writeText(address);copied=true}catch(_){}
+ }
+ if(!copied)copied=ownershipFallbackCopy(address);
+ const en=ownershipIsEnglish();
+ if(!copied){
+  ownershipCopyFeedback(en?'Copy unavailable':'Copia non disponibile',true);
+  // Still provide the complete, selectable address if the OS blocks clipboard writes.
+  if(typeof window.prompt==='function')window.prompt(en?'Select and copy wallet address:':'Seleziona e copia l’indirizzo wallet:',address);
+  return;
+ }
+ const icon=chip.querySelector('.treasury-owner-copy-icon');
+ chip.classList.add('is-copied');
+ if(icon)icon.textContent='✓';
+ ownershipCopyFeedback(en?'Wallet address copied':'Indirizzo wallet copiato');
+ clearTimeout(chip._ownershipCopyResetTimer);
+ chip._ownershipCopyResetTimer=setTimeout(()=>{
+  chip.classList.remove('is-copied');
+  if(icon)icon.textContent='⧉';
+ },2200);
+}
 function renderWalletOwnership(){
  const track=$('treasuryOwnershipTrack'),head=$('treasuryOwnershipSummary');
  if(!track||!head)return;
@@ -1754,20 +1812,26 @@ function renderWalletOwnership(){
  });
  const overall=active.every(x=>Number.isFinite(x.total))?active.reduce((n,x)=>n+x.total,0):NaN;
  const complete=Number.isFinite(overall)&&overall>0;
- const labelsSignature=active.map(x=>x.address+'='+x.name).join('|');
+ const english=ownershipIsEnglish();
+ const labelsSignature=(english?'en|':'it|')+active.map(x=>x.address+'='+x.name).join('|');
  if(!ownershipBuilt||labelsSignature!==ownershipLabelsSignature){
   ownershipBuilt=true;ownershipLabelsSignature=labelsSignature;ownershipPctSignature='';
   const colors=['#6ce7c6','#8abaf7','#d3b9fa','#f0bb86','#a9db9d','#85e0ef'];
   const frag=document.createDocumentFragment();
   for(let i=0;i<active.length;i++){
-   const row=active[i],chip=document.createElement('div');chip.className='treasury-owner';
+   const row=active[i],chip=document.createElement('button');chip.type='button';chip.className='treasury-owner';
    chip.style.setProperty('--owner-color',colors[i%colors.length]);
+   chip.setAttribute('aria-label',(english?'Copy wallet address: ':'Copia indirizzo wallet: ')+row.name);
+   chip.title=english?'Copy wallet address':'Copia indirizzo wallet';
    const dot=document.createElement('i');dot.className='treasury-owner-dot';dot.setAttribute('aria-hidden','true');
    const title=document.createElement('span');title.className='treasury-owner-label';title.textContent=row.name;
    const pct=document.createElement('strong');pct.className='treasury-owner-pct';pct.dataset.walletShare=String(i);pct.textContent='—';
    const meter=document.createElement('span');meter.className='treasury-owner-meter';meter.setAttribute('aria-hidden','true');
    const bar=document.createElement('i');bar.dataset.walletMeter=String(i);meter.append(bar);
-   chip.append(dot,title,pct,meter);frag.append(chip);
+   const copyIcon=document.createElement('span');copyIcon.className='treasury-owner-copy-icon';copyIcon.setAttribute('aria-hidden','true');copyIcon.textContent='⧉';
+   chip.append(dot,title,pct,meter,copyIcon);
+   chip.addEventListener('click',()=>{void copyOwnershipAddress(row.address,chip)});
+   frag.append(chip);
   }
   track.replaceChildren(frag);
   // Native horizontal scrolling: never auto-pan. Preserve user's scrollLeft.
