@@ -52,3 +52,42 @@
 /* Manual drag/swipe, while preserving vertical page scrolling. */
 .treasury-ownership-window { scroll-behavior:auto!important; }
 .treasury-ownership-track {animation:none!important;transform:none!important;}
+
+
+/* Wallet share tiles are accessible copy buttons; preserve horizontal swiping. */
+.treasury-ownership-track > .treasury-owner{
+ -webkit-appearance:none;appearance:none;
+ font:inherit;line-height:1.2;color:inherit;text-align:left;cursor:copy;
+ touch-action:pan-x pan-y;-webkit-tap-highlight-color:transparent;
+ transition:filter .15s ease;
+}
+.treasury-ownership-track > .treasury-owner:focus-visible{
+ outline:2px solid var(--accent,#78ead0);outline-offset:2px;
+}
+.treasury-ownership-track > .treasury-owner:active{filter:brightness(1.12)}
+.treasury-owner-copy-icon{
+ display:inline-grid;place-items:center;flex:0 0 18px;
+ width:18px;height:18px;margin-left:2px;
+ font:900 16px/1 system-ui,sans-serif;
+ color:var(--muted-strong,var(--muted,#9db4b4));opacity:.82;
+}
+.treasury-owner:hover .treasury-owner-copy-icon,
+.treasury-owner:focus-visible .treasury-owner-copy-icon{color:var(--accent,#78ead0);opacity:1}
+.treasury-owner.is-copied .treasury-owner-copy-icon{color:var(--up,#68df9d);opacity:1}
+.treasury-owner-copy-feedback{
+ position:fixed;z-index:99999;left:50%;
+ bottom:calc(18px + env(safe-area-inset-bottom,0px));
+ transform:translate(-50%,8px);opacity:0;pointer-events:none;
+ width:max-content;max-width:calc(100vw - 32px);box-sizing:border-box;
+ padding:11px 17px;border-radius:12px;
+ border:1px solid color-mix(in srgb,var(--accent,#78ead0) 38%,transparent);
+ background:var(--surface-strong,#18282d);color:var(--text,#fff);
+ font-size:12px;font-weight:800;letter-spacing:.035em;text-align:center;
+ box-shadow:0 10px 35px rgba(0,0,0,.25);
+ transition:opacity .17s ease,transform .17s ease;
+}
+.treasury-owner-copy-feedback.is-visible{opacity:1;transform:translate(-50%,0)}
+.treasury-owner-copy-feedback.is-error{border-color:var(--down,#ed7070)}
+@media(prefers-reduced-motion:reduce){
+ .treasury-owner-copy-feedback,.treasury-ownership-track > .treasury-owner{transition:none}
+}
