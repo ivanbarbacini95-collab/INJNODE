@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.10.24-workspace-mobile-edit-1';
+const CACHE_NAME = 'inj-node-v16.10.25-treasury-copy-1';
 const APP_SHELL = [
   './workspace-fullscreen-lock.css?v=16102413',
   './workspace.js?v=16102413',
@@ -106,7 +106,7 @@ const APP_SHELL = [
   './velvet-nebula.js?v=160112',
   './ios-screen-fixes.css?v=160095',
   './ios-converter-keyboard.js?v=160095',
-  './treasury-ownership.css?v=160099',
+  './treasury-ownership.css?v=16102501',
   './treasury-ownership-theme.css?v=160702',
   './market.html',
   './market-intelligence.css?v=160421',
@@ -176,7 +176,7 @@ const APP_SHELL = [
   './treasury.html',
   './treasury-production-center.css?v=160525',
   './treasury.css?v=16.00.39',
-  './treasury.js?v=16.00.99'
+  './treasury.js?v=16.10.25.01'
 ];
 
 self.addEventListener('install', (event) => {
