@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.10.26-micro-terminal-4';
+const CACHE_NAME = 'inj-node-v16.10.26-unified-timeframes-1';
 const APP_SHELL = [
   './home-micro-terminal.css?v=20261026d',
   './home-micro-terminal.js?v=20261026a',
@@ -166,7 +166,8 @@ const APP_SHELL = [
   './scroll-guard.js?v=160525',
   './live-charts.html',
   './live-charts.css?v=16.00.39',
-  './live-charts.js?v=16.00.40',
+  './live-charts.js?v=20261026tf1',
+  './live-charts-timeframe-rail.css?v=20261026tf1',
   './live-rewards.html',
   './live-rewards.css?v=16.05.02',
   './reward-velocity.css?v=160122',
@@ -178,7 +179,7 @@ const APP_SHELL = [
   './command-center-flash.css?v=160307',
   './command-center-flash.js?v=160502',
   './command-center.css?v=16.00.39',
-  './command-center.js?v=16.05.03',
+  './command-center.js?v=20261026tf1',
   './treasury.html',
   './treasury-production-center.css?v=160525',
   './treasury.css?v=16.00.39',

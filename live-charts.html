@@ -52,6 +52,7 @@
 <!-- Global INJ Node terminal typography -->
 <link rel="stylesheet" href="./supply-mono.css?v=20261024">
 <link rel="stylesheet" href="./card-titles-uppercase.css?v=20261024">
+<link rel="stylesheet" href="./live-charts-timeframe-rail.css?v=20261026tf1">
 </head>
 <body>
   <main class="live-page" id="livePage">
@@ -78,26 +79,19 @@
     </header>
 
     <nav class="timeframe-bar" id="timeframeBar" aria-label="Seleziona timeframe">
-      <button class="timeframe active" type="button" data-range="m1"><b>1</b><span>MIN</span></button>
-      <button class="timeframe" type="button" data-range="m5"><b>5</b><span>MIN</span></button>
-      <button class="timeframe" type="button" data-range="m15"><b>15</b><span>MIN</span></button>
-      <button class="timeframe extra-mobile" type="button" data-range="m30"><b>30</b><span>MIN</span></button>
-      <button class="timeframe" type="button" data-range="h1"><b>1</b><span>ORA</span></button>
-      <button class="timeframe" type="button" data-range="h4"><b>4</b><span>ORE</span></button>
-      <button class="timeframe" type="button" data-range="d1"><b>1</b><span>G</span></button>
-      <button class="timeframe" type="button" data-range="w1"><b>1</b><span>S</span></button>
-      <button class="timeframe extra-mobile" type="button" data-range="mo1"><b>1</b><span>MESE</span></button>
-      <button class="timeframe extra-mobile" type="button" data-range="y1"><b>1</b><span>Y</span></button>
-      <button class="timeframe extra-mobile" type="button" data-range="all"><b>ALL</b></button>
-      <div class="timeframe-more-wrap">
-        <button class="timeframe-more-toggle" id="moreTimeframesToggle" type="button" aria-expanded="false"><b>MORE</b></button>
-        <div class="timeframe-more-menu" id="moreTimeframesMenu" aria-hidden="true">
-          <button class="timeframe-more-option" type="button" data-range="m30"><b>30</b><span>MIN</span></button>
-          <button class="timeframe-more-option" type="button" data-range="mo1"><b>1</b><span>MESE</span></button>
-          <button class="timeframe-more-option" type="button" data-range="y1"><b>1</b><span>Y</span></button>
-          <button class="timeframe-more-option" type="button" data-range="all"><b>ALL</b></button>
-        </div>
-      </div>
+      <button class="timeframe active" type="button" data-range="m1" aria-label="1 minuto" aria-pressed="true">1m</button>
+      <button class="timeframe" type="button" data-range="m5" aria-label="5 minuti" aria-pressed="false">5m</button>
+      <button class="timeframe" type="button" data-range="m10" aria-label="10 minuti" aria-pressed="false">10m</button>
+      <button class="timeframe" type="button" data-range="h1" aria-label="1 ora" aria-pressed="false">1H</button>
+      <button class="timeframe" type="button" data-range="h3" aria-label="3 ore" aria-pressed="false">3H</button>
+      <button class="timeframe" type="button" data-range="h6" aria-label="6 ore" aria-pressed="false">6H</button>
+      <button class="timeframe" type="button" data-range="h12" aria-label="12 ore" aria-pressed="false">12H</button>
+      <button class="timeframe" type="button" data-range="d1" aria-label="1 giorno" aria-pressed="false">1G</button>
+      <button class="timeframe" type="button" data-range="d3" aria-label="3 giorni" aria-pressed="false">3G</button>
+      <button class="timeframe" type="button" data-range="w1" aria-label="1 settimana" aria-pressed="false">1S</button>
+      <button class="timeframe" type="button" data-range="mo1" aria-label="1 mese" aria-pressed="false">1M</button>
+      <button class="timeframe" type="button" data-range="y1" aria-label="1 anno" aria-pressed="false">1Y</button>
+      <button class="timeframe" type="button" data-range="all" aria-label="Storico INJ dal 21 ottobre 2020" aria-pressed="false">TUTTO</button>
     </nav>
 
     <section class="terminal-shell" id="terminalShell" data-range-key="m1" aria-label="Grafico realtime Injective">
@@ -144,7 +138,7 @@
       <span class="inj-brand-credit" data-i18n-skip="true" aria-label="INJ Node by B Capital Group"><strong>INJ Node</strong><span>by B Capital Group</span></span>
     </footer>
   </main>
-  <script src="live-charts.js?v=16.00.40" defer></script>
+  <script src="live-charts.js?v=20261026tf1" defer></script>
 <script defer src="./chart-haptics.js?v=160720"></script>
 
 

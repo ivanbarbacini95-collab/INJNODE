@@ -21,19 +21,17 @@ const APR_ENDPOINT = 'https://api.ui.injective.network/api/v1/cache/stats/apr';
 const privacy = localStorage.getItem('inj_monitor_privacy') === '1';
 const currency = localStorage.getItem('inj_monitor_currency') === 'EUR' ? 'EUR' : 'USD';
 const ranges = {
-  m1:{ms:60_000,bucket:1_000,source:'s1',canvas:'ccCanvas1m',card:'.cc-chart-1m',ids:['cc1mTop','cc1mMid','cc1mBottom','cc1mMarker'],changeId:'cc1mChange',minSpan:.000055,maxCandles:60},
-  m5:{ms:5*60_000,bucket:5_000,source:'s1',canvas:'ccCanvas5m',card:'.cc-chart-5m',ids:['cc5Top','cc5Mid','cc5Bottom','cc5Marker'],changeId:'cc5Change',minSpan:.00007,maxCandles:60},
-  m10:{ms:10*60_000,bucket:10_000,source:'s1',canvas:'ccCanvas10m',card:'.cc-chart-10m',ids:['cc10Top','cc10Mid','cc10Bottom','cc10Marker'],changeId:'cc10Change',minSpan:.00010,maxCandles:60},
-  h1:{ms:HOUR,bucket:60_000,source:'m1',canvas:'ccCanvas1h',card:'.cc-chart-1h',ids:['cc1hTop','cc1hMid','cc1hBottom','cc1hMarker'],changeId:'cc1hChange',minSpan:.00022,maxCandles:60},
-  d1:{ms:DAY,bucket:30*60_000,source:'m30',canvas:'ccCanvas1d',card:'.cc-chart-1d',ids:['cc1dTop','cc1dMid','cc1dBottom','cc1dMarker'],changeId:'cc1dChange',minSpan:.0013,maxCandles:48},
-  w1:{ms:7*DAY,bucket:4*HOUR,source:'h4',canvas:'ccCanvas1w',card:'.cc-chart-1w',ids:['cc1wTop','cc1wMid','cc1wBottom','cc1wMarker'],changeId:'cc1wChange',minSpan:.0030,maxCandles:42},
-  // Long windows use their own actual exchange OHLC data, requested on demand.
-  // All-history begins at INJ/USDT's first trading day (21 October 2020).
-  h3:{ms:3*HOUR,bucket:3*60_000,source:'histH3',canvas:'ccCanvasHistory',card:'.cc-chart-history',ids:['ccHistTop','ccHistMid','ccHistBottom','ccHistMarker'],changeId:'ccHistChange',minSpan:.0003,maxCandles:60,interval:'1m',limit:190},
+  m1:{ms:60_000,bucket:1_000,source:'histM1',canvas:'ccCanvasHistory',card:'.cc-chart-history',ids:['ccHistTop','ccHistMid','ccHistBottom','ccHistMarker'],changeId:'ccHistChange',minSpan:.000055,maxCandles:60,interval:'1s',limit:90},
+  m5:{ms:5*60_000,bucket:5_000,source:'histM5',canvas:'ccCanvasHistory',card:'.cc-chart-history',ids:['ccHistTop','ccHistMid','ccHistBottom','ccHistMarker'],changeId:'ccHistChange',minSpan:.00007,maxCandles:60,interval:'1s',limit:335},
+  m10:{ms:10*60_000,bucket:10_000,source:'histM10',canvas:'ccCanvasHistory',card:'.cc-chart-history',ids:['ccHistTop','ccHistMid','ccHistBottom','ccHistMarker'],changeId:'ccHistChange',minSpan:.00010,maxCandles:60,interval:'1s',limit:635},
+  h1:{ms:HOUR,bucket:60_000,source:'histH1',canvas:'ccCanvasHistory',card:'.cc-chart-history',ids:['ccHistTop','ccHistMid','ccHistBottom','ccHistMarker'],changeId:'ccHistChange',minSpan:.00022,maxCandles:60,interval:'1m',limit:75},
+  h3:{ms:3*HOUR,bucket:3*60_000,source:'histH3',canvas:'ccCanvasHistory',card:'.cc-chart-history',ids:['ccHistTop','ccHistMid','ccHistBottom','ccHistMarker'],changeId:'ccHistChange',minSpan:.0003,maxCandles:60,interval:'1m',limit:195},
   h6:{ms:6*HOUR,bucket:6*60_000,source:'histH6',canvas:'ccCanvasHistory',card:'.cc-chart-history',ids:['ccHistTop','ccHistMid','ccHistBottom','ccHistMarker'],changeId:'ccHistChange',minSpan:.0005,maxCandles:60,interval:'5m',limit:80},
   h12:{ms:12*HOUR,bucket:12*60_000,source:'histH12',canvas:'ccCanvasHistory',card:'.cc-chart-history',ids:['ccHistTop','ccHistMid','ccHistBottom','ccHistMarker'],changeId:'ccHistChange',minSpan:.0007,maxCandles:60,interval:'5m',limit:150},
+  d1:{ms:DAY,bucket:30*60_000,source:'histD1',canvas:'ccCanvasHistory',card:'.cc-chart-history',ids:['ccHistTop','ccHistMid','ccHistBottom','ccHistMarker'],changeId:'ccHistChange',minSpan:.0013,maxCandles:48,interval:'30m',limit:54},
   d3:{ms:3*DAY,bucket:HOUR,source:'histD3',canvas:'ccCanvasHistory',card:'.cc-chart-history',ids:['ccHistTop','ccHistMid','ccHistBottom','ccHistMarker'],changeId:'ccHistChange',minSpan:.002,maxCandles:72,interval:'1h',limit:80},
-  mo1:{ms:30*DAY,bucket:12*HOUR,source:'histMO1',canvas:'ccCanvasHistory',card:'.cc-chart-history',ids:['ccHistTop','ccHistMid','ccHistBottom','ccHistMarker'],changeId:'ccHistChange',minSpan:.007,maxCandles:66,interval:'4h',limit:220},
+  w1:{ms:7*DAY,bucket:4*HOUR,source:'histW1',canvas:'ccCanvasHistory',card:'.cc-chart-history',ids:['ccHistTop','ccHistMid','ccHistBottom','ccHistMarker'],changeId:'ccHistChange',minSpan:.0030,maxCandles:42,interval:'4h',limit:46},
+  mo1:{ms:30*DAY,bucket:12*HOUR,source:'histMO1',canvas:'ccCanvasHistory',card:'.cc-chart-history',ids:['ccHistTop','ccHistMid','ccHistBottom','ccHistMarker'],changeId:'ccHistChange',minSpan:.007,maxCandles:66,interval:'12h',limit:70},
   y1:{ms:365*DAY,bucket:7*DAY,source:'histY1',canvas:'ccCanvasHistory',card:'.cc-chart-history',ids:['ccHistTop','ccHistMid','ccHistBottom','ccHistMarker'],changeId:'ccHistChange',minSpan:.025,maxCandles:54,interval:'1d',limit:380,weekOffset:3*DAY},
   all:{ms:Date.now()-INJ_HISTORY_ORIGIN,bucket:7*DAY,source:'histALL',canvas:'ccCanvasHistory',card:'.cc-chart-history',ids:['ccHistTop','ccHistMid','ccHistBottom','ccHistMarker'],changeId:'ccHistChange',minSpan:.05,maxCandles:450,interval:'1w',limit:1000,weekOffset:3*DAY}
 };
@@ -45,7 +43,7 @@ const state = {
 Object.keys(ranges).forEach(k=>state.scales[k]=null);
 // Use calendar boundaries, not a hard-coded 30/365-day approximation.
 function rangeStart(key,now=Date.now()){
-  if(key==='all')return INJ_HISTORY_ORIGIN;
+  if(key==='all')return INJ_LISTING_START-7*DAY;
   if(key==='mo1'||key==='y1'){
     const d=new Date(now),originalDay=d.getUTCDate();
     d.setUTCDate(1);
@@ -246,6 +244,17 @@ function addTick(p,t=Date.now()){
   recordMarketTick(p,previous);state.lastMarketTick=Date.now();
   state.price=p;state.target=p;
   updateLiveCandle('s1',1_000,p,t);updateLiveCandle('m1',60_000,p,t);updateLiveCandle('m30',30*60_000,p,t);updateLiveCandle('h4',4*HOUR,p,t);
+ // Real trades update only the selected OHLC feed, preserving distinct periods.
+ const cfg=ranges[tactical.main],list=cfg&&state.series[cfg.source];
+ if(cfg&&list?.length){
+   const offset=cfg.weekOffset||0;
+   const start=Math.floor((t+offset)/cfg.bucket)*cfg.bucket-offset;
+   const last=list.at(-1);
+   if(last.t<start)list.push({t:start,o:last.c,h:Math.max(last.c,p),l:Math.min(last.c,p),c:p});
+   else if(last.t===start){last.h=Math.max(last.h,p);last.l=Math.min(last.l,p);last.c=p;}
+   const keep=Math.max(cfg.limit,cfg.maxCandles+5);
+   if(list.length>keep)list.splice(0,list.length-keep);
+ }
 }
 function scheduleMarketReconnect(delay=1000){clearTimeout(state.reconnect);if(state.stopped||navigator.onLine===false)return;state.reconnect=setTimeout(()=>{state.reconnect=0;connectMarket(false)},delay)}
 function connectMarket(force=false){
@@ -275,7 +284,7 @@ const extendedHistoryErrors = Object.create(null);
 async function loadExtendedHistory(key) {
   const cfg=ranges[key];
   if(!cfg?.interval)return;
-  const ttl=key==='all'||key==='y1'?10*60_000:2*60_000;
+  const ttl=key==='all'||key==='y1'?10*60_000:45_000;
   if(extendedHistoryCache[key]&&Date.now()-extendedHistoryCache[key]<ttl&&state.series[cfg.source]?.length)return;
   if(extendedHistoryLoading[key])return extendedHistoryLoading[key];
   const card=$('ccHistoryChart'),status=card?.querySelector('.cc-chart-feed');
@@ -289,7 +298,7 @@ async function loadExtendedHistory(key) {
       const rows=await fetchKlines(cfg.interval,cfg.limit,from);
       if(!rows.length)throw Error('No candles available');
       if(key==='all'){
-        if(rows.length===cfg.limit)throw Error('Historical data may be truncated');
+        if(rows.length>=cfg.limit)throw Error('Historical data may be truncated');
         // INJ/USDT began trading on 21 October 2020. A newer starting
         // candle would make the ALL option indistinguishable from partial views.
         if(rows[0].t>Date.UTC(2020,10,1))throw Error('Earliest 2020 listing candles missing');
@@ -540,7 +549,7 @@ function renderAll(){renderWallet();renderValidators();renderMarket();renderSyst
 function frame(ts){state.raf=0;if(state.stopped||document.hidden)return;
  const dt=Math.max(8,Math.min(100,ts-(state.lastFrame||ts-33)));state.lastFrame=ts;
  if(state.target>0){if(!(state.visual>0))state.visual=state.target;const delta=state.target-state.visual;state.visual+=delta*(1-Math.exp(-dt/38));if(Math.abs(delta)<.00000035)state.visual=state.target;}
- if(ts-state.lastDraw>=32&&state.visual>0){const drawDt=Math.min(120,ts-(state.lastDraw||ts-33));state.lastDraw=ts;[tactical.main,...tactical.small].forEach(k=>drawChart(k,Date.now(),drawDt));}
+ if(ts-state.lastDraw>=32&&state.visual>0){const drawDt=Math.min(120,ts-(state.lastDraw||ts-33));state.lastDraw=ts;drawChart(tactical.main,Date.now(),drawDt);}
  if(ts-tactical.lastDataPaint>=250){tactical.lastDataPaint=ts;renderMarket();renderTactical();}
  state.raf=requestAnimationFrame(frame);
 }
@@ -565,7 +574,7 @@ function selectMain(key){if(!ranges[key])return;
   historyCard.dataset.key=extended?key:'extended-inactive';
   const button=historyCard.querySelector('.cc-promote');
   if(extended && button){
-   const captions={h3:'3 ORE',h6:'6 ORE',h12:'12 ORE',d3:'3 GIORNI',mo1:'1 MESE',y1:'1 ANNO',all:'TUTTO'};
+   const captions={m1:'1 MIN',m5:'5 MIN',m10:'10 MIN',h1:'1 ORA',h3:'3 ORE',h6:'6 ORE',h12:'12 ORE',d1:'1 GIORNO',d3:'3 GIORNI',w1:'1 SETTIMANA',mo1:'1 MESE',y1:'1 ANNO',all:'TUTTO'};
    button.dataset.promote=key;
    button.setAttribute('aria-label','Grafico '+captions[key]);
    const name=button.querySelector('strong');

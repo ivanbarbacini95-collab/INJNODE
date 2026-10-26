@@ -8,22 +8,25 @@ const SECOND = 1000;
 const MINUTE = 60 * SECOND;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
+const INJ_LISTING_START = Date.UTC(2020,9,21,4); // Binance INJ/USDT first listed 21 Oct 2020 UTC.
 const mobile = matchMedia('(hover:none) and (pointer:coarse)').matches || innerWidth <= 820;
 const maxFps = 60;
 const minFrameMs = 1000 / maxFps;
 
 const ranges = {
-  m1:  { label:'1 MIN',       windowMs:MINUTE,       bucketMs:SECOND,       source:'m1',  interval:'1s',  limit:1000, minSpan:.000055, expand:90,  relax:1500, expected:60, smooth:true },
-  m5:  { label:'5 MIN',       windowMs:5*MINUTE,     bucketMs:5*SECOND,     source:'m5',  interval:'1s',  limit:1000, minSpan:.000075, expand:105, relax:1800, expected:60, smooth:true },
-  m15: { label:'15 MIN',      windowMs:15*MINUTE,    bucketMs:15*SECOND,    source:'m15', interval:'1s',  limit:1000, minSpan:.00010,  expand:120, relax:2300, expected:60, smooth:true },
-  m30: { label:'30 MIN',      windowMs:30*MINUTE,    bucketMs:MINUTE,       source:'m30', interval:'1m',  limit:260,  minSpan:.00014,  expand:135, relax:2800, expected:30, smooth:true },
-  h1:  { label:'1 ORA',       windowMs:HOUR,         bucketMs:MINUTE,       source:'h1',  interval:'1m',  limit:260,  minSpan:.00022,  expand:160, relax:4300, expected:60, smooth:true },
-  h4:  { label:'4 ORE',       windowMs:4*HOUR,       bucketMs:5*MINUTE,     source:'h4',  interval:'5m',  limit:260,  minSpan:.00042,  expand:185, relax:5600, expected:48 },
-  d1:  { label:'1 GIORNO',    windowMs:DAY,          bucketMs:30*MINUTE,    source:'d1',  interval:'30m', limit:260,  minSpan:.0013,   expand:220, relax:7600, expected:48 },
-  w1:  { label:'1 SETTIMANA', windowMs:7*DAY,        bucketMs:4*HOUR,       source:'w1',  interval:'4h',  limit:260,  minSpan:.0030,   expand:270, relax:10000,expected:42 },
-  mo1: { label:'1 MESE',      windowMs:30*DAY,       bucketMs:12*HOUR,      source:'mo1', interval:'12h', limit:260,  minSpan:.0070,   expand:310, relax:12500,expected:60 },
-  y1:  { label:'1 ANNO',      windowMs:365*DAY,      bucketMs:7*DAY,        source:'y1',  interval:'1d',  limit:500,  minSpan:.0200,   expand:360, relax:16000,expected:53 },
-  all: { label:'ALL',         windowMs:20*365*DAY,   bucketMs:28*DAY,       source:'all', interval:'1w',  limit:1000, minSpan:.0400,   expand:420, relax:20000,expected:261 }
+  m1: {label:'1 MIN',windowMs:MINUTE,bucketMs:SECOND,source:'m1',interval:'1s',limit:180,minSpan:.000055,expand:90,relax:1500,expected:60,smooth:true},
+  m5: {label:'5 MIN',windowMs:5*MINUTE,bucketMs:5*SECOND,source:'m5',interval:'1s',limit:400,minSpan:.000075,expand:105,relax:1800,expected:60,smooth:true},
+  m10: {label:'10 MIN',windowMs:10*MINUTE,bucketMs:10*SECOND,source:'m10',interval:'1s',limit:720,minSpan:.00010,expand:120,relax:2300,expected:60,smooth:true},
+  h1: {label:'1 ORA',windowMs:HOUR,bucketMs:MINUTE,source:'h1',interval:'1m',limit:260,minSpan:.00022,expand:160,relax:4300,expected:60,smooth:true},
+  h3: {label:'3 ORE',windowMs:3*HOUR,bucketMs:3*MINUTE,source:'h3',interval:'1m',limit:260,minSpan:.00035,expand:175,relax:5200,expected:60},
+  h6: {label:'6 ORE',windowMs:6*HOUR,bucketMs:6*MINUTE,source:'h6',interval:'5m',limit:260,minSpan:.0005,expand:190,relax:6000,expected:60},
+  h12: {label:'12 ORE',windowMs:12*HOUR,bucketMs:12*MINUTE,source:'h12',interval:'5m',limit:260,minSpan:.0007,expand:205,relax:6900,expected:60},
+  d1: {label:'1 GIORNO',windowMs:DAY,bucketMs:30*MINUTE,source:'d1',interval:'30m',limit:260,minSpan:.0013,expand:220,relax:7600,expected:48},
+  d3: {label:'3 GIORNI',windowMs:3*DAY,bucketMs:HOUR,source:'d3',interval:'1h',limit:260,minSpan:.002,expand:245,relax:8500,expected:72},
+  w1: {label:'1 SETTIMANA',windowMs:7*DAY,bucketMs:4*HOUR,source:'w1',interval:'4h',limit:260,minSpan:.003,expand:270,relax:10000,expected:42},
+  mo1: {label:'1 MESE',windowMs:30*DAY,bucketMs:12*HOUR,source:'mo1',interval:'12h',limit:260,minSpan:.007,expand:310,relax:12500,expected:60},
+  y1: {label:'1 ANNO',windowMs:365*DAY,bucketMs:7*DAY,source:'y1',interval:'1d',limit:500,minSpan:.020,expand:360,relax:16000,expected:53,weekOffset:3*DAY},
+  all: {label:'ALL',windowMs:Date.now()-INJ_LISTING_START+8*DAY,bucketMs:7*DAY,source:'all',interval:'1w',limit:1000,minSpan:.040,expand:420,relax:20000,expected:Math.ceil((Date.now()-INJ_LISTING_START+8*DAY)/(7*DAY)),weekOffset:3*DAY}
 };
 
 const BOOK_WS_ENDPOINTS=[
@@ -33,7 +36,7 @@ const BOOK_WS_ENDPOINTS=[
 ];
 const BOOK_REST_BASES=['https://api.binance.com','https://data-api.binance.vision','https://api1.binance.com'];
 
-const savedRange = (()=>{ try { const v=localStorage.getItem('inj_node_live_chart_range'); return ranges[v]?v:'m1'; } catch(_){ return 'm1'; } })();
+const savedRange = (()=>{ try { const v=localStorage.getItem('inj_node_live_chart_range'); return ranges[v]?v:({m15:'m10',m30:'m10',h4:'h3'}[v]||'m1'); } catch(_){ return 'm1'; } })();
 const BOOK_GROUPINGS=[0.001,0.01,0.1,1];
 const savedBookGrouping=(()=>{try{const v=Number(localStorage.getItem('inj_node_book_grouping'));return BOOK_GROUPINGS.includes(v)?v:0.001;}catch(_){return 0.001;}})();
 const savedQuoteCurrency=(()=>{try{return localStorage.getItem('inj_monitor_currency')==='EUR'?'EUR':'USD';}catch(_){return 'USD';}})();
@@ -205,19 +208,19 @@ function flashBookTrade(price,side){
   state.book.priceFlashTimer=setTimeout(()=>host.classList.remove('buy-flash','sell-flash'),240);
 }
 function setBookOpen(open){state.book.open=!!open;const page=$('livePage');page?.classList.toggle('book-open',state.book.open);$('orderBookToggle')?.setAttribute('aria-pressed',String(state.book.open));}
-function setLoading(mode){const n=$('chartLoading');if(!n)return;if(mode==='done')n.classList.add('done');else{n.classList.remove('done');const s=n.querySelector('span');if(s)s.textContent=mode==='live'?'LIVE':'SYNC';}}
+function setLoading(mode){const n=$('chartLoading');if(!n)return;if(mode==='done')n.classList.add('done');else{n.classList.remove('done');const s=n.querySelector('span');if(s)s.textContent=mode==='error'?'STORICO NON DISPONIBILE':mode==='live'?'LIVE':'SYNC';}}
 
-function normalizeCandles(rows,bucketMs){
+function normalizeCandles(rows,bucketMs,weekOffset=0){
   const map=new Map();
-  for(const raw of rows||[]){if(!raw)continue;const t=Math.floor(Number(raw.t)/bucketMs)*bucketMs;const o=+raw.o,h=+raw.h,l=+raw.l,c=+raw.c;if(!(t>=0&&o>0&&h>0&&l>0&&c>0))continue;const prev=map.get(t);if(!prev)map.set(t,{t,o,h,l,c});else{prev.h=Math.max(prev.h,h);prev.l=Math.min(prev.l,l);prev.c=c;}}
+  for(const raw of rows||[]){if(!raw)continue;const t=Math.floor((Number(raw.t)+weekOffset)/bucketMs)*bucketMs-weekOffset;const o=+raw.o,h=+raw.h,l=+raw.l,c=+raw.c;if(!(t>=0&&o>0&&h>0&&l>0&&c>0))continue;const prev=map.get(t);if(!prev)map.set(t,{t,o,h,l,c});else{prev.h=Math.max(prev.h,h);prev.l=Math.min(prev.l,l);prev.c=c;}}
   return [...map.values()].sort((a,b)=>a.t-b.t);
 }
 function aggregateCandles(rows,bucketMs){return normalizeCandles(rows,bucketMs);}
 // Keep loaded historical candles available as the user pans; live updates must not
 // delete earlier history. 25k bars/source is a conservative browser memory ceiling.
 function trimSeries(key){const cfg=ranges[key];if(!cfg)return;const arr=state.series[cfg.source]||[];const cap=25000;if(arr.length>cap)arr.splice(0,arr.length-cap);}
-function mergeLiveInto(key,raw){const cfg=ranges[key],arr=state.series[cfg.source];if(!cfg||!arr)return;const t=Math.floor(raw.t/cfg.bucketMs)*cfg.bucketMs;let last=arr[arr.length-1];if(!last||last.t<t){last={t,o:raw.o,h:raw.h,l:raw.l,c:raw.c};arr.push(last);}else if(last.t===t){last.h=Math.max(last.h,raw.h);last.l=Math.min(last.l,raw.l);last.c=raw.c;}else{const found=arr.find(c=>c.t===t);if(found){found.h=Math.max(found.h,raw.h);found.l=Math.min(found.l,raw.l);found.c=raw.c;}}trimSeries(key,raw.t);}
-function mergeTradeInto(key,price,time){const cfg=ranges[key],arr=state.series[cfg.source];if(!cfg||!arr||!state.loaded[cfg.source]||!(price>0))return;const t=Math.floor(time/cfg.bucketMs)*cfg.bucketMs;let last=arr[arr.length-1];if(!last||last.t<t){const open=last?.c>0?last.c:price;last={t,o:open,h:Math.max(open,price),l:Math.min(open,price),c:price};arr.push(last);}else if(last.t===t){last.h=Math.max(last.h,price);last.l=Math.min(last.l,price);last.c=price;}else{const found=arr.find(c=>c.t===t);if(found){found.h=Math.max(found.h,price);found.l=Math.min(found.l,price);found.c=price;}}trimSeries(key,time);}
+function mergeLiveInto(key,raw){const cfg=ranges[key],arr=state.series[cfg.source];if(!cfg||!arr)return;const t=Math.floor((raw.t+(cfg.weekOffset||0))/cfg.bucketMs)*cfg.bucketMs-(cfg.weekOffset||0);let last=arr[arr.length-1];if(!last||last.t<t){last={t,o:raw.o,h:raw.h,l:raw.l,c:raw.c};arr.push(last);}else if(last.t===t){last.h=Math.max(last.h,raw.h);last.l=Math.min(last.l,raw.l);last.c=raw.c;}else{const found=arr.find(c=>c.t===t);if(found){found.h=Math.max(found.h,raw.h);found.l=Math.min(found.l,raw.l);found.c=raw.c;}}trimSeries(key,raw.t);}
+function mergeTradeInto(key,price,time){const cfg=ranges[key],arr=state.series[cfg.source];if(!cfg||!arr||!state.loaded[cfg.source]||!(price>0))return;const t=Math.floor((time+(cfg.weekOffset||0))/cfg.bucketMs)*cfg.bucketMs-(cfg.weekOffset||0);let last=arr[arr.length-1];if(!last||last.t<t){const open=last?.c>0?last.c:price;last={t,o:open,h:Math.max(open,price),l:Math.min(open,price),c:price};arr.push(last);}else if(last.t===t){last.h=Math.max(last.h,price);last.l=Math.min(last.l,price);last.c=price;}else{const found=arr.find(c=>c.t===t);if(found){found.h=Math.max(found.h,price);found.l=Math.min(found.l,price);found.c=price;}}trimSeries(key,time);}
 function applyTrade(price,time=Date.now()){if(!(price>0))return;const previous=state.targetPrice>0?state.targetPrice:(state.lastPrice>0?state.lastPrice:price);state.lastTickDir=price>previous?1:price<previous?-1:state.lastTickDir;state.lastPrice=price;state.targetPrice=price;if(!(state.visualPrice>0))state.visualPrice=price;state.lastTickAt=Date.now();state.flashUntil=performance.now()+420;for(const key of Object.keys(ranges))mergeTradeInto(key,price,time);}
 
 async function fetchKlines(interval,limit,endTime=null){
@@ -242,12 +245,14 @@ async function ensureHistory(key){
     if(key===state.active)setLoading('sync');
     try{
       const rows=await historyRows(cfg.interval,cfg.limit);
-      state.series[cfg.source]=normalizeCandles(rows,cfg.bucketMs);
+      if(key==='all'&&rows[0]?.t>Date.UTC(2020,10,1))throw new Error('Storico completo non disponibile');
+       state.series[cfg.source]=normalizeCandles(rows,cfg.bucketMs,cfg.weekOffset||0);
+       if(key==='all')state.olderExhausted[cfg.source]=true;
       state.loaded[cfg.source]=true;state.scales[key]=null;trimSeries(key);
       const latest=rows.at(-1)?.c;if(latest>0){if(!(state.lastPrice>0))state.lastPrice=latest;if(!(state.targetPrice>0))state.targetPrice=latest;if(!(state.visualPrice>0))state.visualPrice=latest;}
       if(state.targetPrice>0)mergeTradeInto(key,state.targetPrice,Date.now());
       if(key===state.active){state.rangeEnterAt=performance.now();setLoading('done');}
-    }catch(_){if(key===state.active)setLoading('live');}
+    }catch(_){if(key===state.active)setLoading('error');}
     finally{state.loading[key]=null;}
   })();state.loading[key]=job;return job;
 }
@@ -468,7 +473,7 @@ async function requestOlderHistory(){
     if(!older.length){state.olderExhausted[source]=true;return;}
     // Reuse the live-updated series as it exists NOW, not the version that was
     // present when the HTTP request began.
-    state.series[source]=normalizeCandles([...older,...(state.series[source]||[])],cfg.bucketMs);
+    state.series[source]=normalizeCandles([...older,...(state.series[source]||[])],cfg.bucketMs,cfg.weekOffset||0);
     // A user can request more pages by swiping again toward the earlier edge.
     if(older.length<2)state.olderExhausted[source]=true;
     state.scales[key]=null;
@@ -480,8 +485,8 @@ function computeScale(dt,key,cfg,candles){let lo=Infinity,hi=-Infinity;for(const
 function drawGuides(ctx,left,right,top,bottom){const pw=right-left,ph=bottom-top;ctx.save();ctx.lineWidth=1;ctx.strokeStyle='rgba(135,165,205,.055)';for(const f of [.25,.5,.75]){const y=top+ph*f;ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(right,y);ctx.stroke();}ctx.strokeStyle='rgba(135,165,205,.030)';for(const f of [.2,.4,.6,.8]){const x=left+pw*f;ctx.beginPath();ctx.moveTo(x,top);ctx.lineTo(x,bottom);ctx.stroke();}ctx.restore();}
 function drawRangeTags(ctx,candles,xs,toY,right,bottom){if(candles.length<4)return;let hiI=0,loI=0;for(let i=1;i<candles.length;i++){if(candles[i].h>candles[hiI].h)hiI=i;if(candles[i].l<candles[loI].l)loI=i;}ctx.save();ctx.font=`800 ${mobile?7:8}px -apple-system,BlinkMacSystemFont,"SF Pro Display",system-ui,sans-serif`;ctx.fillStyle=hexAlpha(state.colors.muted2,.58);ctx.textBaseline='middle';const hx=Math.min(right-12,xs[hiI]+5),hy=Math.max(9,toY(candles[hiI].h)-8);ctx.fillText('H',hx,hy);const lx=Math.min(right-12,xs[loI]+5),ly=Math.min(bottom-5,toY(candles[loI].l)+9);ctx.fillText('L',lx,ly);ctx.restore();}
 function pad2(v){return String(v).padStart(2,'0');}
-function timeAxisText(ts,key){const d=new Date(ts),hh=pad2(d.getHours()),mm=pad2(d.getMinutes()),ss=pad2(d.getSeconds());if(key==='m1')return `${hh}:${mm}:${ss}`;if(['m5','m15','m30','h1'].includes(key))return `${hh}:${mm}`;if(key==='h4'||key==='d1')return `${pad2(d.getDate())}/${pad2(d.getMonth()+1)} ${hh}:${mm}`;if(key==='w1'||key==='mo1')return `${pad2(d.getDate())}/${pad2(d.getMonth()+1)}`;if(key==='y1')return d.toLocaleDateString('it-IT',{month:'short',year:'2-digit'});return d.toLocaleDateString('it-IT',{month:'short',year:'numeric'});}
-function crosshairTimeText(ts,key){const d=new Date(ts);if(key==='m1')return `${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`;if(['m5','m15','m30','h1'].includes(key))return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;const options={day:'2-digit',month:'2-digit'};if(key==='all')options.year='2-digit';if(['h4','d1','w1','mo1'].includes(key)){options.hour='2-digit';options.minute='2-digit';}return d.toLocaleString('it-IT',options);}
+function timeAxisText(ts,key){const d=new Date(ts),hh=pad2(d.getHours()),mm=pad2(d.getMinutes()),ss=pad2(d.getSeconds());if(key==='m1')return `${hh}:${mm}:${ss}`;if(['m5','m10','h1','h3','h6','h12'].includes(key))return `${hh}:${mm}`;if(['d1','d3'].includes(key))return `${pad2(d.getDate())}/${pad2(d.getMonth()+1)} ${hh}:${mm}`;if(key==='w1'||key==='mo1')return `${pad2(d.getDate())}/${pad2(d.getMonth()+1)}`;if(key==='y1')return d.toLocaleDateString('it-IT',{month:'short',year:'2-digit'});return d.toLocaleDateString('it-IT',{month:'short',year:'numeric'});}
+function crosshairTimeText(ts,key){const d=new Date(ts);if(key==='m1')return `${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`;if(['m5','m10','h1','h3','h6','h12'].includes(key))return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;const options={day:'2-digit',month:'2-digit'};if(key==='all')options.year='2-digit';if(['d1','d3','w1','mo1'].includes(key)){options.hour='2-digit';options.minute='2-digit';}return d.toLocaleString('it-IT',options);}
 
 function drawTimeAxis(ctx,key,candles,xs,left,right,bottom,h,now,cfg){
   const axisTop=bottom+7,axisTextY=h-(mobile?5:6),usable=Math.max(1,right-left);
@@ -577,7 +582,7 @@ function drawActive(now,dt,ts){
 }
 
 function setMoreOpen(open){const wrap=$('moreTimeframesToggle')?.closest('.timeframe-more-wrap');wrap?.classList.toggle('open',!!open);$('moreTimeframesToggle')?.setAttribute('aria-expanded',String(!!open));$('moreTimeframesMenu')?.setAttribute('aria-hidden',String(!open));}
-function selectRange(key){if(!ranges[key])return;setMoreOpen(false);const extra=['m30','mo1','y1','all'];$('moreTimeframesToggle')?.classList.toggle('active',extra.includes(key));if(key===state.active)return;state.active=key;followLive();state.crosshair.active=false;state.rangeEnterAt=performance.now();try{localStorage.setItem('inj_node_live_chart_range',key);}catch(_){}document.querySelectorAll('.timeframe,.timeframe-more-option').forEach(btn=>btn.classList.toggle('active',btn.dataset.range===key));setText('activeRangeLabel',ranges[key].label);setText('watermarkRange',ranges[key].label);setText('footerRange',ranges[key].label);$('terminalShell')?.setAttribute('data-range-key',key);state.scaleTextAt=0;state.indicatorRenderAt=0;if(state.loaded[ranges[key].source])setLoading('done');else{setLoading('sync');void ensureHistory(key);}}
+function selectRange(key){if(!ranges[key])return;setMoreOpen(false);if(key===state.active)return;state.active=key;followLive();state.crosshair.active=false;state.rangeEnterAt=performance.now();try{localStorage.setItem('inj_node_live_chart_range',key);}catch(_){}document.querySelectorAll('.timeframe,.timeframe-more-option').forEach(btn=>btn.classList.toggle('active',btn.dataset.range===key));document.querySelectorAll('.timeframe').forEach(btn=>btn.setAttribute('aria-pressed',String(btn.dataset.range===key)));document.querySelector(`.timeframe[data-range="${key}"]`)?.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});setText('activeRangeLabel',ranges[key].label);setText('watermarkRange',ranges[key].label);setText('footerRange',ranges[key].label);$('terminalShell')?.setAttribute('data-range-key',key);state.scaleTextAt=0;state.indicatorRenderAt=0;if(state.loaded[ranges[key].source])setLoading('done');else{setLoading('sync');void ensureHistory(key);}}
 
 document.querySelectorAll('.timeframe,.timeframe-more-option').forEach(btn=>btn.addEventListener('click',()=>selectRange(btn.dataset.range)));
 function pointerPosition(e){const r=canvas.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top};}
@@ -659,7 +664,7 @@ window.addEventListener('focus',resumeLiveChartsRealtime,{passive:true});
 colors();
 window.addEventListener('load',()=>{colors();},{once:true});
 window.addEventListener('pageshow',()=>{colors();resumeLiveChartsRealtime();});
-document.querySelectorAll('.timeframe,.timeframe-more-option').forEach(btn=>btn.classList.toggle('active',btn.dataset.range===state.active));
+document.querySelectorAll('.timeframe,.timeframe-more-option').forEach(btn=>btn.classList.toggle('active',btn.dataset.range===state.active));document.querySelectorAll('.timeframe').forEach(btn=>btn.setAttribute('aria-pressed',String(btn.dataset.range===state.active)));
 setText('activeRangeLabel',ranges[state.active].label);setText('watermarkRange',ranges[state.active].label);setText('footerRange',ranges[state.active].label);
-setIndicators(state.indicatorsOn);$('moreTimeframesToggle')?.classList.toggle('active',['m30','mo1','y1','all'].includes(state.active));
+setIndicators(state.indicatorsOn);requestAnimationFrame(()=>document.querySelector(`.timeframe[data-range="${state.active}"]`)?.scrollIntoView({block:'nearest',inline:'center'}));
 start();connect();state.priceWatchdog=setInterval(maintainLiveChartsRealtime,2500);void primeHistories();
