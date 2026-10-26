@@ -328,6 +328,7 @@
 <link rel="stylesheet" href="./home-micro-terminal.css?v=20261026d">
 <link rel="stylesheet" href="./home-premium-iconography.css?v=20261026p1">
 <link rel="stylesheet" href="./home-tile-descriptions.css?v=20261026a"/>
+<link rel="stylesheet" href="./performance-timeline-fit.css?v=20261026-fit1"/>
 </head>
 <body class="boot-loading">
 <div aria-label="Avvio INJ Node" aria-live="polite" aria-atomic="true" class="boot-splash node-pulse-splash" id="bootSplash" role="status">
@@ -805,6 +806,10 @@
         <button id="entryPnlModePct" type="button" aria-pressed="false">P/L %</button>
       </div>
       <button class="entry-pnl-ema-toggle active" id="entryPnlEmaToggle" type="button" aria-pressed="true">EMA 7/21</button>
+      <div class="entry-pnl-layout-switch" id="entryPnlLayoutSwitch" role="group" aria-label="Visualizzazione cronologia" data-i18n-skip="true">
+        <button class="active" id="entryPnlLayoutFit" type="button" aria-pressed="true">TUTTO</button>
+        <button id="entryPnlLayoutScroll" type="button" aria-pressed="false">SCORRI</button>
+      </div>
       <span class="entry-pnl-range">14G</span>
     </div>
   </div>
@@ -1337,7 +1342,7 @@
   </article>
 </section>
 <div aria-live="polite" class="toast" id="toast" role="status"></div>
-<script defer="" src="app.js?v=16.07.44"></script>
+<script defer="" src="app.js?v=20261026-fit1"></script>
 <script defer src="./home-micro-terminal.js?v=20261026a"></script>
 <script defer src="./morning-brief.js?v=160737"></script>
 <script>

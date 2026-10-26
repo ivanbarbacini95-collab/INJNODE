@@ -1546,6 +1546,7 @@ function entryPnlTimelineVisibleCandles() {
   if (!scroll || !track) return [];
   const left = scroll.scrollLeft;
   const right = left + scroll.clientWidth;
+  if (entryPnlTimelineLayoutMode() === 'fit') return [...track.querySelectorAll('.entry-pnl-day')];
   return [...track.querySelectorAll('.entry-pnl-day')].filter((node) => {
     const nodeLeft = node.offsetLeft;
     return nodeLeft + node.offsetWidth > left + 2 && nodeLeft < right - 2;
@@ -1572,6 +1573,41 @@ function entryPnlTimelineEma(values, period) {
     result[index] = ema;
   }
   return result;
+}
+
+
+const ENTRY_PNL_LAYOUT_STORAGE_KEY = 'inj_node_timeline_layout_v1';
+
+function entryPnlTimelineLayoutMode() {
+  return state.entryPnlTimeline.layoutMode === 'scroll' ? 'scroll' : 'fit';
+}
+
+// Recalculate candle widths without discarding the DOM nodes or their live values.
+function applyEntryPnlTimelineLayout() {
+  const section = $('entryPnlTimeline');
+  const scroll = $('entryPnlTimelineScroll');
+  const track = $('entryPnlTimelineTrack');
+  if (!section || !scroll || !track) return;
+  const count = Math.max(1, (state.entryPnlTimeline.rows || []).length);
+  const available = Math.max(1, scroll.clientWidth || section.clientWidth || 320);
+  const mode = entryPnlTimelineLayoutMode();
+  section.dataset.layoutMode = mode;
+
+  if (mode === 'fit') {
+    const slot = available / count;
+    section.dataset.fitDense = slot < 48 ? '1' : '0';
+    track.style.setProperty('--pnl-slot', `${slot.toFixed(3)}px`);
+    track.style.width = `${available}px`;
+    track.style.justifyContent = 'flex-start';
+    if (scroll.scrollLeft) scroll.scrollLeft = 0;
+  } else {
+    const targetVisible = available < 620 ? 14 : available < 980 ? 22 : 34;
+    const slot = Math.max(18, Math.min(28, Math.round(available / targetVisible) || 22));
+    section.dataset.fitDense = '0';
+    track.style.setProperty('--pnl-slot', `${slot}px`);
+    track.style.width = `${Math.max(available, count * slot)}px`;
+    track.style.justifyContent = count * slot <= available ? 'flex-end' : 'flex-start';
+  }
 }
 
 function syncEntryPnlTimelineControls() {
@@ -1602,6 +1638,21 @@ function syncEntryPnlTimelineControls() {
     legend.querySelector('.ema-fast')?.classList.toggle('unavailable', rowsCount < 7);
     legend.querySelector('.ema-slow')?.classList.toggle('unavailable', rowsCount < 21);
   }
+  const currentLayout = entryPnlTimelineLayoutMode();
+  const language = window.INJ_I18N?.getLanguage?.() === 'en' ? 'en' : 'it';
+  const layoutGroup = $('entryPnlLayoutSwitch');
+  if (layoutGroup) layoutGroup.setAttribute('aria-label', language === 'en' ? 'Timeline layout' : 'Visualizzazione cronologia');
+  [['entryPnlLayoutFit', 'fit', 'TUTTO', 'ALL', 'Mostra tutto lo storico in una schermata', 'Fit full history to screen'],
+   ['entryPnlLayoutScroll', 'scroll', 'SCORRI', 'SCROLL', 'Barre grandi e scorrimento orizzontale', 'Larger bars and horizontal scrolling']].forEach(([id, value, it, en, itTitle, enTitle]) => {
+    const button = $(id);
+    if (!button) return;
+    const selected = currentLayout === value;
+    button.classList.toggle('active', selected);
+    button.setAttribute('aria-pressed', String(selected));
+    const caption = language === 'en' ? en : it;
+    if (button.textContent !== caption) button.textContent = caption;
+    button.title = language === 'en' ? enTitle : itTitle;
+  });
 }
 
 function paintEntryPnlEmaLayer(track, scroll, allNodes, ema7, ema21, maxAbs, maxVisual, stageHeight) {
@@ -1722,6 +1773,28 @@ function bindEntryPnlTimelineInteraction() {
   const scroll = $('entryPnlTimelineScroll');
   if (!scroll || scroll.dataset.bound === '1') return;
   scroll.dataset.bound = '1';
+  const timeline = state.entryPnlTimeline;
+  if (!timeline.layoutPreferenceLoaded) {
+    timeline.layoutPreferenceLoaded = true;
+    try { timeline.layoutMode = localStorage.getItem(ENTRY_PNL_LAYOUT_STORAGE_KEY) === 'scroll' ? 'scroll' : 'fit'; } catch (_) {}
+  }
+  const setLayout = (mode) => {
+    const next = mode === 'scroll' ? 'scroll' : 'fit';
+    if (timeline.layoutMode === next) return;
+    timeline.layoutMode = next;
+    timeline.followLatest = true;
+    try { localStorage.setItem(ENTRY_PNL_LAYOUT_STORAGE_KEY, next); } catch (_) {}
+    applyEntryPnlTimelineLayout();
+    syncEntryPnlTimelineControls();
+    requestAnimationFrame(() => {
+      if (next === 'scroll') scroll.scrollLeft = Math.max(0, scroll.scrollWidth - scroll.clientWidth);
+      else scroll.scrollLeft = 0;
+      scheduleEntryPnlTimelineScale();
+    });
+  };
+  $('entryPnlLayoutFit')?.addEventListener('click', () => setLayout('fit'));
+  $('entryPnlLayoutScroll')?.addEventListener('click', () => setLayout('scroll'));
+  window.addEventListener('injnode:languagechange', syncEntryPnlTimelineControls);
   const inspectAtPointer = (event) => {
     const rect = scroll.getBoundingClientRect();
     if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) { clearEntryPnlDayInspection(); return; }
@@ -1758,7 +1831,10 @@ function bindEntryPnlTimelineInteraction() {
     else if (event.key === 'End') scroll.scrollTo({ left: scroll.scrollWidth, behavior: 'smooth' });
     else scroll.scrollBy({ left: event.key === 'ArrowLeft' ? -amount : amount, behavior: 'smooth' });
   });
-  window.addEventListener('resize', scheduleEntryPnlTimelineScale, { passive: true });
+  window.addEventListener('resize', () => {
+    applyEntryPnlTimelineLayout();
+    scheduleEntryPnlTimelineScale();
+  }, { passive: true });
 }
 
 function renderEntryPnlTimeline(force = false) {
@@ -1784,11 +1860,7 @@ function renderEntryPnlTimeline(force = false) {
     if (zero) track.appendChild(zero);
     if (emaLayer) track.appendChild(emaLayer);
     const count = rows.length;
-    const targetVisible = scroll.clientWidth < 620 ? 14 : scroll.clientWidth < 980 ? 22 : 34;
-    const slot = Math.max(18, Math.min(28, Math.round(scroll.clientWidth / Math.max(1, targetVisible)) || 22));
-    track.style.setProperty('--pnl-slot', `${slot}px`);
-    track.style.width = `${Math.max(scroll.clientWidth, count * slot)}px`;
-    track.style.justifyContent = count * slot <= scroll.clientWidth ? 'flex-end' : 'flex-start';
+    applyEntryPnlTimelineLayout();
     const labelStep = count <= 14 ? 2 : count <= 40 ? 4 : 7;
 
     rows.forEach((row, index) => {
@@ -2493,6 +2565,7 @@ function isPerformanceTimelineActive() {
 }
 
 function settlePerformanceTimelineViewport() {
+  applyEntryPnlTimelineLayout();
   const scroll = $('entryPnlTimelineScroll');
   if (scroll && state.entryPnlTimeline.followLatest) {
     scroll.scrollLeft = Math.max(0, scroll.scrollWidth - scroll.clientWidth);
@@ -2752,7 +2825,7 @@ const state = {
   walletSummaries: {},
   entrySelectedAddress: '',
   entrySpark: { points: [], loadedAt: 0, loading: false, dayStart: 0, openPrice: 0, lastLiveSampleAt: 0, plot: null, inspectIndex: -1 },
-  entryPnlTimeline: { address: '', rows: [], renderKey: '', frame: 0, saveAt: 0, lastPaintAt: 0, followLatest: true, inspectDay: 0, rolloverTimer: 0, rolloverAt: 0, lastHydrateAttempt: 0, metricMode: 'usd', emaVisible: true },
+  entryPnlTimeline: { address: '', rows: [], renderKey: '', frame: 0, saveAt: 0, lastPaintAt: 0, followLatest: true, inspectDay: 0, rolloverTimer: 0, rolloverAt: 0, lastHydrateAttempt: 0, metricMode: 'usd', emaVisible: true, layoutMode: 'fit', layoutPreferenceLoaded: false },
   summariesLoading: false,
   summariesLastRefresh: 0,
   targetByWallet: {},

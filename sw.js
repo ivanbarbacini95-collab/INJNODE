@@ -1,5 +1,7 @@
-const CACHE_NAME = 'inj-node-v16.10.26-clean-settings-1';
+const CACHE_NAME = 'inj-node-v16.10.26-performance-fit-1';
 const APP_SHELL = [
+  './app.js?v=20261026-fit1',
+  './performance-timeline-fit.css?v=20261026-fit1',
   './home-premium-iconography.js?v=20261026p1',
   './home-premium-iconography.css?v=20261026p1',
   './home-micro-terminal.css?v=20261026d',
