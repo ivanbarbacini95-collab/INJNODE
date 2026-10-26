@@ -1,8 +1,8 @@
-const CACHE_NAME = 'inj-node-v16.10.26-injc-fullwidth-2';
+const CACHE_NAME = 'inj-node-v16.10.26-injc-fullwidth-3';
 const APP_SHELL = [
   './injc-etf.html?v=20261026',
   './injc-home-tile.css?v=20261026b',
-  './home-launcher-grid.css?v=160805',
+  './home-launcher-grid.css?v=20261026-fullwidth',
   './workspace-fullscreen-lock.css?v=16102413',
   './workspace.js?v=16102413',
   './workspace-pro.js?v=16102413',
