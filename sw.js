@@ -1,5 +1,7 @@
-const CACHE_NAME = 'inj-node-v16.10.26-privacy-shield-9';
+const CACHE_NAME = 'inj-node-v16.10.26-micro-terminal-1';
 const APP_SHELL = [
+  './home-micro-terminal.css?v=20261026a',
+  './home-micro-terminal.js?v=20261026a',
   './privacy-shield.css?v=20261026',
   './injc-etf.html?v=20261026',
   './injc-home-tile.css?v=20261026b',
@@ -81,7 +83,7 @@ const APP_SHELL = [
   './home-vitality.js?v=160739',
   './home-vitality-v2.css?v=160096',
   './home-layout-polish.css?v=20261026center',
-  './home-pnl-focus.css?v=20261026e',
+  './home-pnl-focus.css?v=20261026f',
   './node-pulse.css?v=160103',
   './jn-branding.css?v=160106',
   './ocean-aurora.css?v=160109',
