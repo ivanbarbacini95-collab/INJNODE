@@ -9,7 +9,7 @@ html[data-inj-page="index"] body #entryGate .entry-gate-shell:not(.first-access)
   box-sizing:border-box!important;
   display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;
   justify-content:flex-start!important;align-items:center!important;
-  order:14!important;
+  order:13!important;
   grid-column:1/-1!important;grid-row:auto!important;
   width:100%!important;min-width:0!important;max-width:100%!important;
   height:76px!important;min-height:76px!important;max-height:none!important;
@@ -65,7 +65,7 @@ html[data-inj-page="index"] #entryWorkspaceButton > span.inj-tile-scene svg{
 @media(max-width:1100px){
  html[data-inj-page="index"] body #entryGate .entry-gate-shell:not(.first-access)
  > .entry-actions.entry-flat-v44 > #entryWorkspaceButton {
-  order:14!important;
+  order:13!important;
   grid-column:1/-1!important;
   display:flex!important;
   height:76px!important;min-height:76px!important;
