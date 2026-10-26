@@ -1,6 +1,6 @@
-/* INJ Node · Home two-column launcher parity (mobile) v16.08.04
-   All Home destinations use the same compact card; only B Capital Group / INJ Treasury
-   is full width. Isolated to the Home's mobile grid; navigation and animations unchanged. */
+/* INJ Node · Home launcher grid v16.08.05
+   Compact two-column cards plus full-width INJ Workspace and B Capital Group Treasury.
+   Isolated to the Home's mobile grid; links and animations stay unchanged. */
 @media (max-width:799px) {
   html[data-inj-page="index"] body #entryGate
   .entry-gate-shell:not(.first-access) > .entry-actions.entry-flat-v44 {
@@ -15,11 +15,10 @@
     min-width:0!important;
   }
 
-  /* No special wide card for Command Center, Comparison, Potential Value,
-     Reward Ladder or Workspace: identical treatment to the eight original tiles. */
+  /* Command Center, Comparison, Potential Value and Reward Ladder remain compact. */
   html[data-inj-page="index"] body #entryGate
   .entry-gate-shell:not(.first-access) > .entry-actions.entry-flat-v44
-  > .entry-action:not(#entryTreasuryButton) {
+  > .entry-action:not(#entryTreasuryButton):not(#entryWorkspaceButton) {
     display:flex!important;
     position:relative!important;
     box-sizing:border-box!important;
@@ -45,7 +44,7 @@
 
   html[data-inj-page="index"] body #entryGate
   .entry-gate-shell:not(.first-access) > .entry-actions.entry-flat-v44
-  > .entry-action:not(#entryTreasuryButton)
+  > .entry-action:not(#entryTreasuryButton):not(#entryWorkspaceButton)
   > :is(.entry-action-icon,.entry-action-arrow) {
     display:none!important;
   }
@@ -53,7 +52,7 @@
   /* All existing SVG artwork stays in the same top-center position. */
   html[data-inj-page="index"] body #entryGate
   .entry-gate-shell:not(.first-access) > .entry-actions.entry-flat-v44
-  > .entry-action:not(#entryTreasuryButton) > span.inj-tile-scene {
+  > .entry-action:not(#entryTreasuryButton):not(#entryWorkspaceButton) > span.inj-tile-scene {
     display:block!important;
     box-sizing:border-box!important;
     position:absolute!important;
@@ -80,17 +79,17 @@
   }
   html[data-inj-page="index"] body #entryGate
   .entry-gate-shell:not(.first-access) > .entry-actions.entry-flat-v44
-  > .entry-action:not(#entryTreasuryButton) > span.inj-tile-scene svg {
+  > .entry-action:not(#entryTreasuryButton):not(#entryWorkspaceButton) > span.inj-tile-scene svg {
     display:block!important;
     width:100%!important;
     height:100%!important;
   }
 
-  /* One shared title size, including the five newly compact destinations.
+  /* One shared title size for all compact destinations.
      Allow two lines rather than shrinking the font to fit the narrower card. */
   html[data-inj-page="index"] body #entryGate
   .entry-gate-shell:not(.first-access) > .entry-actions.entry-flat-v44
-  > .entry-action:not(#entryTreasuryButton)
+  > .entry-action:not(#entryTreasuryButton):not(#entryWorkspaceButton)
   > span:not(.entry-action-icon):not(.inj-tile-scene) {
     display:flex!important;
     box-sizing:border-box!important;
@@ -112,7 +111,7 @@
   }
   html[data-inj-page="index"] body #entryGate
   .entry-gate-shell:not(.first-access) > .entry-actions.entry-flat-v44
-  > .entry-action:not(#entryTreasuryButton) strong {
+  > .entry-action:not(#entryTreasuryButton):not(#entryWorkspaceButton) strong {
     display:block!important;
     width:100%!important;
     max-width:100%!important;
@@ -130,7 +129,7 @@
     text-overflow:clip!important;
   }
 
-  /* Consistent reading order; Treasury closes the section as its sole wide tile. */
+  /* Reading order: INJ Workspace full width immediately above Treasury. */
   html[data-inj-page="index"] body #entryGate #entryDashboardButton{order:1!important}
   html[data-inj-page="index"] body #entryGate #entryLiveButton{order:2!important}
   html[data-inj-page="index"] body #entryGate #entryLiveChartsButton{order:3!important}
@@ -143,7 +142,13 @@
   html[data-inj-page="index"] body #entryGate #entryComparisonButton{order:10!important}
   html[data-inj-page="index"] body #entryGate #entryVisualizeWealthButton{order:11!important}
   html[data-inj-page="index"] body #entryGate #entryRewardLadderButton{order:12!important}
-  html[data-inj-page="index"] body #entryGate #entryWorkspaceButton{order:13!important}
+  html[data-inj-page="index"] body #entryGate
+  .entry-gate-shell:not(.first-access) > .entry-actions.entry-flat-v44 > #entryWorkspaceButton {
+    order:13!important;
+    grid-column:1/-1!important;
+    grid-row:auto!important;
+    width:100%!important;
+  }
   html[data-inj-page="index"] body #entryGate
   .entry-gate-shell:not(.first-access) > .entry-actions.entry-flat-v44 > #entryTreasuryButton {
     order:14!important;
