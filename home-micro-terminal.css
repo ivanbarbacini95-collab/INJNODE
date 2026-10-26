@@ -187,3 +187,48 @@ html[data-inj-page="index"] #entryGate .inj-home-microbar .inj-micro-network[dat
     transition:none!important;
   }
 }
+
+
+/* v16.10.26c — iPhone Home safe-area breathing room.
+   Move the whole Home surface down, without translating content or altering
+   Dashboard and section headers. The existing iOS safe inset remains the base. */
+@media (max-width: 900px) and (pointer: coarse) {
+  html[data-inj-page="index"] #entryGate.entry-gate.visible[aria-hidden="false"]
+    > .entry-gate-shell:not(.first-access) {
+    padding-top: calc(var(--inj-control-inset, 16px) + 14px)!important;
+  }
+}
+
+/* Terminal data: three labels share a row; three values share a row.
+   Preserve left / centered / right alignment across phone widths. */
+html[data-inj-page="index"] #entryGate .inj-home-microbar .inj-micro-metrics {
+  align-items:start;
+}
+html[data-inj-page="index"] #entryGate .inj-home-microbar .inj-micro-metric {
+  display:grid;
+  grid-template-rows:14px 17px;
+  align-content:start;
+  align-items:center;
+  justify-items:start;
+  row-gap:4px;
+  min-height:35px;
+}
+html[data-inj-page="index"] #entryGate .inj-home-microbar .inj-micro-metric:nth-child(2) {
+  justify-items:center;
+}
+html[data-inj-page="index"] #entryGate .inj-home-microbar .inj-micro-metric:nth-child(3) {
+  justify-items:end;
+}
+html[data-inj-page="index"] #entryGate .inj-home-microbar .inj-micro-label {
+  display:flex;
+  align-items:center;
+  height:14px;
+  min-height:14px;
+  line-height:14px;
+}
+html[data-inj-page="index"] #entryGate .inj-home-microbar .inj-micro-value {
+  height:17px;
+  min-height:17px;
+  line-height:17px;
+  align-self:center;
+}
