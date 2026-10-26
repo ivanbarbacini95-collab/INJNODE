@@ -1,4 +1,4 @@
-/* INJ Node · v16.07.34 · full-width desktop canvas and contained Settings.
+/* INJ Node · v16.07.44 · full-width desktop canvas and contained Settings.
    Home-only selectors. No scroll ownership, touch gestures, theme selections,
    wallet state or sound/volume logic are changed. */
 
@@ -39,62 +39,94 @@
  }
 }
 
-/* Settings menu: CLOSED means genuinely absent, not translated off screen.
-   This also prevents the always-display:flex volume range from peeking out
-   through the left side of the home screen. */
-html[data-inj-page="index"] #headerMenu:not(.open) #headerMenuPanel,
-html[data-inj-page="index"] #headerMenu:not(.open) #headerMenuBackdrop{
- display:none!important;
- visibility:hidden!important;
- opacity:0!important;
- pointer-events:none!important;
- transform:none!important;
- -webkit-transform:none!important;
- animation:none!important;
- transition:none!important;
+/* Control Center · v16.07.44
+   Keep the panel mounted while closed: display:none prevented every entrance
+   and exit transition. Visibility + pointer-events keep it truly inactive.
+   A restrained upward fade reads as a native popover, never as a drawer. */
+html[data-inj-page="index"] #headerMenu #headerMenuPanel {
+  display:block!important;
+  position:fixed!important;
+  top:max(9px,env(safe-area-inset-top,0px))!important;
+  bottom:auto!important;
+  right:max(10px,env(safe-area-inset-right,0px))!important;
+  left:auto!important;
+  width:min(430px,calc(100vw - 20px))!important;
+  max-width:calc(100vw - 20px)!important;
+  height:auto!important;
+  max-height:calc(100dvh - 20px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))!important;
+  box-sizing:border-box!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  overscroll-behavior-y:contain!important;
+  -webkit-overflow-scrolling:touch!important;
+  touch-action:pan-y!important;
+  scrollbar-gutter:stable;
+  z-index:2147483200!important;
+  visibility:hidden!important;
+  opacity:0!important;
+  pointer-events:none!important;
+  transform:translate3d(0,10px,0) scale(.985)!important;
+  -webkit-transform:translate3d(0,10px,0) scale(.985)!important;
+  transform-origin:top right!important;
+  animation:none!important;
+  transition:opacity .22s ease,transform .27s cubic-bezier(.22,1,.36,1),visibility 0s linear .27s!important;
+}
+html[data-inj-page="index"] #headerMenu #headerMenuBackdrop {
+  display:block!important;
+  position:fixed!important;
+  inset:0!important;
+  width:100vw!important;
+  height:100dvh!important;
+  z-index:2147483100!important;
+  background:rgba(2,8,18,.46)!important;
+  visibility:hidden!important;
+  opacity:0!important;
+  pointer-events:none!important;
+  transform:none!important;
+  -webkit-transform:none!important;
+  animation:none!important;
+  transition:opacity .22s ease,visibility 0s linear .22s!important;
+}
+html[data-inj-page="index"] #headerMenu.open #headerMenuPanel {
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+  transform:translate3d(0,0,0) scale(1)!important;
+  -webkit-transform:translate3d(0,0,0) scale(1)!important;
+  transition:opacity .22s ease,transform .27s cubic-bezier(.22,1,.36,1),visibility 0s linear 0s!important;
+}
+html[data-inj-page="index"] #headerMenu.open #headerMenuBackdrop {
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+  transition:opacity .22s ease,visibility 0s linear 0s!important;
 }
 
-/* A stationary popup, not a sliding drawer. Its only scroll is vertical and
-   stays inside the visible settings surface. */
-html[data-inj-page="index"] #headerMenu.open #headerMenuPanel{
- display:block!important;
- visibility:visible!important;
- opacity:1!important;
- pointer-events:auto!important;
- position:fixed!important;
- top:max(9px,env(safe-area-inset-top,0px))!important;
- bottom:auto!important;
- right:max(10px,env(safe-area-inset-right,0px))!important;
- left:auto!important;
- width:min(430px,calc(100vw - 20px))!important;
- max-width:calc(100vw - 20px)!important;
- height:auto!important;
- max-height:calc(100dvh - 20px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))!important;
- overflow-x:hidden!important;
- overflow-y:auto!important;
- overscroll-behavior-y:contain!important;
- box-sizing:border-box!important;
- transform:none!important;
- -webkit-transform:none!important;
- translate:none!important;
- animation:none!important;
- transition:none!important;
- z-index:2147483200!important;
- scrollbar-gutter:stable;
+/* The Control Center identity is part of the scrolling content, NOT sticky:
+   otherwise the title floats over wallet/settings rows on iPhone and desktop. */
+html[data-inj-page="index"] #headerMenuPanel .menu-control-head {
+  position:static!important;
+  inset:auto!important;
+  top:auto!important;
+  z-index:auto!important;
+  transform:none!important;
+  -webkit-transform:none!important;
 }
-html[data-inj-page="index"] #headerMenu.open #headerMenuBackdrop{
- display:block!important;
- visibility:visible!important;
- opacity:1!important;
- position:fixed!important;
- inset:0!important;
- width:100vw!important;
- height:100dvh!important;
- pointer-events:auto!important;
- transform:none!important;
- -webkit-transform:none!important;
- transition:none!important;
- z-index:2147483100!important;
+html[data-inj-page="index"] #headerMenuPanel :is(button,summary) {
+  -webkit-tap-highlight-color:transparent;
+}
+html[data-inj-page="index"] #headerMenuPanel :is(button,summary):focus-visible {
+  outline:2px solid var(--accent,#76d6cf);
+  outline-offset:2px;
+}
+@media(prefers-reduced-motion:reduce) {
+  html[data-inj-page="index"] #headerMenu #headerMenuPanel,
+  html[data-inj-page="index"] #headerMenu.open #headerMenuPanel,
+  html[data-inj-page="index"] #headerMenu #headerMenuBackdrop,
+  html[data-inj-page="index"] #headerMenu.open #headerMenuBackdrop {
+    transition:none!important;
+    animation:none!important;
+  }
 }
 
 /* The range control exists only within the Settings preferences disclosure.
