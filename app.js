@@ -3016,6 +3016,12 @@ function ensureSavedWallet(address, requestedLabel = '') {
 function setHeaderMenuOpen(open) {
   const host = $('headerMenu');
   if (!host) return;
+  // Always enter the Control Center at its header, even after a long scroll.
+  // Reset before revealing the panel to avoid a visible scroll jump.
+  if (open) {
+    const panel = $('headerMenuPanel');
+    if (panel) panel.scrollTop = 0;
+  }
   host.classList.toggle('open', open);
   document.body.classList.toggle('menu-overlay-open', open);
   $('entryMenuButton')?.setAttribute('aria-expanded', open ? 'true' : 'false');
