@@ -1,0 +1,93 @@
+/* INJ Node | Precision Iconography — Home-only, theme-linked, performance aware.
+   Pure vector treatments, no overlays, fixed elements, font or layout changes. */
+html[data-inj-page="index"] #entryGate
+.entry-gate-shell:not(.first-access) .entry-actions.entry-flat-v44
+> .entry-action > .inj-tile-scene.inj-precision-icon {
+  color:var(--tile-accent,var(--accent,#70d9e4))!important;
+  -webkit-filter:none!important;filter:none!important;
+  opacity:.95!important;
+  pointer-events:none!important;
+  user-select:none;
+}
+html[data-inj-page="index"] #entryGate .inj-precision-icon svg{
+  display:block!important;width:100%!important;height:100%!important;
+  overflow:visible!important;
+  fill:none;stroke:none;
+  transform-origin:50% 50%;
+  transition:transform .32s cubic-bezier(.2,.75,.28,1),opacity .32s ease;
+}
+html[data-inj-page="index"] #entryGate .inj-precision-icon .pi-back{
+  fill:currentColor;fill-opacity:.045;stroke:currentColor;
+  stroke-opacity:.28;stroke-width:1.1;
+}
+html[data-inj-page="index"] #entryGate .inj-precision-icon .pi-edge{
+  fill:none;stroke:currentColor;stroke-opacity:.63;stroke-width:1.45;
+  stroke-linecap:round;
+}
+html[data-inj-page="index"] #entryGate .inj-precision-icon .pi-ticks{
+  fill:none;stroke:currentColor;stroke-opacity:.37;stroke-width:1.1;
+  stroke-linecap:round;
+}
+html[data-inj-page="index"] #entryGate .inj-precision-icon .pi-panel{
+  fill:currentColor;fill-opacity:.11;stroke:currentColor;
+  stroke-opacity:.46;stroke-width:1.15;
+  stroke-linejoin:round;
+}
+html[data-inj-page="index"] #entryGate .inj-precision-icon .pi-strong{
+  fill:none;stroke:currentColor;stroke-opacity:.98;
+  stroke-width:2;stroke-linecap:round;stroke-linejoin:round;
+}
+html[data-inj-page="index"] #entryGate .inj-precision-icon .pi-detail{
+  fill:none;stroke:currentColor;stroke-opacity:.70;
+  stroke-width:1.35;stroke-linecap:round;stroke-linejoin:round;
+}
+html[data-inj-page="index"] #entryGate .inj-precision-icon .pi-hair{
+  fill:none;stroke:currentColor;stroke-opacity:.25;
+  stroke-width:.85;stroke-linecap:round;stroke-linejoin:round;
+}
+html[data-inj-page="index"] #entryGate .inj-precision-icon .pi-fill{
+  fill:currentColor;fill-opacity:.27;stroke:currentColor;
+  stroke-opacity:.62;stroke-width:1.05;
+}
+html[data-inj-page="index"] #entryGate .inj-precision-icon .pi-led,
+html[data-inj-page="index"] #entryGate .inj-precision-icon .pi-beacon{
+  fill:currentColor;stroke:none;opacity:.9;
+}
+html[data-inj-page="index"] #entryGate .inj-precision-icon .pi-type{
+  fill:currentColor;stroke:none;opacity:.92;
+  font:850 17px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+  letter-spacing:1px;
+}
+@keyframes inj-precision-signal {0%,100%{opacity:.62}50%{opacity:1}}
+@keyframes inj-precision-trace {to{stroke-dashoffset:-64}}
+html[data-inj-page="index"] #entryGate .inj-precision-icon .pi-heart{
+  animation:inj-precision-signal 4.2s ease-in-out infinite;
+}
+html[data-inj-page="index"] #entryGate .inj-precision-icon .pi-trace{
+  stroke-dasharray:95 8;
+  animation:inj-precision-trace 14s linear infinite;
+}
+@media(hover:hover) and (pointer:fine){
+  html[data-inj-page="index"] #entryGate
+  .entry-actions.entry-flat-v44 > .entry-action:hover > .inj-precision-icon svg{
+    transform:scale(1.045);
+  }
+  html[data-inj-page="index"] #entryGate
+  .entry-actions.entry-flat-v44 > .entry-action:hover > .inj-precision-icon .pi-back{
+    fill-opacity:.082;stroke-opacity:.52;
+  }
+}
+@media(max-width:799px){
+  html[data-inj-page="index"] #entryGate
+  .entry-gate-shell:not(.first-access) .entry-actions.entry-flat-v44
+  > .entry-action:not(#entryTreasuryButton):not(#entryWorkspaceButton):not(#entryInjcEtfButton)
+  > .inj-tile-scene.inj-precision-icon {
+    opacity:.98!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  html[data-inj-page="index"] #entryGate .inj-precision-icon svg,
+  html[data-inj-page="index"] #entryGate .inj-precision-icon *{
+    animation:none!important;transition:none!important;
+  }
+}

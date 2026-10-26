@@ -1,5 +1,7 @@
-const CACHE_NAME = 'inj-node-v16.10.26-unified-timeframes-1';
+const CACHE_NAME = 'inj-node-v16.10.26-premium-iconography-1';
 const APP_SHELL = [
+  './home-premium-iconography.js?v=20261026p1',
+  './home-premium-iconography.css?v=20261026p1',
   './home-micro-terminal.css?v=20261026d',
   './home-micro-terminal.js?v=20261026a',
   './privacy-shield.css?v=20261026',
