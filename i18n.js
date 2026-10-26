@@ -261,6 +261,18 @@
   function translateElement(el) {
     if (!el || el.nodeType !== 1) return;
     if (el.closest?.('[data-i18n-skip="true"]')) return;
+    // The Home descriptions always follow the chosen language, even after
+    // a theme switch, a live update or a return to this already-mounted page.
+    if (el.classList?.contains('inj-tile-description')) {
+      const localized = el.getAttribute(lang === 'en' ? 'data-en' : 'data-it');
+      if (localized != null) {
+        if (el.firstChild?.nodeType === 3 && el.childNodes.length === 1) {
+          if (el.firstChild.nodeValue !== localized) el.firstChild.nodeValue = localized;
+        } else if (el.textContent !== localized) {
+          el.textContent = localized;
+        }
+      }
+    }
     for (const attr of ['aria-label', 'title', 'placeholder']) {
       if (el.hasAttribute?.(attr)) {
         const old = el.getAttribute(attr);
