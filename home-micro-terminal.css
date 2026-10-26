@@ -64,6 +64,14 @@ html[data-inj-page="index"] #entryGate .inj-home-microbar[data-state="online"] .
   opacity:1;
   box-shadow:0 0 7px color-mix(in srgb,var(--up, #4cdda6) 38%,transparent);
 }
+html[data-inj-page="index"] #entryGate .inj-home-microbar[data-state="unavailable"] .inj-micro-live,
+html[data-inj-page="index"] #entryGate .inj-home-microbar .inj-micro-network[data-state="unavailable"] {
+  color:var(--down, #ff7080);
+}
+html[data-inj-page="index"] #entryGate .inj-home-microbar[data-state="unavailable"] .inj-micro-dot {
+  background:var(--down, #ff7080);
+  opacity:1;
+}
 html[data-inj-page="index"] #entryGate .inj-home-microbar[data-state="warning"] .inj-micro-live {
   color:var(--warning, #e0b767);
 }
