@@ -324,6 +324,7 @@
 <link rel="stylesheet" href="./home-launcher-grid.css?v=20261026-fullwidth">
 <link rel="stylesheet" href="./injc-home-tile.css?v=20261026b">
 <link rel="stylesheet" href="./privacy-shield.css?v=20261026">
+<link rel="stylesheet" href="./home-micro-terminal.css?v=20261026a">
 </head>
 <body class="boot-loading">
 <div aria-label="Avvio INJ Node" aria-live="polite" aria-atomic="true" class="boot-splash node-pulse-splash" id="bootSplash" role="status">
@@ -596,6 +597,27 @@
 <div aria-label="Posizione nel carosello wallet" class="entry-wallet-pagination" id="entryWalletPagination">
 <span aria-label="Vai direttamente a un wallet" class="entry-wallet-dots" id="entryWalletDots"></span>
 <strong id="entryWalletPosition">1 / 1</strong>
+</div>
+<div class="inj-home-microbar" id="injHomeMicroTerminal" data-state="checking" data-i18n-skip="true" aria-label="Stato mainnet Injective e orologio UTC">
+  <div class="inj-micro-top">
+    <span class="inj-micro-kicker">INJ NODE / TERMINAL</span>
+    <span class="inj-micro-live"><i class="inj-micro-dot" aria-hidden="true"></i>LIVE DATA</span>
+  </div>
+  <span class="inj-micro-rule" aria-hidden="true"></span>
+  <div class="inj-micro-metrics">
+    <div class="inj-micro-metric">
+      <span class="inj-micro-label" id="injMicroNetworkCaption">RETE</span>
+      <span class="inj-micro-value inj-micro-network" id="injMicroNetwork" data-state="checking" aria-live="polite"><i class="inj-micro-check" aria-hidden="true"></i><span id="injMicroNetworkLabel">VERIFICA</span></span>
+    </div>
+    <div class="inj-micro-metric">
+      <span class="inj-micro-label" id="injMicroBlockCaption">ULTIMO BLOCCO</span>
+      <span class="inj-micro-value" id="injMicroHeight">#—</span>
+    </div>
+    <div class="inj-micro-metric">
+      <span class="inj-micro-label" id="injMicroClockCaption">ORA / UTC</span>
+      <time class="inj-micro-value" id="injMicroUtc">--:--:--</time>
+    </div>
+  </div>
 </div>
 </div>
 <section aria-label="Riepilogo account selezionato" class="entry-overview" id="entryOverview">
@@ -1313,6 +1335,7 @@
 </section>
 <div aria-live="polite" class="toast" id="toast" role="status"></div>
 <script defer="" src="app.js?v=16.07.44"></script>
+<script defer src="./home-micro-terminal.js?v=20261026a"></script>
 <script defer src="./morning-brief.js?v=160737"></script>
 <script>
 (function(){
