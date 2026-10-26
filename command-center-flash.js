@@ -79,7 +79,7 @@
   // Keep the native draw loop on ONE visible chart; comparison canvases are
   // excluded rather than silently rendered off-screen every 32 ms.
   root.querySelectorAll('.cc-chart').forEach(function(card){
-   card.hidden=card.dataset.key!==current;
+   card.hidden=card.id!=='ccHistoryChart';
   });
  }
  controls.insertBefore(tf,select);
