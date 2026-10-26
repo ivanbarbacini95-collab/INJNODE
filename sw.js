@@ -1,8 +1,5 @@
-const CACHE_NAME = 'inj-node-v16.10.26-tv-share-1';
+const CACHE_NAME = 'inj-node-v16.10.26-clean-settings-1';
 const APP_SHELL = [
-  './tv-share.js?v=20261026a',
-  './tv-share.css?v=20261026a',
-  './tv-display.html',
   './home-premium-iconography.js?v=20261026p1',
   './home-premium-iconography.css?v=20261026p1',
   './home-micro-terminal.css?v=20261026d',
