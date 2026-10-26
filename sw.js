@@ -1,5 +1,6 @@
-const CACHE_NAME = 'inj-node-v16.10.25-treasury-copy-1';
+const CACHE_NAME = 'inj-node-v16.10.26-injc-etf-1';
 const APP_SHELL = [
+  './injc-etf.html?v=20261026',
   './workspace-fullscreen-lock.css?v=16102413',
   './workspace.js?v=16102413',
   './workspace-pro.js?v=16102413',
