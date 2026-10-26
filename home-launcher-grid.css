@@ -1,5 +1,5 @@
 /* INJ Node · Home launcher grid v16.08.05
-   Compact two-column cards plus full-width INJ Workspace and B Capital Group Treasury.
+   Compact two-column cards plus full-width INJC ETF, INJ Workspace and Treasury.
    Isolated to the Home's mobile grid; links and animations stay unchanged. */
 @media (max-width:799px) {
   html[data-inj-page="index"] body #entryGate
@@ -18,7 +18,7 @@
   /* Command Center, Comparison, Potential Value and Reward Ladder remain compact. */
   html[data-inj-page="index"] body #entryGate
   .entry-gate-shell:not(.first-access) > .entry-actions.entry-flat-v44
-  > .entry-action:not(#entryTreasuryButton):not(#entryWorkspaceButton) {
+  > .entry-action:not(#entryTreasuryButton):not(#entryWorkspaceButton):not(#entryInjcEtfButton) {
     display:flex!important;
     position:relative!important;
     box-sizing:border-box!important;
@@ -44,7 +44,7 @@
 
   html[data-inj-page="index"] body #entryGate
   .entry-gate-shell:not(.first-access) > .entry-actions.entry-flat-v44
-  > .entry-action:not(#entryTreasuryButton):not(#entryWorkspaceButton)
+  > .entry-action:not(#entryTreasuryButton):not(#entryWorkspaceButton):not(#entryInjcEtfButton)
   > :is(.entry-action-icon,.entry-action-arrow) {
     display:none!important;
   }
@@ -52,7 +52,7 @@
   /* All existing SVG artwork stays in the same top-center position. */
   html[data-inj-page="index"] body #entryGate
   .entry-gate-shell:not(.first-access) > .entry-actions.entry-flat-v44
-  > .entry-action:not(#entryTreasuryButton):not(#entryWorkspaceButton) > span.inj-tile-scene {
+  > .entry-action:not(#entryTreasuryButton):not(#entryWorkspaceButton):not(#entryInjcEtfButton) > span.inj-tile-scene {
     display:block!important;
     box-sizing:border-box!important;
     position:absolute!important;
@@ -79,7 +79,7 @@
   }
   html[data-inj-page="index"] body #entryGate
   .entry-gate-shell:not(.first-access) > .entry-actions.entry-flat-v44
-  > .entry-action:not(#entryTreasuryButton):not(#entryWorkspaceButton) > span.inj-tile-scene svg {
+  > .entry-action:not(#entryTreasuryButton):not(#entryWorkspaceButton):not(#entryInjcEtfButton) > span.inj-tile-scene svg {
     display:block!important;
     width:100%!important;
     height:100%!important;
@@ -89,7 +89,7 @@
      Allow two lines rather than shrinking the font to fit the narrower card. */
   html[data-inj-page="index"] body #entryGate
   .entry-gate-shell:not(.first-access) > .entry-actions.entry-flat-v44
-  > .entry-action:not(#entryTreasuryButton):not(#entryWorkspaceButton)
+  > .entry-action:not(#entryTreasuryButton):not(#entryWorkspaceButton):not(#entryInjcEtfButton)
   > span:not(.entry-action-icon):not(.inj-tile-scene) {
     display:flex!important;
     box-sizing:border-box!important;
@@ -111,7 +111,7 @@
   }
   html[data-inj-page="index"] body #entryGate
   .entry-gate-shell:not(.first-access) > .entry-actions.entry-flat-v44
-  > .entry-action:not(#entryTreasuryButton):not(#entryWorkspaceButton) strong {
+  > .entry-action:not(#entryTreasuryButton):not(#entryWorkspaceButton):not(#entryInjcEtfButton) strong {
     display:block!important;
     width:100%!important;
     max-width:100%!important;
@@ -129,7 +129,7 @@
     text-overflow:clip!important;
   }
 
-  /* Reading order: INJ Workspace full width immediately above Treasury. */
+  /* Reading order: INJC ETF full width, then INJ Workspace and Treasury. */
   html[data-inj-page="index"] body #entryGate #entryDashboardButton{order:1!important}
   html[data-inj-page="index"] body #entryGate #entryLiveButton{order:2!important}
   html[data-inj-page="index"] body #entryGate #entryLiveChartsButton{order:3!important}
@@ -142,7 +142,13 @@
   html[data-inj-page="index"] body #entryGate #entryComparisonButton{order:10!important}
   html[data-inj-page="index"] body #entryGate #entryVisualizeWealthButton{order:11!important}
   html[data-inj-page="index"] body #entryGate #entryRewardLadderButton{order:12!important}
-  html[data-inj-page="index"] body #entryGate #entryInjcEtfButton{order:13!important}
+  html[data-inj-page="index"] body #entryGate
+  .entry-gate-shell:not(.first-access) > .entry-actions.entry-flat-v44 > #entryInjcEtfButton{
+    order:13!important;
+    grid-column:1/-1!important;
+    grid-row:auto!important;
+    width:100%!important;
+  }
   html[data-inj-page="index"] body #entryGate
   .entry-gate-shell:not(.first-access) > .entry-actions.entry-flat-v44 > #entryWorkspaceButton {
     order:14!important;
