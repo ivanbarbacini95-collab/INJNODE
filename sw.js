@@ -1,5 +1,6 @@
-const CACHE_NAME = 'inj-node-v16.10.26-home-stats-center-8';
+const CACHE_NAME = 'inj-node-v16.10.26-privacy-shield-9';
 const APP_SHELL = [
+  './privacy-shield.css?v=20261026',
   './injc-etf.html?v=20261026',
   './injc-home-tile.css?v=20261026b',
   './home-launcher-grid.css?v=20261026-fullwidth',
