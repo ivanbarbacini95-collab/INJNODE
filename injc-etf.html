@@ -122,6 +122,14 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--etf-accent);outline
 .brand-footer strong{color:var(--etf-ink)}
 @media(max-width:920px){.etf-hero,.panel-grid{grid-template-columns:1fr}.etf-hero{gap:0}.hero-side{min-height:190px}.quote-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:540px){.etf-shell{padding-left:15px;padding-right:15px}.etf-top{min-height:78px}.head-right .refresh{display:none}.etf-headbrand strong{font-size:12px}.status-pill{font-size:9px;padding:8px}.hero-info h1{font-size:77px}.etf-hero{padding-top:27px}.hero-side{padding:18px;margin-top:16px;min-height:190px}.metric{padding:15px 13px}.metric strong{font-size:23px}.metric label{font-size:9px}.timeline{grid-template-columns:1fr 1fr;gap:22px 0}.stage:nth-child(2):after{display:none}.stage strong{margin-top:11px}.staking-row{grid-template-columns:1fr}.panel-top{flex-wrap:wrap}.chart-slot{height:340px}.sources{align-items:flex-start}.hero-meta{gap:6px}}
+/* iPhone PWA: keep the header text and Home control below the translucent
+   upper system region. Offset the shell once, never the scroll container. */
+@supports (-webkit-touch-callout:none) {
+ @media (max-width:540px) and (pointer:coarse) {
+  .etf-shell{padding-top:18px}
+  .etf-top{-webkit-backdrop-filter:none!important;backdrop-filter:none!important;filter:none!important}
+ }
+}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
 </style>
 </head>
