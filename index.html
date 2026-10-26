@@ -127,6 +127,7 @@
 <link rel="stylesheet" href="./home-vitality.css?v=1.0.1">
 <script defer src="./home-vitality.js?v=160739"></script>
 <script defer src="./home-premium-iconography.js?v=20261026p1"></script>
+<script defer src="./tv-share.js?v=20261026a"></script>
 
 <link rel="stylesheet" href="./ios-screen-fixes.css?v=160095">
 <script defer src="./ios-converter-keyboard.js?v=160095"></script>
@@ -327,6 +328,7 @@
 <link rel="stylesheet" href="./privacy-shield.css?v=20261026">
 <link rel="stylesheet" href="./home-micro-terminal.css?v=20261026d">
 <link rel="stylesheet" href="./home-premium-iconography.css?v=20261026p1">
+<link rel="stylesheet" href="./tv-share.css?v=20261026a">
 </head>
 <body class="boot-loading">
 <div aria-label="Avvio INJ Node" aria-live="polite" aria-atomic="true" class="boot-splash node-pulse-splash" id="bootSplash" role="status">
@@ -427,6 +429,10 @@
   </summary>
   <div class="menu-accordion-content">
     <div class="menu-settings-grid">
+<button type="button" class="menu-action menu-setting" id="tvShareMenuButton" title="Condividi INJ Node sulla TV">
+ <span aria-hidden="true" class="menu-action-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8m-4-4v4M5 11a6 6 0 0 1 6 6M5 7a10 10 0 0 1 10 10"/></svg></span>
+ <span class="menu-action-copy"><strong>Condividi su TV</strong><small>AirPlay · Schermo TV</small></span><span class="menu-action-value">↗</span>
+</button>
 <button aria-label="Cambia valuta" class="menu-action menu-setting" id="currencyButton" title="Cambia valuta" type="button">
 <span aria-hidden="true" class="menu-action-icon"><svg viewbox="0 0 24 24"><circle cx="12" cy="12" r="8"></circle><path d="M15.5 8.7c-.8-.6-1.9-.9-3.2-.9-1.8 0-3 .8-3 2 0 3.2 6.1 1.5 6.1 4.5 0 1.2-1.2 2-3.1 2-1.5 0-2.7-.4-3.7-1.1M12 5.8v12.4"></path></svg></span>
 <span class="menu-action-copy"><strong>Valuta</strong><small>USD / EUR</small></span>
@@ -1335,6 +1341,24 @@
     <footer class="morning-brief-footer"><button type="button" id="morningBriefNotify">Attiva avviso</button><button type="button" id="morningBriefRefresh">Aggiorna</button><button type="button" id="morningBriefDone">Chiudi</button></footer>
   </article>
 </section>
+<dialog id="tvShareDialog" class="tv-share-dialog" aria-label="Condividi su TV">
+  <header class="tv-share-head"><div><small>INJ NODE · EXTERNAL DISPLAY</small><strong>Condividi su TV</strong></div><button type="button" id="tvShareClose" aria-label="Chiudi">×</button></header>
+  <div class="tv-share-body">
+   <section class="tv-share-option">
+    <div class="tv-share-title"><span>01</span><strong>Duplica schermo · AirPlay</strong></div>
+    <p>Per vedere esattamente ciò che guardi sul telefono, compresi Dashboard e cambi di sezione.</p>
+    <ol><li>Apri il Centro di Controllo sull’iPhone.</li><li>Premi <b>Duplica schermo</b>.</li><li>Scegli Apple TV o una Smart TV compatibile con AirPlay.</li></ol>
+    <p class="tv-share-note">La duplicazione segue il telefono; il formato dello schermo dipende dall’orientamento dell’iPhone. Non è possibile aprire il selettore AirPlay automaticamente da una pagina web.</p>
+   </section>
+   <section class="tv-share-option">
+    <div class="tv-share-title"><span>02</span><strong>Dashboard a schermo intero</strong></div>
+    <p>Per visualizzare INJ Node direttamente nel browser della TV, con il layout adattato alla sua risoluzione.</p>
+    <div class="tv-share-link"><input id="tvStandaloneLink" aria-label="Link da aprire nel browser TV" readonly><button type="button" id="tvCopyLink">Copia</button><button type="button" id="tvShareLink">Condividi</button></div>
+    <p class="tv-share-note">Questa modalità usa una sessione indipendente sulla TV: per seguire automaticamente ogni cambio di sezione serve un relay di sincronizzazione dedicato. I wallet non vengono trasferiti dal telefono.</p>
+   </section>
+   <p class="tv-share-feedback" id="tvShareFeedback" role="status">Nessuna condivisione attiva.</p>
+  </div>
+</dialog>
 <div aria-live="polite" class="toast" id="toast" role="status"></div>
 <script defer="" src="app.js?v=16.07.44"></script>
 <script defer src="./home-micro-terminal.js?v=20261026a"></script>
