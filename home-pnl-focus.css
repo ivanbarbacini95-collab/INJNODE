@@ -179,3 +179,51 @@ html[data-inj-page="index"] body #entryGate#entryGate #entryInsights #entryInsig
     text-align:right!important;
   }
 }
+
+
+/* v16.10.26f — Compact P/L, scaled like the live INJ/USDT quote.
+   The label stays left, the signed amount stays right, and the
+   recovered vertical room benefits the interactive live chart. */
+html[data-inj-page="index"] body #entryGate#entryGate #entryInsights .entry-price-pnl {
+  min-height:52px!important;
+  padding:8px 14px!important;
+  column-gap:10px!important;
+  row-gap:0!important;
+  align-items:center!important;
+}
+html[data-inj-page="index"] body #entryGate#entryGate #entryInsights #entryInsightPnl {
+  font-size:clamp(18px,1.9vw,22px)!important;
+  line-height:1.12!important;
+  font-weight:800!important;
+  letter-spacing:-.025em!important;
+}
+/* Keep the rolling digits exactly the same scale as their host. */
+html[data-inj-page="index"] body #entryGate#entryGate #entryInsights #entryInsightPnl
+ :is(.number-roll-text,.number-roll-static-digit,.number-roll-digit,.number-roll-digit-layer) {
+  font-size:inherit!important;
+  line-height:inherit!important;
+}
+@media(max-width:900px) {
+  html[data-inj-page="index"] body #entryGate#entryGate #entryInsights .entry-price-pnl {
+    min-height:50px!important;
+    padding:7px 12px!important;
+    column-gap:8px!important;
+  }
+  html[data-inj-page="index"] body #entryGate#entryGate #entryInsights #entryInsightPnl {
+    font-size:clamp(17px,4.45vw,20px)!important;
+  }
+  /* Widen the graph vertically without changing its data, path or gestures. */
+  html[data-inj-page="index"] body #entryGate#entryGate #entryInsights .entry-price-chart .entry-spark-stage {
+    min-height:clamp(150px,40vw,185px)!important;
+  }
+}
+@media(max-width:370px) {
+  html[data-inj-page="index"] body #entryGate#entryGate #entryInsights .entry-price-pnl {
+    min-height:48px!important;
+    padding:7px 10px!important;
+    column-gap:6px!important;
+  }
+  html[data-inj-page="index"] body #entryGate#entryGate #entryInsights #entryInsightPnl {
+    font-size:clamp(16px,4.4vw,18px)!important;
+  }
+}
