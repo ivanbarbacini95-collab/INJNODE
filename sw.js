@@ -1,6 +1,6 @@
-const CACHE_NAME = 'inj-node-v16.10.26-micro-terminal-1';
+const CACHE_NAME = 'inj-node-v16.10.26-micro-terminal-2';
 const APP_SHELL = [
-  './home-micro-terminal.css?v=20261026a',
+  './home-micro-terminal.css?v=20261026b',
   './home-micro-terminal.js?v=20261026a',
   './privacy-shield.css?v=20261026',
   './injc-etf.html?v=20261026',
