@@ -138,7 +138,7 @@ html[data-inj-page="index"] body #entryGate#entryGate #entryInsights #entryInsig
   width:max-content!important;
   max-width:100%!important;
   min-width:0!important;
-  font-size:clamp(30px,2.7vw,40px)!important;
+  font-size:clamp(27px,2.4vw,36px)!important;
   line-height:1.12!important;
   font-weight:850!important;
   letter-spacing:-.04em!important;
@@ -160,7 +160,7 @@ html[data-inj-page="index"] body #entryGate#entryGate #entryInsights #entryInsig
     padding:10px 13px!important;
   }
   html[data-inj-page="index"] body #entryGate#entryGate #entryInsights #entryInsightPnl{
-    font-size:clamp(26px,3.8vw,34px)!important;
+    font-size:clamp(24px,3.5vw,30px)!important;
   }
 }
 @media(max-width:480px){
@@ -174,7 +174,7 @@ html[data-inj-page="index"] body #entryGate#entryGate #entryInsights #entryInsig
   }
   html[data-inj-page="index"] body #entryGate#entryGate #entryInsights #entryInsightPnl{
     grid-column:2!important;
-    font-size:clamp(24px,6.7vw,29px)!important;
+    font-size:clamp(22px,6vw,26px)!important;
     justify-self:end!important;
     text-align:right!important;
   }
