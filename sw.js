@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.10.26-home-pnl-balanced-7';
+const CACHE_NAME = 'inj-node-v16.10.26-home-stats-center-8';
 const APP_SHELL = [
   './injc-etf.html?v=20261026',
   './injc-home-tile.css?v=20261026b',
@@ -79,7 +79,7 @@ const APP_SHELL = [
   './home-vitality.css?v=1.0.1',
   './home-vitality.js?v=160739',
   './home-vitality-v2.css?v=160096',
-  './home-layout-polish.css?v=160099',
+  './home-layout-polish.css?v=20261026center',
   './home-pnl-focus.css?v=20261026e',
   './node-pulse.css?v=160103',
   './jn-branding.css?v=160106',
