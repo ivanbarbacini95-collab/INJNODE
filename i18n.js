@@ -12,6 +12,22 @@
 
   // Pairs are intentionally UI-oriented: crypto/product names remain unchanged where they are clearer as product terms.
   const pairs = [
+    // Home launcher microdescriptions: a quick, readable purpose for every destination.
+    ["Patrimonio e staking", "Wallet wealth & staking"],
+    ["Dati live del wallet", "Live wallet data"],
+    ["Grafici dei prezzi", "Live price charts"],
+    ["Ordini buy e sell", "Buy and sell orders"],
+    ["Storico dei rendimenti", "Performance history"],
+    ["Converti INJ e valute", "Convert INJ & currencies"],
+    ["Analisi e strumenti", "Analysis & tools"],
+    ["Crypto e mercati", "Crypto markets"],
+    ["Reward staking live", "Live staking rewards"],
+    ["Confronta market cap", "Compare market caps"],
+    ["Simula il patrimonio", "Simulate portfolio value"],
+    ["Obiettivi dei reward", "Reward milestones"],
+    ["Monitoraggio ETF INJC", "INJC ETF tracker"],
+    ["Crea la tua schermata", "Build your workspace"],
+    ["Totale dei tuoi wallet", "All-wallet overview"],
     ["Pannello di controllo", "Dashboard"],
     ["Vista in tempo reale", "Live View"],
     ["Grafici in tempo reale", "Live Charts"],
