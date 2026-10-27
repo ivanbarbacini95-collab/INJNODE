@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.10.27-workspace-left-align-5';
+const CACHE_NAME = 'inj-node-v16.10.27-luxury-fintech-icons-b1';
 const APP_SHELL = [
   './navigation.js?v=20261027-g1',
   './market-portal.js?v=20261027-g1',
@@ -6,8 +6,8 @@ const APP_SHELL = [
   './i18n.js?v=20261026b',
   './app.js?v=20261027-onboard3',
   './performance-timeline-fit.css?v=20261026-fit1',
-  './home-premium-iconography.js?v=20261026p1',
-  './home-premium-iconography.css?v=20261026p1',
+  './home-premium-iconography.js?v=20261027luxb1',
+  './home-premium-iconography.css?v=20261027luxb1',
   './home-micro-terminal.css?v=20261026d',
   './home-micro-terminal.js?v=20261026a',
   './privacy-shield.css?v=20261026',
