@@ -1,4 +1,6 @@
-/* INJ Node Insights bridge configuration. No analytics is transmitted until the
-   separate Insights service has been deployed and this URL is filled in. */
+/* Cloudflare Worker endpoint for INJ Node telemetry & private Admin Insights.
+   Leave empty until the Cloudflare Worker has a real deployed URL.
+   Do not add usernames, passwords, bearer tokens or other secrets here.
+   Worker example: https://inj-node-insights.YOUR-SUBDOMAIN.workers.dev/api/ingest
+*/
 window.INJ_INSIGHTS_ENDPOINT = '';
-/* After deployment: window.INJ_INSIGHTS_ENDPOINT = 'https://YOUR-INSIGHTS.vercel.app/api/ingest'; */
