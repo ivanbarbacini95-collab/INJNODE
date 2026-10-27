@@ -22,7 +22,7 @@
 .pro-tabs{display:flex;gap:7px;overflow-x:auto;scrollbar-width:thin;border-bottom:1px solid #2a4149;padding:0 0 11px;margin:5px 0 16px}
 .pro-tabs button{white-space:nowrap;background:transparent;border:1px solid transparent;border-radius:8px;padding:10px 13px;color:#94aab0;font-weight:700;letter-spacing:.06em;font-size:10px}
 .pro-tabs button.active{background:#17332f;color:#7df3ce;border-color:#37675e}
-.pro-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:16px}
+.pro-kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-bottom:16px}
 .pro-kpis article{background:linear-gradient(140deg,#152a30,#0b1923);border:1px solid var(--pro-border);border-radius:13px;padding:16px 14px;min-width:0;min-height:121px;display:flex;flex-direction:column}
 .pro-kpis span{color:#aac2bf;font-size:9px;letter-spacing:.09em}
 .pro-kpis strong{font-size:clamp(24px,2.9vw,40px);line-height:1.2;margin:8px 0;color:#e4f6f0;letter-spacing:-.04em}
