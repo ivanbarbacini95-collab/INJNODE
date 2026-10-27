@@ -1,9 +1,13 @@
-const CACHE_NAME = 'inj-node-v16.10.27-home-header-orderbook-live2';
+const CACHE_NAME = 'inj-node-v16.10.27-admin-insights-secure';
 const APP_SHELL = [
   './home-terminal-header-20261027.css?v=h2',
   './home-terminal-header-20261027.js?v=h2',
   './workspace-sections.js?v=20261027-live2',
-  './navigation.js?v=20261027-g1',
+  './navigation.js?v=20261027-admin1',
+  './admin-insights.html?v=20261027a',
+  './admin-insights.css?v=20261027a',
+  './admin-insights-auth.js?v=20261027a',
+  './admin-insights-dashboard.js?v=20261027a',
   './market-portal.js?v=20261027-g1',
   './first-access-unified.css?v=20261027-left2',
   './i18n.js?v=20261026b',
@@ -218,6 +222,8 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET') return;
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
+  // Never cache any server-authenticated response or admin credential action.
+  if (url.pathname.startsWith('/api/')) {event.respondWith(fetch(request));return;}
 
   // Analytics config must never be locked behind the PWA's cache-first policy:
   // publishing the Insights URL must take effect without reinstalling the app.
@@ -227,7 +233,7 @@ self.addEventListener('fetch', (event) => {
   }
 
   if (request.mode === 'navigate') {
-    const isolatedPath = ['workspace.html', 'live-charts.html', 'live-rewards.html', 'command-center.html', 'order-book.html', 'treasury.html', 'market.html', 'comparison.html', 'visualize-wealth.html', 'reward-ladder.html', 'injc-etf.html', 'install-icon-minimal.html', 'install-icon-classic.html', 'install-icon-aurora.html', 'install-icon-pulse.html'].find((name) => url.pathname.endsWith('/' + name));
+    const isolatedPath = ['admin-insights.html', 'workspace.html', 'live-charts.html', 'live-rewards.html', 'command-center.html', 'order-book.html', 'treasury.html', 'market.html', 'comparison.html', 'visualize-wealth.html', 'reward-ladder.html', 'injc-etf.html', 'install-icon-minimal.html', 'install-icon-classic.html', 'install-icon-aurora.html', 'install-icon-pulse.html'].find((name) => url.pathname.endsWith('/' + name));
     event.respondWith(
       fetch(request, { cache: 'no-store' })
         .then((response) => {
