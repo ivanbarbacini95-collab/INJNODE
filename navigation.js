@@ -168,7 +168,7 @@ if(main){
   const fromSection=event.source===section?.contentWindow;
   if(fromSection && event.data?.type==='injnode:section:home')closeSection();
  });
- window.addEventListener('popstate',()=>{if(section && !history.state?.injSection)closeSection(true);});
+ window.addEventListener('popstate',()=>{if(history.state?.injGestureShield)return;if(section && !history.state?.injSection)closeSection(true);});
  window.addEventListener('keydown',event=>{if(section && event.key==='Escape')closeSection();});
 }else if(parent!==window){
  document.addEventListener('click',event=>{
