@@ -82,13 +82,15 @@ async function login(){
 }
 async function afterLogin(){
  const data=await call('/api/sync/profile');
- version=Number(data.version)||0;remote=data.profile||{};updatedAt=data.updatedAt||null;auto=false;
+ version=Number(data.version)||0;remote=data.profile||{};updatedAt=data.updatedAt||null;
+ const running=parentAgent()?.getSession();
+ auto=Boolean(running&&running.token===token&&running.base===base&&running.enabled);
  parentAgent()?.attach({token,base,version,profile:remote});
  status('ACCOUNT PERSONALE / CONNESSO');
  showAccount();
 }
 async function saveCloud(fromAuto=false){
- if(!token||busy)return;
+ if(!token)return;
  let p;try{p=localSnapshot()}catch(e){message(e.message,true);return}
  if(!fromAuto&&version>0&&JSON.stringify(p)!==JSON.stringify(remote)
     &&!confirm('Il backup sul cloud verrà sostituito dalle configurazioni di questo dispositivo. Continuare?'))return;
