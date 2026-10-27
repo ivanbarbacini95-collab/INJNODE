@@ -7,11 +7,12 @@
   function arrange() {
     const gate = document.getElementById('entryGate');
     const heading = gate?.querySelector('.entry-wallet-section > .home-safe-heading');
-    const menu = document.getElementById('headerMenu');
-    if (!gate || !heading || !menu || menu.parentElement === heading) return;
-    // Menu panel and backdrop remain descendants of #headerMenu so existing
-    // Control Center and closing actions continue to work without re-binding.
-    heading.insertBefore(menu, heading.firstChild);
+    const button = document.getElementById('entryMenuButton');
+    if (!gate || !heading || !button || button.parentElement === heading) return;
+    // Move ONLY the pre-existing interactive trigger. Its existing event
+    // listener stays attached, while the Control Center overlay/backdrop
+    // remains at the shell root to avoid iOS fixed-position clipping.
+    heading.insertBefore(button, heading.firstChild);
     heading.classList.add('inj-terminal-hero-arranged');
   }
   if (document.readyState === 'loading') {
