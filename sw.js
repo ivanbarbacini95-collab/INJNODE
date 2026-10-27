@@ -1,10 +1,10 @@
-const CACHE_NAME = 'inj-node-v16.10.27-gesture-navigation-firstaccess-2';
+const CACHE_NAME = 'inj-node-v16.10.27-boot-wallet-direct-3';
 const APP_SHELL = [
   './navigation.js?v=20261027-g1',
   './market-portal.js?v=20261027-g1',
-  './first-access-unified.css?v=20261027a',
+  './first-access-unified.css?v=20261027b',
   './i18n.js?v=20261026b',
-  './app.js?v=20261026-fit1',
+  './app.js?v=20261027-onboard2',
   './performance-timeline-fit.css?v=20261026-fit1',
   './home-premium-iconography.js?v=20261026p1',
   './home-premium-iconography.css?v=20261026p1',
