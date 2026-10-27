@@ -2,6 +2,83 @@
 (() => {
 'use strict';
 const main=!!document.getElementById('entryGate');
+/* v16.10.27 — Stable touch navigation for the iPhone PWA and browser.
+   No page pinch/reflow, no horizontal browser-history escape. Maintain native
+   vertical scrolling, wallet/timeline rails, sliders and chart interactions. */
+(function installInjGestureShield() {
+ const root=document.documentElement;
+ // WebKit exposes an independent page-pinch gesture. Prevent its default
+ // viewport scaling, not the custom gestures consumed by chart components.
+ const preventViewportPinch=e=>{if(e.cancelable)e.preventDefault();};
+ document.addEventListener('gesturestart',preventViewportPinch,{capture:true,passive:false});
+ document.addEventListener('gesturechange',preventViewportPinch,{capture:true,passive:false});
+ let start=null;
+ const isEditable=el=>Boolean(el?.closest?.('input,textarea,select,[contenteditable="true"]'));
+ const isCustomHorizontal=el=>Boolean(el?.closest?.(
+   'canvas,svg,[role="slider"],input[type="range"],[data-scroll-edge-exempt],'+
+   '.ws-grid,#wsGrid,.ws-card,[class*="chart-stage"],[class*="chart-canvas"],'+
+   '[class*="chart-pane"],[class*="tradingview"],[class*="lightweight-chart"],'+
+   '.entry-wallets,.entry-pnl-timeline-scroll'
+ ));
+ function scrollCanMove(node,dx) {
+   let target=node instanceof Element?node:node?.parentElement;
+   while(target && target!==document.documentElement){
+     if(target.scrollWidth>target.clientWidth+6){
+       const css=getComputedStyle(target);
+       if(/auto|scroll|overlay/.test(css.overflowX)){
+         const max=target.scrollWidth-target.clientWidth;
+         if(dx>0&&target.scrollLeft>2)return true;
+         if(dx<0&&target.scrollLeft<max-2)return true;
+       }
+     }
+     target=target.parentElement;
+   }
+   return false;
+ }
+ document.addEventListener('touchstart',event=>{
+   if(event.touches.length!==1){start=null;return;}
+   const finger=event.touches[0];
+   start={x:finger.clientX,y:finger.clientY,target:event.target,axis:null};
+ },{capture:true,passive:true});
+ document.addEventListener('touchmove',event=>{
+   if(event.touches.length>1){
+     start=null;
+     if(event.cancelable)event.preventDefault(); // no whole-page pinch zoom
+     return;
+   }
+   if(!start||event.touches.length!==1||!event.cancelable)return;
+   const finger=event.touches[0],dx=finger.clientX-start.x,dy=finger.clientY-start.y;
+   if(!start.axis&&Math.max(Math.abs(dx),Math.abs(dy))>9){
+     start.axis=Math.abs(dx)>Math.abs(dy)*1.23?'horizontal':'vertical';
+   }
+   if(start.axis!=='horizontal')return; // native vertical scroll stays untouched
+   const leftEdge=start.x<26&&dx>0,rightEdge=start.x>window.innerWidth-26&&dx<0;
+   if(leftEdge||rightEdge){event.preventDefault();return;}
+   if(isEditable(start.target)||scrollCanMove(start.target,dx)||isCustomHorizontal(start.target))return;
+   // Blank card/page sideways drags have no navigation or reload effect.
+   event.preventDefault();
+ },{capture:true,passive:false});
+ for(const type of ['touchend','touchcancel'])document.addEventListener(type,()=>{start=null;},{capture:true,passive:true});
+ // A native browser history swipe may bypass DOM touchmove completely on iOS.
+ // Keep a same-document history buffer while the main app is mounted.
+ if(!document.getElementById('entryGate')||window.parent!==window)return;
+ try{
+   const current=history.state||{};
+   const cleanUrl=(location.hash==='#section'||location.hash==='#market')
+     ?location.pathname+location.search:location.href;
+   if(current.injGestureShield==='top')return;
+   const base={...current,injSection:false,injMarketPortal:false,injGestureShield:'base'};
+   history.replaceState(base,'',cleanUrl);
+   history.pushState({...base,injGestureShield:'top'},'',cleanUrl);
+   window.addEventListener('popstate',()=>{
+     if(history.state?.injGestureShield==='base'){
+       history.pushState({...history.state,injGestureShield:'top'},'',location.href);
+     }
+   });
+ }catch(_){/* Browser restrictions: CSS/touch protection remains active. */}
+})();
+
+
 // Reuse the selected palette in every standalone/embedded section.
 const themeKeys=['--bg','--surface','--surface-strong','--surface-soft','--line','--line-strong','--text','--muted','--muted-strong','--accent','--accent-soft','--up','--up-soft','--down','--down-soft','--page-gradient','--theme-canvas','--theme-canvas-soft','--theme-backdrop','--theme-browser','--panel','--panel-strong',
  '--card-gradient','--market-gradient','--dock-gradient','--floating-surface','--dialog-gradient',
@@ -38,7 +115,7 @@ function closeSection(fromHistory=false){
  section.remove();section=null;
  sectionCover?.remove();sectionCover=null;
  document.body.classList.remove('inj-section-open');
- if(!fromHistory && history.state?.injSection)history.back();
+ // Native history never changes for section opens/closes; Home stays mounted.
  sectionLauncher?.focus({preventScroll:true});
  // Section iframe is gone: hand the native scroll surface back to Home.
  window.INJ_SCROLL_GUARD?.refresh();
@@ -71,7 +148,7 @@ window.INJ_OPEN_SECTION=function(url){
  document.body.append(sectionCover,section);
  document.body.classList.add('inj-section-open');
  section.src=url;
- history.pushState({...history.state,injSection:true},'', '#section');
+ // Opening a section no longer adds a swipe-back history entry.
 };
 if(main){
  document.addEventListener('click',event=>{
