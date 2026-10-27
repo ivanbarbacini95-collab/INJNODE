@@ -5,27 +5,55 @@ const fmt = n => new Intl.NumberFormat('it-IT').format(Number(n || 0));
 const duration = s => { s=Math.round(Number(s||0)); return s<60 ? `${s} s` : `${Math.floor(s/60)}m ${s%60}s`; };
 const safeDate = s => {try{return new Date(s).toLocaleString('it-IT',{dateStyle:'short',timeStyle:'short'});}catch(_){return '—';}};
 let days = 30, map, geoLayer, lastLocations = '', inProgress = false, shownError = false;
+let mapFitted=false, mapResizeObserver=null, mapResizeFrame=0;
 const firstSeen = new Set();
 const make = (tag,cls,text) => { const el = document.createElement(tag); if(cls)el.className=cls;if(text!==undefined)el.textContent=String(text);return el;};
 function showMessage(message) { const t=$('toast'); t.textContent=message;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),6000); }
 function status(ok) { const x=$('connectionState');x.textContent=ok?'LIVE DATA / SYNC':'DATI NON DISPONIBILI';document.querySelector('.signal').classList.toggle('off',!ok); }
+function refreshMapSize() {
+ if (!map || $('adminDashboard').hidden) return;
+ cancelAnimationFrame(mapResizeFrame);
+ mapResizeFrame=requestAnimationFrame(()=>{
+   if (!map || $('adminDashboard').hidden) return;
+   map.invalidateSize({pan:false,animate:false});
+ });
+}
+function settleMapSize() {
+ refreshMapSize();
+ // iOS PWA and embedded section iframes can change width after the first paint.
+ [100,350,900].forEach(delay=>setTimeout(refreshMapSize,delay));
+}
 function setupMap() {
- if (!window.L) { $('map').textContent='Mappa temporaneamente non disponibile';return; }
- map=L.map('map',{zoomControl:true,scrollWheelZoom:false,worldCopyJump:true,minZoom:2,maxZoom:10}).setView([30,12],2);
- L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:10,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a>'}).addTo(map);
+ if (map) {settleMapSize();return;}
+ if (!window.L) { $('map').textContent='Impossibile avviare la mappa. Verifica la connessione.';return; }
+ const host=$('map');
+ map=L.map(host,{zoomControl:true,scrollWheelZoom:false,worldCopyJump:true,minZoom:2,maxZoom:10,
+   fadeAnimation:false,zoomAnimation:false,markerZoomAnimation:false}).setView([30,12],2);
+ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    maxZoom:10,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a>',
+    updateWhenIdle:true,keepBuffer:2
+ }).addTo(map);
  geoLayer=L.layerGroup().addTo(map);
+ if ('ResizeObserver' in window) {
+   mapResizeObserver=new ResizeObserver(refreshMapSize);
+   mapResizeObserver.observe(host);
+ }
+ window.addEventListener('resize',settleMapSize,{passive:true});
+ window.addEventListener('orientationchange',settleMapSize,{passive:true});
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)settleMapSize()});
+ settleMapSize();
 }
 function updateMap(locations) {
  $('mapAreaCount').textContent=fmt(locations.length);
  if(!map)return;
+ const valid=locations.filter(x=>x.lat!==null&&x.lat!==undefined&&x.lng!==null&&x.lng!==undefined&&Number.isFinite(Number(x.lat))&&Number.isFinite(Number(x.lng)));
  const encoded=JSON.stringify(locations.map(x=>[x.country,x.city,x.lat,x.lng,x.visits,x.last_seen]));
  if(lastLocations===encoded)return;
  lastLocations=encoded;
  geoLayer.clearLayers();
  const now=Date.now();
- locations.forEach(x=>{
+ valid.forEach(x=>{
    const lat=Number(x.lat),lng=Number(x.lng),visits=Number(x.visits)||0;
-   if(!Number.isFinite(lat)||!Number.isFinite(lng))return;
    const active=now-Date.parse(x.last_seen)<120000;
    const r=active?15:Math.min(14,7+Math.sqrt(visits)*1.4);
    const point=L.circleMarker([lat,lng],{radius:r,color:active?'#86ffd9':'#7db8ca',weight:1.6,
@@ -41,6 +69,12 @@ function updateMap(locations) {
    if(active&&!firstSeen.has(key)&&firstSeen.size>0) point.bringToFront();
    firstSeen.add(key);
  });
+ if(!mapFitted&&valid.length){
+   mapFitted=true;
+   if(valid.length===1)map.setView([Number(valid[0].lat),Number(valid[0].lng)],6,{animate:false});
+   else map.fitBounds(valid.map(x=>[Number(x.lat),Number(x.lng)]),{padding:[28,28],maxZoom:7,animate:false});
+ }
+ settleMapSize();
 }
 function drawRanking(id, data, title, sub) {
  const host=$(id);host.replaceChildren();
@@ -87,7 +121,7 @@ async function update() {
 for(const button of document.querySelectorAll('[data-days]'))button.addEventListener('click',()=>{days=Number(button.dataset.days);document.querySelectorAll('[data-days]').forEach(x=>x.classList.toggle('active',x===button));update();});
 $('refreshButton').addEventListener('click',update);
 let adminReportStarted=false;
-function startAdminReport(){if(adminReportStarted){update();return;}adminReportStarted=true;setupMap();update();setInterval(()=>{if(!document.hidden&&!document.getElementById('adminDashboard').hidden)update();},10000);}
+function startAdminReport(){if(adminReportStarted){settleMapSize();update();return;}adminReportStarted=true;setupMap();update();setInterval(()=>{if(!document.hidden&&!document.getElementById('adminDashboard').hidden)update();},10000);}
 document.addEventListener('inj-admin:ready',startAdminReport);
 
 })();
