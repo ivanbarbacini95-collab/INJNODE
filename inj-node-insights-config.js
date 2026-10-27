@@ -3,4 +3,4 @@
    Do not add usernames, passwords, bearer tokens or other secrets here.
    Worker example: https://inj-node-insights.YOUR-SUBDOMAIN.workers.dev/api/ingest
 */
-window.INJ_INSIGHTS_ENDPOINT = '';
+window.INJ_INSIGHTS_ENDPOINT = 'https://inj-node-insights.ivanbarbacini95.workers.dev/api/ingest';
