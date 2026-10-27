@@ -1,9 +1,14 @@
-const CACHE_NAME = 'inj-node-v16.10.27-admin-map-local-leaflet1';
+const CACHE_NAME = 'inj-node-v16.10.27-cloud-sync-passkeys1';
 const APP_SHELL = [
   './home-terminal-header-20261027.css?v=h2',
   './home-terminal-header-20261027.js?v=h2',
   './workspace-sections.js?v=20261027-live2',
-  './navigation.js?v=20261027-admin1',
+  './navigation.js?v=20261027-sync1',
+  './cloud-sync-agent.js?v=20261027sync1',
+  './cloud-sync-config.js?v=20261027sync1',
+  './cloud-sync.html?v=20261027sync1',
+  './cloud-sync.css?v=20261027sync1',
+  './cloud-sync.js?v=20261027sync1',
   './admin-insights.html?v=20261027mapfix1',
   './leaflet-1.9.4.css?v=20261027mapfix1',
   './admin-insights.css?v=20261027mapfix1',
@@ -228,13 +233,13 @@ self.addEventListener('fetch', (event) => {
 
   // Analytics config must never be locked behind the PWA's cache-first policy:
   // publishing the Insights URL must take effect without reinstalling the app.
-  if (url.pathname.endsWith('/inj-node-insights-config.js') || url.pathname.endsWith('/inj-node-telemetry.js')) {
+  if (url.pathname.endsWith('/inj-node-insights-config.js') || url.pathname.endsWith('/inj-node-telemetry.js') || url.pathname.endsWith('/cloud-sync-config.js')) {
     event.respondWith(fetch(request, {cache:'no-store'}).catch(() => caches.match(request)));
     return;
   }
 
   if (request.mode === 'navigate') {
-    const isolatedPath = ['admin-insights.html', 'workspace.html', 'live-charts.html', 'live-rewards.html', 'command-center.html', 'order-book.html', 'treasury.html', 'market.html', 'comparison.html', 'visualize-wealth.html', 'reward-ladder.html', 'injc-etf.html', 'install-icon-minimal.html', 'install-icon-classic.html', 'install-icon-aurora.html', 'install-icon-pulse.html'].find((name) => url.pathname.endsWith('/' + name));
+    const isolatedPath = ['cloud-sync.html', 'admin-insights.html', 'workspace.html', 'live-charts.html', 'live-rewards.html', 'command-center.html', 'order-book.html', 'treasury.html', 'market.html', 'comparison.html', 'visualize-wealth.html', 'reward-ladder.html', 'injc-etf.html', 'install-icon-minimal.html', 'install-icon-classic.html', 'install-icon-aurora.html', 'install-icon-pulse.html'].find((name) => url.pathname.endsWith('/' + name));
     event.respondWith(
       fetch(request, { cache: 'no-store' })
         .then((response) => {
