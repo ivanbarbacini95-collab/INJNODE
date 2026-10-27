@@ -1,5 +1,8 @@
-const CACHE_NAME = 'inj-node-v16.10.27-luxury-fintech-icons-b1';
+const CACHE_NAME = 'inj-node-v16.10.27-home-header-orderbook-live2';
 const APP_SHELL = [
+  './home-terminal-header-20261027.css?v=h2',
+  './home-terminal-header-20261027.js?v=h2',
+  './workspace-sections.js?v=20261027-live2',
   './navigation.js?v=20261027-g1',
   './market-portal.js?v=20261027-g1',
   './first-access-unified.css?v=20261027-left2',
@@ -8,7 +11,7 @@ const APP_SHELL = [
   './performance-timeline-fit.css?v=20261026-fit1',
   './home-premium-iconography.js?v=20261027luxb1',
   './home-premium-iconography.css?v=20261027luxb1',
-  './home-micro-terminal.css?v=20261026d',
+  './home-micro-terminal.css?v=20261027h1',
   './home-micro-terminal.js?v=20261026a',
   './privacy-shield.css?v=20261026',
   './injc-etf.html?v=20261026',
@@ -181,8 +184,8 @@ const APP_SHELL = [
   './reward-velocity.css?v=160122',
   './live-rewards.js?v=160502',
   './order-book.html',
-  './order-book.css?v=16.00.39',
-  './order-book.js?v=16.00.18',
+  './order-book.css?v=20261027-live2',
+  './order-book.js?v=20261027-live2',
   './command-center.html',
   './command-center-flash.css?v=160307',
   './command-center-flash.js?v=160502',
