@@ -35,9 +35,7 @@
     // The primary app, wallet selection and Home are untouched underneath.
     frame.src = './market.html?v=16102450&lang=' + (window.INJ_I18N?.getLanguage?.() || localStorage.getItem('inj_node_language_v1') || 'it');
     document.title = 'INJ NODE | ' + titleFor();
-    if (!history.state?.injMarketPortal) {
-      history.pushState({ ...(history.state || {}), injMarketPortal: true }, '', '#market');
-    }
+    // Keep the parent URL/history stationary: an edge swipe must not close Market.
   }
   function conceal(fromBrowserBack = false) {
     if (!open) return;
@@ -46,7 +44,7 @@
     portal.hidden = true;
     frame.src = 'about:blank'; // shuts down the old iframe streams/timers
     document.title = originalTitle;
-    if (!fromBrowserBack && history.state?.injMarketPortal) history.back();
+    // Market only closes via its Home control or Escape, not browser swipe history.
     try { launcher.focus({ preventScroll: true }); } catch (_) {}
     // Unlock the document first; then restore the exact Home offset.
     window.INJ_SCROLL_GUARD?.refresh();
