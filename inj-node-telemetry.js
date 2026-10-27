@@ -8,7 +8,7 @@ const labels={'index.html':'HOME','live-charts.html':'LIVE CHARTS','order-book.h
 let consent='',session='',started=false,starting=Promise.resolve(),wallet='',section=labels[location.pathname.split('/').pop()]||'HOME';
 const featureThrottle=new Map();
 const safeFeature=x=>['timeframe','wallet-select','workspace-edit','workspace-add','workspace-fullscreen','heatmap','chart-interaction','treasury','market','orderbook','converter','reward','navigation'].includes(x)?x:'navigation';
-function os(){const x=navigator.userAgent;return /iPad/i.test(x)?'iPadOS':/iPhone|iPod/i.test(x)?'iOS':/Android/i.test(x)?'Android':/Windows/i.test(x)?'Windows':/Macintosh/i.test(x)?'macOS':/Linux/i.test(x)?'Linux':'Other'}
+function os(){const x=navigator.userAgent;return /iPad/i.test(x)||(/Macintosh/i.test(x)&&navigator.maxTouchPoints>1)?'iPadOS':/iPhone|iPod/i.test(x)?'iOS':/Android/i.test(x)?'Android':/Windows/i.test(x)?'Windows':/Macintosh/i.test(x)?'macOS':/Linux/i.test(x)?'Linux':'Other'}
 function browser(){const x=navigator.userAgent;return /Edg\//.test(x)?'Edge':/Firefox|FxiOS/.test(x)?'Firefox':/CriOS|Chrome/.test(x)?'Chrome':/Safari/.test(x)?'Safari':'Other'}
 function feature(name){if(consent!=='yes')return;name=safeFeature(name);const now=Date.now();if(now-(featureThrottle.get(name)||0)<1200)return;featureThrottle.set(name,now);send('feature',{feature:name})}
 function health(category,durationMs=0){if(consent==='yes')send('health',{category,durationMs:Math.max(0,Math.min(120000,Math.round(Number(durationMs)||0)))})}
@@ -28,7 +28,7 @@ function begin(){
  if(started||consent!=='yes')return;
  started=true;try{session=sessionStorage.getItem(SID)||''}catch(_){}
  if(!/^[0-9a-f-]{36}$/i.test(session)){session=crypto.randomUUID();try{sessionStorage.setItem(SID,session)}catch(_){}}
- const ua=navigator.userAgent;const device=/ipad|tablet/i.test(ua)?'tablet':/mobi|iphone|android/i.test(ua)?'mobile':'desktop';
+ const ua=navigator.userAgent;const device=/ipad|tablet/i.test(ua)||(/Macintosh/i.test(ua)&&navigator.maxTouchPoints>1)?'tablet':/mobi|iphone|android/i.test(ua)?'mobile':'desktop';
  starting=send('start',{device,os:os(),browser:browser()});send('section',{section});
  starting.then(()=>{const nav=performance.getEntriesByType?.('navigation')?.[0];if(nav&&Number.isFinite(nav.duration))health('navigation',nav.duration)});
 
