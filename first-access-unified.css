@@ -7,9 +7,30 @@ html[data-inj-page="index"] body #entryGate .entry-gate-shell:not(.first-access)
 html[data-inj-page="index"] body #entryGate .entry-gate-shell:not(.first-access)
  > .entry-actions.entry-flat-v44 > #entryWorkspaceButton
  > span:not(.entry-action-icon):not(.inj-tile-scene) {
-  justify-content:flex-start!important;align-items:center!important;
-  text-align:left!important;margin-left:0!important;margin-right:auto!important;
-  width:auto!important;max-width:calc(100% - 10px)!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:center!important;
+  align-items:flex-start!important;
+  align-content:flex-start!important;
+  text-align:left!important;
+  margin:0 auto 0 0!important;
+  padding:0!important;
+  width:100%!important;max-width:100%!important;min-width:0!important;
+  gap:3px!important;
+}
+html[data-inj-page="index"] body #entryGate .entry-gate-shell:not(.first-access)
+ > .entry-actions.entry-flat-v44 > #entryWorkspaceButton
+ > span:not(.entry-action-icon):not(.inj-tile-scene) > :is(strong,small) {
+  display:block!important;
+  position:static!important;
+  align-self:stretch!important;
+  flex:none!important;
+  width:100%!important;min-width:0!important;max-width:100%!important;
+  margin:0!important;padding:0!important;
+  text-align:left!important;
+  translate:none!important;
+  transform:none!important;
+  -webkit-transform:none!important;
 }
 html[data-inj-page="index"] body #entryGate .entry-gate-shell:not(.first-access)
  > .entry-actions.entry-flat-v44 > #entryWorkspaceButton strong {
