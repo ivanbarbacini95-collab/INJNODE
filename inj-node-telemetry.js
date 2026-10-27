@@ -67,7 +67,8 @@ function init(){
   if(e.target.closest('[id^="close"][id$="Button"],#dashboardHomeButton,.nav-home-button'))section='HOME';
   setTimeout(selectedWallet,150)
  },true);
- document.addEventListener('visibilitychange',()=>{if(!document.hidden&&consent==='yes')send('heartbeat',{section})});
+ document.addEventListener('visibilitychange',()=>{if(consent!=='yes')return;if(document.hidden)send('heartbeat',{section});else send('resume')});
+ window.addEventListener('pagehide',()=>{if(consent==='yes'&&!document.hidden)send('heartbeat',{section})});
  setInterval(()=>{if(consent==='yes'&&!document.hidden)send('heartbeat',{section})},15000)
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
