@@ -5,7 +5,7 @@ const $=id=>document.getElementById(id),base=String(window.INJ_CLOUD_SYNC_URL||'
 const validBase=/^https:\/\/[^/\s?#]+$/.test(base);
 const allow=k=>/^(?:inj_monitor_(?:wallets_v1|address|average_buy_price_v1|currency|theme|ui_style|privacy|card_style|targets_v1|compound_mode|compound_weekly|native_chart_range)|inj_node_(?:language_v1|crypto_favorites_v1|workspace_v1|workspace_histories_v1|timeline_layout_v1|comparison_selected_wallet_v1))$/.test(k);
 const parentAgent=()=>{try{return parent!==window&&parent.location.origin===location.origin?parent.INJCloudSyncAgent:null}catch(_){return null}};
-let token='',version=0,remote={},updatedAt=null,auto=false,busy=false;
+let token='',version=0,remote={},updatedAt=null,auto=false,busy=false,locallyLinked=false;
 const toB64=buffer=>{const bytes=new Uint8Array(buffer);let str='';for(const v of bytes)str+=String.fromCharCode(v);return btoa(str).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')};
 const fromB64=str=>Uint8Array.from(atob(str.replace(/-/g,'+').replace(/_/g,'/')+'='.repeat((4-str.length%4)%4)),c=>c.charCodeAt(0));
 function localSnapshot(){
@@ -31,7 +31,7 @@ function render(){
  $('csBackupStatus').textContent=version?'Versione '+version:'Nessun backup';
  $('csUpdatedAt').textContent=updatedAt?new Date(updatedAt).toLocaleString('it-IT',{dateStyle:'short',timeStyle:'short'}):'—';
  $('csRestore').disabled=!version;
- $('csAuto').disabled=!version;
+ $('csAuto').disabled=!version||!locallyLinked;
  $('csAuto').checked=auto;
  const same=JSON.stringify(local)===JSON.stringify(remote);
  $('csCloudDifference').textContent=!version?'Il cloud è vuoto. Puoi creare il primo backup delle configurazioni salvate su questo dispositivo.':
@@ -84,7 +84,8 @@ async function afterLogin(){
  const data=await call('/api/sync/profile');
  version=Number(data.version)||0;remote=data.profile||{};updatedAt=data.updatedAt||null;
  const running=parentAgent()?.getSession();
- auto=Boolean(running&&running.token===token&&running.base===base&&running.enabled);
+ locallyLinked=version>0&&JSON.stringify(localSnapshot())===JSON.stringify(remote);
+ auto=Boolean(locallyLinked&&running&&running.token===token&&running.base===base&&running.enabled);
  parentAgent()?.attach({token,base,version,profile:remote});
  status('ACCOUNT PERSONALE / CONNESSO');
  showAccount();
@@ -96,7 +97,7 @@ async function saveCloud(fromAuto=false){
     &&!confirm('Il backup sul cloud verrà sostituito dalle configurazioni di questo dispositivo. Continuare?'))return;
  try{
   const d=await call('/api/sync/profile','PUT',{expectedVersion:version,profile:p});
-  version=d.version;updatedAt=d.updatedAt;remote=p;
+  version=d.version;updatedAt=d.updatedAt;remote=p;locallyLinked=true;
   parentAgent()?.update(version,p);
   if(!fromAuto)message('Backup completato e cifrato su Cloudflare. Versione '+version+'.');
   render();
@@ -108,7 +109,7 @@ async function saveCloud(fromAuto=false){
 async function restore(){
  if(!version)return;
  if(!confirm('Ripristinare le configurazioni cloud su questo dispositivo? Verranno sostituiti wallet pubblici, preferenze e preset locali sincronizzabili.'))return;
- auto=false;parentAgent()?.enable(false);
+ auto=false;locallyLinked=true;parentAgent()?.enable(false);
  for(const k of Object.keys(localStorage))if(allow(k))localStorage.removeItem(k);
  for(const [k,v] of Object.entries(remote))if(allow(k)&&typeof v==='string')localStorage.setItem(k,v);
  parentAgent()?.update(version,remote);
@@ -151,7 +152,7 @@ $('csLogout').onclick=()=>perform(logout);
 $('csDelete').onclick=()=>perform(deleteCloud);
 $('csAuto').onchange=()=>{
  auto=$('csAuto').checked;
- if(!version){auto=false;$('csAuto').checked=false;return}
+ if(!version||!locallyLinked){auto=false;$('csAuto').checked=false;return}
  const agent=parentAgent();
  if(agent){agent.enable(auto)}else if(auto){message('Backup automatico disponibile solo quando questa schermata è aperta.')}
  render();
