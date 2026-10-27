@@ -54,7 +54,7 @@
     <header class="book-topbar">
       <button class="back-button" id="bookBack" type="button" aria-label="Torna alla Home">×</button>
       <div class="book-brand inj-location-brand" data-i18n-skip="true"><strong class="inj-location-name">INJ Node</strong><span class="inj-location-section" data-inj-section-name="order-book">Order Book</span></div>
-      <div class="pair"><i></i><div><strong>INJ / USDT</strong><small>BINANCE · REALTIME</small></div></div>
+      <div class="pair"><i></i><div><strong>INJ / USDT</strong><small id="bookFeedInfo">BINANCE · CONNECTING</small></div></div>
       <div class="top-actions">
         <label class="group-label"><span>STEP</span><select id="bookGrouping" aria-label="Aggregazione Order Book"><option value="0.001">0.001</option><option value="0.01">0.01</option><option value="0.1">0.1</option><option value="1">1</option></select></label>
         <span class="status" id="bookState"><i></i><b>SYNC</b></span>
@@ -66,7 +66,7 @@
       <div class="columns"><span>PRICE</span><span>SIZE INJ</span><span id="bookTotalLabel">TOTAL $</span></div>
       <div class="levels asks" id="bookAsks" aria-label="Ordini di vendita"></div>
       <div class="market-price" id="bookMarketPrice">
-        <small>LAST TRADE</small>
+        <small id="bookPriceLabel">MARKET PRICE</small>
         <div class="market-price-line">
           <strong id="bookLivePrice">—</strong>
           <span class="trade-arrow neutral" id="bookTradeArrow" aria-label="Direzione ultimo trade">•</span>
@@ -75,9 +75,9 @@
       <div class="levels bids" id="bookBids" aria-label="Ordini di acquisto"></div>
     </section>
 
-    <footer class="book-footer"><span><i></i> DEPTH LIVE</span><span class="inj-brand-credit" data-i18n-skip="true" aria-label="INJ Node by B Capital Group"><strong>INJ Node</strong><span>by B Capital Group</span></span></footer>
+    <footer class="book-footer"><span><i></i><span id="bookFooterState">DEPTH SYNC</span></span><span class="inj-brand-credit" data-i18n-skip="true" aria-label="INJ Node by B Capital Group"><strong>INJ Node</strong><span>by B Capital Group</span></span></footer>
   </main>
-  <script src="order-book.js?v=16.00.18" defer></script>
+  <script src="order-book.js?v=20261027-live2" defer></script>
 
 
 </body>
