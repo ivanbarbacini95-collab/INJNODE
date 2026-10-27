@@ -29,7 +29,7 @@ async function check(){
   return;
  }
  submit.disabled=false;
- if(r.data.authenticated){displayDashboard();status.textContent=r.data.dataConnected?'LIVE DATA / SYNC':'SORGENTE DATI DA COLLEGARE';}
+ if(r.data.authenticated){displayDashboard();status.textContent=r.data.dataConnected?'LIVE DATA / SYNC':'SORGENTE DATI DA COLLEGARE';$('adminDataNotice').hidden=Boolean(r.data.dataConnected);}
  else displayLogin();
 }
 form.addEventListener('submit',async e=>{
@@ -38,8 +38,7 @@ form.addEventListener('submit',async e=>{
   body:JSON.stringify({username:user.value,password:pass.value})});
  submit.disabled=false;submit.textContent='ACCEDI ALLE STATISTICHE';
  if(!r.ok){textError(r.data.error||'Accesso non riuscito');pass.value='';return;}
- user.value='';displayDashboard();
- status.textContent='VERIFICA DATI…';
+ user.value='';await check();
 });
 $('adminLogout').addEventListener('click',async()=>{
  await getJson('logout',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
