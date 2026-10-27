@@ -44,6 +44,115 @@ function performanceBaseline(rows,windowMs){if(!rows.length)return null;if(windo
 function create(api){
  const {t,read,el,money,quantity,num,metrics,rowsFor,selected,wallets,paint,json}=api;
  const state={favorites:[],favoritesAt:0,version:0,coins:[],coinsAt:0,global:null,globalAt:0,coin:null,coinAt:0,depth:null,depthAt:0,busy:new Set(),histories:read('inj_node_workspace_histories_v1',{}),historyAt:0};
+ // A single live depth20 socket is shared across all Workspace Order Book
+ // and bid/ask cards. REST snapshots add deeper levels for larger STEP sizes.
+ const depthStreamEndpoints=[
+  'wss://stream.binance.com:443/ws/injusdt@depth20@100ms',
+  'wss://data-stream.binance.vision/ws/injusdt@depth20@100ms',
+  'wss://stream.binance.com:9443/ws/injusdt@depth20@100ms'
+ ];
+ let depthSocket=null,depthWanted=false,depthSocketAttempt=0;
+ let depthReconnectTimer=0,depthIdleTimer=0,depthPaintTimer=0;
+ state.depthRest=null;state.depthRestAt=0;
+ state.depthLive=null;state.depthLiveAt=0;
+
+ function validLevels(list){
+  return Array.isArray(list)?list.filter(row=>Array.isArray(row)&&
+   Number(row[0])>0&&Number(row[1])>0).map(row=>[String(row[0]),String(row[1])]):[];
+ }
+ function composeWorkspaceDepth(){
+  const snapshot=state.depthRest;
+  const live=state.depthLive;
+  const fresh=live&&Date.now()-state.depthLiveAt<7000;
+  if(!fresh){
+   if(snapshot){state.depth=snapshot;state.depthAt=state.depthRestAt;}
+   else {state.depth=null;state.depthAt=0;}
+   return;
+  }
+  const merge=(raw,head,ask)=>{
+   const sortedHead=validLevels(head).sort((a,b)=>ask?Number(a[0])-Number(b[0]):Number(b[0])-Number(a[0]));
+   if(!sortedHead.length)return validLevels(raw);
+   const threshold=Number(sortedHead.at(-1)[0]);
+   const tail=validLevels(raw).filter(row=>ask?Number(row[0])>threshold:Number(row[0])<threshold);
+   return [...sortedHead,...tail].slice(0,state.depthRequestedLimit||100);
+  };
+  state.depth={asks:merge(snapshot?.asks,live.asks,true),bids:merge(snapshot?.bids,live.bids,false)};
+  state.depthAt=state.depthLiveAt;
+ }
+ function notifyDepthCards(){
+  if(depthPaintTimer)return;
+  depthPaintTimer=setTimeout(()=>{
+   depthPaintTimer=0;
+   if(!depthWanted||document.hidden)return;
+   state.version++;
+   api.updated();
+  },850);
+ }
+ function disconnectDepthSocket(){
+  clearTimeout(depthReconnectTimer);
+  clearTimeout(depthIdleTimer);
+  depthReconnectTimer=0;depthIdleTimer=0;
+  const socket=depthSocket;
+  depthSocket=null;
+  if(socket)try{socket.close()}catch(_){}
+ }
+ function connectDepthStream(){
+  if(!depthWanted||document.hidden||navigator.onLine===false||depthSocket)return;
+  const idx=depthSocketAttempt++%depthStreamEndpoints.length;
+  try{
+   const socket=new WebSocket(depthStreamEndpoints[idx]);
+   depthSocket=socket;
+   let received=false;
+   clearTimeout(depthIdleTimer);
+   depthIdleTimer=setTimeout(()=>{
+    if(!received&&depthSocket===socket)try{socket.close()}catch(_){}
+   },7500);
+   socket.onmessage=event=>{
+    if(depthSocket!==socket)return;
+    try{
+     const data=JSON.parse(event.data);
+     const asks=validLevels(data.a),bids=validLevels(data.b);
+     if(!asks.length||!bids.length)return;
+     received=true;
+     clearTimeout(depthIdleTimer);
+     state.depthLive={asks,bids};
+     state.depthLiveAt=Date.now();
+     composeWorkspaceDepth();
+     notifyDepthCards();
+    }catch(_){}
+   };
+   socket.onclose=()=>{
+    if(depthSocket!==socket)return;
+    depthSocket=null;
+    clearTimeout(depthIdleTimer);
+    composeWorkspaceDepth();
+    if(depthWanted&&!document.hidden){
+     depthReconnectTimer=setTimeout(connectDepthStream,1500);
+    }
+   };
+   socket.onerror=()=>{try{socket.close()}catch(_){}};
+  }catch(_){
+   depthSocket=null;
+   depthReconnectTimer=setTimeout(connectDepthStream,2000);
+  }
+ }
+ function manageWorkspaceDepth(needed){
+  depthWanted=Boolean(needed);
+  if(depthWanted){
+   connectDepthStream();
+  }else if(depthSocket||depthReconnectTimer){
+   disconnectDepthSocket();
+   state.depthLive=null;state.depthLiveAt=0;
+   composeWorkspaceDepth();
+  }
+ }
+ document.addEventListener('visibilitychange',()=>{
+  if(document.hidden){disconnectDepthSocket();}
+  else if(depthWanted){connectDepthStream();}
+ });
+ window.addEventListener('pagehide',disconnectDepthSocket);
+ window.addEventListener('pageshow',()=>{if(depthWanted)connectDepthStream()});
+
  const safe=v=>typeof v==='number'&&Number.isFinite(v)?v:null;
  const product=(a,b)=>safe(a)!==null&&safe(b)!==null?a*b:null;
  function age(at){return at?(Date.now()-at>120000?'Snapshot · ':'')+new Date(at).toLocaleTimeString():t('Dati in attesa','Waiting for data')}
@@ -382,17 +491,24 @@ function create(api){
  const maxStep=Math.max(0.001,...items.filter(i=>i.type==='orderbook').map(i=>normalizedBookStep(i.bookStep)));
  const limit=maxStep>=1?5000:maxStep>=0.1?1000:maxStep>=0.01?500:100;
  state.depthRequestedLimit=limit;
+ manageWorkspaceDepth(true);
  feed('depth:'+limit,12000,async()=>{for(const base of ['https://api.binance.com','https://data-api.binance.vision','https://api1.binance.com'])try{
   const d=await json(base+'/api/v3/depth?symbol=INJUSDT&limit='+limit);
   if(Array.isArray(d.bids)&&Array.isArray(d.asks)){
-   if(limit===state.depthRequestedLimit){state.depth=d;state.depthAt=Date.now();state['depth:'+limit+'At']=state.depthAt;}
+   if(limit===state.depthRequestedLimit){
+    state.depthRest=d;
+    state.depthRestAt=Date.now();
+    composeWorkspaceDepth();
+    state['depth:'+limit+'At']=state.depthRestAt;
+   }
    return;
   }
  }catch(_){}throw Error()});
-}}
+ }else{manageWorkspaceDepth(false);}
+}
  function feedInfo(i){
  const type=i.type;
- if(['bid','ask','spread','orderbook','bookbalance','levels'].includes(type))return {at:state.depthAt,source:'Binance order book',fresh:30000};
+ if(['bid','ask','spread','orderbook','bookbalance','levels'].includes(type))return {at:state.depthAt,source:state.depthLiveAt&&Date.now()-state.depthLiveAt<7000?'Binance live depth':'Binance depth snapshot',fresh:state.depthLiveAt&&Date.now()-state.depthLiveAt<7000?8000:30000};
  if(['favorites','favoritesheatmap'].includes(type))return {at:state.favoritesAt,source:'CoinGecko favorites',fresh:180000};
  if(['globalcap','globalvolume','btcdom','globaloverview'].includes(type))return {at:state.globalAt,source:'CoinGecko global',fresh:180000};
  if(['networkstake','nativesupply'].includes(type))return {at:state.chainAt||0,source:'Injective LCD',fresh:360000};
