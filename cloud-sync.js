@@ -43,7 +43,10 @@ async function call(path,method='GET',body=null,auth=true){
  const options={method,mode:'cors',credentials:'omit',cache:'no-store',headers:{}};
  if(auth&&token)options.headers.Authorization='Bearer '+token;
  if(body!==null){options.headers['Content-Type']='application/json';options.body=JSON.stringify(body)}
- let res;try{res=await fetch(base+path,options)}catch(_){throw Error('Connessione Cloudflare non disponibile')}
+ let res;try{res=await fetch(base+path,options)}catch(_){
+  const e=new Error('Richiesta Cloudflare bloccata o non raggiungibile da '+location.origin+'. Verifica il collegamento Worker e il dominio autorizzato.');
+  e.code='NETWORK';throw e;
+ }
  const data=await res.json().catch(()=>({}));
  if(!res.ok){const e=new Error(data.message||data.error||'Errore di rete '+res.status);e.code=res.status;throw e}
  return data;
@@ -170,8 +173,12 @@ $('cloudSyncBack').onclick=e=>{try{if(parent!==window&&parent.location.origin===
  if(!validBase){status('CLOUD SYNC / CONFIGURAZIONE IN ATTESA');message('Cloud Sync è pronto nel codice, ma il Worker personale Cloudflare e il suo database devono ancora essere collegati. I tuoi dati rimangono locali.',true);
  $('cloudSyncRegister').disabled=true;$('cloudSyncLogin').disabled=true;return}
  try{
+  if(!['https://injectiveportfolio.com','https://www.injectiveportfolio.com'].includes(location.origin)){
+   throw Error('Questa versione di INJ Node è aperta da '+location.origin+'. Per proteggere le passkey, Cloud Sync funziona soltanto da https://injectiveportfolio.com (anche www).');
+  }
   const d=await call('/api/sync/status','GET',null,false);
-  if(!d.available)throw Error('Servizio non ancora configurato su Cloudflare');
+  if(!d.originAllowed)throw Error('Cloudflare non autorizza l’origine '+location.origin+'. Controlla la variabile ALLOWED_ORIGINS del Worker.');
+  if(!d.available)throw Error('Worker raggiungibile, ma configurazione server incompleta. Controlla i Secret e il database D1.');
   status('CLOUD SYNC / PASSKEY DISPONIBILI');
   const previous=parentAgent()?.getSession();
   if(previous?.token&&previous.base===base){token=previous.token;try{await afterLogin()}catch(_){token='';parentAgent()?.stop()}}
