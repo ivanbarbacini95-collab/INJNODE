@@ -66,6 +66,8 @@
     if (event.data?.type === 'injnode:market:home') conceal();
   });
   window.addEventListener('popstate', () => {
+    // Swiping Safari's history guard is never a request to leave Market.
+    if (history.state?.injGestureShield) return;
     if (open && !history.state?.injMarketPortal) conceal(true);
   });
   window.addEventListener('keydown', (event) => {
