@@ -39,9 +39,11 @@ window.INJCloudSyncAgent=Object.freeze({
  getSession(){return token?{token,base,version,enabled,conflict}:null},
  attach(info){
   if(!info||typeof info.token!=='string'||!/^https:\/\/[^/\s]+$/.test(info.base))return;
+  const sameAccount=token===info.token&&base===info.base;
+  const previousAuto=enabled,previousConflict=conflict;
   token=info.token;base=info.base;version=Number(info.version)||0;
   lastProfile=JSON.stringify(info.profile||{});
-  enabled=false;conflict=false;
+  enabled=sameAccount?previousAuto:false;conflict=sameAccount?previousConflict:false;
  },
  update(versionNumber,profile){version=Number(versionNumber)||0;lastProfile=JSON.stringify(profile||{});conflict=false},
  enable(value){enabled=Boolean(value)&&!!token&&!conflict;broadcast('status',{enabled})},
