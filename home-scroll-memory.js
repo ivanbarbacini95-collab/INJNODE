@@ -72,6 +72,8 @@
  // On iOS, history.back() may apply a scroll position after the section
  // iframe has been removed. Win that final paint as well.
  window.addEventListener('popstate',()=>{
+  // The same-page Safari swipe shield is not a section return. Do not jump.
+  if(history.state?.injGestureShield)return;
   if(isHomeVisible()&&known())restore();
  });
  window.INJ_HOME_SCROLL={save,restore,restoreNow};
