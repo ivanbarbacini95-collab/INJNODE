@@ -70,7 +70,8 @@ function drawRecent(recent){const host=$('recentEvents');host.replaceChildren();
 async function update() {
  if (inProgress) return; inProgress=true;
  try {
-  const response=await fetch(`/api/inj-node-insights?action=overview&days=${days}`,{credentials:'same-origin',cache:'no-store'});
+  const cfg=window.INJ_ADMIN_INSIGHTS_API;if(!cfg?.base||!cfg.headers().Authorization)throw new Error('Autenticazione Admin non disponibile');
+  const response=await fetch(cfg.base+'/api/admin/overview?days='+days,{mode:'cors',headers:cfg.headers(),credentials:'omit',cache:'no-store'});
   if(!response.ok){if(response.status===401){document.dispatchEvent(new CustomEvent('inj-admin:expired'));return;}const data=await response.json().catch(()=>({}));throw new Error(data.error||('HTTP '+response.status));}
   const data=await response.json(); status(true);shownError=false;
   $('kLive').textContent=fmt(data.summary.live);$('kToday').textContent=fmt(data.summary.today);$('kTotal').textContent=fmt(data.summary.total);$('kDuration').textContent=duration(data.summary.average_duration);$('kWeek').textContent=fmt(data.summary.last7);
@@ -86,7 +87,7 @@ async function update() {
 for(const button of document.querySelectorAll('[data-days]'))button.addEventListener('click',()=>{days=Number(button.dataset.days);document.querySelectorAll('[data-days]').forEach(x=>x.classList.toggle('active',x===button));update();});
 $('refreshButton').addEventListener('click',update);
 let adminReportStarted=false;
-function startAdminReport(){if(adminReportStarted)return;adminReportStarted=true;setupMap();update();setInterval(()=>{if(!document.hidden&&!document.getElementById('adminDashboard').hidden)update();},10000);}
+function startAdminReport(){if(adminReportStarted){update();return;}adminReportStarted=true;setupMap();update();setInterval(()=>{if(!document.hidden&&!document.getElementById('adminDashboard').hidden)update();},10000);}
 document.addEventListener('inj-admin:ready',startAdminReport);
 
 })();
