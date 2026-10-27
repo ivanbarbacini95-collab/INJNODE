@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.10.27-gesture-navigation-firstaccess-1';
+const CACHE_NAME = 'inj-node-v16.10.27-gesture-navigation-firstaccess-2';
 const APP_SHELL = [
   './navigation.js?v=20261027-g1',
   './market-portal.js?v=20261027-g1',
