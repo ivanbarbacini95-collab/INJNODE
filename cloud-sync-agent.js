@@ -40,10 +40,13 @@ window.INJCloudSyncAgent=Object.freeze({
  attach(info){
   if(!info||typeof info.token!=='string'||!/^https:\/\/[^/\s]+$/.test(info.base))return;
   const sameAccount=token===info.token&&base===info.base;
+  const remoteAdvanced=sameAccount&&(Number(info.version)||0)!==version;
   const previousAuto=enabled,previousConflict=conflict;
   token=info.token;base=info.base;version=Number(info.version)||0;
   lastProfile=JSON.stringify(info.profile||{});
-  enabled=sameAccount?previousAuto:false;conflict=sameAccount?previousConflict:false;
+  enabled=sameAccount&&!remoteAdvanced?previousAuto:false;
+  conflict=remoteAdvanced||(sameAccount?previousConflict:false);
+  if(remoteAdvanced)broadcast('conflict','Il cloud contiene una versione aggiornata da un altro dispositivo. Backup automatico disattivato.');
  },
  update(versionNumber,profile){version=Number(versionNumber)||0;lastProfile=JSON.stringify(profile||{});conflict=false},
  enable(value){enabled=Boolean(value)&&!!token&&!conflict;broadcast('status',{enabled})},
