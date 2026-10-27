@@ -2998,7 +2998,8 @@ function loadSavedWallets() {
     label: String(item?.label || `Wallet ${index + 1}`).trim().slice(0, 28)
   })).filter((item, index, all) => validAddress(item.address) && all.findIndex((row) => row.address === item.address) === index) : [];
 
-  const legacy = localStorage.getItem('inj_monitor_address') || '';
+  let legacy = '';
+  try { legacy = localStorage.getItem('inj_monitor_address') || ''; } catch (_) {}
   if (validAddress(legacy) && !state.wallets.some((item) => item.address === legacy)) {
     state.wallets.push({ address: legacy, label: `Wallet ${state.wallets.length + 1}` });
   }
@@ -3006,7 +3007,10 @@ function loadSavedWallets() {
     const cached = JSON.parse(localStorage.getItem('inj_monitor_summaries_v1') || '{}');
     state.walletSummaries = cached && typeof cached === 'object' ? cached : {};
   } catch (_) { state.walletSummaries = {}; }
-  saveWallets();
+  try { saveWallets(); } catch (error) {
+    // Read-only/local storage failures must not discard wallets already read.
+    console.warn('Unable to refresh saved wallet list:', error);
+  }
 }
 
 function saveWallets() {
@@ -8444,6 +8448,9 @@ function bindUniversalPageWheelScroll() {
 
 async function init() {
   bindUniversalPageWheelScroll();
+  // Wallet detection is independent of other saved preferences. A corrupt
+  // theme/chart setting must not force a returning user through onboarding.
+  try { loadSavedWallets(); } catch (error) { console.warn('Saved wallet initialization:', error); }
   try {
     state.currency = localStorage.getItem('inj_monitor_currency') === 'EUR' ? 'EUR' : 'USD';
     localStorage.removeItem('inj_monitor_card_style');
@@ -8452,7 +8459,6 @@ async function init() {
       : 'd1';
     if ($('currencyValue')) $('currencyValue').textContent = state.currency === 'EUR' ? '€' : '$';
     syncPrivacyUi(localStorage.getItem('inj_monitor_privacy') === '1');
-    loadSavedWallets();
     state.entrySelectedAddress = state.wallets.find((wallet) => wallet.address === (localStorage.getItem('inj_node_comparison_selected_wallet_v1') || localStorage.getItem('inj_monitor_address') || ''))?.address || state.wallets[0]?.address || '';
     if (state.entrySelectedAddress) localStorage.setItem('inj_node_comparison_selected_wallet_v1', state.entrySelectedAddress);
     loadTargetStorage();
