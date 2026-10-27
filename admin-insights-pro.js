@@ -176,7 +176,7 @@ function renderReport(d){
  host.append(el('p',null,'Nota metodologica: statistiche di sessioni che hanno dato il consenso, non utenti unici. Classifiche, percorsi e aree sono aggregati; alcuni dati avanzati sono disponibili solo dopo l’aggiornamento della telemetria.'));
 }
 function render(d){
- state.data=d;root.hidden=false;document.body.classList.add('insights-pro-ready');fillKpis(d);
+ state.data=d;root.hidden=false;document.body.classList.add('insights-pro-ready');$('adminDataNotice').hidden=true;fillKpis(d);
  renderOverview(d);renderLive(d);renderAudience(d);renderBehaviour(d);renderSystem(d);renderReport(d);
  showTab(state.tab);
 }
@@ -210,7 +210,8 @@ async function load(){
   render(d);
  }catch(e){
   $('proUpdated').textContent='DATI AVANZATI NON DISPONIBILI';
-  if(!state.data){root.hidden=true;document.body.classList.remove('insights-pro-ready')}
+  root.hidden=true;document.body.classList.remove('insights-pro-ready');state.data=null;
+  const notice=$('adminDataNotice');notice.hidden=false;notice.textContent='Insights Pro non è ancora raggiungibile: verifica il deployment del Worker Cloudflare con l’API /api/admin/advanced. È disponibile la dashboard precedente.';
   console.warn('INJ Insights Pro:',e.message);
  }finally{state.busy=false}
 }
