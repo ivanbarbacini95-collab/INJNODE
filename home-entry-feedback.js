@@ -28,15 +28,7 @@
  const english=()=>{try{return localStorage.getItem('inj_node_language_v1')==='en'}catch(_){return document.documentElement.lang==='en'}};
  const tr=(it,en)=>english()?en:it;
  const canVibrate=()=>typeof navigator.vibrate==='function';
- // iOS can generate haptics from a physically tapped native WebKit switch,
- // but NOT from a scripted click. This is a small, direct-tap settings test.
- const isIOSWebKit=()=>{
-  const ua=String(navigator.userAgent||'');
-  return /iPhone|iPad|iPod/.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1);
- };
- const nativeTester=()=>document.getElementById('menuFeedbackNativeTest');
- const nativeSwitch=()=>document.getElementById('menuFeedbackNativeSwitch');
- const nativeResult=()=>document.getElementById('menuFeedbackNativeResult');
+ // Keep the regular vibration preference only when the browser supports it.
  let last=-Infinity,audio=null;
  function update(){
   const snd=soundButton(),hap=hapticButton(),volumeControl=volumeInput(),volumeDisplay=volumeLabel();
@@ -66,33 +58,15 @@
    snd.querySelector('.menu-action-copy small').textContent=tr('Tono breve quando apri una sezione','Soft tone when opening a section');
    snd.querySelector('.menu-action-value').textContent=on?tr('ON','ON'):tr('OFF','OFF');
   }
-  const iosTest=isIOSWebKit()&&!canVibrate();
-  const tester=nativeTester();
-  if(tester)tester.hidden=!iosTest;
-  if(nativeSwitch())nativeSwitch().setAttribute('aria-label',
-   tr('Tocca qui per provare la vibrazione nativa di iPhone','Tap here to test native iPhone haptics'));
-  const nativeTitle=document.getElementById('menuFeedbackNativeTitle');
-  const nativeHint=document.getElementById('menuFeedbackNativeHint');
-  if(nativeTitle)nativeTitle.textContent=tr('Prova vibrazione iPhone','Test iPhone vibration');
-  if(nativeHint)nativeHint.textContent=tr(
-   'Tocca direttamente l’interruttore. Il test è sperimentale: non garantisce la vibrazione delle altre voci.',
-   'Tap the switch itself. Experimental test: haptics are not guaranteed for other buttons.');
   if(hap){
-   const on=read(HAPTIC_KEY),supported=canVibrate();
-   hap.disabled=!(supported||iosTest);
-   hap.setAttribute('aria-pressed',String(on&&(supported||iosTest)));
-   hap.setAttribute('aria-label',iosTest?
-    tr('Feedback aptico sperimentale iPhone: ','Experimental iPhone haptics: ')+(on?'ON':'OFF'):
-    supported?tr('Vibrazione apertura sezioni: ','Section opening vibration: ')+(on?'ON':'OFF'):
-    tr('Vibrazione non supportata','Vibration unsupported'));
-   hap.querySelector('.menu-action-copy strong').textContent=iosTest?
-    tr('Vibrazione · Test iPhone','Vibration · iPhone test'):
-    tr('Vibrazione breve','Short vibration');
-   hap.querySelector('.menu-action-copy small').textContent=iosTest?
-    tr('Test nativo nelle impostazioni · Home non garantita','Native settings test · Home not guaranteed'):
-    supported?tr('Piccolo impulso all’apertura','Small pulse on opening'):
-    tr('Non disponibile su questo browser','Not available in this browser');
-   hap.querySelector('.menu-action-value').textContent=iosTest?tr('TEST','TEST'):supported?(on?'ON':'OFF'):tr('N/D','N/A');
+   const supported=canVibrate(),on=read(HAPTIC_KEY);
+   hap.hidden=!supported;
+   hap.disabled=!supported;
+   hap.setAttribute('aria-pressed',String(on&&supported));
+   hap.setAttribute('aria-label',tr('Vibrazione apertura sezioni: ','Section opening vibration: ')+(on?'ON':'OFF'));
+   hap.querySelector('.menu-action-copy strong').textContent=tr('Vibrazione breve','Short vibration');
+   hap.querySelector('.menu-action-copy small').textContent=tr('Piccolo impulso all’apertura','Small pulse on opening');
+   hap.querySelector('.menu-action-value').textContent=supported?(on?'ON':'OFF'):tr('N/D','N/A');
   }
  }
  // INJ Node effects are interface feedback, not media playback.
@@ -190,16 +164,8 @@
   write(SOUND_KEY,!read(SOUND_KEY));update();
  });
  hapticButton()?.addEventListener('click',()=>{
-  if(!canVibrate()&&!isIOSWebKit())return;
+  if(!canVibrate())return;
   write(HAPTIC_KEY,!read(HAPTIC_KEY));update();
- });
- nativeSwitch()?.addEventListener('change',event=>{
-  // A real physical tap on this switch may produce a WebKit Taptic Engine tick.
-  // The change event confirms activation, NOT that the device actually vibrated.
-  const result=nativeResult();
-  if(result)result.textContent=tr(
-   'Interruttore attivato. Se non senti nulla, Safari/iOS non consente il feedback su questo dispositivo.',
-   'Switch activated. If you felt nothing, Safari/iOS does not allow this feedback on your device.');
  });
  volumeInput()?.addEventListener('input',event=>{
   const next=Math.max(0,Math.min(100,Math.round(Number(event.target.value)||0)));
