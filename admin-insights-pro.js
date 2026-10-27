@@ -54,7 +54,11 @@ const svgNS='http://www.w3.org/2000/svg';
 const shape=(name,attrs={})=>{const n=document.createElementNS(svgNS,name);for(const[k,v]of Object.entries(attrs))n.setAttribute(k,String(v));return n};
 function renderTrend(d){
  const host=clear('proTrend'),tip=$('proTrendTooltip');if(!host)return;
- const pts=(d.trend||[]).map(x=>({...x,value:number(x.value)}));
+ const observations=new Map((d.trend||[]).map(x=>[x.label,number(x.value)]));
+ let pts=(d.trend||[]).map(x=>({...x,value:number(x.value)}));
+ if(state.days===1){pts=Array.from({length:24},(_,i)=>{const dt=new Date(Date.now()-(23-i)*3600000),label=dt.toISOString().slice(0,13);return {label,value:observations.get(label)||0}})}
+ else if(state.days>1){pts=Array.from({length:state.days},(_,i)=>{const dt=new Date(Date.now()-(state.days-1-i)*86400000),label=dt.toISOString().slice(0,10);return {label,value:observations.get(label)||0}})}
+ if(aggregate(d.trend)===0)pts=[];
  $('proTrendType').textContent=state.days===1?'ORARIO (UTC)':state.days===0?'MENSILE (UTC)':'GIORNALIERO (UTC)';
  if(!pts.length){host.append(shape('text',{x:90,y:130,fill:'#8fa8ab','font-size':16}));host.lastChild.textContent='Nessuna sessione nel periodo';tip.textContent='Non sono disponibili osservazioni.';return}
  const w=900,h=260,L=30,R=18,T=20,B=36,max=Math.max(1,...pts.map(x=>x.value)),X=i=>L+(w-L-R)*(pts.length===1?.5:i/(pts.length-1)),Y=v=>h-B-(h-T-B)*(v/max);
