@@ -902,3 +902,17 @@ html[data-inj-page="index"] #converterView .entry-converter-use-wallet:disabled{
     display:none!important;
   }
 }
+
+/* v16.10.27 — No sideways document overscroll/back navigation.
+   Only actual x-scroll components (wallet rail, chart tools, timeline) can pan. */
+html,html body {
+  overscroll-behavior-x:none!important;
+}
+html[data-inj-page="index"] #entryGate,
+html[data-inj-page] .inj-content-frame,
+html[data-inj-page] .treasury-shell,
+html[data-inj-page] .live-page,
+html[data-inj-page] .book-page,
+html[data-inj-page] .cc-shell {
+  overscroll-behavior-x:none!important;
+}
