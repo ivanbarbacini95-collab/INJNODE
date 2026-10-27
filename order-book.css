@@ -92,3 +92,15 @@ button,select{font:inherit}.book-page{width:100vw;height:100dvh;display:grid;gri
     -webkit-font-smoothing:antialiased;
   }
 }
+
+/* v2026.10.27 · streaming health is visually honest during REST fallback. */
+.status.connecting i {background:var(--warning,#d6ae68)!important;box-shadow:none!important}
+.status.connecting b {color:var(--warning,#d6ae68)!important}
+.status.offline b {color:var(--down,#f47d87)!important}
+#bookFeedInfo {white-space:nowrap;font-variant-numeric:tabular-nums}
+.book-footer:has(#bookFooterState:not(:empty)) > span {gap:6px}
+.book-footer:has(#bookFooterState) i {background:var(--muted)!important;box-shadow:none!important}
+.book-page:has(#bookState.online) .book-footer i {background:var(--up)!important}
+.book-page:has(#bookState.offline) .book-footer i {background:var(--down)!important}
+.book-page:has(#bookState.connecting) .book-footer i {background:var(--warning,#d6ae68)!important}
+#bookPriceLabel {letter-spacing:.12em}
