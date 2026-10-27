@@ -149,8 +149,46 @@ function setEntryOnboardingLoading(loading) {
   if (copy) copy.textContent = loading ? 'Verifica…' : 'Continua';
 }
 
+// First-wallet handoff: only show this overlay after the user submits a
+// valid public Injective address, never during later Home/section navigation.
+let firstWalletRequestInFlight = false;
+let firstWalletSyncEpoch = 0;
+function firstWalletLanguage(it, en) {
+  try { return localStorage.getItem('inj_node_language_v1') === 'en' ? en : it; }
+  catch (_) { return document.documentElement.lang === 'en' ? en : it; }
+}
+function entrySyncStart() {
+  const layer = $('entrySyncOverlay');
+  if (!layer) return;
+  ++firstWalletSyncEpoch;
+  layer.classList.remove('leaving');
+  layer.hidden = false;
+  layer.setAttribute('aria-hidden', 'false');
+  const title = $('entrySyncTitle');
+  if (title) title.textContent = firstWalletLanguage('Preparazione della Home', 'Preparing your Home');
+  entrySyncStatus(firstWalletLanguage('Verifica dell’indirizzo sulla rete Injective…', 'Checking your address on Injective…'));
+}
+function entrySyncStatus(message) {
+  const node = $('entrySyncMessage');
+  if (node) node.textContent = message;
+}
+function entrySyncFinish({ immediate = false } = {}) {
+  const layer = $('entrySyncOverlay');
+  if (!layer || layer.hidden) return;
+  const epoch = firstWalletSyncEpoch;
+  const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+  layer.classList.add('leaving');
+  window.setTimeout(() => {
+    if (epoch !== firstWalletSyncEpoch) return;
+    layer.hidden = true;
+    layer.classList.remove('leaving');
+    layer.setAttribute('aria-hidden', 'true');
+  }, immediate || reduced ? 0 : 320);
+}
+
 async function submitFirstWallet(event) {
   event?.preventDefault();
+  if (firstWalletRequestInFlight) return;
   if (state.wallets.length) {
     renderEntryGate();
     return;
@@ -166,8 +204,10 @@ async function submitFirstWallet(event) {
     return;
   }
 
+  firstWalletRequestInFlight = true;
   setEntryOnboardingLoading(true);
   setEntryOnboardingStatus('Verifica dell’indirizzo sulla rete Injective…', 'checking');
+  entrySyncStart();
 
   try {
     const summary = await loadWalletSummary(address);
@@ -184,20 +224,23 @@ async function submitFirstWallet(event) {
     state.address = address;
     $('addressInput').value = address;
 
-    // Carica immediatamente lo snapshot appena verificato mentre la Dashboard
-    // rimane coperta dall'Entry Gate, quindi passa alla scelta della modalità.
+    // The verified on-chain snapshot populates Home beneath the second loader.
+    // No extra mode-selection screen, no fake progress and no Dashboard flash.
+    entrySyncStatus(firstWalletLanguage('Wallet verificato. Caricamento della Home…', 'Wallet verified. Opening your Home…'));
     activateWalletImmediately(address);
     setEntryOnboardingStatus('Wallet verificato.', 'success');
     renderEntryGate();
 
-    // Completa validator e APR in background: la scelta Dashboard / Live View
-    // è già utilizzabile senza costringere l'utente ad attendere oltre.
+    // Validator and APR continue to refresh normally without delaying Home.
     loadWallet(false, address);
+    requestAnimationFrame(() => window.setTimeout(() => entrySyncFinish(), 460));
   } catch (error) {
     console.error(error);
+    entrySyncFinish({ immediate: true });
     setEntryOnboardingStatus('Impossibile verificare il wallet. Controlla l’indirizzo o la connessione e riprova.', 'error');
-    input?.focus();
+    input?.focus({ preventScroll: true });
   } finally {
+    firstWalletRequestInFlight = false;
     setEntryOnboardingLoading(false);
   }
 }
