@@ -12,6 +12,11 @@ const main=!!document.getElementById('entryGate');
  const preventViewportPinch=e=>{if(e.cancelable)e.preventDefault();};
  document.addEventListener('gesturestart',preventViewportPinch,{capture:true,passive:false});
  document.addEventListener('gesturechange',preventViewportPinch,{capture:true,passive:false});
+ document.addEventListener('wheel',event=>{
+   // Trackpad pinch is exposed as Ctrl+wheel in desktop WebKit/Chromium.
+   // Leave ordinary wheel/trackpad scrolling completely native.
+   if(event.ctrlKey&&event.cancelable)event.preventDefault();
+ },{capture:true,passive:false});
  let start=null;
  const isEditable=el=>Boolean(el?.closest?.('input,textarea,select,[contenteditable="true"]'));
  const isCustomHorizontal=el=>Boolean(el?.closest?.(
