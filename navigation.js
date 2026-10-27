@@ -52,10 +52,10 @@ const main=!!document.getElementById('entryGate');
      start.axis=Math.abs(dx)>Math.abs(dy)*1.23?'horizontal':'vertical';
    }
    if(start.axis!=='horizontal')return; // native vertical scroll stays untouched
-   const leftEdge=start.x<26&&dx>0,rightEdge=start.x>window.innerWidth-26&&dx<0;
-   if(leftEdge||rightEdge){event.preventDefault();return;}
+   if(Math.abs(dy)>Math.abs(dx)*1.1){start.axis='vertical';return;}
+   // Horizontal controls still work, including at the physical screen edge.
    if(isEditable(start.target)||scrollCanMove(start.target,dx)||isCustomHorizontal(start.target))return;
-   // Blank card/page sideways drags have no navigation or reload effect.
+   // Only a non-interactive sideways page drag is cancelled.
    event.preventDefault();
  },{capture:true,passive:false});
  for(const type of ['touchend','touchcancel'])document.addEventListener(type,()=>{start=null;},{capture:true,passive:true});
@@ -66,10 +66,12 @@ const main=!!document.getElementById('entryGate');
    const current=history.state||{};
    const cleanUrl=(location.hash==='#section'||location.hash==='#market')
      ?location.pathname+location.search:location.href;
-   if(current.injGestureShield==='top')return;
-   const base={...current,injSection:false,injMarketPortal:false,injGestureShield:'base'};
-   history.replaceState(base,'',cleanUrl);
-   history.pushState({...base,injGestureShield:'top'},'',cleanUrl);
+   if(current.injGestureShield!=='top'){
+     const base={...current,injSection:false,injMarketPortal:false,injGestureShield:'base'};
+     history.replaceState(base,'',cleanUrl);
+     history.pushState({...base,injGestureShield:'top'},'',cleanUrl);
+   }
+   // Re-install on every real page load, including a reload at the top guard.
    window.addEventListener('popstate',()=>{
      if(history.state?.injGestureShield==='base'){
        history.pushState({...history.state,injGestureShield:'top'},'',location.href);
