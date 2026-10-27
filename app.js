@@ -2412,9 +2412,8 @@ function showEntryGate({ modeReturn = false } = {}) {
   gate.setAttribute('aria-hidden', 'false');
   document.body.classList.add('entry-gate-open');
   document.body.classList.toggle('mode-returning', modeReturn);
-  if (!state.wallets.length && !modeReturn) {
-    requestAnimationFrame(() => setTimeout(() => ($('entryWalletName') || $('entryWalletInput'))?.focus(), 90));
-  }
+  // First access must be calm on iPhone: do not raise the keyboard automatically.
+  // The wallet input receives focus only after the user taps it.
 }
 
 function closeEntryGate({ revealDashboard = true } = {}) {
