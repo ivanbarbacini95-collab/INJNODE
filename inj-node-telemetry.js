@@ -56,11 +56,11 @@ function settings(){
 window.INJNodeInsights={openSettings:showConsent,consent:()=>consent};
 function init(){
  if(consent==='yes')begin();
- else if(!consent&&home)setTimeout(()=>{if(!document.querySelector('#entryGate .entry-gate-shell.first-access'))showConsent()},3400);
+ else if(!consent&&home){const promptTimer=setInterval(()=>{if(consent){clearInterval(promptTimer);return}if(!document.querySelector('#entryGate .entry-gate-shell.first-access'))showConsent()},4500)}
  if(home){settings();const wallets=document.getElementById('entryWallets');if(wallets)new MutationObserver(()=>{if(consent==='yes')selectedWallet()}).observe(wallets,{subtree:true,childList:true,attributes:true,attributeFilter:['class','aria-selected']})}
  document.addEventListener('click',e=>{
   if(consent!=='yes')return;
-  const tile=e.target.closest('.entry-action');if(tile){
+  const tile=e.target.closest('.entry-action');if(tile && tile.tagName==='BUTTON'){
    section=(tile.querySelector('strong')?.textContent||tile.getAttribute('aria-label')||'HOME ACTION').trim().slice(0,72);
    send('section',{section});
   }
