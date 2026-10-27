@@ -1,52 +1,52 @@
-/* INJ Node · Admin Insights access controller.
- * Credentials are verified by /api/inj-node-insights, never persisted locally. */
+/* Admin Insights · Cloudflare Worker bearer auth. Ephemeral token: memory only. */
 (()=>{
 'use strict';
-const $=id=>document.getElementById(id),API='/api/inj-node-insights';
+const $=id=>document.getElementById(id);
+const endpoint=String(window.INJ_INSIGHTS_ENDPOINT||'').trim();
+const base=/^https:\/\/[^\s/]+\/api\/ingest$/.test(endpoint)?endpoint.slice(0,-'/api/ingest'.length):'';
 const gate=$('adminGate'),dashboard=$('adminDashboard'),form=$('adminLoginForm');
-const user=$('adminUsername'),pass=$('adminPassword'),error=$('adminLoginError'),submit=$('adminLoginButton');
-const status=$('adminConnectStatus');
-function textError(message){error.textContent=message;error.hidden=!message;}
-function displayDashboard(){
- gate.hidden=true;dashboard.hidden=false;pass.value='';
+const user=$('adminUsername'),pass=$('adminPassword'),error=$('adminLoginError'),submit=$('adminLoginButton'),status=$('adminConnectStatus');
+let adminToken='',dataConnected=false;
+const config={get base(){return base;},headers(){return adminToken?{Authorization:'Bearer '+adminToken}:{};}};
+window.INJ_ADMIN_INSIGHTS_API=Object.freeze(config);
+function errorText(message){error.textContent=message;error.hidden=!message;}
+function loginVisible(message=''){
+ dashboard.hidden=true;gate.hidden=false;pass.value='';errorText(message);status.textContent='ACCESSO RISERVATO';
+}
+function reportVisible(){
+ gate.hidden=true;dashboard.hidden=false;pass.value='';errorText('');
+ status.textContent=dataConnected?'LIVE DATA / SYNC':'DATABASE DA COLLEGARE';
+ $('adminDataNotice').hidden=Boolean(dataConnected);
  document.dispatchEvent(new CustomEvent('inj-admin:ready'));
 }
-function displayLogin(message=''){
- dashboard.hidden=true;gate.hidden=false;
- pass.value='';textError(message);
+async function api(path,options={}){
+ if(!base)return {ok:false,status:0,data:{error:'Collega prima il Worker Cloudflare in inj-node-insights-config.js.'}};
+ try{
+  const response=await fetch(base+path,{mode:'cors',credentials:'omit',cache:'no-store',...options});
+  return {ok:response.ok,status:response.status,data:await response.json().catch(()=>({}))};
+ }catch(_){return {ok:false,status:0,data:{error:'Worker Cloudflare non raggiungibile. Controlla URL, deploy e ALLOWED_ORIGINS.'}}}
 }
-async function getJson(action,opts){
- try{const r=await fetch(API+'?action='+action,{cache:'no-store',credentials:'same-origin',...opts});const data=await r.json().catch(()=>({}));
- return {ok:r.ok,status:r.status,data};}
- catch(_){return {ok:false,status:0,data:{error:'Connessione non disponibile'}};}
-}
-async function check(){
- const r=await getJson('status');
- if(!r.ok){displayLogin('Il servizio Admin non è ancora disponibile su INJ Node.');return;}
- if(!r.data.configured){
-  submit.disabled=true;
-  displayLogin('Accesso Admin da configurare nel progetto Vercel di INJ Node: INJ_ADMIN_USERNAME e INJ_ADMIN_PASSWORD, poi Redeploy.');
-  return;
- }
+async function startup(){
+ if(!base){submit.disabled=true;loginVisible('Servizio Cloudflare non ancora collegato. La sezione è pronta: serve l’URL del Worker dopo il deploy.');return}
+ const r=await api('/api/admin/status');
+ if(!r.ok){submit.disabled=true;loginVisible(r.data.error||'Worker Cloudflare non raggiungibile.');return}
+ if(!r.data.configured){submit.disabled=true;loginVisible('Configura in Cloudflare i segreti ADMIN_USERNAME, ADMIN_PASSWORD e ADMIN_SESSION_SECRET.');return}
+ dataConnected=Boolean(r.data.dataConnected);
  submit.disabled=false;
- if(r.data.authenticated){displayDashboard();status.textContent=r.data.dataConnected?'LIVE DATA / SYNC':'SORGENTE DATI DA COLLEGARE';$('adminDataNotice').hidden=Boolean(r.data.dataConnected);}
- else displayLogin();
+ loginVisible();
 }
 form.addEventListener('submit',async e=>{
- e.preventDefault();textError('');submit.disabled=true;submit.textContent='VERIFICA IN CORSO…';
- const r=await getJson('login',{method:'POST',headers:{'Content-Type':'application/json'},
-  body:JSON.stringify({username:user.value,password:pass.value})});
+ e.preventDefault();errorText('');submit.disabled=true;submit.textContent='VERIFICA IN CORSO…';
+ const r=await api('/api/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:user.value,password:pass.value})});
  submit.disabled=false;submit.textContent='ACCEDI ALLE STATISTICHE';
- if(!r.ok){textError(r.data.error||'Accesso non riuscito');pass.value='';return;}
- user.value='';await check();
+ if(!r.ok||!r.data.token){adminToken='';errorText(r.data.error||'Accesso non riuscito');pass.value='';return}
+ adminToken=r.data.token;pass.value='';user.value='';reportVisible();
 });
-$('adminLogout').addEventListener('click',async()=>{
- await getJson('logout',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
- displayLogin();status.textContent='ACCESSO RISERVATO';
-});
-document.addEventListener('inj-admin:expired',()=>displayLogin('Sessione scaduta. Effettua nuovamente l’accesso.'));
+$('adminLogout').addEventListener('click',()=>{adminToken='';loginVisible()});
+document.addEventListener('inj-admin:expired',()=>{adminToken='';loginVisible('Sessione scaduta. Effettua nuovamente l’accesso.')});
 $('adminGoHome').addEventListener('click',e=>{
- if(window.parent!==window){e.preventDefault();parent.postMessage({type:'injnode:section:home'},location.origin);}
+ if(window.parent!==window){e.preventDefault();parent.postMessage({type:'injnode:section:home'},location.origin)}
 });
-check();
+window.addEventListener('pagehide',()=>{adminToken=''});
+startup();
 })();
