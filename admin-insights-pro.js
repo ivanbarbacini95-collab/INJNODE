@@ -47,6 +47,9 @@ function fillKpis(d){
  $('proDuration').textContent=time(d.summary?.average_duration);
  $('proSectionCount').textContent=fmt((d.sections||[]).length);
  $('proInteractions').textContent=fmt(aggregate(d.sections));
+ const delta=d.summary?.change_percent;
+ $('proGrowth').textContent=delta==null?'—':(number(delta)>0?'+':'')+new Intl.NumberFormat('it-IT',{maximumFractionDigits:2}).format(number(delta))+'%';
+ $('proGrowth').style.color=delta==null?'#b3c2c1':number(delta)>0?'#72ebbf':number(delta)<0?'#e5a19c':'#cbd6d2';
  $('proUpdated').textContent='DATI LIVE · '+when(d.generatedAt);
  note('Periodo: '+$('proDays').selectedOptions[0].text+' · '+(state.country||'tutti i Paesi')+' · '+(state.section||'tutte le sezioni')+' · solo sessioni consenzienti · orari in UTC nella heatmap');
 }
@@ -160,6 +163,7 @@ function renderReport(d){
  const ul=el('ul'),top=pickTop(d.sections),country=pickTop(d.countries),device=pickTop(d.devices);
  const metrics=[
   'Sessioni rilevate: '+fmt(d.summary?.sessions)+'. Sessioni attive ora: '+fmt(d.summary?.active)+'.',
+  'Periodo precedente: '+(d.summary?.previous_sessions==null?'non applicabile':fmt(d.summary.previous_sessions))+' sessioni. Variazione: '+(d.summary?.change_percent==null?'non calcolabile':d.summary.change_percent+'%')+'.',
   'Durata attiva media stimata: '+time(d.summary?.average_duration)+'.',
   'Sezione più visitata: '+(top?top.label+' ('+fmt(top.value)+' eventi).':'non disponibile.'),
   'Paese più rappresentato: '+(country?country.label+' ('+fmt(country.value)+' sessioni).':'non disponibile.'),
