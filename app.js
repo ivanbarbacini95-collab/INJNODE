@@ -149,44 +149,12 @@ function setEntryOnboardingLoading(loading) {
   if (copy) copy.textContent = loading ? 'Verifica…' : 'Continua';
 }
 
-// First-wallet handoff: only show this overlay after the user submits a
-// valid public Injective address, never during later Home/section navigation.
+// First wallet access must NEVER depend on an RPC completing. Persist the
+// validated public address locally and paint Home immediately. Wallet reads,
+// APR and validator metadata can load later without blocking navigation.
 let firstWalletRequestInFlight = false;
-let firstWalletSyncEpoch = 0;
-function firstWalletLanguage(it, en) {
-  try { return localStorage.getItem('inj_node_language_v1') === 'en' ? en : it; }
-  catch (_) { return document.documentElement.lang === 'en' ? en : it; }
-}
-function entrySyncStart() {
-  const layer = $('entrySyncOverlay');
-  if (!layer) return;
-  ++firstWalletSyncEpoch;
-  layer.classList.remove('leaving');
-  layer.hidden = false;
-  layer.setAttribute('aria-hidden', 'false');
-  const title = $('entrySyncTitle');
-  if (title) title.textContent = firstWalletLanguage('Preparazione della Home', 'Preparing your Home');
-  entrySyncStatus(firstWalletLanguage('Verifica dell’indirizzo sulla rete Injective…', 'Checking your address on Injective…'));
-}
-function entrySyncStatus(message) {
-  const node = $('entrySyncMessage');
-  if (node) node.textContent = message;
-}
-function entrySyncFinish({ immediate = false } = {}) {
-  const layer = $('entrySyncOverlay');
-  if (!layer || layer.hidden) return;
-  const epoch = firstWalletSyncEpoch;
-  const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
-  layer.classList.add('leaving');
-  window.setTimeout(() => {
-    if (epoch !== firstWalletSyncEpoch) return;
-    layer.hidden = true;
-    layer.classList.remove('leaving');
-    layer.setAttribute('aria-hidden', 'true');
-  }, immediate || reduced ? 0 : 320);
-}
 
-async function submitFirstWallet(event) {
+function submitFirstWallet(event) {
   event?.preventDefault();
   if (firstWalletRequestInFlight) return;
   if (state.wallets.length) {
@@ -200,45 +168,35 @@ async function submitFirstWallet(event) {
   const address = String(input?.value || '').trim().toLowerCase();
   if (!validAddress(address)) {
     setEntryOnboardingStatus('Inserisci un indirizzo Injective valido che inizi con inj1.', 'error');
-    input?.focus();
+    input?.focus({ preventScroll: true });
     return;
   }
 
   firstWalletRequestInFlight = true;
   setEntryOnboardingLoading(true);
-  setEntryOnboardingStatus('Verifica dell’indirizzo sulla rete Injective…', 'checking');
-  entrySyncStart();
-
   try {
-    const summary = await loadWalletSummary(address);
-    state.walletSummaries[address] = {
-      ...state.walletSummaries[address],
-      ...summary,
-      updated: Date.now()
-    };
-    state.lastWalletUpdate = state.walletSummaries[address].updated;
-    setWalletSkeleton(false);
-    saveWalletSummaries();
-    ensureSavedWallet(address, walletLabel);
+    // A public address is sufficient to open this READ-ONLY portfolio.
+    // Saving before the network request also prevents onboarding from
+    // reappearing if iOS suspends or closes the PWA during synchronization.
     state.entrySelectedAddress = address;
-    state.address = address;
-    $('addressInput').value = address;
-
-    // The verified on-chain snapshot populates Home beneath the second loader.
-    // No extra mode-selection screen, no fake progress and no Dashboard flash.
-    entrySyncStatus(firstWalletLanguage('Wallet verificato. Caricamento della Home…', 'Wallet verified. Opening your Home…'));
-    activateWalletImmediately(address);
-    setEntryOnboardingStatus('Wallet verificato.', 'success');
+    activateWalletImmediately(address, walletLabel);
     renderEntryGate();
+    setWalletSkeleton(!Boolean(state.walletSummaries[address]?.updated));
 
-    // Validator and APR continue to refresh normally without delaying Home.
-    loadWallet(false, address);
-    requestAnimationFrame(() => window.setTimeout(() => entrySyncFinish(), 460));
+    // Next frame: Home is already visible, including any cached snapshot.
+    // Without a snapshot, cards show their existing synchronization
+    // placeholders until real on-chain responses arrive. Never invent balances.
+    requestAnimationFrame(() => {
+      void loadWallet(false, address).catch((error) => {
+        console.error('First wallet background sync failed:', error);
+        setWalletSkeleton(false);
+        setStatus('offline', 'Errore rete Injective');
+      });
+    });
   } catch (error) {
-    console.error(error);
-    entrySyncFinish({ immediate: true });
-    setEntryOnboardingStatus('Impossibile verificare il wallet. Controlla l’indirizzo o la connessione e riprova.', 'error');
-    input?.focus({ preventScroll: true });
+    console.error('Unable to save the initial wallet:', error);
+    setEntryOnboardingStatus('Impossibile salvare l’indirizzo. Riprova.', 'error');
+    if (state.wallets.length) renderEntryGate();
   } finally {
     firstWalletRequestInFlight = false;
     setEntryOnboardingLoading(false);
