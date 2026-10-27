@@ -268,3 +268,20 @@ html[data-inj-page="index"] body #entryGate
  #headerMenu.open #headerMenuBackdrop {
   pointer-events:auto!important;
 }
+
+/* The menu container no longer participates in the Home grid. Its modal
+   descendants stay rooted outside the title so Safari cannot clip them. */
+html[data-inj-page="index"] body #entryGate
+ .entry-gate-shell:not(.first-access) > #headerMenu.entry-home-menu {
+  display:block!important;
+  position:absolute!important;
+  top:0!important;left:0!important;right:auto!important;bottom:auto!important;
+  width:0!important;height:0!important;min-width:0!important;min-height:0!important;
+  padding:0!important;margin:0!important;
+  transform:none!important;-webkit-transform:none!important;
+  translate:none!important;
+  background:transparent!important;
+  border:0!important;box-shadow:none!important;
+  overflow:visible!important;
+  z-index:2147483000!important;
+}
