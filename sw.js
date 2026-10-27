@@ -219,6 +219,13 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
+  // Analytics config must never be locked behind the PWA's cache-first policy:
+  // publishing the Insights URL must take effect without reinstalling the app.
+  if (/\\/inj-node-(?:insights-config|telemetry)\\.js$/.test(url.pathname)) {
+    event.respondWith(fetch(request, {cache:'no-store'}).catch(() => caches.match(request)));
+    return;
+  }
+
   if (request.mode === 'navigate') {
     const isolatedPath = ['workspace.html', 'live-charts.html', 'live-rewards.html', 'command-center.html', 'order-book.html', 'treasury.html', 'market.html', 'comparison.html', 'visualize-wealth.html', 'reward-ladder.html', 'injc-etf.html', 'install-icon-minimal.html', 'install-icon-classic.html', 'install-icon-aurora.html', 'install-icon-pulse.html'].find((name) => url.pathname.endsWith('/' + name));
     event.respondWith(
