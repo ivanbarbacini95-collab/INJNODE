@@ -221,7 +221,7 @@ self.addEventListener('fetch', (event) => {
 
   // Analytics config must never be locked behind the PWA's cache-first policy:
   // publishing the Insights URL must take effect without reinstalling the app.
-  if (/\\/inj-node-(?:insights-config|telemetry)\\.js$/.test(url.pathname)) {
+  if (url.pathname.endsWith('/inj-node-insights-config.js') || url.pathname.endsWith('/inj-node-telemetry.js')) {
     event.respondWith(fetch(request, {cache:'no-store'}).catch(() => caches.match(request)));
     return;
   }
