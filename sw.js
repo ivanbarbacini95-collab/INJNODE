@@ -1,13 +1,13 @@
-const CACHE_NAME = 'inj-node-v16.10.27-admin-insights-secure';
+const CACHE_NAME = 'inj-node-v16.10.27-cloudflare-pages1';
 const APP_SHELL = [
   './home-terminal-header-20261027.css?v=h2',
   './home-terminal-header-20261027.js?v=h2',
   './workspace-sections.js?v=20261027-live2',
   './navigation.js?v=20261027-admin1',
-  './admin-insights.html?v=20261027a',
+  './admin-insights.html?v=20261027cf1',
   './admin-insights.css?v=20261027a',
-  './admin-insights-auth.js?v=20261027a',
-  './admin-insights-dashboard.js?v=20261027a',
+  './admin-insights-auth.js?v=20261027cf1',
+  './admin-insights-dashboard.js?v=20261027cf1',
   './market-portal.js?v=20261027-g1',
   './first-access-unified.css?v=20261027-left2',
   './i18n.js?v=20261026b',
