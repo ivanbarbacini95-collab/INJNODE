@@ -234,18 +234,5 @@ html[data-inj-page="index"] #entryGate .inj-home-microbar .inj-micro-value {
 }
 
 
-/* v16.10.26d — Keep the hamburger clear of the network strip on iPhone.
-   Move the trigger only, never the menu panel/backdrop or the fixed overlay. */
-@media (max-width:900px) and (pointer:coarse) {
-  html[data-inj-page="index"] body #entryGate .entry-gate-shell:not(.first-access)
-    > .entry-home-menu > #entryMenuButton {
-    translate:0 72px!important;
-  }
-
-  /* Leave a proper gap between the live block height and the brand title.
-     Use document-flow spacing so the wallet list follows naturally. */
-  html[data-inj-page="index"] body #entryGate .entry-gate-shell:not(.first-access)
-    .entry-wallet-section > .home-safe-heading {
-    margin-top:20px!important;
-  }
-}
+/* The Home hero grid now owns menu placement and title spacing.
+   Retired v16.10.26d's arbitrary 72px hamburger translation. */
