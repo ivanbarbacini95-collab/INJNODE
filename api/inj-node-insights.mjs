@@ -29,7 +29,7 @@ export default async function handler(req,res){
   if(!sameOrigin(req))return reply(res,403,{error:'Origine non autorizzata'});
   if(!config())return reply(res,503,{error:'Credenziali Admin non configurate su INJ Node'});
   if(Number(req.headers['content-length']||0)>4096)return reply(res,413,{error:'Richiesta troppo grande'});
-  let b=req.body||{};if(typeof b==='string'){try{b=JSON.parse(b)}catch(_){b={}}}
+  let b=req.body||{};if(typeof b==='string'){try{b=JSON.parse(b)}catch(_){b={}}}if(!b||typeof b!=='object')b={};
   if(typeof b.username!=='string'||typeof b.password!=='string'||b.username.length>180||b.password.length>1024
      ||!eq(b.username,process.env.INJ_ADMIN_USERNAME)||!eq(b.password,process.env.INJ_ADMIN_PASSWORD))return reply(res,401,{error:'Nome utente o password non corretti'});
   res.setHeader('Set-Cookie',setCookie());return reply(res,200,{ok:true});
