@@ -173,7 +173,7 @@ html[data-inj-page="index"] body #entryGate
   white-space:nowrap!important;
 }
 html[data-inj-page="index"] body #entryGate
- .home-safe-heading.inj-terminal-hero-arranged > #headerMenu.entry-home-menu {
+ .home-safe-heading.inj-terminal-hero-arranged > #entryMenuButton.header-main-button {
   display:flex!important;
   grid-column:1!important;
   grid-row:1 / span 2!important;
@@ -200,7 +200,7 @@ html[data-inj-page="index"] body #entryGate
   z-index:30!important;
 }
 html[data-inj-page="index"] body #entryGate
- .home-safe-heading.inj-terminal-hero-arranged > #headerMenu > #entryMenuButton {
+ .home-safe-heading.inj-terminal-hero-arranged > #entryMenuButton {
   position:relative!important;
   inset:auto!important;
   display:grid!important;
@@ -255,4 +255,16 @@ html[data-inj-page="index"] body #entryGate #headerMenu.open #headerMenuPanel {
     min-height:114px!important;
     margin-bottom:26px!important;
  }
+}
+
+html[data-inj-page="index"] body #entryGate
+ .entry-gate-shell:not(.first-access) > #headerMenu.entry-home-menu {
+  /* Settings panel is still a root overlay; only its button moves. */
+  pointer-events:none!important;
+}
+html[data-inj-page="index"] body #entryGate
+ #headerMenu.open #headerMenuPanel,
+html[data-inj-page="index"] body #entryGate
+ #headerMenu.open #headerMenuBackdrop {
+  pointer-events:auto!important;
 }
