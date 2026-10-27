@@ -1,4 +1,4 @@
-/* INJ Node · Compact Home header 2026-10-27.
+/* INJ Node · Compact Home header 2026-10-27 (h4).
    No terminal strip; the existing hamburger shares the title baseline.
    Returning-user Home only. */
 
@@ -7,6 +7,7 @@
 html[data-inj-page="index"] body #entryGate .entry-gate-shell:not(.first-access)
  .entry-wallet-section > .home-safe-heading.inj-terminal-hero-arranged {
   --inj-home-dock:clamp(52px,13.5vw,66px);
+  --inj-home-button-size:clamp(44px,10.8vw,48px);
   display:grid!important;
   grid-template-columns:var(--inj-home-dock) minmax(0,1fr) var(--inj-home-dock)!important;
   grid-template-rows:auto auto!important;
@@ -71,16 +72,16 @@ html[data-inj-page="index"] body #entryGate
   grid-column:1!important;
   grid-row:1!important;
   align-self:center!important;
-  justify-self:start!important;
+  justify-self:center!important;
   position:relative!important;
   inset:auto!important;
   top:auto!important;
   left:auto!important;
   right:auto!important;
   bottom:auto!important;
-  width:var(--inj-home-dock)!important;
-  height:var(--inj-home-dock)!important;
-  max-width:var(--inj-home-dock)!important;
+  width:var(--inj-home-button-size)!important;
+  height:var(--inj-home-button-size)!important;
+  max-width:var(--inj-home-button-size)!important;
   min-width:0!important;
   min-height:0!important;
   padding:0!important;
@@ -99,11 +100,11 @@ html[data-inj-page="index"] body #entryGate
   display:grid!important;
   place-items:center!important;
   box-sizing:border-box!important;
-  width:100%!important;
-  height:100%!important;
+  width:var(--inj-home-button-size)!important;
+  height:var(--inj-home-button-size)!important;
   min-width:0!important;
   min-height:0!important;
-  border-radius:clamp(15px,4.5vw,20px)!important;
+  border-radius:clamp(13px,3.5vw,16px)!important;
   padding:0!important;
   margin:0!important;
   transform:none!important;
@@ -112,7 +113,7 @@ html[data-inj-page="index"] body #entryGate
 }
 html[data-inj-page="index"] body #entryGate
  .home-safe-heading.inj-terminal-hero-arranged #entryMenuButton > svg {
-  width:23px!important;height:23px!important;
+  width:20px!important;height:20px!important;
   display:block!important;
   margin:auto!important;
 }
