@@ -217,7 +217,9 @@ for(const b of document.querySelectorAll('#proTabs [data-pro-tab]'))b.addEventLi
 for(const id of ['proCsv','proReportCsv'])$(id).addEventListener('click',exportCsv);
 for(const id of ['proPrint','proReportPrint'])$(id).addEventListener('click',()=>window.print());
 document.addEventListener('inj-admin:ready',()=>{load();});
-document.addEventListener('inj-admin:expired',()=>{root.hidden=true;document.body.classList.remove('insights-pro-ready');state.data=null});
+function closePro(){root.hidden=true;document.body.classList.remove('insights-pro-ready');state.data=null;state.requestId++}
+document.addEventListener('inj-admin:expired',closePro);
+$('adminLogout').addEventListener('click',closePro);
 setInterval(()=>{if(!document.hidden&&!document.getElementById('adminDashboard')?.hidden)load()},10000);
 window.addEventListener('resize',()=>{if(state.map&&!root.hidden&&state.tab==='overview')state.map.invalidateSize({animate:false,pan:false})},{passive:true});
 })();
