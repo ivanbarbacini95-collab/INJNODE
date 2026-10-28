@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.10.28-heatmap-density-v1';
+const CACHE_NAME = 'inj-node-v16.10.28-macroresults-v1';
 const APP_SHELL = [
   './ambient-wallet-reward-glow.css?v=20261028ambient1',
   './market-events-layout-pro.css?v=20261028risk1',
@@ -12,8 +12,8 @@ const APP_SHELL = [
   './home-treasury-brand-layout.css?v=20261028bcg1',
   './home-overview-price-first.css?v=20261028compact2',
   './home-compact-value-bars.css?v=20261028compactbars2',
-  './home-market-events.css?v=20261028eventflow1',
-  './home-market-events.js?v=20261028eventflow1',
+  './home-market-events.css?v=20261028macroresults1',
+  './home-market-events.js?v=20261028macroresults1',
   './inj-top-seamless.css?v=20261028statusblend3',
   './inj-top-seamless.js?v=20261028ios27',
   './home-statusbar-continuity.css?v=20261028seam1',
