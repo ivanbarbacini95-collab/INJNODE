@@ -1,0 +1,53 @@
+/* INJ NODE · Consistent typography for the last four Home destinations.
+   Matches the compact Home cards above, without changing card sizes or artwork.
+   Scoped to returning-user Home and works with all themes, Italian and English. */
+html[data-inj-page="index"] body #entryGate
+.entry-gate-shell:not(.first-access)
+:is(#entryMarketEventsButton,#entryInjcEtfButton,#entryWorkspaceButton,#entryTreasuryButton)
+strong.inj-home-tile-title {
+ font-family:var(--inj-node-terminal-font,"IBM Plex Mono",ui-monospace,monospace)!important;
+ font-size:clamp(12px,1.08vw,14px)!important;
+ font-style:normal!important;font-weight:600!important;
+ line-height:1.26!important;letter-spacing:.075em!important;
+ text-transform:uppercase!important;
+ text-wrap:balance!important;overflow-wrap:normal!important;word-break:normal!important;
+ -webkit-font-smoothing:antialiased;
+}
+/* Treasury has a second display title: treat it as a peer, not a small caption. */
+html[data-inj-page="index"] body #entryGate
+.entry-gate-shell:not(.first-access)
+#entryTreasuryButton .treasury-entry-subtitle {
+ font-family:var(--inj-node-terminal-font,"IBM Plex Mono",ui-monospace,monospace)!important;
+ font-size:clamp(12px,1.08vw,14px)!important;
+ font-style:normal!important;font-weight:600!important;
+ line-height:1.26!important;letter-spacing:.075em!important;
+ text-transform:uppercase!important;
+ -webkit-font-smoothing:antialiased;
+}
+@media(max-width:799px) {
+ html[data-inj-page="index"] body #entryGate
+ .entry-gate-shell:not(.first-access)
+ :is(#entryMarketEventsButton,#entryInjcEtfButton,#entryWorkspaceButton,#entryTreasuryButton)
+ strong.inj-home-tile-title {
+  font-size:clamp(11.3px,3.03vw,12.7px)!important;
+  font-weight:600!important;line-height:1.25!important;
+  letter-spacing:.055em!important;
+ }
+ html[data-inj-page="index"] body #entryGate
+ .entry-gate-shell:not(.first-access)
+ #entryTreasuryButton .treasury-entry-subtitle{
+  font-size:clamp(11.3px,3.03vw,12.7px)!important;
+  font-weight:600!important;line-height:1.25!important;letter-spacing:.055em!important;
+ }
+}
+@media(max-width:360px) {
+ html[data-inj-page="index"] body #entryGate
+ .entry-gate-shell:not(.first-access)
+ :is(#entryMarketEventsButton,#entryInjcEtfButton,#entryWorkspaceButton,#entryTreasuryButton)
+ strong.inj-home-tile-title,
+ html[data-inj-page="index"] body #entryGate
+ .entry-gate-shell:not(.first-access)
+ #entryTreasuryButton .treasury-entry-subtitle{
+  font-size:11px!important;letter-spacing:.025em!important;
+ }
+}
