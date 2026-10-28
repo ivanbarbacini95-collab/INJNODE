@@ -25,21 +25,43 @@ export default async function handler(req,res){
   let raw=[],source='',sourceUrl='',coverage='';
   try{
     const data=await download('https://showmytrades.com/api/public/calendar/v1?currency=USD,EUR,GBP,CHF,JPY,CNY&impact=high&days='+days);
-    if(!Array.isArray(data.events))throw Error('calendar response invalid');
-    raw=data.events.map(e=>({id:txt(e.id,110),title:txt(e.title),country:txt(e.currency,8).toUpperCase(),date:e.time||null,impact:txt(e.impact,16),actual:value(e.actual),forecast:value(e.forecast),previous:value(e.previous),status:txt(e.status,24),confidence:txt(e.confidence,32)}));
-    source='ShowMyTrades';sourceUrl='https://showmytrades.com/tools/economic-calendar';coverage='Fino a 30 giorni; fonte aggiornata periodicamente, effettivi non istantanei';
+    if(!Array.isArray(data.events)||!data.events.length)throw Error('Economic calendar empty or invalid');
+    raw=data.events.map(e=>({
+      id:txt(e.id,110),title:txt(e.title),
+      country:txt(e.currency,8).toUpperCase(),
+      date:e.time||e.date||(Number.isFinite(Number(e.ts))&&Number(e.ts)>0?new Date(Number(e.ts)*1000).toISOString():null),
+      impact:txt(e.impact,16),actual:value(e.actual),
+      forecast:value(e.forecast),previous:value(e.previous),
+      status:txt(e.status,24),confidence:txt(e.confidence,32)
+    }));
+    source='ShowMyTrades';
+    sourceUrl='https://showmytrades.com/tools/economic-calendar';
+    coverage='Fino a 30 giorni; fonte aggiornata periodicamente, effettivi non istantanei';
   }catch(error){
-    try{
-      // Only current week; no claim of two-week coverage when the source is missing.
-      const data=await download('https://nfs.faireconomy.media/ff_calendar_thisweek.json');
+    // Preserve useful current and following week events independently. The free
+    // weekly export does not promise coverage for the rest of the 30 day window.
+    const weekFeeds=['thisweek','nextweek'];
+    const recovered=await Promise.allSettled(weekFeeds.map(async week=>{
+      const data=await download('https://nfs.faireconomy.media/ff_calendar_'+week+'.json');
       if(!Array.isArray(data))throw Error('weekly calendar response invalid');
-      raw=data.map(e=>({id:'ff-'+txt(e.country,8)+'-'+txt(e.title,75)+'-'+txt(e.date,40),title:txt(e.title),country:txt(e.country,8).toUpperCase(),date:e.date||null,impact:txt(e.impact,16),actual:value(e.actual),forecast:value(e.forecast),previous:value(e.previous),status:'scheduled',confidence:'third_party'}));
-      source='Forex Factory (weekly export)';sourceUrl='https://www.forexfactory.com/calendar';coverage='Ripiego: solo settimana corrente; le altre settimane potrebbero non essere disponibili';
-    }catch(e){
+      return data;
+    }));
+    const available=recovered.filter(r=>r.status==='fulfilled').flatMap(r=>r.value);
+    if(!available.length){
       res.setHeader('Cache-Control','no-store');
       res.status(503).json({error:'Calendario macroeconomico temporaneamente non disponibile',events:[],source:'unavailable'});
       return;
     }
+    raw=available.map(e=>({
+      id:'ff-'+txt(e.country,8)+'-'+txt(e.title,75)+'-'+txt(e.date,40),
+      title:txt(e.title),country:txt(e.country,8).toUpperCase(),
+      date:e.date||null,impact:txt(e.impact,16),
+      actual:value(e.actual),forecast:value(e.forecast),previous:value(e.previous),
+      status:'scheduled',confidence:'third_party'
+    }));
+    source='Forex Factory (weekly export)';
+    sourceUrl='https://www.forexfactory.com/calendar';
+    coverage='Ripiego: settimana corrente e prossima, se disponibili';
   }
   const seen=new Set();
   const events=raw.filter(e=>{
