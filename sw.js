@@ -1,11 +1,11 @@
-const CACHE_NAME = 'inj-node-v16.10.28-injnode-market-v2';
+const CACHE_NAME = 'inj-node-v16.10.28-injnode-calendar-lines-v3';
 const APP_SHELL = [
   './home-terminal-header-20261027.css?v=h2',
   './home-premium-titles.css?v=20261027p1',
   './home-treasury-brand-layout.css?v=20261028bcg1',
   './home-overview-price-first.css?v=20261028compact2',
   './home-compact-value-bars.css?v=20261028compactbars1',
-  './home-market-events.css?v=20261028injnode2',
+  './home-market-events.css?v=20261028injnode3',
   './home-market-events.js?v=20261028injnode2',
   './inj-top-seamless.css?v=20261028seam1',
   './inj-top-seamless.js?v=20261028ios27',
