@@ -1,7 +1,7 @@
-const CACHE_NAME = 'inj-node-v16.10.28-market-events-editorial-v1';
+const CACHE_NAME = 'inj-node-v16.10.28-home-micro-metrics-v2';
 const APP_SHELL = [
   './market-events-layout-pro.css?v=20261028editorial1',
-  './home-focused-cards.css?v=20261028focused1',
+  './home-focused-cards.css?v=20261028micro2',
   './home-settings-scroll-lock.css?v=20261028menu-lock1',
   './app.js?v=20261028menu-lock1',
   './market-events-footer-seamless.css?v=20261028foot1',
