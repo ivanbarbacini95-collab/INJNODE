@@ -71,11 +71,48 @@
  function saveSpending(){
   try{localStorage.setItem(SPEND_STORE,JSON.stringify({items:spending}));}catch(_){}
  }
+ function populateSpendingPresets(){
+  const select=$('freedomSpendingPreset');
+  const query=$('freedomSpendingSearch').value.trim().normalize('NFD')
+   .replace(/[\u0300-\u036f]/g,'').toLowerCase();
+  const key=language()+'|'+query;
+  if(select.dataset.catalogKey===key)return;
+  const before=select.value;
+  select.replaceChildren();
+  const empty=document.createElement('option');
+  empty.value='';empty.textContent=st('choose');select.append(empty);
+  let count=0;
+  for(const category of spendCategories){
+   const match=spendPresets.filter(p=>{
+    if(p.category!==category.id)return false;
+    if(!query)return true;
+    const haystack=(p.it+' '+p.en+' '+category.it+' '+category.en).normalize('NFD')
+      .replace(/[\u0300-\u036f]/g,'').toLowerCase();
+    return haystack.includes(query);
+   });
+   if(!match.length)continue;
+   const group=document.createElement('optgroup');
+   group.label=category[language()];
+   for(const preset of match){
+    const option=document.createElement('option');
+    option.value=preset.id;
+    option.textContent=preset[language()];
+    group.append(option);
+    count++;
+   }
+   select.append(group);
+  }
+  if(count===0)empty.textContent=language()==='en'?'No matches · add your own':'Nessun risultato · scrivi la tua';
+  select.dataset.catalogKey=key;
+  select.value=before;
+  if(select.selectedIndex<0)select.value='';
+ }
  function editSpendingLanguage(){
   txt('freedomSpendingSummaryLabel',st('summary'));
   txt('freedomUseSpendingGoal',st('setGoal'));
   txt('freedomSpendingEditorLabel',st('editor'));
   txt('freedomSpendingPresetLabel',st('presets'));
+  txt('freedomSpendingSearchLabel',language()==='en'?'SEARCH THE CATALOG':'CERCA NEL CATALOGO');
   txt('freedomSpendingNameLabel',st('name'));
   txt('freedomSpendingPriceLabel',st('price')+' ('+(shownCurrency==='USD'?'$':'€')+')');
   txt('freedomSpendingPeriodLabel',st('period'));
@@ -85,29 +122,13 @@
   $('freedomOptions').classList.toggle('is-managing',spendingManage);
   txt('freedomLifestyleFoot',st('foot'));
   $('freedomSpendingName').placeholder=st('placeholder');
+  $('freedomSpendingSearch').placeholder=language()==='en'?'Find an expense…':'Cerca una spesa…';
   const periods=$('freedomSpendingPeriod');
   for(const option of periods.options)option.textContent=st(option.value);
-  const select=$('freedomSpendingPreset');
-  const before=select.value;
-  if(select.dataset.lang!==language()){
-   select.replaceChildren();
-   const empty=document.createElement('option');
-   empty.value='';empty.textContent=st('choose');select.append(empty);
-   for(const category of spendCategories){
-    const group=document.createElement('optgroup');
-    group.label=category[language()];
-    for(const preset of spendPresets.filter(x=>x.category===category.id)){
-     const option=document.createElement('option');
-     option.value=preset.id;option.textContent=preset[language()];
-     group.append(option);
-    }
-    select.append(group);
-   }
-   select.dataset.lang=language();
-   select.value=before;
-  }
+  populateSpendingPresets();
  }
  function bindSpending(){
+  $('freedomSpendingSearch').addEventListener('input',populateSpendingPresets);
   $('freedomSpendingManage').addEventListener('click',()=>{
    spendingManage=!spendingManage;
    pendingDeleteId='';
@@ -139,6 +160,8 @@
    $('freedomSpendingName').value='';
    $('freedomSpendingPrice').value='';
    $('freedomSpendingPreset').value='';
+   $('freedomSpendingSearch').value='';
+   populateSpendingPresets();
    txt('freedomSpendingError',st('added'));
    lastRenderFingerprint='';
    render();
