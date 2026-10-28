@@ -144,3 +144,13 @@
  .cap-asset-a .cap-selected>div strong,.cap-asset-b .cap-selected>div strong,
  .cap-asset-b .cap-manual-selected>strong{font-size:11px!important}
 }
+
+/* Keep ticker emphasis even when the logo image is the first child. */
+.cap-search-item > span:first-of-type{
+ min-width:43px!important;flex:0 0 auto!important;
+ color:var(--accent)!important;font-weight:850!important;font-size:12px!important;
+}
+.cap-search-item > span:last-of-type{
+ min-width:0!important;flex:1 1 auto!important;
+ overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;
+}
