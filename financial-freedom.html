@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="it" data-theme="navy" data-inj-page="financial-freedom">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#07121b">
+<title>Financial Freedom | INJ Node</title>
+<script>
+try {
+ const t=localStorage.getItem('inj_monitor_theme');
+ document.documentElement.dataset.theme=t==='dynamic'?'ocean':(t||'navy');
+ document.documentElement.lang=localStorage.getItem('inj_node_language_v1')==='en'?'en':'it';
+} catch (_) {}
+</script>
+<link rel="stylesheet" href="./ocean-aurora.css?v=160109">
+<link rel="stylesheet" href="./chromatic-mist.css?v=160110">
+<link rel="stylesheet" href="./velvet-nebula.css?v=160112">
+<link rel="stylesheet" href="./aqua-mirage.css?v=160113">
+<link rel="stylesheet" href="./ocean-x-series.css?v=160114">
+<link rel="stylesheet" href="./theme-harmony.css?v=160114">
+<link rel="stylesheet" href="./supply-mono.css?v=20261024">
+<link rel="stylesheet" href="./financial-freedom.css?v=20261028freedom1">
+<script defer src="./financial-freedom.js?v=20261028freedom1"></script>
+</head>
+<body>
+<main class="freedom-page" id="freedomPage">
+  <header class="freedom-header">
+    <button id="freedomClose" type="button" class="freedom-close" aria-label="Close Financial Freedom">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m4 11 8-7 8 7M6.5 10v9h11v-9M10 19v-5h4v5"></path></svg>
+    </button>
+    <div class="freedom-heading"><small>INJ NODE / WEALTH INTELLIGENCE</small><h1>FINANCIAL FREEDOM</h1><p id="freedomIntro">Il patrimonio misura il gradino. Le reward misurano la copertura delle spese.</p></div>
+    <span class="freedom-live" id="freedomFeed"><i></i>LIVE</span>
+  </header>
+  <div class="freedom-toolbar">
+    <label class="freedom-select-wrap" for="freedomWallet"><span id="freedomWalletLabel">WALLET SELEZIONATO</span><select id="freedomWallet"><option value="">—</option></select></label>
+    <div class="freedom-price-rail"><span id="freedomPriceLabel">INJ LIVE PRICE</span><strong id="freedomPrice" class="private">—</strong><small id="freedomUpdated">—</small></div>
+  </div>
+  <section class="freedom-hero" aria-labelledby="freedomStatusTitle">
+    <div class="freedom-hero-top"><div><small id="freedomStatusLabel">STATO FINANZIARIO</small><h2 id="freedomStatusTitle">IN ATTESA DEL WALLET</h2><p id="freedomStatusExplain">Caricamento delle informazioni live.</p></div><div class="freedom-meter" id="freedomMeter" style="--freedom-progress:0"><div><strong id="freedomCoverage" class="private">—</strong><small id="freedomCoverageLabel">SPESE COPERTE</small></div></div></div>
+    <div class="freedom-bar"><span id="freedomBarFill"></span></div>
+    <div class="freedom-hero-foot"><span id="freedomCoverageFoot">—</span><span id="freedomGoal">—</span></div>
+  </section>
+  <section class="freedom-figures" aria-label="Financial metrics">
+    <article><small id="freedomWorthLabel">PATRIMONIO INJ</small><strong id="freedomWorth" class="private">—</strong><span id="freedomInj" class="private">—</span></article>
+    <article><small>REWARD / DAY</small><strong id="freedomDay" class="private">—</strong><span id="freedomDayInj" class="private">—</span></article>
+    <article><small>REWARD / MONTH</small><strong id="freedomMonth" class="private">—</strong><span id="freedomRewardInfo">APR netto commissioni: —</span></article>
+  </section>
+  <section class="freedom-section freedom-wealth">
+    <div class="freedom-section-heading"><div><small>WEALTH LADDER</small><h2 id="freedomWealthTitle">IL TUO GRADINO PATRIMONIALE</h2></div><span id="freedomTier" class="freedom-pill">—</span></div>
+    <div class="freedom-tier-track" id="freedomTierTrack" aria-label="Wealth ladder"></div>
+    <p id="freedomTierFoot">I livelli sono fasce indicative sul valore del wallet, non classificazioni finanziarie ufficiali.</p>
+  </section>
+  <section class="freedom-section freedom-options">
+    <div class="freedom-section-heading"><div><small>DAILY LIFESTYLE</small><h2 id="freedomSpendTitle">COSA POSSONO COPRIRE LE REWARD?</h2></div><span id="freedomSpendHint">Stime giornaliere</span></div>
+    <div id="freedomLifestyle" class="freedom-lifestyle"></div>
+    <p id="freedomLifestyleFoot">Costi orientativi: non sono consigli di spesa.</p>
+  </section>
+  <section class="freedom-section freedom-plan">
+    <div class="freedom-section-heading"><div><small>FREEDOM TARGET</small><h2 id="freedomPlanTitle">IMPOSTA IL TUO OBIETTIVO</h2></div></div>
+    <div class="freedom-settings">
+      <label><span id="freedomBudgetLabel">SPESE MENSILI DA COPRIRE (€)</span><input id="freedomBudget" type="number" min="100" max="10000000" step="50" inputmode="decimal" value="1500"></label>
+      <label><span id="freedomBufferLabel">MARGINE DI PRUDENZA (%)</span><input id="freedomBuffer" type="number" min="0" max="90" step="5" inputmode="numeric" value="30"></label>
+    </div>
+    <div class="freedom-target-grid">
+      <div><small id="freedomTargetLabel">INJ IN STAKING NECESSARI</small><strong id="freedomTargetInj" class="private">—</strong></div>
+      <div><small id="freedomMissingLabel">INJ ANCORA NECESSARI</small><strong id="freedomMissingInj" class="private">—</strong></div>
+    </div>
+    <div class="freedom-stress"><div><span id="freedomStressLabel">SCENARIO PRUDENTE</span><small id="freedomStressInfo">INJ −50% · APR −30%</small></div><strong id="freedomStressCoverage" class="private">—</strong></div>
+    <p id="freedomDisclaimer">Il rendimento è una proiezione, non uno stipendio garantito. Il margine non rappresenta il calcolo delle imposte. La libertà finanziaria reale dipende anche da liquidità, diversificazione, rischi e costi.</p>
+  </section>
+  <footer>INJ NODE <span>BY B CAPITAL GROUP</span></footer>
+</main>
+</body>
+</html>
