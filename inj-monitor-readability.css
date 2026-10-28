@@ -456,3 +456,74 @@
   grid-template-columns:repeat(4,minmax(0,1fr))!important;
  }
 }
+
+
+/* Live terminals and modular workspace: scale within their actual card area
+   (cqw on Workspace) so a tiny widget doesn't inherit a huge monitor font. */
+@media (min-width:1400px){
+ html[data-inj-page="live-charts"] body
+ :is(.timeframe b,.market-strip strong,.scale-marker strong){
+  font-size:var(--inj-monitor-label)!important;
+  line-height:1.25!important;
+ }
+ html[data-inj-page="live-charts"] body
+ :is(.market-strip span,.timeframe span,.book-pill){
+  font-size:var(--inj-monitor-micro)!important;
+ }
+ html[data-inj-page="live-charts"] body .book-row{
+  font-size:var(--inj-monitor-label)!important;
+  min-height:clamp(24px,1.5vw,39px)!important;
+ }
+ html[data-inj-page="order-book"] body
+ :is(.columns,.book-meta,.book-footer){
+  font-size:var(--inj-monitor-label)!important;
+  line-height:1.25!important;
+ }
+ html[data-inj-page="order-book"] body .row{
+  font-size:var(--inj-monitor-body)!important;
+  line-height:1.35!important;
+  min-height:clamp(25px,1.55vw,42px)!important;
+ }
+ html[data-inj-page="command-center"] body
+ :is(.cc-now-item>span,.cc-panel-title span,.cc-panel-title small,
+ .cc-chart-feed,.cc-statusbar,.cc-eyebrow){
+  font-size:var(--inj-monitor-label)!important;
+  line-height:1.3!important;
+ }
+ html[data-inj-page="command-center"] body
+ :is(.cc-panel-title strong,.cc-chart-status b,.cc-now-item>strong){
+  font-size:var(--inj-monitor-card)!important;
+ }
+ html[data-inj-page="injc-etf"] body
+ :is(.metric label,.metric span,.hero-meta span,.status-pill){
+  font-size:var(--inj-monitor-label)!important;
+  line-height:1.3!important;
+ }
+ html[data-inj-page="injc-etf"] body .metric strong{
+  font-size:clamp(24px,1.55vw,40px)!important;
+  line-height:1.2!important;
+ }
+ /* Workspace: the actual size of an individual card, not the desktop width,
+    determines how much its labels and values may grow. */
+ html[data-inj-page="workspace"] body .ws-card-heading strong{
+  font-size:clamp(12px,2.25cqw,19px)!important;
+  line-height:1.25!important;
+ }
+ html[data-inj-page="workspace"] body .ws-card-heading small{
+  font-size:clamp(10px,1.8cqw,15px)!important;
+  line-height:1.25!important;
+ }
+ html[data-inj-page="workspace"] body
+ .ws-card :is(.ws-section-label,.ws-sub,.ws-data-status,.ws-section-note){
+  font-size:clamp(11px,1.7cqw,17px)!important;
+  line-height:1.38!important;
+ }
+ html[data-inj-page="workspace"] body .ws-card .ws-section-value{
+  font-size:clamp(13px,3.2cqw,31px)!important;
+  line-height:1.22!important;
+ }
+ html[data-inj-page="workspace"] body .ws-card .ws-value{
+  font-size:clamp(18px,8cqw,62px)!important;
+  line-height:1.12!important;
+ }
+}
