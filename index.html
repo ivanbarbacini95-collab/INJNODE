@@ -334,6 +334,8 @@
 <script defer src="./home-terminal-header-20261027.js?v=h2"></script>
 <script defer src="./inj-node-insights-config.js?v=1"></script>
 <script defer src="./inj-node-telemetry.js?v=20261027pro2"></script>
+<link rel="stylesheet" href="./home-market-events.css?v=20261028stars7-injnode"/>
+<script defer src="./home-market-events.js?v=20261028stars7-injnode"></script>
 </head>
 <body class="boot-loading">
 <div aria-label="Avvio INJ Node" aria-live="polite" aria-atomic="true" class="boot-splash node-pulse-splash" id="bootSplash" role="status">
@@ -600,6 +602,11 @@
   <h1><strong>INJ</strong><span>Node</span></h1>
   <p>Il tuo spazio Injective</p>
 </div>
+<div id="injMarketTicker" class="inj-market-ticker inj-market-ticker-quotes-only" aria-label="Quotazioni crypto e indicatori globali live in scorrimento">
+  <div class="inj-market-ticker-viewport" aria-live="off" aria-label="Scorri orizzontalmente per esplorare le quotazioni, trascina per spostare e rilascia per riprendere lo scorrimento">
+    <div id="injMarketTickerTrack" class="inj-market-ticker-track"><span class="inj-market-ticker-loading">Caricamento dati crypto…</span></div>
+  </div>
+</div>
 <div class="entry-wallet-heading">
 <span>ACCOUNT SELEZIONATO</span>
 <small id="entryWalletHint">Seleziona un wallet</small>
@@ -748,6 +755,10 @@
 <span><strong>Reward Ladder</strong><small class="inj-tile-description" data-it="Obiettivi dei reward" data-en="Reward milestones">Obiettivi dei reward</small></span>
 <svg aria-hidden="true" class="entry-action-arrow" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
 </a>
+<button class="entry-action entry-action-market-events" id="entryMarketEventsButton" type="button" aria-label="Apri calendario Market Events" aria-haspopup="dialog" aria-controls="injMarketEventsOverlay">
+  <span class="inj-events-tile-copy"><strong class="inj-home-tile-title" data-it="Market Events" data-en="Market Events">Market Events</strong><small id="injMarketNextSummary" class="inj-events-next-text" data-it="Calendario macro ★★★ · USA / Europa / Asia" data-en="★★★ macro calendar · US / Europe / Asia">Calendario macro ★★★ · USA / Europa / Asia</small></span>
+  <span class="inj-events-tile-stars" aria-hidden="true">★★★</span>
+</button>
 <a class="entry-action entry-action-injc" id="entryInjcEtfButton" href="./injc-etf.html?v=20261026" aria-label="Apri INJC ETF Terminal">
 <span aria-hidden="true" class="entry-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2.5"/><path d="M8 8h8M8 12h3m-3 5 2.5-2.5 2 1.6 3.5-4.1"/><circle cx="17" cy="17" r="1"/></svg></span>
 <span><strong>INJC ETF</strong><small class="inj-tile-description" data-it="Monitoraggio ETF INJC" data-en="INJC ETF tracker">Monitoraggio ETF INJC</small></span>
@@ -1354,6 +1365,58 @@
 
 
 <!-- Market stays inside the main app; closing reveals the already-mounted Home. -->
+<section class="inj-events-overlay" id="injMarketEventsOverlay" role="dialog" aria-modal="true" aria-labelledby="injEventsTitle" hidden>
+  <div class="inj-events-shell">
+    <header class="inj-events-header">
+      <div><small>INJ NODE / GLOBAL INTELLIGENCE</small><h2 id="injEventsTitle">MARKET EVENTS</h2><p id="injEventsSubtitle">Calendario macroeconomico · solo impatto ★★★</p></div>
+      <button type="button" id="injEventsClose" class="inj-events-close" aria-label="Chiudi Market Events">×</button>
+    </header>
+    <div class="inj-events-period-heading"><span data-it="SELEZIONA PERIODO" data-en="SELECT PERIOD">SELEZIONA PERIODO</span><span data-it="SCORRI PER LE ALTRE DATE" data-en="SCROLL FOR MORE DATES">SCORRI PER LE ALTRE DATE</span></div>
+    <nav id="injEventsPeriod" class="inj-events-period" role="group" aria-label="Filtra gli eventi per giorno o settimana">
+      <button type="button" data-period="today" data-it="Oggi" data-en="Today" aria-pressed="false">Oggi</button>
+      <button type="button" data-period="tomorrow" data-it="Domani" data-en="Tomorrow" aria-pressed="false">Domani</button>
+      <button type="button" data-period="dayAfter" data-it="Dopodomani" data-en="Day after tomorrow" aria-pressed="false">Dopodomani</button>
+      <button type="button" data-period="thisWeek" data-it="Questa settimana" data-en="This week" aria-pressed="true">Questa settimana</button>
+      <button type="button" data-period="nextWeek" data-it="Prossima settimana" data-en="Next week" aria-pressed="false">Prossima settimana</button>
+    </nav>
+    <div class="inj-events-toolbar">
+      <div class="inj-events-field">
+        <label for="injEventsRegion">REGIONE / REGION</label>
+        <select id="injEventsRegion"><option value="ALL">TUTTE / ALL</option><option value="US">USA</option><option value="EU">EUROPA</option><option value="ASIA">ASIA</option></select>
+      </div>
+      <div class="inj-events-field">
+        <label for="injEventsReminder">AVVISO / REMINDER</label>
+        <select id="injEventsReminder"><option value="5">5 MIN</option><option value="10" selected>10 MIN</option><option value="15">15 MIN</option><option value="30">30 MIN</option></select>
+      </div>
+      <button id="injEventsAlerts" type="button" class="inj-events-alerts" aria-pressed="false">ATTIVA AVVISI</button>
+      <button id="injEventsRefresh" type="button" class="inj-events-refresh" aria-label="Aggiorna eventi">↻</button>
+    </div>
+    <div class="inj-events-overview" aria-label="Riepilogo eventi">
+      <span><small data-it="EVENTI ★★★" data-en="★★★ EVENTS">EVENTI ★★★</small><strong id="injEventsCount">—</strong></span>
+      <span><small data-it="PROSSIMO TRA" data-en="NEXT IN">PROSSIMO TRA</small><strong id="injEventsNext">—</strong></span>
+      <span class="inj-events-feed-state"><i aria-hidden="true"></i><strong id="injEventsDataStatus">IN ATTESA</strong></span>
+    </div>
+    <section class="inj-events-feature" id="injEventsFeatured" aria-labelledby="injEventsFeaturedTitle" hidden>
+      <div class="inj-events-feature-top"><span data-it="EVENTO IN EVIDENZA · ★★★" data-en="FEATURED EVENT · ★★★">EVENTO IN EVIDENZA · ★★★</span><span id="injEventsFeaturedCountdown" class="inj-events-feature-countdown">—</span></div>
+      <div class="inj-events-feature-main"><div><small id="injEventsFeaturedTime">—</small><h3 id="injEventsFeaturedTitle">—</h3></div><span class="inj-events-feature-impact">★★★</span></div>
+      <div id="injEventsFeaturedDetails" class="inj-events-feature-details"></div>
+    </section>
+    <p class="inj-events-note" id="injEventsWarning" aria-live="polite">Orari del dispositivo · dati effettivi solo dopo la pubblicazione · avvisi con app aperta.</p>
+    <div class="inj-events-list-heading"><span data-it="CALENDARIO EVENTI" data-en="EVENT CALENDAR">CALENDARIO EVENTI</span><span id="injEventsRangeLabel">—</span></div>
+    <div class="inj-events-body" id="injEventsRows" aria-live="polite"><p class="inj-events-empty">Caricamento del calendario macroeconomico…</p></div>
+    <footer class="inj-events-footer"><span id="injEventsSource">Fonte in verifica</span><span data-it="SOLO EVENTI AD ALTO IMPATTO ★★★" data-en="HIGH IMPACT EVENTS ONLY ★★★">SOLO EVENTI AD ALTO IMPATTO ★★★</span></footer>
+  </div>
+  <div id="injEventsResultBackdrop" class="inj-events-result-backdrop" hidden>
+    <article class="inj-events-result" role="dialog" aria-modal="true" aria-labelledby="injEventsResultTitle">
+      <div class="inj-events-result-head"><span>★★★ · DATA RELEASE</span><button type="button" id="injEventsResultClose" aria-label="Chiudi risultato">×</button></div>
+      <h3 id="injEventsResultTitle">Evento macroeconomico</h3><p id="injEventsResultTime">—</p>
+      <div class="inj-events-result-values"><div><small data-it="PRECEDENTE" data-en="PREVIOUS">PRECEDENTE</small><strong id="injEventsResultPrevious">—</strong></div><div><small data-it="PREVISIONE" data-en="FORECAST">PREVISIONE</small><strong id="injEventsResultForecast">—</strong></div><div><small data-it="EFFETTIVO" data-en="ACTUAL">EFFETTIVO</small><strong id="injEventsResultActual">—</strong></div></div>
+      <p id="injEventsResultReading"></p>
+      <button type="button" id="injEventsResultDone" class="inj-events-result-done" data-it="CHIUDI" data-en="CLOSE">CHIUDI</button>
+    </article>
+  </div>
+</section>
+
 <div id="injMarketPortal" class="inj-market-portal" hidden aria-label="Mercato" role="dialog" aria-modal="true">
   <iframe id="injMarketFrame" title="Mercato" loading="eager" referrerpolicy="same-origin"></iframe>
 </div>
