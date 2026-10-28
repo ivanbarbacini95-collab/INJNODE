@@ -21,7 +21,7 @@
    editor:'AGGIUNGI UNA SPESA',presets:'SCEGLI UN ESEMPIO',choose:'Seleziona una voce…',
    name:'COSA VUOI COPRIRE?',placeholder:'Es. bollette, palestra, viaggio',
    price:'IMPORTO',period:'FREQUENZA',daily:'Giorno',weekly:'Settimana',monthly:'Mese',
-   add:'AGGIUNGI ALLA LISTA',remove:'Rimuovi',empty:'Lista vuota. Aggiungi una spesa.',
+   add:'AGGIUNGI ALLA LISTA',remove:'Rimuovi',manage:'GESTISCI',done:'FATTO',confirm:'CONFERMA',empty:'Lista vuota. Aggiungi una spesa.',
    required:'Inserisci una voce e un importo maggiore di zero.',
    added:'Aggiunto alla lista',goalSet:'Obiettivo mensile aggiornato',
    foot:'Ogni voce è confrontata singolarmente con le reward; il totale somma tutte le spese.',
@@ -32,7 +32,7 @@
    editor:'ADD AN EXPENSE',presets:'CHOOSE AN EXAMPLE',choose:'Select an item…',
    name:'WHAT WOULD YOU LIKE TO COVER?',placeholder:'E.g. bills, gym, travel',
    price:'AMOUNT',period:'FREQUENCY',daily:'Day',weekly:'Week',monthly:'Month',
-   add:'ADD TO LIST',remove:'Remove',empty:'No items yet. Add an expense.',
+   add:'ADD TO LIST',remove:'Remove',manage:'MANAGE',done:'DONE',confirm:'CONFIRM',empty:'No items yet. Add an expense.',
    required:'Enter a name and an amount greater than zero.',
    added:'Added to your list',goalSet:'Monthly target updated',
    foot:'Each item is compared separately to rewards; all items count toward the total.',
@@ -41,6 +41,7 @@
  };
  let spending=[];
  let spendingId=0;
+ let spendingManage=false,pendingDeleteId='';
  const st=k=>spendText[language()][k];
  const spendMonths={daily:365/12,weekly:365/7/12,monthly:1};
  const monthlyCost=item=>item.price*spendMonths[item.period];
@@ -79,21 +80,40 @@
   txt('freedomSpendingPriceLabel',st('price')+' ('+(shownCurrency==='USD'?'$':'€')+')');
   txt('freedomSpendingPeriodLabel',st('period'));
   txt('freedomSpendingSubmit',st('add'));
+  txt('freedomSpendingManage',spendingManage?st('done'):st('manage'));
+  $('freedomSpendingManage').setAttribute('aria-pressed',String(spendingManage));
+  $('freedomOptions').classList.toggle('is-managing',spendingManage);
   txt('freedomLifestyleFoot',st('foot'));
   $('freedomSpendingName').placeholder=st('placeholder');
   const periods=$('freedomSpendingPeriod');
   for(const option of periods.options)option.textContent=st(option.value);
   const select=$('freedomSpendingPreset');
   const before=select.value;
-  const options=[{id:'',label:st('choose')},...spendPresets.map(p=>({id:p.id,label:p[language()]}))];
   if(select.dataset.lang!==language()){
    select.replaceChildren();
-   for(const opt of options){const option=document.createElement('option');option.value=opt.id;option.textContent=opt.label;select.append(option)}
+   const empty=document.createElement('option');
+   empty.value='';empty.textContent=st('choose');select.append(empty);
+   for(const category of spendCategories){
+    const group=document.createElement('optgroup');
+    group.label=category[language()];
+    for(const preset of spendPresets.filter(x=>x.category===category.id)){
+     const option=document.createElement('option');
+     option.value=preset.id;option.textContent=preset[language()];
+     group.append(option);
+    }
+    select.append(group);
+   }
    select.dataset.lang=language();
    select.value=before;
   }
  }
  function bindSpending(){
+  $('freedomSpendingManage').addEventListener('click',()=>{
+   spendingManage=!spendingManage;
+   pendingDeleteId='';
+   lastRenderFingerprint='';
+   render();
+  });
   $('freedomSpendingPreset').addEventListener('change',event=>{
    const preset=spendPresets.find(p=>p.id===event.target.value);
    if(!preset)return;
@@ -126,8 +146,16 @@
   });
   $('freedomLifestyle').addEventListener('click',event=>{
    const button=event.target.closest('[data-spend-delete]');
-   if(!button)return;
-   spending=spending.filter(item=>item.id!==button.dataset.spendDelete);
+   if(!button||!spendingManage)return;
+   const id=button.dataset.spendDelete;
+   if(pendingDeleteId!==id){
+    pendingDeleteId=id;
+    lastRenderFingerprint='';
+    render();
+    return;
+   }
+   pendingDeleteId='';
+   spending=spending.filter(item=>item.id!==id);
    saveSpending();txt('freedomSpendingError','');
    lastRenderFingerprint='';
    render();
@@ -342,9 +370,11 @@
    remove.type='button';
    remove.className='freedom-lifestyle-remove';
    remove.dataset.spendDelete=item.id;
-   remove.setAttribute('aria-label',st('remove')+' '+presetName(item));
-   remove.title=st('remove')+' '+presetName(item);
-   remove.textContent='×';
+   const confirmed=pendingDeleteId===item.id;
+   remove.classList.toggle('is-confirming',confirmed);
+   remove.setAttribute('aria-label',(confirmed?st('confirm'):st('remove'))+' '+presetName(item));
+   remove.title=(confirmed?st('confirm'):st('remove'))+' '+presetName(item);
+   remove.textContent=confirmed?st('confirm'):st('remove');
    const bar=document.createElement('div');
    bar.className='freedom-lifestyle-progress';
    const fill=document.createElement('span');
