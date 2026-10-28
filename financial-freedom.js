@@ -12,14 +12,152 @@
   {min:1000000,it:'PATRIMONIO',en:'WEALTH',label:'1M+'},
   {min:3000000,it:'LEGACY',en:'LEGACY',label:'3M+'}
  ];
- const lifestyle=[
-  {symbol:'☕',it:'UN CAFFÈ',en:'COFFEE',price:3},
-  {symbol:'🥗',it:'UN PRANZO',en:'LUNCH',price:15},
-  {symbol:'🛒',it:'SPESA',en:'GROCERIES',price:35},
-  {symbol:'🍽️',it:'UNA CENA',en:'DINNER',price:55},
-  {symbol:'🏠',it:'AFFITTO / MESE',en:'RENT / MONTH',price:900,type:'monthly'},
-  {symbol:'🚗',it:'MOBILITÀ / MESE',en:'MOBILITY / MONTH',price:250,type:'monthly'}
+ const SPEND_STORE='inj_node_freedom_spending_v1';
+ const spendPresets=[
+  {id:'coffee',symbol:'☕',it:'Caffè',en:'Coffee',price:3,period:'daily'},
+  {id:'lunch',symbol:'🥗',it:'Pranzo',en:'Lunch',price:15,period:'daily'},
+  {id:'groceries',symbol:'🛒',it:'Spesa',en:'Groceries',price:35,period:'weekly'},
+  {id:'dinner',symbol:'🍽️',it:'Cena',en:'Dinner',price:55,period:'weekly'},
+  {id:'rent',symbol:'🏠',it:'Affitto',en:'Rent',price:900,period:'monthly'},
+  {id:'mobility',symbol:'🚗',it:'Mobilità',en:'Mobility',price:250,period:'monthly'},
+  {id:'bills',symbol:'⚡',it:'Bollette',en:'Bills',price:150,period:'monthly'},
+  {id:'gym',symbol:'🏋️',it:'Palestra',en:'Gym',price:45,period:'monthly'},
+  {id:'subscriptions',symbol:'📱',it:'Abbonamenti',en:'Subscriptions',price:25,period:'monthly'},
+  {id:'health',symbol:'❤',it:'Salute',en:'Healthcare',price:100,period:'monthly'},
+  {id:'travel',symbol:'✈',it:'Viaggi',en:'Travel',price:200,period:'monthly'},
+  {id:'savings',symbol:'◆',it:'Risparmio',en:'Savings',price:300,period:'monthly'}
  ];
+ const spendText={
+  it:{
+   summary:'TOTALE LISTA / MESE',coverage:'Copertura complessiva',setGoal:'USA COME OBIETTIVO',
+   editor:'AGGIUNGI UNA SPESA',presets:'SCEGLI UN ESEMPIO',choose:'Seleziona una voce…',
+   name:'COSA VUOI COPRIRE?',placeholder:'Es. bollette, palestra, viaggio',
+   price:'IMPORTO',period:'FREQUENZA',daily:'Giorno',weekly:'Settimana',monthly:'Mese',
+   add:'AGGIUNGI ALLA LISTA',remove:'Rimuovi',empty:'Lista vuota. Aggiungi una spesa.',
+   required:'Inserisci una voce e un importo maggiore di zero.',
+   added:'Aggiunto alla lista',goalSet:'Obiettivo mensile aggiornato',
+   foot:'Ogni voce è confrontata singolarmente con le reward; il totale somma tutte le spese.',
+   covered:'Coperto',percent:'coperto',unavailable:'Dati reward in attesa'
+  },
+  en:{
+   summary:'LIST TOTAL / MONTH',coverage:'Total expense coverage',setGoal:'SET AS TARGET',
+   editor:'ADD AN EXPENSE',presets:'CHOOSE AN EXAMPLE',choose:'Select an item…',
+   name:'WHAT WOULD YOU LIKE TO COVER?',placeholder:'E.g. bills, gym, travel',
+   price:'AMOUNT',period:'FREQUENCY',daily:'Day',weekly:'Week',monthly:'Month',
+   add:'ADD TO LIST',remove:'Remove',empty:'No items yet. Add an expense.',
+   required:'Enter a name and an amount greater than zero.',
+   added:'Added to your list',goalSet:'Monthly target updated',
+   foot:'Each item is compared separately to rewards; all items count toward the total.',
+   covered:'Covered',percent:'covered',unavailable:'Waiting for reward data'
+  }
+ };
+ let spending=[];
+ let spendingId=0;
+ const st=k=>spendText[language()][k];
+ const spendMonths={daily:365/12,weekly:365/7/12,monthly:1};
+ const monthlyCost=item=>item.price*spendMonths[item.period];
+ const totalSpending=()=>spending.reduce((sum,item)=>sum+monthlyCost(item),0);
+ function presetName(item){const p=spendPresets.find(p=>p.id===item.preset);return p?p[language()]:item.name;}
+ function normalizeSpending(items){
+  if(!Array.isArray(items))return null;
+  const used=new Set();
+  return items.slice(0,250).map((x,i)=>{
+   const price=Number(x?.price),name=String(x?.name||'').trim().slice(0,56);
+   const period=['daily','weekly','monthly'].includes(x?.period)?x.period:'monthly';
+   const preset=spendPresets.find(p=>p.id===x?.preset)?.id||'';
+   const id=String(x?.id||('item-'+i)).slice(0,80);
+   if(!(price>0)||!Number.isFinite(price)||(!name&&!preset)||used.has(id))return null;
+   used.add(id);
+   return{id,name:name||spendPresets.find(p=>p.id===preset)?.it||'',price,period,preset};
+  }).filter(Boolean);
+ }
+ function readSpending(){
+  try{
+   const saved=JSON.parse(localStorage.getItem(SPEND_STORE)||'null');
+   const list=normalizeSpending(saved?.items);
+   if(list!==null){spending=list;return;}
+  }catch(_){}
+  spending=spendPresets.slice(0,6).map(p=>({id:'preset-'+p.id,name:p.it,price:p.price,period:p.period,preset:p.id}));
+ }
+ function saveSpending(){
+  try{localStorage.setItem(SPEND_STORE,JSON.stringify({items:spending}));}catch(_){}
+ }
+ function editSpendingLanguage(){
+  txt('freedomSpendingSummaryLabel',st('summary'));
+  txt('freedomUseSpendingGoal',st('setGoal'));
+  txt('freedomSpendingEditorLabel',st('editor'));
+  txt('freedomSpendingPresetLabel',st('presets'));
+  txt('freedomSpendingNameLabel',st('name'));
+  txt('freedomSpendingPriceLabel',st('price')+' ('+(shownCurrency==='USD'?'$':'€')+')');
+  txt('freedomSpendingPeriodLabel',st('period'));
+  txt('freedomSpendingSubmit',st('add'));
+  txt('freedomLifestyleFoot',st('foot'));
+  $('freedomSpendingName').placeholder=st('placeholder');
+  const periods=$('freedomSpendingPeriod');
+  for(const option of periods.options)option.textContent=st(option.value);
+  const select=$('freedomSpendingPreset');
+  const before=select.value;
+  const options=[{id:'',label:st('choose')},...spendPresets.map(p=>({id:p.id,label:p[language()]}))];
+  if(select.dataset.lang!==language()){
+   select.replaceChildren();
+   for(const opt of options){const option=document.createElement('option');option.value=opt.id;option.textContent=opt.label;select.append(option)}
+   select.dataset.lang=language();
+   select.value=before;
+  }
+ }
+ function bindSpending(){
+  $('freedomSpendingPreset').addEventListener('change',event=>{
+   const preset=spendPresets.find(p=>p.id===event.target.value);
+   if(!preset)return;
+   $('freedomSpendingName').value=preset[language()];
+   $('freedomSpendingPrice').value=String(Math.round((shownCurrency==='USD'?preset.price/rateEURperUSD:preset.price)*100)/100);
+   $('freedomSpendingPeriod').value=preset.period;
+   txt('freedomSpendingError','');
+  });
+  $('freedomSpendingForm').addEventListener('submit',event=>{
+   event.preventDefault();
+   const name=$('freedomSpendingName').value.trim().slice(0,56);
+   const amount=Number($('freedomSpendingPrice').value);
+   const price=amount*(shownCurrency==='USD'?rateEURperUSD:1);
+   if(!name||!(price>0)||!Number.isFinite(price)){
+    txt('freedomSpendingError',st('required'));return;
+   }
+   const period=$('freedomSpendingPeriod').value;
+   const preset=spendPresets.find(p=>p.id===$('freedomSpendingPreset').value);
+   // An edited template name becomes an independent, fully user-named entry.
+   const presetId=preset&&name===preset[language()]?preset.id:'';
+   spending.push({id:'custom-'+Date.now()+'-'+(++spendingId),name,price,period,preset:presetId});
+   saveSpending();
+   $('freedomSpendingName').value='';
+   $('freedomSpendingPrice').value='';
+   $('freedomSpendingPreset').value='';
+   txt('freedomSpendingError',st('added'));
+   lastRenderFingerprint='';
+   render();
+   $('freedomSpendingName').focus({preventScroll:true});
+  });
+  $('freedomLifestyle').addEventListener('click',event=>{
+   const button=event.target.closest('[data-spend-delete]');
+   if(!button)return;
+   spending=spending.filter(item=>item.id!==button.dataset.spendDelete);
+   saveSpending();txt('freedomSpendingError','');
+   lastRenderFingerprint='';
+   render();
+  });
+  $('freedomUseSpendingGoal').addEventListener('click',()=>{
+   const total=totalSpending();
+   if(!(total>0)||!Number.isFinite(total))return;
+   const minEUR=shownCurrency==='USD'?rateEURperUSD:1;
+   prefs.budget=Math.max(minEUR,total);
+   writePrefs();
+   const formatted=String(Math.round(budgetAmountInCurrency()*100)/100);
+   $('freedomBudget').value=formatted;
+   lastFormattedBudget=formatted;
+   lastRenderFingerprint='';
+   render();
+   txt('freedomSpendingError',st('goalSet'));
+  });
+ }
  const copy={
   it:{
    intro:'Patrimonio e rendita a colpo d’occhio.',
