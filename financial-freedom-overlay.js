@@ -49,6 +49,11 @@
     if(!root||!child)return;
     open=true;
     previousFocus=document.activeElement;
+    // Fetch exact net validator APR for other saved wallets in the background.
+    // Do not block opening or depend on these extra API calls.
+    try{
+      Promise.resolve(window.INJ_FINANCIAL_FREEDOM_ENRICH_APR?.()).catch(()=>{});
+    }catch(_){}
     try{window.INJ_HOME_SCROLL?.save?.();}catch(_){}
     root.hidden=false;
     document.documentElement.classList.add('inj-freedom-open');
