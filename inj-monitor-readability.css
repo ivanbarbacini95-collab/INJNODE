@@ -527,3 +527,34 @@
   line-height:1.12!important;
  }
 }
+
+
+/* Home footer rails and mini chart labels are part of the data, not decoration.
+   Make them readable at the same desktop scale as the launcher cards. */
+@media(min-width:1200px){
+ html[data-inj-page="index"] body #entryGate
+ :is(.entry-insights-head span,.entry-insights-head small,
+ .entry-insights-live,.entry-price-timebar span,
+ .entry-overview-head span,.entry-overview-live){
+  font-size:var(--inj-monitor-micro)!important;
+  line-height:1.3!important;
+ }
+ html[data-inj-page="index"] body #entryGate
+ .entry-desktop-metric>span,
+ html[data-inj-page="index"] body #entryGate
+ .entry-desktop-metric>small{
+  font-size:var(--inj-monitor-label)!important;
+  line-height:1.35!important;
+  white-space:normal!important;
+ }
+ html[data-inj-page="index"] body #entryGate
+ .entry-desktop-metric>strong{
+  font-size:clamp(17px,1.2vw,30px)!important;
+  line-height:1.25!important;
+  overflow-wrap:anywhere!important;
+ }
+ html[data-inj-page="index"] body #entryGate
+ .entry-spark-tooltip :is(strong,small){
+  font-size:var(--inj-monitor-body)!important;
+ }
+}
