@@ -1,5 +1,6 @@
-const CACHE_NAME = 'inj-node-v16.10.28-home-launcher-labels-v1';
+const CACHE_NAME = 'inj-node-v16.10.28-calendar-footer-seamless-v1';
 const APP_SHELL = [
+  './market-events-footer-seamless.css?v=20261028foot1',
   './home-launcher-typography-final.css?v=20261028labels1',
   './home-terminal-header-20261027.css?v=h2',
   './home-premium-titles.css?v=20261027p1',
