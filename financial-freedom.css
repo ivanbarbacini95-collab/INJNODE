@@ -1,0 +1,121 @@
+/* INJ Node · Financial Freedom | v2026-10-28. Scoped, responsive, theme aware. */
+:root{--bg:#07121b;--theme-canvas:#07121b;--text:#edf6f8;--muted:#91abb8;--muted-strong:#b3c8d1;--accent:#86deda;--line:rgba(148,198,214,.20);--surface:#132631;--page-gradient:linear-gradient(143deg,#07121b,#0d202b 57%,#071c25);--freedom-ink:var(--text,#edf6f8);color-scheme:dark;font-family:var(--inj-node-terminal-font,"IBM Plex Mono",ui-monospace,monospace)}
+:root[data-theme="light"]{--bg:#eef5ff;--theme-canvas:#eef5ff;--text:#1a3040;--muted:#58717f;--muted-strong:#3f5c70;--accent:#127c87;--surface:#e6f1f8;--line:rgba(34,85,108,.21);--page-gradient:linear-gradient(135deg,#eef5ff,#d7f1f6 60%,#f0f3ff);color-scheme:light}
+:root[data-theme="black"]{--bg:#000;--theme-canvas:#000;--surface:#13191b;--page-gradient:linear-gradient(133deg,#000,#121b1d 72%,#000)}
+:root[data-theme="amber"]{--bg:#05080d;--theme-canvas:#05080d;--page-gradient:linear-gradient(145deg,#05080d,#161518 80%,#0c1719)}
+*,*::before,*::after{box-sizing:border-box}
+html{margin:0;min-height:100%;scroll-behavior:auto!important;background-color:var(--theme-canvas,var(--bg))!important;background-image:var(--page-gradient,none)!important;background-position:center top!important;background-attachment:scroll!important}
+body{margin:0;min-height:100dvh;color:var(--text,#edf6f8);background:transparent!important;font:12px/1.5 var(--inj-node-terminal-font,ui-monospace,monospace);overflow-x:hidden;overscroll-behavior-y:none}
+button,select,input{font:inherit;touch-action:manipulation}
+button,select{cursor:pointer}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--accent,#86deda);outline-offset:3px}
+.freedom-page{width:min(1160px,100%);margin:0 auto;padding:clamp(16px,3vw,30px) max(14px,env(safe-area-inset-right,14px)) max(28px,env(safe-area-inset-bottom,20px)) max(14px,env(safe-area-inset-left,14px));display:flex;flex-direction:column;gap:15px;min-width:0}
+.freedom-header{display:flex;align-items:flex-start;gap:13px;padding:4px 0 17px;border-bottom:1px solid var(--line)}
+.freedom-close{width:42px;height:42px;flex:0 0 42px;display:grid;place-items:center;color:var(--text);background:color-mix(in srgb,var(--surface) 65%,transparent);border:1px solid var(--line);border-radius:12px;padding:10px}
+.freedom-close svg{width:21px;height:21px}
+.freedom-heading{min-width:0;flex:1}
+.freedom-heading>small,.freedom-section-heading small{font-size:9px;font-weight:750;letter-spacing:.16em;color:var(--accent);display:block}
+.freedom-heading h1{font-size:clamp(22px,4.5vw,37px);line-height:1.08;margin:6px 0 7px;letter-spacing:-.04em;font-weight:850}
+.freedom-heading p{font-size:10px;line-height:1.45;margin:0;color:var(--muted-strong);max-width:620px}
+.freedom-live{flex:0 0 auto;display:flex;align-items:center;gap:6px;margin-top:11px;font-size:9px;font-weight:800;letter-spacing:.10em;color:var(--accent)}
+.freedom-live i{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px color-mix(in srgb,var(--accent) 60%,transparent)}
+.freedom-live.is-offline{color:var(--muted)}
+.freedom-live.is-offline i{background:var(--muted);box-shadow:none}
+.freedom-toolbar{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:10px}
+.freedom-select-wrap,.freedom-price-rail{min-width:0;display:flex;flex-direction:column;gap:5px;border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:color-mix(in srgb,var(--surface) 63%,transparent)}
+.freedom-select-wrap>span,.freedom-price-rail>span,.freedom-hero-top small,.freedom-figures article small,.freedom-target-grid small{font-size:9px;line-height:1.35;letter-spacing:.095em;font-weight:800;color:var(--muted-strong)}
+.freedom-select-wrap select{width:100%;padding:7px 27px 7px 0;border:0;background:transparent;color:var(--text);outline:none;font-size:13px;font-weight:700;white-space:nowrap;text-overflow:ellipsis}
+.freedom-select-wrap select option{background:var(--surface,#132631);color:var(--text)}
+.freedom-price-rail strong{font-size:clamp(15px,2.7vw,21px);letter-spacing:-.02em}
+.freedom-price-rail small{font-size:9px;color:var(--muted)}
+.freedom-hero{padding:clamp(15px,3vw,25px);border-radius:17px;border:1px solid color-mix(in srgb,var(--accent) 31%,var(--line));background:radial-gradient(ellipse 72% 115% at 92% 6%,color-mix(in srgb,var(--accent) 12%,transparent),transparent 80%),linear-gradient(132deg,color-mix(in srgb,var(--surface) 88%,transparent),color-mix(in srgb,var(--theme-canvas) 55%,transparent));box-shadow:0 18px 52px rgba(0,0,0,.06)}
+.freedom-hero-top{display:flex;justify-content:space-between;align-items:center;gap:16px}
+.freedom-hero-top>div:first-child{min-width:0;flex:1}
+.freedom-hero h2{margin:9px 0 6px;font-size:clamp(17px,3.65vw,31px);line-height:1.14;letter-spacing:-.034em;max-width:630px;overflow-wrap:anywhere}
+.freedom-hero p{margin:0;color:var(--muted-strong);font-size:11px;line-height:1.6;max-width:650px}
+.freedom-meter{width:clamp(104px,19vw,142px);height:clamp(104px,19vw,142px);flex:0 0 auto;padding:8px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--accent) calc(var(--freedom-progress,0)*1%),color-mix(in srgb,var(--accent) 13%,var(--surface)) 0)}
+.freedom-meter>div{width:100%;height:100%;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center;background:var(--surface);padding:6px}
+.freedom-meter strong{font-size:clamp(18px,3.6vw,27px);letter-spacing:-.05em;line-height:1;font-weight:800}
+.freedom-meter small{font-size:8px;text-wrap:balance;letter-spacing:.06em}
+.freedom-bar{height:5px;border-radius:7px;background:color-mix(in srgb,var(--accent) 15%,var(--surface));overflow:hidden;margin:18px 0 9px}
+.freedom-bar span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),color-mix(in srgb,var(--accent) 72%,white));border-radius:inherit;transition:width .35s ease}
+.freedom-hero-foot{display:flex;justify-content:space-between;gap:10px;color:var(--muted-strong);font-size:10px;line-height:1.45}
+.freedom-hero-foot span:last-child{text-align:right}
+.freedom-figures{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.freedom-figures article,.freedom-section{min-width:0;border:1px solid var(--line);border-radius:13px;background:color-mix(in srgb,var(--surface) 60%,transparent);padding:17px}
+.freedom-figures article{display:flex;flex-direction:column;gap:8px}
+.freedom-figures article strong{font-size:clamp(17px,2.5vw,26px);line-height:1.1;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.freedom-figures article>span{font-size:10px;color:var(--muted-strong);overflow-wrap:anywhere}
+.freedom-section-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:17px}
+.freedom-section-heading h2{font-size:clamp(13px,2vw,17px);line-height:1.3;margin:5px 0 0;letter-spacing:.02em;font-weight:850}
+.freedom-pill{padding:6px 10px;border:1px solid color-mix(in srgb,var(--accent) 33%,var(--line));border-radius:7px;font-size:10px;color:var(--accent);font-weight:800;text-align:right}
+.freedom-tier-track{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:7px}
+.freedom-tier{min-width:0;display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;opacity:.58}
+.freedom-tier .freedom-tier-bar{width:100%;height:6px;border-radius:4px;background:var(--line)}
+.freedom-tier.current,.freedom-tier.reached{opacity:1}
+.freedom-tier.reached .freedom-tier-bar{background:color-mix(in srgb,var(--accent) 63%,var(--surface))}
+.freedom-tier.current .freedom-tier-bar{background:var(--accent);box-shadow:0 0 11px color-mix(in srgb,var(--accent) 38%,transparent)}
+.freedom-tier strong{font-size:9px;line-height:1.3;color:var(--muted-strong)}
+.freedom-tier.current strong{color:var(--text)}
+.freedom-tier small{font-size:9px;line-height:1.2;color:var(--muted)}
+.freedom-section>p{font-size:10px;line-height:1.55;color:var(--muted);margin:13px 0 0}
+.freedom-lifestyle{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.freedom-lifestyle-item{display:grid;grid-template-columns:35px minmax(0,1fr) auto;align-items:center;gap:9px;padding:12px 10px;border:1px solid var(--line);border-radius:11px;min-width:0}
+.freedom-lifestyle-item .freedom-lifestyle-emoji{font-size:21px;text-align:center}
+.freedom-lifestyle-item .freedom-lifestyle-name{min-width:0;display:flex;flex-direction:column;gap:4px}
+.freedom-lifestyle-item strong{font-size:11px;line-height:1.25}
+.freedom-lifestyle-item small{font-size:9px;color:var(--muted)}
+.freedom-lifestyle-item .freedom-lifestyle-result{text-align:right;font-size:10px;font-weight:800;color:var(--accent);max-width:110px}
+.freedom-lifestyle-item.not-yet .freedom-lifestyle-result{color:var(--muted-strong)}
+#freedomSpendHint{color:var(--muted);font-size:9px}
+.freedom-settings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.freedom-settings label{display:flex;flex-direction:column;gap:8px;min-width:0}
+.freedom-settings label>span{font-size:9px;line-height:1.35;color:var(--muted-strong);font-weight:750;letter-spacing:.06em}
+.freedom-settings input{width:100%;height:45px;min-width:0;border:1px solid var(--line);border-radius:9px;background:color-mix(in srgb,var(--surface) 90%,transparent);color:var(--text);font-size:18px;font-weight:750;padding:8px 12px}
+.freedom-target-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+.freedom-target-grid>div{display:flex;flex-direction:column;gap:7px;border-radius:10px;padding:14px;border:1px solid var(--line);background:color-mix(in srgb,var(--surface) 48%,transparent)}
+.freedom-target-grid strong{font-size:clamp(16px,2.4vw,23px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.freedom-stress{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:13px;padding:13px 2px;border-top:1px solid var(--line)}
+.freedom-stress>div{display:flex;flex-direction:column;gap:4px}
+.freedom-stress span{font-size:10px;font-weight:800;letter-spacing:.06em}
+.freedom-stress small{font-size:10px;color:var(--muted)}
+.freedom-stress strong{font-size:20px;color:var(--accent)}
+.freedom-plan>p{border-top:1px solid var(--line);padding-top:11px}
+.freedom-page>footer{text-align:center;padding:13px 0 24px;font-size:10px;letter-spacing:.14em;color:var(--muted-strong)}
+.freedom-page>footer span{opacity:.65}
+.privacy-active .private{filter:blur(10px);user-select:none;pointer-events:none}
+@media(min-width:900px){.freedom-page{padding-top:35px;gap:18px}}
+@media(max-width:560px){
+.freedom-page{gap:10px;padding:12px 10px 26px}
+.freedom-header{gap:10px;padding-bottom:13px}
+.freedom-heading h1{font-size:23px}
+.freedom-heading p{font-size:9px}
+.freedom-live{font-size:8px}
+.freedom-toolbar{gap:7px}
+.freedom-select-wrap,.freedom-price-rail{padding:10px 9px}
+.freedom-select-wrap select{font-size:11px}
+.freedom-price-rail strong{font-size:15px}
+.freedom-hero{padding:15px 12px}
+.freedom-hero-top{gap:10px}
+.freedom-meter{width:100px;height:100px}
+.freedom-meter strong{font-size:20px}
+.freedom-hero h2{font-size:17px}
+.freedom-hero p{font-size:10px}
+.freedom-figures{gap:6px}
+.freedom-figures article{padding:11px 8px;gap:6px}
+.freedom-figures article strong{font-size:15px}
+.freedom-figures article>span{font-size:9px}
+.freedom-section{padding:13px 10px}
+.freedom-section-heading{margin-bottom:12px}
+.freedom-tier-track{gap:4px}
+.freedom-tier strong{font-size:8px}
+.freedom-tier small{font-size:8px}
+.freedom-lifestyle{gap:6px}
+.freedom-lifestyle-item{gap:6px;grid-template-columns:26px minmax(0,1fr);padding:11px 7px}
+.freedom-lifestyle-item .freedom-lifestyle-emoji{font-size:18px}
+.freedom-lifestyle-item .freedom-lifestyle-result{grid-column:2;text-align:left;max-width:none;font-size:10px}
+.freedom-lifestyle-item strong{font-size:10px}
+.freedom-hero-foot{font-size:9px}
+}
+@media(max-width:350px){.freedom-hero-top{align-items:flex-start}.freedom-meter{width:88px;height:88px}.freedom-meter strong{font-size:17px}.freedom-heading h1{font-size:20px}.freedom-figures article strong{font-size:13px}}
+@media(prefers-reduced-motion:reduce){.freedom-bar span{transition:none}}
