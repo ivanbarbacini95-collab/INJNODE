@@ -58,6 +58,7 @@
  };
  let prefs={budget:1500,buffer:30},selected='',hasUserSelected=false,timer=null;
  let shownCurrency='EUR',rateEURperUSD=1,lastFormattedBudget='';
+ let lastRenderFingerprint='';
  const valid=n=>Number.isFinite(n)&&n>=0;
  const positive=n=>Number.isFinite(n)&&n>0;
  const clamp=(n,min,max,otherwise)=>Number.isFinite(n)?Math.min(max,Math.max(min,n)):otherwise;
@@ -211,6 +212,7 @@
  function render(){
   const source=parentSource();
   if(!source){
+   lastRenderFingerprint='';
    localize();txt('freedomPrice','—');txt('freedomUpdated',t('offline'));resetOutput('notReady');
    $('freedomFeed').classList.add('is-offline');return;
   }
@@ -219,6 +221,13 @@
   const price=num(source.price),fx=num(source.eurRate);
   const marketFresh=positive(num(source.priceAt))&&Date.now()-num(source.priceAt)<120000;
   const fxConfirmed=source.fxVerified===true;
+  const fingerprint=JSON.stringify([
+    language(),source.theme,source.privacy,source.currency,
+    selected,p.validRows,p.walletCount,p.total,p.staked,p.daily,p.apr,p.aprMissing,p.stale,
+    price,fx,marketFresh,fxConfirmed,prefs.budget,prefs.buffer
+  ]);
+  if(lastRenderFingerprint===fingerprint)return;
+  lastRenderFingerprint=fingerprint;
   const live=positive(price)&&positive(fx)&&p.ready&&marketFresh&&fxConfirmed&&!p.stale;
   const c=source.currency==='EUR'?'EUR':'USD';
   txt('freedomPrice',positive(price)?money(price*(c==='EUR'?fx:1),c):'—');
