@@ -67,7 +67,7 @@
  const language=()=>document.documentElement.lang==='en'?'en':'it';
  const t=k=>copy[language()][k];
  const txt=(id,value)=>{const el=$(id);if(el)el.textContent=value;};
- const money=(v,currency='EUR')=>valid(v)?new Intl.NumberFormat(language()==='en'?'en-US':'it-IT',{style:'currency',currency,maximumFractionDigits:2}).format(v):'—';
+ const money=(v,currency='EUR')=>valid(v)?new Intl.NumberFormat(language()==='en'?'en-US':'it-IT',{style:'currency',currency,currencyDisplay:'narrowSymbol',maximumFractionDigits:2}).format(v):'—';
  function readPrefs(){
   try{const p=JSON.parse(localStorage.getItem(STORE)||'{}');prefs.budget=(Number.isFinite(Number(p.budget))&&Number(p.budget)>0)?Number(p.budget):1500;prefs.buffer=clamp(num(p.buffer),0,90,30)}catch(_){}
   $('freedomBudget').value=String(prefs.budget);
@@ -83,6 +83,13 @@
   const rate=positive(num(source.eurRate))?num(source.eurRate):rateEURperUSD;
   const changed=currency!==shownCurrency;
   shownCurrency=currency;rateEURperUSD=rate;
+  // Every displayed currency has a minimum editable goal of 1 unit.
+  // No arbitrary upper limit is applied.
+  if(budgetAmountInCurrency(currency,rate)<1){
+    prefs.budget=currency==='EUR'?1:rate;
+    writePrefs();
+    lastFormattedBudget='';
+  }
   txt('freedomBudgetLabel',t('budget').replace('€',currency==='USD'?'$':'€'));
   const input=$('freedomBudget');
   if((changed||!lastFormattedBudget)&&document.activeElement!==input){
@@ -235,7 +242,19 @@
   txt('freedomDayInj',inj(p.daily)+' INJ / '+(language()==='en'?'DAY':'GIORNO'));
   txt('freedomMonth',money(convert(monthGrossEUR),c));
   txt('freedomRewardInfo','APR NET: '+(p.staked>0?fmt(p.apr,2)+'%':'0%'));
-  renderTiers(worthEUR);
+  if(p.validRows===p.walletCount)renderTiers(worthEUR);
+  else{
+    $('freedomTierTrack').replaceChildren();
+    txt('freedomTier','—');
+    txt('freedomTierFoot',t('incompleteInfo'));
+  }
+  if(p.aprMissing||p.validRows!==p.walletCount){
+    // Missing APR must not look like an actual 0 EUR/USD staking yield.
+    txt('freedomDay','—');
+    txt('freedomDayInj','—');
+    txt('freedomMonth','—');
+    txt('freedomRewardInfo',t('notReadyInfo'));
+  }
   // A cached quote can still be used for a clearly labelled simulation.
   // Do not erase financial figures merely because WebSocket/FX is reconnecting.
   const usable=p.validRows===p.walletCount&&!p.aprMissing&&positive(price)&&positive(fx);
@@ -247,7 +266,7 @@
   $('freedomBarFill').style.width=Math.min(100,safeCoverage).toFixed(2)+'%';
   txt('freedomStatusTitle',!verified?t('incomplete'):coverage>=100?t('yes'):t('no'));
   txt('freedomStatusExplain',!verified?t('incompleteInfo'):coverage>=100?t('yesInfo'):t('noInfo'));
-  txt('freedomCoverageFoot',money(convert(monthAdjustedEUR),c));
+  txt('freedomCoverageFoot',usable?money(convert(monthAdjustedEUR),c):'—');
   txt('freedomGoal',money(convert(prefs.budget),c));
   lifestyleRows(adjustedEUR,usable);
   const annualEURPerInj=(p.apr/100)*price*fx*(1-prefs.buffer/100);
@@ -269,7 +288,7 @@
    const raw=$('freedomBudget').value;
    const value=raw.trim()?Number(raw):NaN;
    if(Number.isFinite(value)&&value>0){
-    const amountEUR=value*(shownCurrency==='USD'?rateEURperUSD:1);
+    const amountEUR=Math.max(1,value)*(shownCurrency==='USD'?rateEURperUSD:1);
     prefs.budget=Number.isFinite(amountEUR)&&amountEUR>0?amountEUR:prefs.budget;
    }
    prefs.buffer=clamp(num($('freedomBuffer').value),0,90,prefs.buffer);
