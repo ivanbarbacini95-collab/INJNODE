@@ -22,38 +22,38 @@
  ];
  const copy={
   it:{
-   intro:'Il patrimonio misura il gradino. Le reward misurano la copertura delle spese.',
+   intro:'Patrimonio e rendita a colpo d’occhio.',
    selected:'WALLET SELEZIONATO',all:'TUTTI I WALLET',price:'PREZZO INJ LIVE',status:'STATO FINANZIARIO',dayLabel:'REWARD / GIORNO',monthLabel:'REWARD / MESE',wealthEyebrow:'SCALA PATRIMONIALE',spendEyebrow:'SPESE QUOTIDIANE',planEyebrow:'OBIETTIVO DI LIBERTÀ',
-   notReady:'IN ATTESA DEI DATI',notReadyInfo:'Seleziona un wallet e attendi una quotazione e uno staking aggiornati.',
-   incomplete:'DATI INCOMPLETI',incompleteInfo:'La sincronizzazione di alcuni wallet, del prezzo o dell’APR non è completa. Non viene assegnato un giudizio finanziario.',
-   no:'NON ANCORA FINANZIARIAMENTE LIBERO',noInfo:'Le reward previste coprono solo una parte delle spese impostate.',
-   yes:'COPERTURA TEORICA COMPLETA',yesInfo:'Le reward stimate coprono la spesa mensile impostata. Non significa libertà finanziaria garantita: prezzo, APR e rischio INJ possono cambiare.',
+   notReady:'DATI IN ARRIVO',notReadyInfo:'In attesa dei dati del wallet.',
+   incomplete:'DATI NON AGGIORNATI',incompleteInfo:'Verifica prezzo, APR e wallet.',
+   no:'COPERTURA PARZIALE',noInfo:'Reward sotto l’obiettivo mensile.',
+   yes:'OBIETTIVO COPERTO',yesInfo:'Reward teoricamente sufficienti. Non garantite.',
    covered:'SPESE COPERTE',target:'OBIETTIVO 100%',short:'MANCANO',worth:'PATRIMONIO INJ',reward:'APR netto validator',
-   grade:'IL TUO GRADINO PATRIMONIALE',tierFoot:'Livelli orientativi basati sul controvalore totale INJ. Non sono classi patrimoniali ufficiali.',
-   daily:'COSA POSSONO COPRIRE LE REWARD?',estimated:'STIMA A VALORI ATTUALI',lifestyleNote:'Prezzi esemplificativi in EUR; consumi e stile di vita reali possono essere diversi.',
-   plan:'IMPOSTA IL TUO OBIETTIVO',budget:'SPESE MENSILI DA COPRIRE (€)',buffer:'MARGINE DI PRUDENZA (%)',
-   needs:'INJ IN STAKING NECESSARI',missing:'INJ ANCORA NECESSARI',stress:'SCENARIO PRUDENTE',stressNote:'Prezzo −50% · APR −30%',
-   disclaimer:'Proiezioni, non uno stipendio garantito. Il margine è una riserva prudenziale e non rappresenta il calcolo delle imposte. Per valutare la libertà finanziaria reale servono anche liquidità, diversificazione, sostenibilità delle reward, rischio e tassazione.',
+   grade:'IL TUO GRADINO',tierFoot:'Fasce indicative, non ufficiali.',
+   daily:'COSA COPRONO LE REWARD',estimated:'STIME',lifestyleNote:'Costi indicativi.',
+   plan:'IL TUO OBIETTIVO',budget:'SPESE / MESE (€)',buffer:'MARGINE (%)',
+   needs:'INJ NECESSARI',missing:'INJ MANCANTI',stress:'SCENARIO -50%',stressNote:'Prezzo −50% · APR −30%',
+   disclaimer:'Simulazioni non garantite. Prezzo, APR e imposte possono cambiare. Il margine non è una stima fiscale.',
    synced:'WALLET AGGIORNATO',stale:'DATI DA AGGIORNARE',offline:'DATI NON DISPONIBILI',privacy:'PRIVACY ATTIVA',zero:'NON COPERTO',
    each:'OGNI GIORNO',once:'1 OGNI',days:'GIORNI',monthly:'MESE',coveredWord:'COPERTO',coins:'INJ',next:'PROSSIMO LIVELLO',max:'MASSIMO LIVELLO',priceWaiting:'QUOTAZIONE IN ATTESA',
-   margin:'Dopo margine prudenziale',actual:'Stima prima del margine',spend:'Spese mensili'
+   margin:'Reward utilizzabili',actual:'Prima del margine',spend:'Spese mensili'
   },
   en:{
-   intro:'Net worth defines the wealth tier. Rewards measure how much of your expenses they could cover.',
+   intro:'Wealth and staking income at a glance.',
    selected:'SELECTED WALLET',all:'ALL WALLETS',price:'LIVE INJ PRICE',status:'FINANCIAL STATUS',dayLabel:'REWARDS / DAY',monthLabel:'REWARDS / MONTH',wealthEyebrow:'WEALTH LADDER',spendEyebrow:'DAILY LIFESTYLE',planEyebrow:'FREEDOM TARGET',
-   notReady:'WAITING FOR LIVE DATA',notReadyInfo:'Select a wallet and wait for a current quote and staking data.',
-   incomplete:'INCOMPLETE DATA',incompleteInfo:'Some wallet, price, or APR information is unavailable. Financial status is not assessed.',
-   no:'NOT FINANCIALLY INDEPENDENT YET',noInfo:'Estimated staking rewards cover only part of your target expenses.',
-   yes:'ESTIMATED EXPENSE COVERAGE',yesInfo:'Projected rewards cover your monthly expense target. This does not guarantee financial independence: INJ price, APR and risks may change.',
+   notReady:'LOADING DATA',notReadyInfo:'Waiting for wallet data.',
+   incomplete:'DATA OUT OF DATE',incompleteInfo:'Check price, APR and wallet sync.',
+   no:'PARTIAL COVERAGE',noInfo:'Rewards below your monthly target.',
+   yes:'TARGET COVERED',yesInfo:'Rewards may cover your target. Not guaranteed.',
    covered:'EXPENSES COVERED',target:'100% TARGET',short:'STILL NEEDED',worth:'INJ NET WORTH',reward:'Net validator APR',
-   grade:'YOUR WEALTH TIER',tierFoot:'Illustrative tiers based on the total INJ market value, not official wealth classifications.',
-   daily:'WHAT CAN REWARDS COVER?',estimated:'BASED ON CURRENT VALUES',lifestyleNote:'Example prices in EUR; actual spending and living costs vary.',
-   plan:'SET YOUR TARGET',budget:'MONTHLY EXPENSES TO COVER (€)',buffer:'PRUDENCE BUFFER (%)',
-   needs:'REQUIRED STAKED INJ',missing:'ADDITIONAL INJ NEEDED',stress:'DOWNSIDE SCENARIO',stressNote:'Price −50% · APR −30%',
-   disclaimer:'Projections, not guaranteed salary. The buffer is a prudence reserve, not a tax calculation. Real financial freedom also depends on liquidity, diversification, sustainable income, risks and taxation.',
+   grade:'WEALTH LEVEL',tierFoot:'Illustrative tiers, not official rankings.',
+   daily:'REWARD SPENDING POWER',estimated:'ESTIMATES',lifestyleNote:'Illustrative costs.',
+   plan:'YOUR TARGET',budget:'SPENDING / MONTH (€)',buffer:'BUFFER (%)',
+   needs:'INJ REQUIRED',missing:'INJ TO GO',stress:'DOWNSIDE -50%',stressNote:'Price −50% · APR −30%',
+   disclaimer:'Estimates, not guaranteed income. Price, APR and taxes may change. The buffer is not a tax estimate.',
    synced:'WALLET UPDATED',stale:'DATA NEEDS REFRESH',offline:'DATA UNAVAILABLE',privacy:'PRIVACY MODE',zero:'NOT COVERED',
    each:'EACH DAY',once:'1 EVERY',days:'DAYS',monthly:'MONTH',coveredWord:'COVERED',coins:'INJ',next:'NEXT LEVEL',max:'TOP LEVEL',priceWaiting:'WAITING FOR QUOTE',
-   margin:'After prudence buffer',actual:'Estimate before buffer',spend:'Monthly expenses'
+   margin:'Spendable rewards',actual:'Before buffer',spend:'Monthly expenses'
   }
  };
  let prefs={budget:1500,buffer:30},selected='',hasUserSelected=false,seenSource=null,previousRenderKey='',timer=null;
@@ -88,7 +88,7 @@
  }
  function localize(){
   txt('freedomIntro',t('intro'));txt('freedomWalletLabel',t('selected'));txt('freedomPriceLabel',t('price'));
-  txt('freedomStatusLabel',t('status'));txt('freedomCoverageLabel',t('covered'));
+  txt('freedomStatusLabel',t('status'));txt('freedomCoverageLabel',t('covered'));txt('freedomNetLabel',language()==='en'?'SPENDABLE / MONTH':'UTILIZZABILI / MESE');txt('freedomGoalLabel',language()==='en'?'SPENDING / MONTH':'SPESE / MESE');txt('freedomBufferHint',language()==='en'?'Rewards held back':'Reward non spendibili');
   txt('freedomWorthLabel',t('worth'));txt('freedomDayLabel',t('dayLabel'));txt('freedomMonthLabel',t('monthLabel'));txt('freedomWealthEyebrow',t('wealthEyebrow'));txt('freedomSpendEyebrow',t('spendEyebrow'));txt('freedomPlanEyebrow',t('planEyebrow'));txt('freedomWealthTitle',t('grade'));txt('freedomTierFoot',t('tierFoot'));
   txt('freedomSpendTitle',t('daily'));txt('freedomSpendHint',t('estimated'));txt('freedomLifestyleFoot',t('lifestyleNote'));
   txt('freedomPlanTitle',t('plan'));txt('freedomBudgetLabel',t('budget'));txt('freedomBufferLabel',t('buffer'));
@@ -212,9 +212,9 @@
   txt('freedomWorth',money(convert(worthEUR),c));
   txt('freedomInj',inj(p.total)+' INJ · '+inj(p.staked)+' STAKED');
   txt('freedomDay',money(convert(dayEUR),c));
-  txt('freedomDayInj',inj(p.daily)+' INJ / DAY · '+t('actual'));
+  txt('freedomDayInj',inj(p.daily)+' INJ / '+(language()==='en'?'DAY':'GIORNO'));
   txt('freedomMonth',money(convert(monthGrossEUR),c));
-  txt('freedomRewardInfo',t('reward')+': '+(p.staked>0?fmt(p.apr,2)+'%':'0%'));
+  txt('freedomRewardInfo','APR NET: '+(p.staked>0?fmt(p.apr,2)+'%':'0%'));
   renderTiers(worthEUR);
   const usable=p.complete&&marketFresh&&fxConfirmed&&positive(price)&&positive(fx);
   const safeCoverage=usable?coverage:0;
@@ -224,8 +224,8 @@
   $('freedomBarFill').style.width=Math.min(100,safeCoverage).toFixed(2)+'%';
   txt('freedomStatusTitle',!usable?t('incomplete'):coverage>=100?t('yes'):t('no'));
   txt('freedomStatusExplain',!usable?t('incompleteInfo'):coverage>=100?t('yesInfo'):t('noInfo'));
-  txt('freedomCoverageFoot',t('margin')+': '+money(convert(monthAdjustedEUR),c)+' / '+t('monthly'));
-  txt('freedomGoal',t('spend')+': '+money(convert(prefs.budget),c));
+  txt('freedomCoverageFoot',money(convert(monthAdjustedEUR),c));
+  txt('freedomGoal',money(convert(prefs.budget),c));
   lifestyleRows(adjustedEUR,usable);
   const annualEURPerInj=(p.apr/100)*price*fx*(1-prefs.buffer/100);
   const target=usable&&annualEURPerInj>0?prefs.budget*12/annualEURPerInj:NaN;
