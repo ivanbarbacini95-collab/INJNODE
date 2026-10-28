@@ -255,3 +255,22 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
  .freedom-meter{width:90px;height:90px;flex-basis:90px}
  .freedom-hero-foot-stat strong{font-size:13px}
 }
+
+/* v3: Dedicated scroll surface in iOS standalone iframe; parent remains still. */
+html[data-inj-page="financial-freedom"]{
+ height:100%!important;min-height:0!important;
+ overflow:hidden!important;
+}
+html[data-inj-page="financial-freedom"] body{
+ height:100%!important;min-height:0!important;
+ overflow-x:hidden!important;overflow-y:auto!important;
+ -webkit-overflow-scrolling:touch;
+ overscroll-behavior-y:contain;
+ touch-action:pan-y!important;
+}
+html[data-inj-page="financial-freedom"] .freedom-page{
+ min-height:100%;height:auto;
+}
+html[data-inj-page="financial-freedom"] .freedom-settings input{
+ min-width:0;max-width:100%;
+}
