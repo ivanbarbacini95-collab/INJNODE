@@ -1,5 +1,6 @@
-const CACHE_NAME = 'inj-node-v16.10.28-seamless-top-v2';
+const CACHE_NAME = 'inj-node-v16.10.28-home-launcher-labels-v1';
 const APP_SHELL = [
+  './home-launcher-typography-final.css?v=20261028labels1',
   './home-terminal-header-20261027.css?v=h2',
   './home-premium-titles.css?v=20261027p1',
   './home-treasury-brand-layout.css?v=20261028bcg1',
