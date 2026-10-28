@@ -151,7 +151,14 @@ window.INJ_FINANCIAL_FREEDOM_SOURCE = function () {
         total:metric(row,'total'),
         staked:metric(row,'staked'),
         rewards:metric(row,'rewards'),
-        apr:metric(row,'personalApr'),
+        // Prefer a verified wallet APR; if its summary was refreshed before
+        // validator metadata, reuse the live APR of this active wallet only.
+        apr:(()=>{
+          const saved=metric(row,'personalApr');
+          if(saved>0)return saved;
+          const active=wallet.address===state.address?Number(state.personalApr):NaN;
+          return Number.isFinite(active)&&active>0?active:saved;
+        })(),
         updated:metric(row,'updated') || 0
       };
     })
