@@ -25,7 +25,7 @@
    intro:'Patrimonio e rendita a colpo d’occhio.',
    selected:'WALLET SELEZIONATO',all:'TUTTI I WALLET',price:'PREZZO INJ LIVE',status:'STATO FINANZIARIO',dayLabel:'REWARD / GIORNO',monthLabel:'REWARD / MESE',wealthEyebrow:'SCALA PATRIMONIALE',spendEyebrow:'SPESE QUOTIDIANE',planEyebrow:'OBIETTIVO DI LIBERTÀ',
    notReady:'DATI IN ARRIVO',notReadyInfo:'In attesa dei dati del wallet.',
-   incomplete:'DATI NON AGGIORNATI',incompleteInfo:'Verifica prezzo, APR e wallet.',
+   incomplete:'STIMA NON AGGIORNATA',incompleteInfo:'Valori indicativi · verifica i dati live.',
    no:'COPERTURA PARZIALE',noInfo:'Reward sotto l’obiettivo mensile.',
    yes:'OBIETTIVO COPERTO',yesInfo:'Reward teoricamente sufficienti. Non garantite.',
    covered:'SPESE COPERTE',target:'OBIETTIVO 100%',short:'MANCANO',worth:'PATRIMONIO INJ',reward:'APR netto validator',
@@ -42,7 +42,7 @@
    intro:'Wealth and staking income at a glance.',
    selected:'SELECTED WALLET',all:'ALL WALLETS',price:'LIVE INJ PRICE',status:'FINANCIAL STATUS',dayLabel:'REWARDS / DAY',monthLabel:'REWARDS / MONTH',wealthEyebrow:'WEALTH LADDER',spendEyebrow:'DAILY LIFESTYLE',planEyebrow:'FREEDOM TARGET',
    notReady:'LOADING DATA',notReadyInfo:'Waiting for wallet data.',
-   incomplete:'DATA OUT OF DATE',incompleteInfo:'Check price, APR and wallet sync.',
+   incomplete:'ESTIMATE · UPDATE NEEDED',incompleteInfo:'Indicative values · check live data.',
    no:'PARTIAL COVERAGE',noInfo:'Rewards below your monthly target.',
    yes:'TARGET COVERED',yesInfo:'Rewards may cover your target. Not guaranteed.',
    covered:'EXPENSES COVERED',target:'100% TARGET',short:'STILL NEEDED',worth:'INJ NET WORTH',reward:'Net validator APR',
@@ -69,7 +69,7 @@
  const txt=(id,value)=>{const el=$(id);if(el)el.textContent=value;};
  const money=(v,currency='EUR')=>valid(v)?new Intl.NumberFormat(language()==='en'?'en-US':'it-IT',{style:'currency',currency,maximumFractionDigits:2}).format(v):'—';
  function readPrefs(){
-  try{const p=JSON.parse(localStorage.getItem(STORE)||'{}');prefs.budget=clamp(num(p.budget),100,10000000,1500);prefs.buffer=clamp(num(p.buffer),0,90,30)}catch(_){}
+  try{const p=JSON.parse(localStorage.getItem(STORE)||'{}');prefs.budget=(Number.isFinite(Number(p.budget))&&Number(p.budget)>0)?Number(p.budget):1500;prefs.buffer=clamp(num(p.buffer),0,90,30)}catch(_){}
   $('freedomBudget').value=String(prefs.budget);
   lastFormattedBudget=String(prefs.budget);
   $('freedomBuffer').value=String(prefs.buffer);
@@ -212,7 +212,7 @@
   const price=num(source.price),fx=num(source.eurRate);
   const marketFresh=positive(num(source.priceAt))&&Date.now()-num(source.priceAt)<120000;
   const fxConfirmed=source.fxVerified===true;
-  const live=positive(price)&&positive(fx)&&p.ready&&marketFresh&&fxConfirmed;
+  const live=positive(price)&&positive(fx)&&p.ready&&marketFresh&&fxConfirmed&&!p.stale;
   const c=source.currency==='EUR'?'EUR':'USD';
   txt('freedomPrice',positive(price)?money(price*(c==='EUR'?fx:1),c):'—');
   txt('freedomUpdated',p.stale||(!marketFresh&&positive(price))||(!fxConfirmed&&positive(fx))?t('stale'):live?t('synced'):t('priceWaiting'));
@@ -236,21 +236,24 @@
   txt('freedomMonth',money(convert(monthGrossEUR),c));
   txt('freedomRewardInfo','APR NET: '+(p.staked>0?fmt(p.apr,2)+'%':'0%'));
   renderTiers(worthEUR);
-  const usable=p.complete&&marketFresh&&fxConfirmed&&positive(price)&&positive(fx);
+  // A cached quote can still be used for a clearly labelled simulation.
+  // Do not erase financial figures merely because WebSocket/FX is reconnecting.
+  const usable=p.validRows===p.walletCount&&!p.aprMissing&&positive(price)&&positive(fx);
+  const verified=usable&&marketFresh&&fxConfirmed&&!p.stale;
   const safeCoverage=usable?coverage:0;
   const ratioDisplay=Math.min(9999,Math.max(0,Math.round(coverage)));
   txt('freedomCoverage',usable?fmt(ratioDisplay,0)+'%':'—');
   $('freedomMeter').style.setProperty('--freedom-progress',String(Math.min(100,safeCoverage))+'%');
   $('freedomBarFill').style.width=Math.min(100,safeCoverage).toFixed(2)+'%';
-  txt('freedomStatusTitle',!usable?t('incomplete'):coverage>=100?t('yes'):t('no'));
-  txt('freedomStatusExplain',!usable?t('incompleteInfo'):coverage>=100?t('yesInfo'):t('noInfo'));
+  txt('freedomStatusTitle',!verified?t('incomplete'):coverage>=100?t('yes'):t('no'));
+  txt('freedomStatusExplain',!verified?t('incompleteInfo'):coverage>=100?t('yesInfo'):t('noInfo'));
   txt('freedomCoverageFoot',money(convert(monthAdjustedEUR),c));
   txt('freedomGoal',money(convert(prefs.budget),c));
   lifestyleRows(adjustedEUR,usable);
   const annualEURPerInj=(p.apr/100)*price*fx*(1-prefs.buffer/100);
-  const target=usable&&annualEURPerInj>0?prefs.budget*12/annualEURPerInj:NaN;
-  txt('freedomTargetInj',valid(target)?inj(target)+' INJ':'—');
-  txt('freedomMissingInj',valid(target)?inj(Math.max(0,target-p.staked))+' INJ':'—');
+  const target=usable&&annualEURPerInj>0?(prefs.budget/annualEURPerInj)*12:NaN;
+  txt('freedomTargetInj',valid(target)?inj(target)+' INJ':(usable&&positive(annualEURPerInj)?'∞ INJ':'—'));
+  txt('freedomMissingInj',valid(target)?inj(Math.max(0,target-p.staked))+' INJ':(usable&&positive(annualEURPerInj)?'∞ INJ':'—'));
   txt('freedomStressCoverage',usable?fmt(Math.round(coverage*.5*.7),0)+'%':'—');
  }
  function close(){
@@ -267,7 +270,7 @@
    const value=raw.trim()?Number(raw):NaN;
    if(Number.isFinite(value)&&value>0){
     const amountEUR=value*(shownCurrency==='USD'?rateEURperUSD:1);
-    prefs.budget=clamp(amountEUR,100,10000000,prefs.budget);
+    prefs.budget=Number.isFinite(amountEUR)&&amountEUR>0?amountEUR:prefs.budget;
    }
    prefs.buffer=clamp(num($('freedomBuffer').value),0,90,prefs.buffer);
    writePrefs();render();
