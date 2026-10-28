@@ -106,3 +106,28 @@
     -webkit-backdrop-filter:none!important;backdrop-filter:none!important;
   }
 }
+
+/* INJ Node · Seamless top canvas v2 · 2026-10-28
+   Avoid three independent gradient layers with different paint heights.
+   Keep one root theme gradient and transparent page shells. Native status
+   chrome, safe-area geometry, scrolling and content layout stay untouched. */
+@media (max-width:900px), (hover:none) and (pointer:coarse) {
+  html[data-theme][data-inj-page]:not([data-inj-page="workspace"]):not([data-inj-page="reward-ladder"]):not([data-inj-page="injc-etf"]),
+  html[data-inj-market][data-theme] {
+    background-color:var(--theme-canvas,var(--bg,var(--canvas,#07121b)))!important;
+    background-image:var(--page-gradient,none)!important;
+    background-repeat:no-repeat!important;
+    background-position:center top!important;
+    background-attachment:scroll!important;
+  }
+  html[data-theme][data-inj-page]:not([data-inj-page="workspace"]):not([data-inj-page="reward-ladder"]):not([data-inj-page="injc-etf"]) body,
+  html[data-inj-market][data-theme] body {
+    background-color:transparent!important;
+    background-image:none!important;
+  }
+  html[data-theme][data-inj-page="index"] body #entryGate.entry-gate,
+  html[data-theme][data-inj-page="index"] body #entryGate.entry-gate > .entry-gate-shell:not(.first-access) {
+    background-color:transparent!important;
+    background-image:none!important;
+  }
+}
