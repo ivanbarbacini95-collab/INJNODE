@@ -128,6 +128,35 @@ window.INJ_GET_SELECTED_WALLET_SNAPSHOT = function () {
   };
 };
 
+/* Financial Freedom reads the same live Home source without extra requests.
+   Expose read-only public wallet summaries; never approximate a missing APR. */
+window.INJ_FINANCIAL_FREEDOM_SOURCE = function () {
+  const metric=(row,key)=>row && row[key]!==null && row[key]!==undefined &&
+    Number.isFinite(Number(row[key]))?Number(row[key]):null;
+  return {
+    selectedAddress:state.entrySelectedAddress || state.address,
+    price:Number(state.price)>0?Number(state.price):null,
+    priceAt:state.lastMarketUpdate || 0,
+    eurRate:Number(state.eurRate)>0?Number(state.eurRate):null,
+    currency:state.currency === 'EUR'?'EUR':'USD',
+    theme:document.documentElement.dataset.theme || 'navy',
+    language:window.INJ_I18N?.getLanguage?.() === 'en'?'en':(document.documentElement.lang==='en'?'en':'it'),
+    privacy:document.body.classList.contains('privacy-on'),
+    wallets:state.wallets.map(wallet=>{
+      const row=state.walletSummaries[wallet.address] || null;
+      return {
+        address:wallet.address,
+        label:wallet.label,
+        total:metric(row,'total'),
+        staked:metric(row,'staked'),
+        rewards:metric(row,'rewards'),
+        apr:metric(row,'personalApr'),
+        updated:metric(row,'updated') || 0
+      };
+    })
+  };
+};
+
 function setEntryOnboardingStatus(message, mode = '') {
   const status = $('entryWalletStatus');
   if (!status) return;
