@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.10.28-macroresults-v1';
+const CACHE_NAME = 'inj-node-v16.10.28-macro-logo-titles-v1';
 const APP_SHELL = [
   './ambient-wallet-reward-glow.css?v=20261028ambient1',
   './market-events-layout-pro.css?v=20261028risk1',
@@ -7,6 +7,7 @@ const APP_SHELL = [
   './app.js?v=20261028pnlaxis2',
   './market-events-footer-seamless.css?v=20261028foot1',
   './home-launcher-typography-final.css?v=20261028labels1',
+  './home-final-four-titles.css?v=20261028four1',
   './home-terminal-header-20261027.css?v=h2',
   './home-premium-titles.css?v=20261027p1',
   './home-treasury-brand-layout.css?v=20261028bcg1',
@@ -166,8 +167,8 @@ const APP_SHELL = [
   './inj-ownership.js?v=160625',
   './comparison.html',
   './comparison.css?v=160095',
-  './comparison-ab.css?v=160095',
-  './comparison.js?v=160095',
+  './comparison-ab.css?v=20261028logos1',
+  './comparison.js?v=20261028logos1',
   './market-portal.js?v=160719',
   './market-lang.js?v=160082',
   './market.css?v=160082',
