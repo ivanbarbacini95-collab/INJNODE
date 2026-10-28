@@ -786,3 +786,64 @@ html[data-inj-page="index"] body #entryGate .entry-gate-shell:not(.first-access)
  html[data-inj-page="index"] body #entryGate #entryMarketEventsButton.entry-action > .inj-events-tile-stars{right:11px!important;font-size:18px!important}
  html[data-inj-page="index"] body #entryGate #entryMarketEventsButton.entry-action > .inj-events-tile-copy > strong{font-size:16px!important}
 }
+
+/* INJNODE v2: own an entire launcher grid cell.
+   The wrapper is NOT an .entry-action, so mobile 2-column tile overrides cannot
+   force Market Events back into the left half of the grid. */
+html[data-inj-page="index"] body #entryGate .entry-actions.entry-flat-v44 > .inj-market-events-slot{
+ grid-column:1/-1!important;grid-row:auto!important;
+ order:13!important;display:block!important;position:relative!important;
+ width:100%!important;min-width:0!important;max-width:100%!important;
+ height:auto!important;min-height:0!important;margin:0!important;padding:0!important;
+ align-self:stretch!important;justify-self:stretch!important;box-sizing:border-box!important;
+}
+html[data-inj-page="index"] body #entryGate .inj-market-events-slot > #entryMarketEventsButton.entry-action{
+ display:flex!important;position:relative!important;flex-direction:row!important;
+ align-items:center!important;justify-content:flex-start!important;
+ box-sizing:border-box!important;width:100%!important;min-width:0!important;
+ max-width:100%!important;height:81px!important;min-height:81px!important;
+ max-height:none!important;
+ margin:0!important;padding:12px 115px 12px 20px!important;
+ border-radius:17px!important;overflow:hidden!important;
+ text-align:left!important;
+ border:1px solid color-mix(in srgb,var(--accent,#8de6cd) 40%,var(--line,#3c575b))!important;
+ background:linear-gradient(110deg,color-mix(in srgb,var(--accent,#82dabd) 8%,var(--surface,#102421)),var(--surface-strong,#0e1d25))!important;
+}
+html[data-inj-page="index"] body #entryGate .inj-market-events-slot > #entryMarketEventsButton > .inj-events-tile-copy{
+ display:flex!important;flex-direction:column!important;
+ align-items:flex-start!important;justify-content:center!important;
+ width:100%!important;min-width:0!important;max-width:100%!important;
+ flex:1 1 0%!important;gap:6px!important;
+ overflow:hidden!important;position:relative!important;
+ text-align:left!important;
+}
+html[data-inj-page="index"] body #entryGate .inj-market-events-slot > #entryMarketEventsButton > .inj-events-tile-copy > strong{
+ display:block!important;width:100%!important;min-width:0!important;
+ overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;
+ font-size:clamp(16px,4.3vw,20px)!important;font-weight:800!important;
+ text-align:left!important;
+}
+html[data-inj-page="index"] body #entryGate .inj-market-events-slot > #entryMarketEventsButton > .inj-events-tile-copy > small{
+ display:block!important;min-width:0!important;width:100%!important;
+ max-width:100%!important;white-space:nowrap!important;overflow:hidden!important;
+ text-overflow:ellipsis!important;font-size:11px!important;text-align:left!important;
+}
+html[data-inj-page="index"] body #entryGate .inj-market-events-slot > #entryMarketEventsButton > .inj-events-tile-stars{
+ display:block!important;position:absolute!important;top:50%!important;right:25px!important;
+ left:auto!important;bottom:auto!important;z-index:4!important;
+ width:max-content!important;max-width:none!important;height:auto!important;
+ margin:0!important;padding:0!important;border:none!important;
+ background:transparent!important;box-shadow:none!important;
+ white-space:nowrap!important;writing-mode:horizontal-tb!important;
+ font-size:23px!important;letter-spacing:4px!important;
+ transform:translateY(-50%)!important;
+ pointer-events:none!important;
+}
+@media(max-width:420px){
+ html[data-inj-page="index"] body #entryGate .inj-market-events-slot > #entryMarketEventsButton.entry-action{
+  padding-right:100px!important;padding-left:17px!important
+ }
+ html[data-inj-page="index"] body #entryGate .inj-market-events-slot > #entryMarketEventsButton > .inj-events-tile-stars{
+  right:16px!important;font-size:20px!important;letter-spacing:3px!important
+ }
+}
