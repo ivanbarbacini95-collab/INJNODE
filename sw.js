@@ -1,6 +1,19 @@
-const CACHE_NAME = 'inj-node-v16.10.27-insights-pro3';
+const CACHE_NAME = 'inj-node-v16.10.28-macro-events-live-2';
 const APP_SHELL = [
   './home-terminal-header-20261027.css?v=h2',
+  './home-premium-titles.css?v=20261027p1',
+  './home-treasury-brand-layout.css?v=20261028bcg1',
+  './home-overview-price-first.css?v=20261028compact2',
+  './home-compact-value-bars.css?v=20261028compactbars1',
+  './home-market-events.css?v=20261028event1',
+  './home-market-events.js?v=20261028event2',
+  './inj-top-seamless.css?v=20261028seam1',
+  './inj-top-seamless.js?v=20261028ios27',
+  './home-statusbar-continuity.css?v=20261028seam1',
+  './menu-control-pro.css?v=20261028pro1',
+  './menu-control-pro.js?v=20261028pro1',
+  './inj-node-telemetry.js?v=20261028officialpro2',
+  './i18n.js?v=20261028menupro1',
   './home-terminal-header-20261027.js?v=h2',
   './workspace-sections.js?v=20261027-live2',
   './navigation.js?v=20261027-sync1',
@@ -9,18 +22,18 @@ const APP_SHELL = [
   './cloud-sync.html?v=20261027sync2',
   './cloud-sync.css?v=20261027sync1',
   './cloud-sync.js?v=20261027origin2',
-  './admin-insights.html?v=20261027pro3',
-  './admin-insights-pro.css?v=20261027pro3',
-  './admin-insights-pro.js?v=20261027pro3',
-  './inj-node-telemetry.js?v=20261027pro2',
+  './admin-insights.html?v=20261028officialpro1',
   './leaflet-1.9.4.css?v=20261027mapfix1',
   './admin-insights.css?v=20261027mapfix1',
   './admin-insights-auth.js?v=20261027cf1',
-  './admin-insights-dashboard.js?v=20261027mapfix1',
+  './admin-insights-pro.css?v=20261027pro3',
+  './admin-insights-pro.js?v=20261027pro3',
+  './admin-insights-dashboard.js?v=20261028officialpro1',
   './market-portal.js?v=20261027-g1',
-  './first-access-unified.css?v=20261027-left2',
-  './i18n.js?v=20261026b',
-  './app.js?v=20261027-onboard3',
+  './first-access-unified.css?v=20261027-official-fix1',
+  './wallet-manager-reliable.css?v=20261027a',
+  './i18n.js?v=20261027titles1',
+  './app.js?v=20261027-wallet-fix1',
   './performance-timeline-fit.css?v=20261026-fit1',
   './home-premium-iconography.js?v=20261027luxb1',
   './home-premium-iconography.css?v=20261027luxb1',
@@ -87,7 +100,7 @@ const APP_SHELL = [
   './navigation.js?v=160114',
   './i18n.js?v=160124',
   './i18n.js?v=160114',
-  './viewport.js?v=16.06.00',
+  './viewport.js?v=20261028ios27',
   './treasury.css?v=16.00.37',
   './scroll-edges.css?v=160129',
   './scroll-edges.js?v=160143',
@@ -236,7 +249,7 @@ self.addEventListener('fetch', (event) => {
 
   // Analytics config must never be locked behind the PWA's cache-first policy:
   // publishing the Insights URL must take effect without reinstalling the app.
-  if (url.pathname.endsWith('/inj-node-insights-config.js') || url.pathname.endsWith('/inj-node-telemetry.js') || url.pathname.endsWith('/cloud-sync-config.js')) {
+  if (url.pathname.endsWith('/inj-node-insights-config.js') || url.pathname.endsWith('/inj-node-telemetry.js') || url.pathname.endsWith('/cloud-sync-config.js') || url.pathname.endsWith('/inj-top-seamless.js') || url.pathname.endsWith('/viewport.js')) {
     event.respondWith(fetch(request, {cache:'no-store'}).catch(() => caches.match(request)));
     return;
   }
@@ -266,4 +279,27 @@ self.addEventListener('fetch', (event) => {
       return response;
     }))
   );
+});
+
+/* Foreground-generated event alerts: tapping one reopens the actual/forecast
+   detail on Home. This does not enable background push subscriptions. */
+self.addEventListener('notificationclick', (event) => {
+  const note=event.notification;
+  const detail=note?.data;
+  if(detail?.source!=='inj-market-events')return;
+  note.close();
+  const id=String(detail.eventId||'').slice(0,170);
+  event.waitUntil((async()=>{
+    const opened=await self.clients.matchAll({type:'window',includeUncontrolled:true});
+    const home=opened.find(c=>{
+      try{const path=new URL(c.url).pathname;return path==='/'||path.endsWith('/index.html')||/\/install-icon-[^/]+\.html$/.test(path)}
+      catch{return false}
+    });
+    if(home){
+      await home.focus();
+      home.postMessage({type:'inj-market-events-open',eventId:id});
+    }else if(self.clients.openWindow){
+      await self.clients.openWindow('/#inj-market-event='+encodeURIComponent(id));
+    }
+  })());
 });

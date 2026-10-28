@@ -42,6 +42,9 @@
     ["Ricompense in tempo reale", "Live Rewards"],
     ["Apri Reward Ladder", "Open Reward Ladder"],
 
+    ['Privacy statistiche','Analytics privacy'], ['Gestisci consenso analisi','Manage analytics consent'], ['Gestisci consenso statistiche','Manage analytics consent'],
+    ['Privacy statistiche · Modifica consenso','Analytics privacy · Change consent'],
+    ['Cloud Sync','Cloud Sync'],
     ['Apri Mercato','Open Market'], ['Apri menu','Open menu'], ['Chiudi menu','Close menu'], ['Chiudi sezione e torna alla Home','Close section and return Home'], ['Lingua', 'Language'], ['Italiano', 'Italian'], ['Inglese', 'English'], ['Interfaccia', 'Interface'],
     ['PRIMO ACCESSO', 'FIRST ACCESS'], ['Collega il tuo wallet', 'Connect your wallet'],
     ['Incolla il tuo indirizzo pubblico Injective per iniziare. Non servono seed phrase, chiavi private o connessioni al wallet.', 'Paste your public Injective address to get started. No seed phrase, private keys or wallet connections are required.'],
@@ -271,7 +274,7 @@
     if (el.closest?.('[data-i18n-skip="true"]')) return;
     // The Home descriptions always follow the chosen language, even after
     // a theme switch, a live update or a return to this already-mounted page.
-    if (el.classList?.contains('inj-tile-description')) {
+    if (el.classList?.contains('inj-tile-description') || el.classList?.contains('inj-home-tile-title')) {
       const localized = el.getAttribute(lang === 'en' ? 'data-en' : 'data-it');
       if (localized != null) {
         if (el.firstChild?.nodeType === 3 && el.childNodes.length === 1) {
@@ -296,7 +299,7 @@
     try {
       if (root.nodeType === 3) {
         const parent = root.parentElement;
-        if (!parent || parent.closest?.('[data-i18n-skip="true"], script, style, textarea')) return;
+        if (!parent || parent.closest?.('[data-i18n-skip="true"], .inj-home-tile-title, script, style, textarea')) return;
         const next = translateString(root.nodeValue);
         if (next !== root.nodeValue) root.nodeValue = next;
         return;

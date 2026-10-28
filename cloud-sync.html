@@ -8,7 +8,10 @@
 <title>Cloud Sync · INJ Node</title>
 <link rel="stylesheet" href="./cloud-sync.css?v=20261027b1">
 <script defer src="./cloud-sync-config.js?v=20261027b1"></script>
-<script defer src="./cloud-sync.js?v=20261027winpass1"></script>
+<script defer src="./cloud-sync.js?v=20261027origin2"></script>
+
+<link rel="stylesheet" href="./inj-top-seamless.css?v=20261028seam1"/>
+<script defer src="./inj-top-seamless.js?v=20261028seam1"></script>
 </head>
 <body>
 <div class="cs-shell">
@@ -25,13 +28,12 @@
     <section class="cs-card" id="cloudSyncEntry">
       <span class="cs-eyebrow">01 / IDENTITÀ PERSONALE</span>
       <h2>Il tuo account privato</h2>
-      <p>Un solo account Cloud Sync per iPhone, iPad, Mac e Windows. Se hai già creato l’account su un altro dispositivo, scegli ACCEDI CON PASSKEY: non crearne uno nuovo.</p>
+      <p>Collega una passkey protetta dal dispositivo. Puoi usare Face ID, Touch ID o una chiave di sicurezza supportata. Nessuna password da ricordare.</p>
       <div class="cs-actions">
-        <button type="button" class="cs-primary" id="cloudSyncLogin">ACCEDI CON PASSKEY</button>
-        <button type="button" class="cs-secondary" id="cloudSyncRegister">CREA NUOVO ACCOUNT</button>
+        <button type="button" class="cs-primary" id="cloudSyncRegister">CREA ACCOUNT</button>
+        <button type="button" class="cs-secondary" id="cloudSyncLogin">ACCEDI CON PASSKEY</button>
       </div>
-      <p class="cs-note" id="csWindowsPasskeyHint" hidden><strong>ACCESSO DA WINDOWS</strong> — Su Chrome o Edge seleziona ACCEDI CON PASSKEY, poi “Usa un altro dispositivo” / “iPhone, iPad o Android”. Scansiona il QR con l’iPhone in cui hai già la passkey e conferma con Face ID. Tieni Bluetooth e connessione Internet attivi su entrambi i dispositivi. Se il sistema propone Windows Hello, scegli le altre opzioni per usare l’iPhone.</p>
-      <p class="cs-small">Non viene inviato nulla al cloud finché non scegli di salvare. Dopo l’accesso su un nuovo dispositivo, seleziona RIPRISTINA SU QUESTO DISPOSITIVO per importare l’ultimo backup. Le passkey sono associate al dominio injectiveportfolio.com.</p>
+      <p class="cs-small">Non viene inviato nulla al cloud finché non scegli di salvare. Utilizza preferibilmente il dominio definitivo di INJ Node: le passkey sono associate al dominio.</p>
     </section>
     <section class="cs-card" id="cloudSyncAccount" hidden>
       <div class="cs-heading"><div><span class="cs-eyebrow">02 / IL TUO ARCHIVIO</span><h2>Account collegato</h2></div><span class="cs-online">● CONNESSO</span></div>
@@ -41,7 +43,6 @@
         <div><span>VOCI LOCALI</span><strong id="csLocalCount">0</strong></div>
       </div>
       <p id="csCloudDifference" class="cs-note">Nessun backup automatico iniziale. Scegli tu se inviare le impostazioni locali o ripristinare quelle archiviate.</p>
-      <p class="cs-small">Su un nuovo PC o telefono usa lo stesso account con ACCEDI CON PASSKEY, poi RIPRISTINA SU QUESTO DISPOSITIVO. Per abilitare anche Windows Hello sul PC, puoi registrare una passkey aggiuntiva qui senza creare un nuovo account.</p>
       <div class="cs-actions">
         <button id="csSave" type="button" class="cs-primary">SALVA SUL CLOUD</button>
         <button id="csRestore" type="button" class="cs-secondary">RIPRISTINA SU QUESTO DISPOSITIVO</button>
