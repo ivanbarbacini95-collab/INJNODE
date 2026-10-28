@@ -390,6 +390,36 @@
     ["Valore Potenziale · INJ Node","Potential Value · INJ Node"],
   );
 
+  pairs.push(
+    ["Confronto capitalizzazioni","Market Cap Comparison"],
+    ["Scala ricompense","Reward Ladder"],
+    ["Spazio di lavoro","Workspace"],
+    ["Spazio di lavoro INJ","INJ Workspace"],
+    ["Analisi INJ","INJ Intelligence"],
+    ["TUTTO","ALL"],
+    ["SCORRI","SCROLL"],
+    ["Cronologia visibile","Visible history"],
+    ["Visualizzazione cronologia","Timeline layout"],
+    ["Controlli Performance Timeline","Performance Timeline controls"],
+    ["Metrica Performance Timeline","Performance Timeline metric"],
+    ["Riepilogo Performance Timeline","Performance Timeline summary"],
+    ["Cronologia profit e loss giornaliero","Daily profit and loss history"],
+    ["INJ Node Dashboard, torna in alto","INJ Node Dashboard, back to top"],
+    ["Apri calendario Market Events","Open Market Events calendar"],
+    ["Chiudi Market Events","Close Market Events"],
+    ["Filtra gli eventi per giorno o settimana","Filter events by day or week"],
+    ["Calendario macroeconomico · solo impatto ★★★","Macroeconomic calendar · ★★★ impact only"],
+    ["MARKET EVENTS","EVENTI DI MERCATO"],
+    ["EVENTI DI MERCATO","MARKET EVENTS"],
+    ["GRAFICI","CHARTS"],
+    ["RICOMPENSE","REWARDS"],
+    ["Torna","Back"],
+    ["Cerca o aggiungi wallet","Search or add a wallet"],
+    ["Stato connessione","Connection status"],
+    ["Freschezza dati live","Live data freshness"],
+    ["Apri grafico Injective","Open Injective chart"],
+  );
+
   const exactIT = new Map();
   const exactEN = new Map();
   for (const [it, en] of pairs) {
@@ -501,7 +531,7 @@
 
   function translateElement(el) {
     if (!el || el.nodeType !== 1) return;
-    if (el.closest?.('[data-i18n-skip="true"]')) return;
+    if (el.closest?.('[data-i18n-skip="true"]') && !el.matches?.('[data-inj-section-name]')) return;
     // Use explicit bilingual copy for static labels, never for live data or nested controls.
     if (el.id !== 'injMarketNextSummary' && el.hasAttribute('data-it') && el.hasAttribute('data-en') && !el.children.length) {
       const it=el.getAttribute('data-it')||'', en=el.getAttribute('data-en')||'';
@@ -538,7 +568,7 @@
     try {
       if (root.nodeType === 3) {
         const parent = root.parentElement;
-        if (!parent || parent.closest?.('[data-i18n-skip="true"], .inj-home-tile-title, script, style, textarea')) return;
+        if (!parent || (parent.closest?.('[data-i18n-skip="true"], .inj-home-tile-title, script, style, textarea') && !parent.matches?.('[data-inj-section-name]'))) return;
         const next = translateString(root.nodeValue);
         if (next !== root.nodeValue) root.nodeValue = next;
         return;
@@ -551,7 +581,7 @@
         if (node.nodeType === 1) translateElement(node);
         else {
           const parent = node.parentElement;
-          if (!parent || parent.closest?.('[data-i18n-skip="true"], script, style, textarea')) continue;
+          if (!parent || (parent.closest?.('[data-i18n-skip="true"], script, style, textarea') && !parent.matches?.('[data-inj-section-name]'))) continue;
           const next = translateString(node.nodeValue);
           if (next !== node.nodeValue) node.nodeValue = next;
         }
