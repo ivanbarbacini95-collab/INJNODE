@@ -348,7 +348,7 @@
  function displaySource(){
    const host=$('injEventsSource');host.replaceChildren();
    const label=elt('span',null,tr('Fonte: ','Source: '));
-   const safeURL=state.source==='ShowMyTrades'?'https://showmytrades.com/tools/economic-calendar':
+   const safeURL=state.source.startsWith('ShowMyTrades')?'https://showmytrades.com/tools/economic-calendar':
     state.source.startsWith('Forex Factory')?'https://www.forexfactory.com/calendar':null;
    if(safeURL){const link=elt('a',null,state.source);link.href=safeURL;link.target='_blank';link.rel='noopener noreferrer';host.append(label,link);}
    else host.append(elt('span',null,tr('Fonte non disponibile','Source unavailable')));
@@ -564,35 +564,93 @@
     tr('Calendario ★★★ · nessun evento imminente','★★★ calendar · no upcoming events'):
     tr('Calendario macro ★★★ · USA / Europa / Asia','★★★ macro calendar · US / Europe / Asia');
  }
+ // Direct public calendar fallback when the hosting provider does not serve /api.
+ // ShowMyTrades documents browser CORS and 1-30 day ranges.
+ function normaliseCalendarRows(rows,provider){
+  const currencySet=new Set(['USD','EUR','GBP','CHF','JPY','CNY']);
+  const normalised=[];
+  for(const e of rows){
+   const country=String(e.country||e.currency||'').toUpperCase();
+   const impact=String(e.importance||e.impact||'').toLowerCase();
+   if(!currencySet.has(country)||!['3','high'].includes(impact))continue;
+   let sourceDate=e.date||e.time||null;
+   if(!sourceDate&&Number.isFinite(Number(e.ts))){
+    sourceDate=new Date(Number(e.ts)*1000).toISOString();
+   }
+   const timestamp=Date.parse(sourceDate||'');
+   if(!Number.isFinite(timestamp)||!String(e.title||'').trim())continue;
+   const record=validateEvent({
+    id:e.id||country+'-'+e.title+'-'+sourceDate,
+    country,title:e.title,importance:3,date:new Date(timestamp).toISOString(),
+    forecast:e.forecast,actual:e.actual,previous:e.previous,status:e.status||'scheduled'
+   });
+   if(record)normalised.push(record);
+  }
+  return normalised.sort(byDate);
+ }
+ async function directCalendar(){
+  try{
+   const url='https://showmytrades.com/api/public/calendar/v1?currency=USD,EUR,GBP,CHF,JPY,CNY&impact=high&days=30';
+   const data=await tickerGet(url);
+   if(!Array.isArray(data.events))throw Error('No public economic calendar');
+   return {events:normaliseCalendarRows(data.events,'ShowMyTrades'),
+    source:'ShowMyTrades',coverage:tr('Fonte diretta · aggiornamento periodico','Direct source · periodic updates'),
+    sourceUrl:'https://showmytrades.com/tools/economic-calendar'};
+  }catch{}
+  // Public week exports; coverage may be partial on two-week or month filters.
+  const files=['thisweek','nextweek'];
+  const result=await Promise.allSettled(files.map(async week=>{
+   const data=await tickerGet('https://nfs.faireconomy.media/ff_calendar_'+week+'.json');
+   if(!Array.isArray(data))throw Error('Invalid weekly feed');
+   return data;
+  }));
+  const available=result.filter(r=>r.status==='fulfilled').flatMap(r=>r.value);
+  if(!available.length)throw Error('Economic calendar sources unavailable');
+  return {events:normaliseCalendarRows(available,'Forex Factory'),
+   source:'Forex Factory (weekly export)',
+   coverage:tr('Copertura delle sole settimane disponibili','Available weeks only'),
+   sourceUrl:'https://www.forexfactory.com/calendar'};
+ }
  async function loadCalendar(force=false){
   if(state.processing){if(force)state.reloadQueued=true;return state.inFlight}
   if(!force&&state.lastCalendar&&now()-state.lastCalendar<150000)return;
   state.processing=true;
   state.inFlight=(async()=>{
+   try{
+    let data=null;
     try{
-      const response=await fetch('/api/market-events?days=30',{cache:'no-store'});
-      if(!response.ok)throw Error('Calendar HTTP '+response.status);
-      const data=await response.json();
-      if(!Array.isArray(data.events))throw Error('Invalid event feed');
-      const events=data.events.map(validateEvent).filter(Boolean).sort(byDate);
-      state.events=events;
-      state.source=String(data.source||'');state.coverage=String(data.coverage||'');state.sourceURL=String(data.sourceUrl||'');
-      state.lastCalendar=now();
-      displaySource();
-      maybeAnnounce(events);
-      saveUpcoming(events);
-      setMessage(tr('Solo eventi ★★★ · fuso orario del dispositivo · avvisi con app aperta. ','★★★ events only · your local time · alerts while app open. ')+state.coverage);
-      renderNext();
-      if(state.open)list();
-    }catch(error){
-      state.source='';state.lastCalendar=0;state.events=[];
-      setMessage(tr('Fonte calendario temporaneamente non disponibile. Nessun evento o dato viene inventato.','Calendar temporarily unavailable. No event or data is fabricated.'));
-      if(state.open)list();
-      renderNext();
-    }finally{
-      state.processing=false;state.inFlight=null;
-      if(state.reloadQueued){state.reloadQueued=false;queueMicrotask(()=>loadCalendar(true))}
-    }
+     const response=await fetch('/api/market-events?days=30',{cache:'no-store'});
+     if(!response.ok)throw Error('Calendar HTTP '+response.status);
+     const json=await response.json();
+     if(!Array.isArray(json.events))throw Error('Invalid calendar feed');
+     const events=json.events.map(validateEvent).filter(Boolean).sort(byDate);
+     if(events.length) data={...json,events};
+    }catch{}
+    if(!data)data=await directCalendar();
+    if(!Array.isArray(data.events))throw Error('No calendar records');
+    const unique=new Map(data.events.map(event=>[event.id,event]));
+    const events=[...unique.values()].sort(byDate);
+    state.events=events;
+    state.source=String(data.source||'');
+    state.coverage=String(data.coverage||'');
+    state.sourceURL=String(data.sourceUrl||'');
+    state.lastCalendar=now();
+    displaySource();
+    maybeAnnounce(events);
+    saveUpcoming(events);
+    setMessage(tr('Solo eventi ★★★ · orario locale · avvisi mentre l’app è aperta. ','★★★ events only · local time · alerts while app is open. ')+state.coverage);
+    renderNext();
+    if(state.open)list();
+   }catch(error){
+    // Do not discard verified data because one feed temporarily times out.
+    if(!state.lastCalendar){state.source='';state.events=[]}
+    setMessage(tr('Calendario temporaneamente non raggiungibile. Gli eventi non vengono inventati.','Calendar feed temporarily unreachable. No events are fabricated.'));
+    if(state.open)list();
+    renderNext();
+   }finally{
+    state.processing=false;state.inFlight=null;
+    if(state.reloadQueued){state.reloadQueued=false;queueMicrotask(()=>loadCalendar(true))}
+   }
   })();
   return state.inFlight;
  }
