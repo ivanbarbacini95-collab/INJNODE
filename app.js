@@ -138,7 +138,7 @@ window.INJ_FINANCIAL_FREEDOM_SOURCE = function () {
     price:Number(state.price)>0?Number(state.price):null,
     priceAt:state.lastMarketUpdate || 0,
     eurRate:Number(state.eurRate)>0?Number(state.eurRate):null,
-    fxVerified:Number(localStorage.getItem('inj_monitor_eur_rate'))>0,
+    fxVerified:(()=>{try{return Number(localStorage.getItem('inj_monitor_eur_rate'))>0;}catch(_){return false;}})(),
     currency:state.currency === 'EUR'?'EUR':'USD',
     theme:document.documentElement.dataset.theme || 'navy',
     language:window.INJ_I18N?.getLanguage?.() === 'en'?'en':(document.documentElement.lang==='en'?'en':'it'),
@@ -156,6 +156,56 @@ window.INJ_FINANCIAL_FREEDOM_SOURCE = function () {
       };
     })
   };
+};
+
+/* Financial Freedom: load missing net validator APR only on demand.
+   Supports All Wallet without treating gross network APR as spendable yield.
+   Cached wallet balances and all other screens are unaffected. */
+let freedomAprSyncing=false;
+let freedomAprLastAttempt=0;
+window.INJ_FINANCIAL_FREEDOM_ENRICH_APR = async function () {
+  if(freedomAprSyncing||Date.now()-freedomAprLastAttempt<60_000)return;
+  const pending=state.wallets
+    .filter(wallet=>{
+      const row=state.walletSummaries[wallet.address];
+      return number(row?.staked)>0 &&
+        (row?.personalApr===undefined||row?.personalApr===null||
+          !Number.isFinite(Number(row.personalApr)));
+    }).map(wallet=>wallet.address);
+  if(!pending.length)return;
+  freedomAprSyncing=true;
+  freedomAprLastAttempt=Date.now();
+  try{
+    if(!(state.networkApr>0)){
+      try{await ensureNetworkApr(false);}catch(_){}
+    }
+    if(!(state.networkApr>0))return;
+    let cursor=0;
+    const worker=async()=>{
+      while(cursor<pending.length){
+        const address=pending[cursor++];
+        try{
+          const raw=await lcd('/cosmos/staking/v1beta1/delegations/'+address);
+          const delegated=delegationRows(raw);
+          if(!delegated.length)continue;
+          const validators=await Promise.all(delegated.map(loadValidator));
+          // Unknown commission is not a 0%-fee validator.
+          if(validators.some(v=>!number(v.updated)))continue;
+          const amount=validators.reduce((sum,v)=>sum+number(v.amount),0);
+          const annual=validators.reduce((sum,v)=>
+            sum+number(v.amount)*(validatorNetApr(v)/100),0);
+          if(!(amount>0))continue;
+          const apr=annual/amount*100;
+          if(!Number.isFinite(apr)||apr<0||apr>200)continue;
+          const current=state.walletSummaries[address];
+          if(!current)continue;
+          state.walletSummaries[address]={...current,personalApr:apr,validators,networkApr:state.networkApr};
+          try{saveWalletSummaries();}catch(_){}
+        }catch(_){}
+      }
+    };
+    await Promise.all(Array.from({length:Math.min(2,pending.length)},()=>worker()));
+  }finally{freedomAprSyncing=false;}
 };
 
 function setEntryOnboardingStatus(message, mode = '') {
