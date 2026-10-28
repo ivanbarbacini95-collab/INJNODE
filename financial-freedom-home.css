@@ -102,14 +102,14 @@ html[data-inj-page="index"] body #entryGate
   padding:12px 19px!important;
   border-radius:15px!important;
   isolation:isolate!important;
-  background:
-    radial-gradient(ellipse 35% 130% at 92% 50%,color-mix(in srgb,var(--accent) 11%,transparent),transparent 80%),
-    linear-gradient(106deg,color-mix(in srgb,var(--surface) 83%,transparent),color-mix(in srgb,var(--theme-canvas,var(--bg)) 78%,var(--surface)))!important;
+  /* The same surface and border used by every Home launcher. */
+  border-color:color-mix(in srgb,var(--accent) 20%,var(--line))!important;
+  background:linear-gradient(125deg,color-mix(in srgb,var(--accent) 4%,var(--surface)),color-mix(in srgb,var(--surface-strong) 91%,var(--theme-canvas)))!important;
 }
 html[data-inj-page="index"] body #entryGate #entryFreedomButton::before {
   content:"";position:absolute;z-index:0;inset:0;
-  pointer-events:none;opacity:.35;
-  background:linear-gradient(106deg,transparent 62%,color-mix(in srgb,var(--accent) 5%,transparent) 82%,transparent);
+  pointer-events:none;opacity:0;
+  background:none;
 }
 html[data-inj-page="index"] body #entryGate #entryFreedomButton>.freedom-entry-emblem.entry-action-icon {
   position:relative!important;z-index:1!important;
