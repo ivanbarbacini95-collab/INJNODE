@@ -216,18 +216,84 @@
   measureTicker();paintTicker();
   $('injMarketTicker').classList.remove('is-stale');
  }
- async function updateTicker(){
-  if(document.hidden)return;
+ // Secondary sources keep the ribbon useful if the Vercel API route is absent.
+ const tickerPairs=[
+  ['INJ','INJUSDT','injective-protocol'],['BTC','BTCUSDT','bitcoin'],
+  ['ETH','ETHUSDT','ethereum'],['SOL','SOLUSDT','solana'],
+  ['BNB','BNBUSDT','binancecoin'],['XRP','XRPUSDT','ripple'],
+  ['AVAX','AVAXUSDT','avalanche-2'],['DOT','DOTUSDT','polkadot'],
+  ['LINK','LINKUSDT','chainlink'],['ADA','ADAUSDT','cardano'],
+  ['DOGE','DOGEUSDT','dogecoin']
+ ];
+ async function tickerGet(url){
+  const controller=new AbortController();
+  const timeout=setTimeout(()=>controller.abort(),6500);
   try{
-   const response=await fetch('/api/crypto-ribbon',{cache:'no-store'});
-   if(!response.ok)throw Error('Ticker service unavailable');
-   const payload=await response.json();
+   const result=await fetch(url,{signal:controller.signal,cache:'no-store'});
+   if(!result.ok)throw Error('HTTP '+result.status);
+   return await result.json();
+  }finally{clearTimeout(timeout)}
+ }
+ function parseMarketFigure(value){
+  if(value===null||value===undefined||value==='')return null;
+  const number=Number(String(value).replace(/[^0-9.-]/g,''));
+  return Number.isFinite(number)?number:null;
+ }
+ function liveHomeTicker(){
+  // This is a last-resort real value already shown in the active INJ dashboard.
+  const text=$('entryMarketPrice')?.textContent||'';
+  const value=parseMarketFigure(text);
+  if(value===null||value<=0)return null;
+  const changeText=$('entryMarketChange')?.textContent||'';
+  const changeMatch=changeText.match(/[-+]?\d+(?:[.,]\d+)?\s*%/);
+  const change=changeMatch?parseMarketFigure(changeMatch[0].replace(',','.')):null;
+  return {source:'INJ Node Home',currency:'USDT',tickers:[{symbol:'INJ',price:value,change24h:change}],global:null};
+ }
+ async function alternateTicker(){
+  try{
+   const symbols=JSON.stringify(tickerPairs.map(p=>p[1]));
+   const rows=await tickerGet('https://data-api.binance.vision/api/v3/ticker/24hr?symbols='+encodeURIComponent(symbols));
+   if(!Array.isArray(rows))throw Error('Unexpected Binance response');
+   const byPair=new Map(rows.map(row=>[row.symbol,row]));
+   const tickers=tickerPairs.map(([symbol,pair])=>{
+    const row=byPair.get(pair),price=parseMarketFigure(row?.lastPrice);
+    return {symbol,price,change24h:parseMarketFigure(row?.priceChangePercent)};
+   }).filter(t=>t.price!==null&&t.price>0);
+   if(tickers.length<4)throw Error('Insufficient Binance quotes');
+   return {source:'Binance direct',currency:'USDT',tickers,global:null};
+  }catch{}
+  try{
+   const ids=tickerPairs.map(p=>p[2]).join(',');
+   const rows=await tickerGet('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids='+encodeURIComponent(ids)+'&price_change_percentage=24h');
+   if(!Array.isArray(rows))throw Error('Unexpected CoinGecko response');
+   const byId=new Map(rows.map(row=>[row.id,row]));
+   const tickers=tickerPairs.map(([symbol,,id])=>{
+    const row=byId.get(id),price=parseMarketFigure(row?.current_price);
+    return {symbol,price,change24h:parseMarketFigure(row?.price_change_percentage_24h)};
+   }).filter(t=>t.price!==null&&t.price>0);
+   if(!tickers.length)throw Error('No CoinGecko quotes');
+   return {source:'CoinGecko direct',currency:'USD',tickers,global:null};
+  }catch{}
+  return liveHomeTicker();
+ }
+ let tickerUpdating=false;
+ async function updateTicker(){
+  if(document.hidden||tickerUpdating)return;
+  tickerUpdating=true;
+  try{
+   let payload=null;
+   try{
+    const response=await tickerGet('/api/crypto-ribbon');
+    if(!Array.isArray(response.tickers)||!response.tickers.some(t=>Number(t?.price)>0))throw Error('Invalid ribbon feed');
+    payload=response;
+   }catch{payload=await alternateTicker()}
+   if(!payload)throw Error('No live quote source');
    renderTicker(payload);state.lastMarket=now();
   }catch{
-   // Never erase and restart an already running marquee during transient outages.
-   if(!tickerMotion.hadData)tickerTrack.replaceChildren(elt('span','inj-market-ticker-loading',tr('Quotazioni non disponibili','Prices unavailable')));
-   else if(now()-state.lastMarket>180000)$('injMarketTicker').classList.add('is-stale');
-  }
+   if(!tickerMotion.hadData){
+    tickerTrack.replaceChildren(elt('span','inj-market-ticker-loading',tr('Feed crypto temporaneamente non disponibile','Crypto feed temporarily unavailable')));
+   }else if(now()-state.lastMarket>180000)$('injMarketTicker').classList.add('is-stale');
+  }finally{tickerUpdating=false}
  }
  function setMessage(msg){
   $('injEventsWarning').textContent=msg;
