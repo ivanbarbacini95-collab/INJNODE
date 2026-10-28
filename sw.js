@@ -1,11 +1,11 @@
-const CACHE_NAME = 'inj-node-v16.10.28-financial-freedom-v2';
+const CACHE_NAME = 'inj-node-v16.10.28-financial-freedom-v3';
 const APP_SHELL = [
   './home-tile-descriptions.css?v=20261028freedom2',
-  './financial-freedom.html?v=20261028freedom2',
-  './financial-freedom.js?v=20261028freedom2',
-  './financial-freedom.css?v=20261028freedom2',
-  './financial-freedom-overlay.js?v=20261028freedom2',
-  './financial-freedom-home.css?v=20261028freedom2',
+  './financial-freedom.html?v=20261028freedom3',
+  './financial-freedom.js?v=20261028freedom3',
+  './financial-freedom.css?v=20261028freedom3',
+  './financial-freedom-overlay.js?v=20261028freedom3',
+  './financial-freedom-home.css?v=20261028freedom3',
   './ambient-wallet-reward-glow.css?v=20261028ambient1',
   './market-events-layout-pro.css?v=20261028risk1',
   './home-focused-cards.css?v=20261028micro2',
@@ -274,7 +274,7 @@ self.addEventListener('fetch', (event) => {
   if (url.pathname.startsWith('/api/')) {event.respondWith(fetch(request));return;}
   // Always prefer the current Market Events assets after a Git deploy. Keep an
   // offline copy, but never trap users on a stale pre-update CSS/JS pair.
-  if (url.pathname.endsWith('/i18n.js') || url.pathname.endsWith('/navigation.js') || url.pathname.endsWith('/home-market-events.css') || url.pathname.endsWith('/home-market-events.js') || url.pathname.endsWith('/inj-top-seamless.css') || url.pathname.endsWith('/market-events-layout-pro.css') || url.pathname.endsWith('/home-focused-cards.css') || url.pathname.endsWith('/ambient-wallet-reward-glow.css')) {
+  if (url.pathname.endsWith('/i18n.js') || url.pathname.endsWith('/navigation.js') || url.pathname.endsWith('/home-market-events.css') || url.pathname.endsWith('/home-market-events.js') || url.pathname.endsWith('/inj-top-seamless.css') || url.pathname.endsWith('/financial-freedom.html') || url.pathname.endsWith('/financial-freedom.css') || url.pathname.endsWith('/financial-freedom.js') || url.pathname.endsWith('/financial-freedom-home.css') || url.pathname.endsWith('/financial-freedom-overlay.js') || url.pathname.endsWith('/market-events-layout-pro.css') || url.pathname.endsWith('/home-focused-cards.css') || url.pathname.endsWith('/ambient-wallet-reward-glow.css')) {
     event.respondWith(
       fetch(request,{cache:'no-store'}).then(response=>{
         if(response.ok){
@@ -295,7 +295,7 @@ self.addEventListener('fetch', (event) => {
   }
 
   if (request.mode === 'navigate') {
-    const isolatedPath = ['cloud-sync.html', 'admin-insights.html', 'workspace.html', 'live-charts.html', 'live-rewards.html', 'command-center.html', 'order-book.html', 'treasury.html', 'market.html', 'comparison.html', 'visualize-wealth.html', 'reward-ladder.html', 'injc-etf.html', 'install-icon-minimal.html', 'install-icon-classic.html', 'install-icon-aurora.html', 'install-icon-pulse.html'].find((name) => url.pathname.endsWith('/' + name));
+    const isolatedPath = ['cloud-sync.html', 'admin-insights.html', 'workspace.html', 'live-charts.html', 'live-rewards.html', 'command-center.html', 'order-book.html', 'treasury.html', 'market.html', 'comparison.html', 'visualize-wealth.html', 'reward-ladder.html', 'injc-etf.html', 'financial-freedom.html', 'install-icon-minimal.html', 'install-icon-classic.html', 'install-icon-aurora.html', 'install-icon-pulse.html'].find((name) => url.pathname.endsWith('/' + name));
     event.respondWith(
       fetch(request, { cache: 'no-store' })
         .then((response) => {
