@@ -176,7 +176,7 @@
  function resetOutput(reason){
   txt('freedomStatusTitle',t(reason));txt('freedomStatusExplain',t(reason+'Info'));
   for(const id of ['freedomCoverage','freedomWorth','freedomInj','freedomDay','freedomDayInj','freedomMonth','freedomRewardInfo','freedomTier','freedomTargetInj','freedomMissingInj','freedomStressCoverage','freedomCoverageFoot','freedomGoal'])txt(id,'—');
-  $('freedomMeter').style.setProperty('--freedom-progress','0');
+  $('freedomMeter').style.setProperty('--freedom-progress','0%');
   $('freedomBarFill').style.width='0%';
   $('freedomTierTrack').replaceChildren();
   lifestyleRows(0,false);
@@ -220,7 +220,7 @@
   const safeCoverage=usable?coverage:0;
   const ratioDisplay=Math.min(9999,Math.max(0,Math.round(coverage)));
   txt('freedomCoverage',usable?fmt(ratioDisplay,0)+'%':'—');
-  $('freedomMeter').style.setProperty('--freedom-progress',String(Math.min(100,safeCoverage)));
+  $('freedomMeter').style.setProperty('--freedom-progress',String(Math.min(100,safeCoverage))+'%');
   $('freedomBarFill').style.width=Math.min(100,safeCoverage).toFixed(2)+'%';
   txt('freedomStatusTitle',!usable?t('incomplete'):coverage>=100?t('yes'):t('no'));
   txt('freedomStatusExplain',!usable?t('incompleteInfo'):coverage>=100?t('yesInfo'):t('noInfo'));
