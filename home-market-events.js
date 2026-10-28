@@ -23,7 +23,7 @@
    seen:config.seen&&typeof config.seen==='object'?config.seen:{},
    notified:config.notified&&typeof config.notified==='object'?config.notified:{},
    results:config.results&&typeof config.results==='object'?config.results:{},
-   current:null,processing:false,reloadQueued:false,lastMarket:0,lastCalendar:0,inFlight:null
+   current:null,processing:false,reloadQueued:false,lastMarket:0,lastCalendar:0,inFlight:null,recentReleases:{}
  };
  const save=()=>{
   try{
@@ -35,7 +35,7 @@
   }catch{}
  };
  const elt=(tag,cls,txt)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=String(txt);return e};
- const validActual=v=>v!==null&&v!==undefined&&String(v).trim()!=='';
+ const validActual=v=>v!==null&&v!==undefined&&String(v).trim()!==''&&!/^(null|undefined|n\/?a|none|pending|[-—])$/i.test(String(v).trim());
  const nice=v=>validActual(v)?String(v):'—';
  const todayUTC=()=>new Date().toISOString().slice(0,10);
  function countdown(ms){
@@ -348,7 +348,8 @@
  function displaySource(){
    const host=$('injEventsSource');host.replaceChildren();
    const label=elt('span',null,tr('Fonte: ','Source: '));
-   const safeURL=state.source.startsWith('ShowMyTrades')?'https://showmytrades.com/tools/economic-calendar':
+   const safeURL=state.source.startsWith('Trading Economics')?'https://tradingeconomics.com/calendar':
+     state.source.startsWith('ShowMyTrades')?'https://showmytrades.com/tools/economic-calendar':
     state.source.startsWith('Forex Factory')?'https://www.forexfactory.com/calendar':null;
    if(safeURL){const link=elt('a',null,state.source);link.href=safeURL;link.target='_blank';link.rel='noopener noreferrer';host.append(label,link);}
    else host.append(elt('span',null,tr('Fonte non disponibile','Source unavailable')));
@@ -446,13 +447,20 @@
   line.append(elt('small',null,tr('SCENARIO','SCENARIO')),elt('span','inj-events-risk-copy',hint.text));
   container.append(line);
  }
+ function noNumericOutcome(e){
+  return /press conference|speech|testimony|statement|meeting minutes|minutes of|economic projections|press briefing|report release|chair .*speaks|president .*speaks/i.test(String(e.title||''));
+ }
+ function calendarRefreshUrgent(){
+  const t=now();
+  return state.events.some(e=>!validActual(e.actual)&&!noNumericOutcome(e)&&Date.parse(e.date)>=t-45*60000&&Date.parse(e.date)<=t+10*60000);
+ }
  function list(){
   const events=visibleEvents(), host=$('injEventsRows');
   host.replaceChildren();updatePeriodUI();
   $('injEventsCount').textContent=String(events.length);
   const next=events.find(e=>Date.parse(e.date)>=now()-60000);
   $('injEventsNext').textContent=next?countdown(Date.parse(next.date)-now()):'—';
-  $('injEventsDataStatus').textContent=state.source?tr('AGGIORNATO','UPDATED'):'OFFLINE';
+  $('injEventsDataStatus').textContent=!state.source?'OFFLINE':now()-state.lastCalendar>180000?tr('DATI DATATI','STALE DATA'):tr('SINCRONIZZATO','SYNCED');
   const featured=$('injEventsFeatured');featured.hidden=!next;
   if(next){
    $('injEventsFeaturedTime').textContent=next.country+' · '+dateFmt(next.date,{weekday:'short',day:'numeric',month:'short'})+' · '+localClock(next.date);
@@ -484,6 +492,7 @@
    const released=validActual(event.actual),future=Date.parse(event.date)>now();
    const button=elt('button','inj-events-item');button.type='button';
    if(released)button.classList.add('is-released');
+   if(state.recentReleases[event.id]&&now()-state.recentReleases[event.id]<20000)button.classList.add('inj-events-new-actual');
    button.setAttribute('aria-label',translatedEventTitle(event.title)+', '+localClock(event.date)+', '+event.country);
    const time=elt('span','inj-events-item-time');
    time.append(elt('strong',null,localClock(event.date)),elt('small',null,event.country));
@@ -492,8 +501,22 @@
    const status=elt('span','inj-events-item-status');
    if(released){status.classList.add('released');status.textContent=tr('PUBBLICATO','RELEASED')}
    else if(future){status.classList.add('upcoming');status.textContent=countdown(Date.parse(event.date)-now())}
-   else{status.classList.add('pending');status.textContent=tr('IN ATTESA','PENDING')}
+   else if(noNumericOutcome(event)){
+    status.classList.add('no-numeric');status.textContent=tr('EVENTO AVVIATO','EVENT STARTED');
+   }else{
+    status.classList.add('pending');
+    status.textContent=Date.parse(event.date)<now()-30*60000?
+     tr('DATO NON DISPONIBILE','RESULT UNAVAILABLE'):
+     tr('IN AGGIORNAMENTO','AWAITING RESULT');
+   }
    heading.append(status);main.append(heading);
+   if(released){
+    const metric=elt('span','inj-events-published-values');
+    metric.append(elt('span','inj-events-published-label',tr('EFFETTIVO','ACTUAL')),
+     elt('strong','inj-events-published-actual',nice(event.actual)));
+    if(validActual(event.forecast))metric.append(elt('span','inj-events-published-forecast',tr('Atteso: ','Forecast: ')+nice(event.forecast)));
+    main.append(metric);
+   }
    appendMacroHint(main,event);
    button.append(time,main,elt('span','inj-events-item-chevron','›'));
    button.addEventListener('click',()=>showResult(event,false));
@@ -501,7 +524,7 @@
   }
   if(events.length===1&&next)host.append(elt('p','inj-events-empty',tr('Nessun altro evento nel periodo selezionato.','No other events in this period.')));
  }
- function showResult(e,auto){
+ function showResult(e,auto,refreshOnly=false){
   if(!e)return;
   state.current=e;
   $('injEventsResultTitle').textContent=translatedEventTitle(e.title);
@@ -511,14 +534,16 @@
   $('injEventsResultActual').textContent=nice(e.actual);
   const actual=parseNumeric(e.actual),forecast=parseNumeric(e.forecast);
   $('injEventsResultReading').textContent=!validActual(e.actual)?
-    tr('Dato effettivo non ancora pubblicato. I valori attesi non sono risultati confermati.','Actual result not yet released. Forecasts are not confirmed outcomes.'):
+    noNumericOutcome(e)&&Date.parse(e.date)<now()?
+     tr('Evento avviato: discorso, comunicato o conferenza senza risultato numerico obbligatorio.','Event started: speech, statement or press conference with no required numeric actual.'):
+     tr('Dato effettivo non disponibile dalla fonte. Le previsioni non sono risultati confermati.','Actual not yet available from source. Forecasts are not confirmed outcomes.'):
     actual!==null&&forecast!==null?
       (actual>forecast?tr('Sopra le attese','Above forecast'):actual<forecast?tr('Sotto le attese','Below forecast'):tr('In linea con le attese','In line with forecast'))+
       tr(' · La differenza non indica automaticamente un effetto positivo o negativo su INJ.',' · Surprise direction alone does not predict the price of INJ.'):
       tr('Dato pubblicato. Nessun consenso numerico disponibile per il confronto.','Data released. Numeric consensus unavailable.');
   $('injEventsResultReading').textContent+=' · '+tr('Scenario indicativo, non previsione: ','Illustrative scenario, not a forecast: ')+marketRiskHint(e).text+'.';
   $('injEventsResultBackdrop').hidden=false;
-  $('injEventsResultClose').focus({preventScroll:true});
+  if(!refreshOnly)$('injEventsResultClose').focus({preventScroll:true});
   if(auto){state.results[e.id]=now();save()}
  }
  function parseNumeric(v){
@@ -721,8 +746,19 @@
     }catch{}
     if(!data)data=await directCalendar();
     if(!Array.isArray(data.events))throw Error('No calendar records');
-    const unique=new Map(data.events.map(event=>[event.id,event]));
+    const previous=new Map(state.events.map(e=>[e.id,e]));
+    const unique=new Map(data.events.map(event=>{
+     const prev=previous.get(event.id);
+     // A stale reply must not undo a previously observed release.
+     if(prev)for(const key of ['actual','forecast','previous'])
+      if(!validActual(event[key])&&validActual(prev[key]))event[key]=prev[key];
+     return [event.id,event];
+    }));
     const events=[...unique.values()].sort(byDate);
+    for(const e of events){
+     const old=previous.get(e.id);
+     if(old&&!validActual(old.actual)&&validActual(e.actual))state.recentReleases[e.id]=now();
+    }
     state.events=events;
     state.source=String(data.source||'');
     state.coverage=String(data.coverage||'');
@@ -731,9 +767,13 @@
     displaySource();
     maybeAnnounce(events);
     saveUpcoming(events);
-    setMessage(tr('Solo eventi ★★★ · orario locale · avvisi mentre l’app è aperta. ','★★★ events only · local time · alerts while app is open. ')+state.coverage);
+    setMessage(tr('Solo eventi ★★★ · aggiornamento automatico · avvisi ad app aperta. ','★★★ events only · automatic refresh · alerts while app is open. ')+state.coverage);
     renderNext();
     if(state.open)list();
+    if(state.current&&!$('injEventsResultBackdrop').hidden){
+     const updated=events.find(e=>e.id===state.current.id);
+     if(updated)showResult(updated,false,true);
+    }
    }catch(error){
     // Do not discard verified data because one feed temporarily times out.
     if(!state.lastCalendar){state.source='';state.events=[]}
@@ -802,7 +842,13 @@
  // Background page refreshes cannot create push; only foreground visits can.
  updateTicker();loadCalendar();
  setInterval(()=>{if(document.hidden)return;updateTicker()},45000);
- setInterval(()=>{if(document.hidden)return;loadCalendar(true)},60000);
+ // Poll frequently around a numeric release, otherwise spare provider requests.
+ let lastCalendarPoll=now();
+ setInterval(()=>{
+  if(document.hidden)return;
+  const interval=calendarRefreshUrgent()?20000:90000;
+  if(now()-lastCalendarPoll>=interval){lastCalendarPoll=now();loadCalendar(true);}
+ },5000);
  setInterval(()=>{if(document.hidden)return;renderNext();if(state.open)list();maybeAnnounce(state.events)},45000);
- document.addEventListener('visibilitychange',()=>{if(!document.hidden){updateTicker();loadCalendar(true)}});
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden){lastCalendarPoll=now();updateTicker();loadCalendar(true)}});
 })();
