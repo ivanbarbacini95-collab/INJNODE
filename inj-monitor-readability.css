@@ -370,3 +370,89 @@
 @media (max-width:1199px){
  /* Preserve existing mobile and iPad controls and iOS focus behavior. */
 }
+
+
+/* Financial Freedom · spend the monitor space on actual usable information,
+   not the empty lower half of a two-column plan panel. */
+@media (min-width:1200px){
+ html[data-inj-page="financial-freedom"] body .freedom-lower-grid{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  gap:var(--inj-monitor-gap)!important;
+  align-items:start!important;
+ }
+ html[data-inj-page="financial-freedom"] body .freedom-lower-grid
+ > .freedom-section{
+  width:100%!important;
+  height:auto!important;
+  min-height:0!important;
+ }
+ html[data-inj-page="financial-freedom"] body .freedom-options
+ #freedomLifestyle.freedom-lifestyle{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+ }
+ html[data-inj-page="financial-freedom"] body .freedom-plan{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  grid-template-areas:"heading heading" "settings targets" "stress stress" "legal legal"!important;
+  gap:var(--inj-monitor-gap)!important;
+  align-items:start!important;
+ }
+ html[data-inj-page="financial-freedom"] body .freedom-plan
+ > .freedom-section-heading{
+  grid-area:heading!important;
+  margin:0!important;
+ }
+ html[data-inj-page="financial-freedom"] body .freedom-plan
+ > .freedom-settings{
+  grid-area:settings!important;
+  margin:0!important;
+  min-width:0!important;
+ }
+ html[data-inj-page="financial-freedom"] body .freedom-plan
+ > .freedom-target-grid{
+  grid-area:targets!important;
+  margin:0!important;
+  min-width:0!important;
+ }
+ html[data-inj-page="financial-freedom"] body .freedom-plan
+ > .freedom-stress{
+  grid-area:stress!important;
+  margin:0!important;
+ }
+ html[data-inj-page="financial-freedom"] body .freedom-plan
+ > p{
+  grid-area:legal!important;
+  margin:0!important;
+  font-size:var(--inj-monitor-label)!important;
+  line-height:1.5!important;
+ }
+ html[data-inj-page="financial-freedom"] body .freedom-plan
+ .freedom-target-grid strong{
+  font-size:clamp(17px,1.18vw,30px)!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere!important;
+ }
+ html[data-inj-page="financial-freedom"] body
+ :is(.freedom-settings label>span,.freedom-settings label>small,
+ .freedom-stress span,.freedom-stress small,
+ .freedom-wealth>p,#freedomLifestyleFoot){
+  font-size:var(--inj-monitor-label)!important;
+  line-height:1.4!important;
+ }
+ /* Bigger real-world data, still capped to avoid clipping in narrow cards. */
+ html[data-inj-page="index"] body #entryGate .entry-home-top
+ .entry-brand :is(strong,span){
+  font-size:clamp(19px,1.3vw,32px)!important;
+ }
+ html[data-inj-page="index"] body #entryGate
+ :is(.entry-system-pill,.entry-note,.entry-wallet-label){
+  font-size:var(--inj-monitor-label)!important;
+ }
+}
+@media (min-width:2200px){
+ html[data-inj-page="financial-freedom"] body .freedom-options
+ #freedomLifestyle.freedom-lifestyle{
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+ }
+}
