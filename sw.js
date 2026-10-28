@@ -1,6 +1,6 @@
-const CACHE_NAME = 'inj-node-v16.10.28-home-micro-metrics-v2';
+const CACHE_NAME = 'inj-node-v16.10.28-macro-risk-scenarios-v1';
 const APP_SHELL = [
-  './market-events-layout-pro.css?v=20261028editorial1',
+  './market-events-layout-pro.css?v=20261028risk1',
   './home-focused-cards.css?v=20261028micro2',
   './home-settings-scroll-lock.css?v=20261028menu-lock1',
   './app.js?v=20261028menu-lock1',
@@ -12,7 +12,7 @@ const APP_SHELL = [
   './home-overview-price-first.css?v=20261028compact2',
   './home-compact-value-bars.css?v=20261028compactbars2',
   './home-market-events.css?v=20261028injnode3',
-  './home-market-events.js?v=20261028injnode2',
+  './home-market-events.js?v=20261028risk1',
   './inj-top-seamless.css?v=20261028statusblend3',
   './inj-top-seamless.js?v=20261028ios27',
   './home-statusbar-continuity.css?v=20261028seam1',

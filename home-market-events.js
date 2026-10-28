@@ -407,6 +407,45 @@
   ];
   return names.find(([pattern])=>pattern.test(t))?.[1]||t;
  }
+
+ /* Risk-on/off = conditional macro scenarios, not observed market direction. */
+ function macroRiskProfile(event){
+  const title=String(event?.title||'').toLowerCase();
+  if(/press conference|policy statement|fomc statement|monetary policy statement|meeting minutes|fed minutes|central bank statement|chair.*speech|governor.*speech/.test(title))
+   return {kind:'words',hint:tr('Fed/banca centrale più restrittiva → Risk-off · accomodante → Risk-on',
+    'More hawkish central bank → Risk-off · more dovish → Risk-on')};
+  if(/interest rate decision|rate decision|policy rate|deposit facility rate|refinancing rate|cash rate target|overnight rate/.test(title))
+   return {kind:'numeric'};
+  if(/average hourly earnings|wage growth|consumer price|producer price|inflation|price index|\bcpi\b|\bppi\b|\bpce\b/.test(title))
+   return {kind:'numeric'};
+  if(/non.farm payroll|employment change|payroll employment|unemployment|jobless|gross domestic product|\bgdp\b|industrial production|retail sales|\bpmi\b|consumer confidence|purchasing managers/.test(title))
+   return {kind:'words',hint:tr('Dato forte: crescita ma tassi più alti · debole: rischio rallentamento. Lettura mista',
+    'Strong data: growth but higher rates · weak: slowdown risk. Mixed reaction')};
+  return {kind:'words',hint:tr('Risk-on/off dipende da sorpresa, tassi e contesto',
+    'Risk-on/off depends on surprise, rates and context')};
+ }
+ function marketRiskHint(event){
+  const profile=macroRiskProfile(event);
+  if(profile.kind!=='numeric')return {tone:'neutral',text:profile.hint};
+  const actual=parseNumeric(event.actual),forecast=parseNumeric(event.forecast);
+  if(actual!==null&&forecast!==null){
+   const delta=actual-forecast;
+   if(Math.abs(delta)<=Math.max(1e-8,Math.abs(forecast)*1e-9))
+    return {tone:'neutral',text:tr('In linea con le attese · reazione incerta','In line with forecast · reaction uncertain')};
+   const higher=delta>0;
+   return {tone:higher?'off':'on',text:tr(
+    higher?'Sopra attese → possibile Risk-off':'Sotto attese → possibile Risk-on',
+    higher?'Above forecast → possible Risk-off':'Below forecast → possible Risk-on')};
+  }
+  return {tone:'neutral',text:tr('↑ Attese → possibile Risk-off · ↓ → Risk-on',
+     '↑ Forecast → possible Risk-off · ↓ → Risk-on')};
+ }
+ function appendMacroHint(container,event){
+  const hint=marketRiskHint(event);
+  const line=elt('span','inj-events-risk-hint tone-'+hint.tone);
+  line.append(elt('small',null,tr('SCENARIO','SCENARIO')),elt('span','inj-events-risk-copy',hint.text));
+  container.append(line);
+ }
  function list(){
   const events=visibleEvents(), host=$('injEventsRows');
   host.replaceChildren();updatePeriodUI();
@@ -418,6 +457,9 @@
   if(next){
    $('injEventsFeaturedTime').textContent=next.country+' · '+dateFmt(next.date,{weekday:'short',day:'numeric',month:'short'})+' · '+localClock(next.date);
    $('injEventsFeaturedTitle').textContent=translatedEventTitle(next.title);
+   const featureCopy=$('injEventsFeaturedTitle')?.parentElement;
+   featureCopy?.querySelector('.inj-events-risk-hint')?.remove();
+   if(featureCopy)appendMacroHint(featureCopy,next);
    $('injEventsFeaturedCountdown').textContent=countdown(Date.parse(next.date)-now());
    const details=$('injEventsFeaturedDetails');details.replaceChildren();
    // Numerical metrics stay in the detail sheet, not the calendar preview.
@@ -452,6 +494,7 @@
    else if(future){status.classList.add('upcoming');status.textContent=countdown(Date.parse(event.date)-now())}
    else{status.classList.add('pending');status.textContent=tr('IN ATTESA','PENDING')}
    heading.append(status);main.append(heading);
+   appendMacroHint(main,event);
    button.append(time,main,elt('span','inj-events-item-chevron','›'));
    button.addEventListener('click',()=>showResult(event,false));
    host.append(button);
@@ -473,6 +516,7 @@
       (actual>forecast?tr('Sopra le attese','Above forecast'):actual<forecast?tr('Sotto le attese','Below forecast'):tr('In linea con le attese','In line with forecast'))+
       tr(' · La differenza non indica automaticamente un effetto positivo o negativo su INJ.',' · Surprise direction alone does not predict the price of INJ.'):
       tr('Dato pubblicato. Nessun consenso numerico disponibile per il confronto.','Data released. Numeric consensus unavailable.');
+  $('injEventsResultReading').textContent+=' · '+tr('Scenario indicativo, non previsione: ','Illustrative scenario, not a forecast: ')+marketRiskHint(e).text+'.';
   $('injEventsResultBackdrop').hidden=false;
   $('injEventsResultClose').focus({preventScroll:true});
   if(auto){state.results[e.id]=now();save()}
