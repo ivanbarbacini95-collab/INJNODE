@@ -1,5 +1,7 @@
-const CACHE_NAME = 'inj-node-v16.10.28-ios-status-blend-v3';
+const CACHE_NAME = 'inj-node-v16.10.28-settings-freeze-v1';
 const APP_SHELL = [
+  './home-settings-scroll-lock.css?v=20261028menu-lock1',
+  './app.js?v=20261028menu-lock1',
   './market-events-footer-seamless.css?v=20261028foot1',
   './home-launcher-typography-final.css?v=20261028labels1',
   './home-terminal-header-20261027.css?v=h2',
@@ -35,7 +37,7 @@ const APP_SHELL = [
   './first-access-unified.css?v=20261027-official-fix1',
   './wallet-manager-reliable.css?v=20261027a',
   './i18n.js?v=20261027titles1',
-  './app.js?v=20261027-wallet-fix1',
+  './app.js?v=20261028menu-lock1',
   './performance-timeline-fit.css?v=20261026-fit1',
   './home-premium-iconography.js?v=20261027luxb1',
   './home-premium-iconography.css?v=20261027luxb1',
@@ -200,7 +202,7 @@ const APP_SHELL = [
   './viewport.css?v=16.00.74',
   './top-clarity.css?v=16.00.88',
   './style.css?v=16.01.44',
-  './app.js?v=16.06.33',
+  './app.js?v=20261028menu-lock1',
   './i18n.js?v=160145',
   './scroll-guard.js?v=160525',
   './live-charts.html',

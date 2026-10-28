@@ -3090,20 +3090,36 @@ function ensureSavedWallet(address, requestedLabel = '') {
   return wallet;
 }
 
+/* iPhone/PWA: keep Home's scroll coordinate frozen while Settings owns touch.
+   A fixed body needs an explicit negative offset; restoring on dismissal
+   avoids jumping back to the top or losing the Home scroll-memory position. */
+let injSettingsFrozenScrollY = null;
 function setHeaderMenuOpen(open) {
   const host = $('headerMenu');
   if (!host) return;
-  // Always enter the Control Center at its header, even after a long scroll.
-  // Reset before revealing the panel to avoid a visible scroll jump.
-  if (open) {
+  const wasOpen = host.classList.contains('open');
+  if (open && !wasOpen) {
     const panel = $('headerMenuPanel');
     if (panel) panel.scrollTop = 0;
+    const touchLayout = window.matchMedia('(max-width: 900px), (hover: none) and (pointer: coarse)').matches;
+    if (touchLayout) {
+      injSettingsFrozenScrollY = Math.max(0, window.scrollY || document.documentElement.scrollTop || 0);
+      document.body.style.setProperty('--inj-settings-frozen-top', (-injSettingsFrozenScrollY) + 'px');
+    }
   }
   host.classList.toggle('open', open);
   document.body.classList.toggle('menu-overlay-open', open);
   $('entryMenuButton')?.setAttribute('aria-expanded', open ? 'true' : 'false');
   $('entryMenuButton')?.setAttribute('aria-label', open ? 'Chiudi menu' : 'Apri menu');
-  if (!open) setThemePickerOpen(false);
+  if (!open) {
+    setThemePickerOpen(false);
+    if (injSettingsFrozenScrollY !== null) {
+      const restoreY = injSettingsFrozenScrollY;
+      injSettingsFrozenScrollY = null;
+      document.body.style.removeProperty('--inj-settings-frozen-top');
+      window.scrollTo({ top:restoreY, left:0, behavior:'instant' });
+    }
+  }
 }
 
 function openWalletAddressEditor(address) {
