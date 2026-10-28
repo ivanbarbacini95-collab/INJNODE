@@ -599,14 +599,61 @@
   }
   save();
  }
+ // Keep the date/time anchored while only the long event name moves.
+ let nextTitleObserver = null;
  function renderNext(){
   const upcoming=state.events.find(e=>Date.parse(e.date)>now()-60000);
   const node=$('injMarketNextSummary');
-  if(upcoming){
-    node.textContent='★★★  '+upcoming.country+' · '+dateFmt(upcoming.date,{weekday:'short',hour:'2-digit',minute:'2-digit',hourCycle:'h23'})+' · '+upcoming.title;
-  }else node.textContent=state.source?
+  if(!node)return;
+  if(!upcoming){
+   nextTitleObserver?.disconnect();
+   nextTitleObserver=null;
+   delete node.dataset.marketSignature;
+   node.removeAttribute('title');
+   node.removeAttribute('aria-label');
+   const empty=state.source?
     tr('Calendario ★★★ · nessun evento imminente','★★★ calendar · no upcoming events'):
     tr('Calendario macro ★★★ · USA / Europa / Asia','★★★ macro calendar · US / Europe / Asia');
+   if(node.textContent!==empty)node.textContent=empty;
+   return;
+  }
+  const date=dateFmt(upcoming.date,{weekday:'short',day:'numeric',month:'short'});
+  const clock=localClock(upcoming.date);
+  const stamp=date+' · '+clock;
+  const title=translatedEventTitle(upcoming.title);
+  const signature=stamp+'|'+upcoming.country+'|'+title;
+  if(node.dataset.marketSignature===signature)return;
+  nextTitleObserver?.disconnect();
+  nextTitleObserver=null;
+  node.dataset.marketSignature=signature;
+  node.title=stamp+' · '+upcoming.country+' · '+title;
+  node.setAttribute('aria-label',node.title);
+  const dateNode=elt('span','inj-events-next-date',stamp);
+  const scroll=elt('span','inj-events-next-scroll');
+  const track=elt('span','inj-events-next-track');
+  const original=elt('span','inj-events-next-title',title);
+  track.append(original);
+  scroll.append(track);
+  node.replaceChildren(dateNode,scroll);
+  const measure=()=>{
+   if(!scroll.isConnected)return;
+   track.classList.remove('is-running');
+   track.querySelector('.inj-events-next-duplicate')?.remove();
+   const width=Math.ceil(original.getBoundingClientRect().width);
+   const available=scroll.clientWidth;
+   if(!width||!available||width<=available+3)return;
+   const duplicate=elt('span','inj-events-next-title inj-events-next-duplicate',title);
+   duplicate.setAttribute('aria-hidden','true');
+   track.append(duplicate);
+   track.style.setProperty('--inj-events-travel',(width+32)+'px');
+   track.style.setProperty('--inj-events-duration',Math.max(13,Math.min(36,(width+32)/22)).toFixed(1)+'s');
+   track.classList.add('is-running');
+  };
+  if(typeof ResizeObserver==='function'){
+   nextTitleObserver=new ResizeObserver(measure);
+   nextTitleObserver.observe(scroll);
+  }
+  requestAnimationFrame(measure);
  }
  // Direct public calendar fallback when the hosting provider does not serve /api.
  // ShowMyTrades documents browser CORS and 1-30 day ranges.
