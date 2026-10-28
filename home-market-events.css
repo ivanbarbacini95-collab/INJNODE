@@ -694,3 +694,95 @@ html[data-inj-page="index"] body #entryGate .entry-gate-shell:not(.first-access)
 @media(prefers-reduced-motion:reduce){
  html[data-inj-page="index"] body #entryGate #entryMarketEventsButton > .inj-events-tile-stars{animation:none!important}
 }
+
+/* INJNODE · hard mobile layout repair, independent of onboarding shell state. */
+@media(max-width:799px){
+ html[data-inj-page="index"] body #entryGate .entry-actions.entry-flat-v44 > #entryMarketEventsButton.entry-action,
+ html[data-inj-page="index"] body #entryGate #entryMarketEventsButton.entry-action {
+  order:13!important;
+  grid-column:1/-1!important;
+  grid-row:auto!important;
+  display:flex!important;
+  position:relative!important;
+  flex-flow:row nowrap!important;
+  justify-content:flex-start!important;
+  align-items:center!important;
+  align-self:stretch!important;
+  justify-self:stretch!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  height:80px!important;
+  min-height:80px!important;
+  max-height:80px!important;
+  margin:0!important;
+  padding:13px 108px 13px 20px!important;
+  overflow:hidden!important;
+  border-radius:17px!important;
+  box-sizing:border-box!important;
+  text-align:left!important;
+ }
+ html[data-inj-page="index"] body #entryGate #entryMarketEventsButton.entry-action > .inj-events-tile-copy{
+  display:flex!important;
+  flex-flow:column nowrap!important;
+  align-items:flex-start!important;
+  justify-content:center!important;
+  align-self:stretch!important;
+  flex:1 1 0%!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  gap:6px!important;
+  overflow:hidden!important;
+  text-align:left!important;
+ }
+ html[data-inj-page="index"] body #entryGate #entryMarketEventsButton.entry-action > .inj-events-tile-copy > strong{
+  display:block!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  font-size:18px!important;
+  font-weight:800!important;
+  text-align:left!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+ }
+ html[data-inj-page="index"] body #entryGate #entryMarketEventsButton.entry-action > .inj-events-tile-copy > small{
+  display:block!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  font:500 11px/1.3 var(--inj-node-terminal-font,ui-monospace,monospace)!important;
+  text-align:left!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+ }
+ html[data-inj-page="index"] body #entryGate #entryMarketEventsButton.entry-action > .inj-events-tile-stars{
+  display:block!important;
+  position:absolute!important;
+  top:50%!important;
+  right:19px!important;
+  left:auto!important;
+  width:auto!important;
+  min-width:0!important;
+  max-width:none!important;
+  height:auto!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  background:none!important;
+  box-shadow:none!important;
+  white-space:nowrap!important;
+  font-size:21px!important;
+  letter-spacing:3px!important;
+  transform:translateY(-50%)!important;
+  pointer-events:none!important;
+ }
+}
+@media(max-width:370px){
+ html[data-inj-page="index"] body #entryGate #entryMarketEventsButton.entry-action{padding-right:88px!important;padding-left:14px!important}
+ html[data-inj-page="index"] body #entryGate #entryMarketEventsButton.entry-action > .inj-events-tile-stars{right:11px!important;font-size:18px!important}
+ html[data-inj-page="index"] body #entryGate #entryMarketEventsButton.entry-action > .inj-events-tile-copy > strong{font-size:16px!important}
+}
