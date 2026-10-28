@@ -329,7 +329,7 @@
 <link rel="stylesheet" href="./privacy-shield.css?v=20261026">
 <link rel="stylesheet" href="./home-premium-iconography.css?v=20261027luxb1">
 <link rel="stylesheet" href="./home-tile-descriptions.css?v=20261026a"/>
-<link rel="stylesheet" href="./performance-timeline-fit.css?v=20261026-fit1"/>
+<link rel="stylesheet" href="./performance-timeline-fit.css?v=20261028pnlaxis1"/>
 <link rel="stylesheet" href="./first-access-unified.css?v=20261027-official-fix1"/>
 <link rel="stylesheet" href="./wallet-manager-reliable.css?v=20261027a"/>
 <link rel="stylesheet" href="./home-terminal-header-20261027.css?v=h4"/>
@@ -880,7 +880,8 @@
       <small id="entryPnlTimelineBestMeta">—</small>
     </div>
   </div>
-  <div class="entry-pnl-timeline-scroll" id="entryPnlTimelineScroll" tabindex="0" aria-label="Scorri orizzontalmente lo storico profit e loss">
+  <div class="entry-pnl-chart-frame" id="entryPnlChartFrame">
+    <div class="entry-pnl-timeline-scroll" id="entryPnlTimelineScroll" tabindex="0" aria-label="Scorri orizzontalmente lo storico profit e loss">
     <div class="entry-pnl-ema-legend" id="entryPnlEmaLegend" aria-hidden="true">
       <span class="ema-fast"><i></i>EMA 7</span>
       <span class="ema-slow"><i></i>EMA 21</span>
@@ -889,6 +890,8 @@
       <div class="entry-pnl-zero-line" aria-hidden="true"><span>0</span></div>
       <svg class="entry-pnl-ema-layer" id="entryPnlEmaLayer" aria-hidden="true" preserveAspectRatio="none"></svg>
     </div>
+  </div>
+    <div class="entry-pnl-value-axis" id="entryPnlValueAxis" role="img" aria-label="Scala verticale P/L" hidden></div>
   </div>
   <div class="entry-pnl-timeline-foot">
     <span id="entryPnlTimelineDetail">Tocca una candela per vedere i dettagli.</span>
@@ -1402,7 +1405,7 @@
   </article>
 </section>
 <div aria-live="polite" class="toast" id="toast" role="status"></div>
-<script defer="" src="app.js?v=20261028menu-lock1"></script>
+<script defer="" src="app.js?v=20261028pnlaxis1"></script>
 <script defer src="./morning-brief.js?v=160737"></script>
 <script>
 (function(){
