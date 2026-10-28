@@ -1438,6 +1438,18 @@
       <div><small>INJ NODE / GLOBAL INTELLIGENCE</small><h2 id="injEventsTitle">MARKET EVENTS</h2><p id="injEventsSubtitle">Calendario macroeconomico · solo impatto ★★★</p></div>
       <button type="button" id="injEventsClose" class="inj-events-close" aria-label="Chiudi Market Events">×</button>
     </header>
+    <details class="inj-events-preferences" id="injEventsPreferences">
+      <summary class="inj-events-preferences-toggle" id="injEventsPreferencesToggle">
+        <span class="inj-events-preferences-trigger-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/><circle cx="9" cy="7" r="2" fill="currentColor" stroke="none"/><circle cx="16" cy="12" r="2" fill="currentColor" stroke="none"/><circle cx="11" cy="17" r="2" fill="currentColor" stroke="none"/></svg>
+        </span>
+        <span class="inj-events-preferences-trigger-copy">
+          <strong data-it="PREFERENZE" data-en="PREFERENCES">PREFERENZE</strong>
+          <small data-it="Periodo, regione e avvisi" data-en="Period, region and alerts">Periodo, regione e avvisi</small>
+        </span>
+        <span class="inj-events-preferences-chevron" aria-hidden="true">⌄</span>
+      </summary>
+      <div class="inj-events-preferences-panel" id="injEventsPreferencesPanel">
     <div class="inj-events-period-heading"><span data-it="SELEZIONA PERIODO" data-en="SELECT PERIOD">SELEZIONA PERIODO</span><span data-it="SCORRI PER LE ALTRE DATE" data-en="SCROLL FOR MORE DATES">SCORRI PER LE ALTRE DATE</span></div>
     <nav id="injEventsPeriod" class="inj-events-period" role="group" aria-label="Filtra gli eventi per giorno o settimana">
       <button type="button" data-period="today" data-it="Oggi" data-en="Today" aria-pressed="false">Oggi</button>
@@ -1458,6 +1470,9 @@
       <button id="injEventsAlerts" type="button" class="inj-events-alerts" aria-pressed="false">ATTIVA AVVISI</button>
       <button id="injEventsRefresh" type="button" class="inj-events-refresh" aria-label="Aggiorna eventi">↻</button>
     </div>
+        <button class="inj-events-preferences-done" id="injEventsPreferencesDone" type="button" data-it="APPLICA E CHIUDI" data-en="APPLY & CLOSE">APPLICA E CHIUDI</button>
+      </div>
+    </details>
     <div class="inj-events-overview" aria-label="Riepilogo eventi">
       <span><small data-it="EVENTI ★★★" data-en="★★★ EVENTS">EVENTI ★★★</small><strong id="injEventsCount">—</strong></span>
       <span><small data-it="PROSSIMO TRA" data-en="NEXT IN">PROSSIMO TRA</small><strong id="injEventsNext">—</strong></span>
