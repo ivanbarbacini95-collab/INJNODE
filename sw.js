@@ -1,12 +1,12 @@
-const CACHE_NAME = 'inj-node-v16.10.28-macro-events-live-2';
+const CACHE_NAME = 'inj-node-v16.10.28-injnode-production-1';
 const APP_SHELL = [
   './home-terminal-header-20261027.css?v=h2',
   './home-premium-titles.css?v=20261027p1',
   './home-treasury-brand-layout.css?v=20261028bcg1',
   './home-overview-price-first.css?v=20261028compact2',
   './home-compact-value-bars.css?v=20261028compactbars1',
-  './home-market-events.css?v=20261028event1',
-  './home-market-events.js?v=20261028event2',
+  './home-market-events.css?v=20261028injnode1',
+  './home-market-events.js?v=20261028injnode1',
   './inj-top-seamless.css?v=20261028seam1',
   './inj-top-seamless.js?v=20261028ios27',
   './home-statusbar-continuity.css?v=20261028seam1',
@@ -224,11 +224,21 @@ const APP_SHELL = [
 ];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(APP_SHELL))
-      .then(() => self.skipWaiting())
-  );
+  // An unavailable optional resource must not block activation of the entire PWA.
+  event.waitUntil((async () => {
+    const cache=await caches.open(CACHE_NAME);
+    let next=0;
+    async function worker(){
+      while(next<APP_SHELL.length){
+        const asset=APP_SHELL[next++];
+        try{await cache.add(asset)}catch{
+          // Other pages/assets stay available; network-first handles later recovery.
+        }
+      }
+    }
+    await Promise.all(Array.from({length:6},()=>worker()));
+    await self.skipWaiting();
+  })());
 });
 
 self.addEventListener('activate', (event) => {
@@ -246,6 +256,20 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return;
   // Never cache any server-authenticated response or admin credential action.
   if (url.pathname.startsWith('/api/')) {event.respondWith(fetch(request));return;}
+  // Always prefer the current Market Events assets after a Git deploy. Keep an
+  // offline copy, but never trap users on a stale pre-update CSS/JS pair.
+  if (url.pathname.endsWith('/home-market-events.css') || url.pathname.endsWith('/home-market-events.js')) {
+    event.respondWith(
+      fetch(request,{cache:'no-store'}).then(response=>{
+        if(response.ok){
+          const copy=response.clone();
+          event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.put(request,copy)));
+        }
+        return response;
+      }).catch(()=>caches.match(request))
+    );
+    return;
+  }
 
   // Analytics config must never be locked behind the PWA's cache-first policy:
   // publishing the Insights URL must take effect without reinstalling the app.
