@@ -119,3 +119,8 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
 }
 @media(max-width:350px){.freedom-hero-top{align-items:flex-start}.freedom-meter{width:88px;height:88px}.freedom-meter strong{font-size:17px}.freedom-heading h1{font-size:20px}.freedom-figures article strong{font-size:13px}}
 @media(prefers-reduced-motion:reduce){.freedom-bar span{transition:none}}
+
+/* Parent privacy shield must not leak wealth rank through the ladder or meter. */
+.privacy-active :is(.freedom-price-rail,.freedom-hero,.freedom-figures,.freedom-wealth,.freedom-options,.freedom-target-grid,.freedom-stress){
+ filter:blur(10px)!important;user-select:none!important;pointer-events:none!important;
+}
