@@ -183,3 +183,30 @@ html[data-inj-page] :is(
     Mobile continues using the existing tested 2-column Home tile preset. */
  :root{--inj-screen-gutter:clamp(8px,2vw,16px)}
 }
+
+
+/* Dedicated ETF page shares the same horizontal treatment as other terminals. */
+@media(min-width:900px){
+ .etf-shell{
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  padding-inline:var(--inj-screen-gutter)!important;
+ }
+}
+/* A long ladder should become a genuine dashboard on a large monitor,
+   instead of nine meter-wide horizontal strips. */
+@media(min-width:1200px){
+ html[data-inj-page="reward-ladder"] .ladder-steps{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  align-items:stretch!important;
+  gap:var(--inj-screen-panel-gap)!important;
+ }
+ html[data-inj-page="reward-ladder"] .ladder-step{min-width:0;height:100%}
+}
+@media(min-width:2100px){
+ html[data-inj-page="reward-ladder"] .ladder-steps{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+ }
+}
