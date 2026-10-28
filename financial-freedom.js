@@ -179,7 +179,7 @@
    intro:'Patrimonio e rendita a colpo d’occhio.',
    selected:'WALLET SELEZIONATO',all:'TUTTI I WALLET',price:'PREZZO INJ LIVE',status:'STATO FINANZIARIO',dayLabel:'REWARD / GIORNO',monthLabel:'REWARD / MESE',wealthEyebrow:'SCALA PATRIMONIALE',spendEyebrow:'SPESE QUOTIDIANE',planEyebrow:'OBIETTIVO DI LIBERTÀ',
    notReady:'DATI IN ARRIVO',notReadyInfo:'In attesa dei dati del wallet.',
-   incomplete:'STIMA NON AGGIORNATA',incompleteInfo:'Valori indicativi · verifica i dati live.',
+   incomplete:'DATI DA COMPLETARE',incompleteInfo:'In attesa del rendimento APR o di un wallet.',estimate:'STIMA CON ULTIMI DATI',estimateInfo:'Valori indicativi; aggiornamento in corso.',
    no:'COPERTURA PARZIALE',noInfo:'Reward sotto l’obiettivo mensile.',
    yes:'OBIETTIVO COPERTO',yesInfo:'Reward teoricamente sufficienti. Non garantite.',
    covered:'SPESE COPERTE',target:'OBIETTIVO 100%',short:'MANCANO',worth:'PATRIMONIO INJ',reward:'APR netto validator',
@@ -196,7 +196,7 @@
    intro:'Wealth and staking income at a glance.',
    selected:'SELECTED WALLET',all:'ALL WALLETS',price:'LIVE INJ PRICE',status:'FINANCIAL STATUS',dayLabel:'REWARDS / DAY',monthLabel:'REWARDS / MONTH',wealthEyebrow:'WEALTH LADDER',spendEyebrow:'DAILY LIFESTYLE',planEyebrow:'FREEDOM TARGET',
    notReady:'LOADING DATA',notReadyInfo:'Waiting for wallet data.',
-   incomplete:'ESTIMATE · UPDATE NEEDED',incompleteInfo:'Indicative values · check live data.',
+   incomplete:'DATA NOT READY',incompleteInfo:'Waiting for APR or a wallet.',estimate:'ESTIMATE FROM LAST DATA',estimateInfo:'Indicative figures; refreshing in background.',
    no:'PARTIAL COVERAGE',noInfo:'Rewards below your monthly target.',
    yes:'TARGET COVERED',yesInfo:'Rewards may cover your target. Not guaranteed.',
    covered:'EXPENSES COVERED',target:'100% TARGET',short:'STILL NEEDED',worth:'INJ NET WORTH',reward:'Net validator APR',
@@ -414,9 +414,9 @@
   const live=positive(price)&&positive(fx)&&p.ready&&marketFresh&&fxConfirmed&&!p.stale;
   const c=source.currency==='EUR'?'EUR':'USD';
   txt('freedomPrice',positive(price)?money(price*(c==='EUR'?fx:1),c):'—');
-  txt('freedomUpdated',p.stale||(!marketFresh&&positive(price))||(!fxConfirmed&&positive(fx))?t('stale'):live?t('synced'):t('priceWaiting'));
+  txt('freedomUpdated',p.stale||(!marketFresh&&positive(price))||(!fxConfirmed&&positive(fx))?t('estimate'):live?t('synced'):t('priceWaiting'));
   $('freedomFeed').classList.toggle('is-offline',!live||!p.complete);
-  const updated=(live&&p.complete)?'LIVE':(p.ready?'CHECK':'—');
+  const updated=(live&&p.complete)?'LIVE':(p.ready?(language()==='en'?'ESTIMATE':'STIMA'):'—');
   $('freedomFeed').lastChild.textContent=source.privacy?t('privacy'):updated;
   if(!p.ready||!positive(price)||!positive(fx)){
    resetOutput('notReady');return;
@@ -456,8 +456,11 @@
   txt('freedomCoverage',usable?fmt(ratioDisplay,0)+'%':'—');
   $('freedomMeter').style.setProperty('--freedom-progress',String(Math.min(100,safeCoverage))+'%');
   $('freedomBarFill').style.width=Math.min(100,safeCoverage).toFixed(2)+'%';
-  txt('freedomStatusTitle',!verified?t('incomplete'):coverage>=100?t('yes'):t('no'));
-  txt('freedomStatusExplain',!verified?t('incompleteInfo'):coverage>=100?t('yesInfo'):t('noInfo'));
+  // A delayed tick must not obscure a valid, computable financial outcome.
+  // Keep the actual financial status; explicitly label provisional values
+  // below it rather than using an alarming generic error headline.
+  txt('freedomStatusTitle',!usable?t('incomplete'):coverage>=100?t('yes'):t('no'));
+  txt('freedomStatusExplain',!usable?t('incompleteInfo'):!verified?t('estimateInfo'):coverage>=100?t('yesInfo'):t('noInfo'));
   txt('freedomCoverageFoot',usable?money(convert(monthAdjustedEUR),c):'—');
   txt('freedomGoal',money(convert(prefs.budget),c));
   lifestyleRows(adjustedEUR,usable);
