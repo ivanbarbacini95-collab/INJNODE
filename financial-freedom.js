@@ -198,7 +198,7 @@
   txt('freedomUpdated',p.stale||(!marketFresh&&positive(price))||(!fxConfirmed&&positive(fx))?t('stale'):live?t('synced'):t('priceWaiting'));
   $('freedomFeed').classList.toggle('is-offline',!live||!p.complete);
   const updated=(live&&p.complete)?'LIVE':(p.ready?'CHECK':'—');
-  $('freedomFeed').lastChild.textContent=updated;
+  $('freedomFeed').lastChild.textContent=source.privacy?t('privacy'):updated;
   if(!p.ready||!positive(price)||!positive(fx)){
    resetOutput('notReady');return;
   }
