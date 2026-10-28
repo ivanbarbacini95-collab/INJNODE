@@ -243,3 +243,17 @@ html[data-inj-page="index"] body #entryGate #entryFreedomButton>.entry-action-ar
     stroke-dashoffset:0!important;
   }
 }
+
+/* Full-screen fallback stays hidden unless the child document cannot load. */
+html[data-inj-page="index"] .inj-freedom-overlay .inj-freedom-recovery[hidden]{display:none!important}
+html[data-inj-page="index"] .inj-freedom-overlay .inj-freedom-recovery{
+  position:absolute!important;z-index:4!important;
+  right:max(12px,env(safe-area-inset-right,12px))!important;
+  top:max(14px,env(safe-area-inset-top,14px))!important;
+  min-height:40px!important;padding:9px 13px!important;
+  border:1px solid var(--line)!important;border-radius:10px!important;
+  color:var(--text)!important;
+  background:var(--surface,var(--theme-canvas,#081b25))!important;
+  font:700 11px/1.2 var(--inj-node-terminal-font,ui-monospace,monospace)!important;
+  box-shadow:0 6px 26px rgba(0,0,0,.18);
+}
