@@ -16,7 +16,7 @@
   document.documentElement.classList.add('inj-freedom-open');
   document.body.classList.add('inj-freedom-open');
   if(!frame().getAttribute('src')){
-   frame().src='./financial-freedom.html?v=20261028freedom1';
+   frame().src='./financial-freedom.html?v=20261028freedom2';
   } else {
    try{frame().contentWindow?.postMessage({type:'injnode:freedom-refresh'},location.origin)}catch(_){}
   }
