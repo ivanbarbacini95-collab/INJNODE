@@ -574,7 +574,7 @@
    const impact=String(e.importance||e.impact||'').toLowerCase();
    if(!currencySet.has(country)||!['3','high'].includes(impact))continue;
    let sourceDate=e.date||e.time||null;
-   if(!sourceDate&&Number.isFinite(Number(e.ts))){
+   if(!sourceDate&&e.ts!==null&&e.ts!==undefined&&Number.isFinite(Number(e.ts))&&Number(e.ts)>0){
     sourceDate=new Date(Number(e.ts)*1000).toISOString();
    }
    const timestamp=Date.parse(sourceDate||'');
@@ -592,8 +592,10 @@
   try{
    const url='https://showmytrades.com/api/public/calendar/v1?currency=USD,EUR,GBP,CHF,JPY,CNY&impact=high&days=30';
    const data=await tickerGet(url);
-   if(!Array.isArray(data.events))throw Error('No public economic calendar');
-   return {events:normaliseCalendarRows(data.events,'ShowMyTrades'),
+   if(!Array.isArray(data.events)||!data.events.length)throw Error('No public economic calendar');
+   const sourceEvents=normaliseCalendarRows(data.events,'ShowMyTrades');
+   if(!sourceEvents.length)throw Error('No high-impact records in public feed');
+   return {events:sourceEvents,
     source:'ShowMyTrades',coverage:tr('Fonte diretta · aggiornamento periodico','Direct source · periodic updates'),
     sourceUrl:'https://showmytrades.com/tools/economic-calendar'};
   }catch{}
