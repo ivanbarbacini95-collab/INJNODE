@@ -23,7 +23,7 @@
  const copy={
   it:{
    intro:'Il patrimonio misura il gradino. Le reward misurano la copertura delle spese.',
-   selected:'WALLET SELEZIONATO',all:'TUTTI I WALLET',price:'PREZZO INJ LIVE',status:'STATO FINANZIARIO',
+   selected:'WALLET SELEZIONATO',all:'TUTTI I WALLET',price:'PREZZO INJ LIVE',status:'STATO FINANZIARIO',dayLabel:'REWARD / GIORNO',monthLabel:'REWARD / MESE',wealthEyebrow:'SCALA PATRIMONIALE',spendEyebrow:'SPESE QUOTIDIANE',planEyebrow:'OBIETTIVO DI LIBERTÀ',
    notReady:'IN ATTESA DEI DATI',notReadyInfo:'Seleziona un wallet e attendi una quotazione e uno staking aggiornati.',
    incomplete:'DATI INCOMPLETI',incompleteInfo:'La sincronizzazione di alcuni wallet, del prezzo o dell’APR non è completa. Non viene assegnato un giudizio finanziario.',
    no:'NON ANCORA FINANZIARIAMENTE LIBERO',noInfo:'Le reward previste coprono solo una parte delle spese impostate.',
@@ -35,12 +35,12 @@
    needs:'INJ IN STAKING NECESSARI',missing:'INJ ANCORA NECESSARI',stress:'SCENARIO PRUDENTE',stressNote:'Prezzo −50% · APR −30%',
    disclaimer:'Proiezioni, non uno stipendio garantito. Il margine è una riserva prudenziale e non rappresenta il calcolo delle imposte. Per valutare la libertà finanziaria reale servono anche liquidità, diversificazione, sostenibilità delle reward, rischio e tassazione.',
    synced:'WALLET AGGIORNATO',stale:'DATI DA AGGIORNARE',offline:'DATI NON DISPONIBILI',privacy:'PRIVACY ATTIVA',zero:'NON COPERTO',
-   each:'OGNI GIORNO',once:'1 OGNI',days:'GIORNI',monthly:'AL MESE',coveredWord:'COPERTO',coins:'INJ',next:'PROSSIMO LIVELLO',max:'MASSIMO LIVELLO',priceWaiting:'QUOTAZIONE IN ATTESA',
+   each:'OGNI GIORNO',once:'1 OGNI',days:'GIORNI',monthly:'MESE',coveredWord:'COPERTO',coins:'INJ',next:'PROSSIMO LIVELLO',max:'MASSIMO LIVELLO',priceWaiting:'QUOTAZIONE IN ATTESA',
    margin:'Dopo margine prudenziale',actual:'Stima prima del margine',spend:'Spese mensili'
   },
   en:{
    intro:'Net worth defines the wealth tier. Rewards measure how much of your expenses they could cover.',
-   selected:'SELECTED WALLET',all:'ALL WALLETS',price:'LIVE INJ PRICE',status:'FINANCIAL STATUS',
+   selected:'SELECTED WALLET',all:'ALL WALLETS',price:'LIVE INJ PRICE',status:'FINANCIAL STATUS',dayLabel:'REWARDS / DAY',monthLabel:'REWARDS / MONTH',wealthEyebrow:'WEALTH LADDER',spendEyebrow:'DAILY LIFESTYLE',planEyebrow:'FREEDOM TARGET',
    notReady:'WAITING FOR LIVE DATA',notReadyInfo:'Select a wallet and wait for a current quote and staking data.',
    incomplete:'INCOMPLETE DATA',incompleteInfo:'Some wallet, price, or APR information is unavailable. Financial status is not assessed.',
    no:'NOT FINANCIALLY INDEPENDENT YET',noInfo:'Estimated staking rewards cover only part of your target expenses.',
@@ -52,7 +52,7 @@
    needs:'REQUIRED STAKED INJ',missing:'ADDITIONAL INJ NEEDED',stress:'DOWNSIDE SCENARIO',stressNote:'Price −50% · APR −30%',
    disclaimer:'Projections, not guaranteed salary. The buffer is a prudence reserve, not a tax calculation. Real financial freedom also depends on liquidity, diversification, sustainable income, risks and taxation.',
    synced:'WALLET UPDATED',stale:'DATA NEEDS REFRESH',offline:'DATA UNAVAILABLE',privacy:'PRIVACY MODE',zero:'NOT COVERED',
-   each:'EACH DAY',once:'1 EVERY',days:'DAYS',monthly:'PER MONTH',coveredWord:'COVERED',coins:'INJ',next:'NEXT LEVEL',max:'TOP LEVEL',priceWaiting:'WAITING FOR QUOTE',
+   each:'EACH DAY',once:'1 EVERY',days:'DAYS',monthly:'MONTH',coveredWord:'COVERED',coins:'INJ',next:'NEXT LEVEL',max:'TOP LEVEL',priceWaiting:'WAITING FOR QUOTE',
    margin:'After prudence buffer',actual:'Estimate before buffer',spend:'Monthly expenses'
   }
  };
@@ -89,7 +89,7 @@
  function localize(){
   txt('freedomIntro',t('intro'));txt('freedomWalletLabel',t('selected'));txt('freedomPriceLabel',t('price'));
   txt('freedomStatusLabel',t('status'));txt('freedomCoverageLabel',t('covered'));
-  txt('freedomWorthLabel',t('worth'));txt('freedomWealthTitle',t('grade'));txt('freedomTierFoot',t('tierFoot'));
+  txt('freedomWorthLabel',t('worth'));txt('freedomDayLabel',t('dayLabel'));txt('freedomMonthLabel',t('monthLabel'));txt('freedomWealthEyebrow',t('wealthEyebrow'));txt('freedomSpendEyebrow',t('spendEyebrow'));txt('freedomPlanEyebrow',t('planEyebrow'));txt('freedomWealthTitle',t('grade'));txt('freedomTierFoot',t('tierFoot'));
   txt('freedomSpendTitle',t('daily'));txt('freedomSpendHint',t('estimated'));txt('freedomLifestyleFoot',t('lifestyleNote'));
   txt('freedomPlanTitle',t('plan'));txt('freedomBudgetLabel',t('budget'));txt('freedomBufferLabel',t('buffer'));
   txt('freedomTargetLabel',t('needs'));txt('freedomMissingLabel',t('missing'));
