@@ -931,3 +931,36 @@ html[data-inj-page="index"] body #entryGate #entryMarketEventsButton:active .inj
   overflow-x:auto!important;touch-action:pan-x!important;-webkit-mask-image:none!important;mask-image:none!important;-webkit-overflow-scrolling:touch;
  }
 }
+
+/* 2026-10-28 · published macro data is visible on the calendar row. */
+#injMarketEventsOverlay .inj-events-published-values{
+ display:flex!important;align-items:baseline!important;flex-wrap:wrap!important;
+ gap:5px 10px!important;max-width:100%!important;padding:3px 0 2px!important;
+ color:var(--text,#f3f8f8)!important;
+ font:650 11px/1.4 var(--inj-node-terminal-font,ui-monospace,monospace)!important;
+}
+#injMarketEventsOverlay .inj-events-published-label{
+ color:var(--accent,#91dec7)!important;font-size:9px!important;
+ letter-spacing:.085em!important;font-weight:800!important;
+}
+#injMarketEventsOverlay .inj-events-published-actual{
+ color:var(--accent,#a5ffdb)!important;font-size:clamp(13px,3.2vw,17px)!important;
+ font-weight:800!important;overflow-wrap:anywhere!important;
+}
+#injMarketEventsOverlay .inj-events-published-forecast{
+ color:var(--muted-strong,var(--muted,#b3c5cc))!important;
+ font-size:10px!important;
+}
+#injMarketEventsOverlay .inj-events-item-status.no-numeric{
+ color:var(--muted-strong,var(--muted,#a2bac3))!important;
+}
+#injMarketEventsOverlay .inj-events-item.inj-events-new-actual{
+ animation:injActualReleaseGlow 1.8s ease-out 1!important;
+}
+@keyframes injActualReleaseGlow{
+ 0%{box-shadow:inset 0 0 0 1px var(--accent,#9ee9ca),0 0 24px color-mix(in srgb,var(--accent,#9ee9ca) 30%,transparent)}
+ 100%{box-shadow:inset 0 0 0 0 transparent,0 0 0 transparent}
+}
+@media(prefers-reduced-motion:reduce){
+ #injMarketEventsOverlay .inj-events-item.inj-events-new-actual{animation:none!important}
+}
