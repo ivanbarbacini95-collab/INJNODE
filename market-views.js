@@ -305,9 +305,12 @@
   node.classList.toggle('is-up',delta>0);
   node.classList.toggle('is-down',delta<0);
   node.classList.toggle('is-flat',!Number.isFinite(delta)||delta===0);
-  const strength=Number.isFinite(delta)?Math.min(58,22+Math.log1p(Math.abs(delta))*13):0;
-  node.style.setProperty('--heat-fill',strength.toFixed(0)+'%');
-  node.style.setProperty('--heat-rim',(Math.min(78,Math.max(30,strength+13))).toFixed(0)+'%');
+  // Saturation is derived from the selected timeframe's real performance.
+  const strength=Number.isFinite(delta)&&delta!==0
+   ?Math.min(68,12+Math.log1p(Math.abs(delta))*14.5):0;
+  node.style.setProperty('--heat-fill',strength.toFixed(1)+'%');
+  node.style.setProperty('--heat-wash',(strength*.61).toFixed(1)+'%');
+  node.style.setProperty('--heat-rim',(Math.min(84,Math.max(26,strength+12))).toFixed(1)+'%');
   const label=percent(delta),price=money(coin.current_price);
   const p=node.querySelector('.hm-change'),priceNode=node.querySelector('.hm-price');
   if(p&&p.textContent!==label)p.textContent=label;
@@ -472,11 +475,17 @@
      // differences should never produce a seemingly random flashing bar.
      const previousText=element.dataset.displayPrice||'';
      const nextText=money(currentPrice);
-     const changed=Number.isFinite(previous)&&previous>0
+     const priceChanged=Number.isFinite(previous)&&previous>0
        &&Number.isFinite(currentPrice)&&currentPrice>0
        &&currentPrice!==previous&&previousText!==nextText;
+     const previousPerformance=element.querySelector('.hm-change')?.textContent;
+     const currentPerformance=percent(change(current,range));
+     const performanceChanged=previousPerformance!==currentPerformance;
      recolor(element,current);
-     if(changed)priceFlash(element,currentPrice>previous?'up':'down',true);
+     // One live signal per changed tile; unchanged quotes and timeframe
+     // switches never cause the grid to flash.
+     if(priceChanged||performanceChanged)
+      priceFlash(element,currentPrice>previous?'up':'down',true);
      element.dataset.previousPrice=String(current.current_price);
      continue;
     }
