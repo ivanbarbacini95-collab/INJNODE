@@ -506,8 +506,12 @@ html[data-inj-page="financial-freedom"] .freedom-settings input{
 }
 .freedom-options.is-managing .freedom-lifestyle-progress{grid-column:2/5!important}
 .freedom-options .freedom-spending-editor{margin-top:12px}
-.freedom-options .freedom-spending-form :is(input,select){
- -webkit-appearance:none;appearance:none;
+.freedom-spending-form #freedomSpendingSearch{
+ appearance:auto;-webkit-appearance:searchfield;
+}
+.freedom-spending-form #freedomSpendingPreset,
+.freedom-spending-form #freedomSpendingPeriod{
+ appearance:auto;-webkit-appearance:menulist;
 }
 /* iOS Safari auto-zooms focusable form fields when the computed font
    is under 16px. Apply at every phone/tablet viewport and coarse pointer,
