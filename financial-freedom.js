@@ -35,7 +35,7 @@
    needs:'INJ IN STAKING NECESSARI',missing:'INJ ANCORA NECESSARI',stress:'SCENARIO PRUDENTE',stressNote:'Prezzo −50% · APR −30%',
    disclaimer:'Proiezioni, non uno stipendio garantito. Il margine è una riserva prudenziale e non rappresenta il calcolo delle imposte. Per valutare la libertà finanziaria reale servono anche liquidità, diversificazione, sostenibilità delle reward, rischio e tassazione.',
    synced:'WALLET AGGIORNATO',stale:'DATI DA AGGIORNARE',offline:'DATI NON DISPONIBILI',privacy:'PRIVACY ATTIVA',zero:'NON COPERTO',
-   each:'OGNI GIORNO',once:'1 OGNI',days:'GIORNI',monthly:'AL MESE',coins:'INJ',next:'PROSSIMO LIVELLO',max:'MASSIMO LIVELLO',priceWaiting:'QUOTAZIONE IN ATTESA',
+   each:'OGNI GIORNO',once:'1 OGNI',days:'GIORNI',monthly:'AL MESE',coveredWord:'COPERTO',coins:'INJ',next:'PROSSIMO LIVELLO',max:'MASSIMO LIVELLO',priceWaiting:'QUOTAZIONE IN ATTESA',
    margin:'Dopo margine prudenziale',actual:'Stima prima del margine',spend:'Spese mensili'
   },
   en:{
@@ -52,7 +52,7 @@
    needs:'REQUIRED STAKED INJ',missing:'ADDITIONAL INJ NEEDED',stress:'DOWNSIDE SCENARIO',stressNote:'Price −50% · APR −30%',
    disclaimer:'Projections, not guaranteed salary. The buffer is a prudence reserve, not a tax calculation. Real financial freedom also depends on liquidity, diversification, sustainable income, risks and taxation.',
    synced:'WALLET UPDATED',stale:'DATA NEEDS REFRESH',offline:'DATA UNAVAILABLE',privacy:'PRIVACY MODE',zero:'NOT COVERED',
-   each:'EACH DAY',once:'1 EVERY',days:'DAYS',monthly:'PER MONTH',coins:'INJ',next:'NEXT LEVEL',max:'TOP LEVEL',priceWaiting:'WAITING FOR QUOTE',
+   each:'EACH DAY',once:'1 EVERY',days:'DAYS',monthly:'PER MONTH',coveredWord:'COVERED',coins:'INJ',next:'NEXT LEVEL',max:'TOP LEVEL',priceWaiting:'WAITING FOR QUOTE',
    margin:'After prudence buffer',actual:'Estimate before buffer',spend:'Monthly expenses'
   }
  };
@@ -161,7 +161,13 @@
    title.append(strong,price);
    const result=document.createElement('span');result.className='freedom-lifestyle-result private';
    if(!complete){result.textContent='—';node.classList.add('not-yet')}
-   else if(dailyEUR>=cost){result.textContent=item.type==='monthly'?t('monthly'):fmt(Math.floor(dailyEUR/cost),0)+'× '+t('each')}
+   else if(item.type==='monthly'){
+    const monthly= dailyEUR*365/12;
+    const percent=Math.min(9999,monthly/item.price*100);
+    result.textContent=percent>=100?t('coveredWord'):fmt(percent,0)+'%';
+    if(percent<100)node.classList.add('not-yet');
+   }
+   else if(dailyEUR>=cost){result.textContent=fmt(Math.floor(dailyEUR/cost),0)+'× '+t('each')}
    else if(dailyEUR>0){result.textContent=t('once')+' '+fmt(Math.ceil(cost/dailyEUR),0)+' '+t('days');node.classList.add('not-yet')}
    else{result.textContent=t('zero');node.classList.add('not-yet')}
    node.append(icon,title,result);host.append(node);
