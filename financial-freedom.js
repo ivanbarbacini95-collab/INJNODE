@@ -56,7 +56,8 @@
    margin:'Spendable rewards',actual:'Before buffer',spend:'Monthly expenses'
   }
  };
- let prefs={budget:1500,buffer:30},selected='',hasUserSelected=false,seenSource=null,previousRenderKey='',timer=null;
+ let prefs={budget:1500,buffer:30},selected='',hasUserSelected=false,timer=null;
+ let shownCurrency='EUR',rateEURperUSD=1,lastFormattedBudget='';
  const valid=n=>Number.isFinite(n)&&n>=0;
  const positive=n=>Number.isFinite(n)&&n>0;
  const clamp=(n,min,max,otherwise)=>Number.isFinite(n)?Math.min(max,Math.max(min,n)):otherwise;
@@ -70,9 +71,25 @@
  function readPrefs(){
   try{const p=JSON.parse(localStorage.getItem(STORE)||'{}');prefs.budget=clamp(num(p.budget),100,10000000,1500);prefs.buffer=clamp(num(p.buffer),0,90,30)}catch(_){}
   $('freedomBudget').value=String(prefs.budget);
+  lastFormattedBudget=String(prefs.budget);
   $('freedomBuffer').value=String(prefs.buffer);
  }
  function writePrefs(){try{localStorage.setItem(STORE,JSON.stringify(prefs))}catch(_){}}
+ function budgetAmountInCurrency(currency=shownCurrency,rate=rateEURperUSD){
+  return prefs.budget*(currency==='USD'?1/Math.max(rate,0.000001):1);
+ }
+ function syncBudgetCurrency(source){
+  const currency=source.currency==='USD'?'USD':'EUR';
+  const rate=positive(num(source.eurRate))?num(source.eurRate):rateEURperUSD;
+  const changed=currency!==shownCurrency;
+  shownCurrency=currency;rateEURperUSD=rate;
+  txt('freedomBudgetLabel',t('budget').replace('€',currency==='USD'?'$':'€'));
+  const input=$('freedomBudget');
+  if((changed||!lastFormattedBudget)&&document.activeElement!==input){
+   const value=String(Math.round(budgetAmountInCurrency(currency,rate)*100)/100);
+   input.value=value;lastFormattedBudget=value;
+  }
+ }
  function parentSource(){
   try{
    const p=window.parent;
@@ -187,7 +204,7 @@
    localize();txt('freedomPrice','—');txt('freedomUpdated',t('offline'));resetOutput('notReady');
    $('freedomFeed').classList.add('is-offline');return;
   }
-  setTheme(source);localize();walletOptions(source);
+  setTheme(source);localize();syncBudgetCurrency(source);walletOptions(source);
   const p=selectedPortfolio(source);
   const price=num(source.price),fx=num(source.eurRate);
   const marketFresh=positive(num(source.priceAt))&&Date.now()-num(source.priceAt)<120000;
