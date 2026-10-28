@@ -389,6 +389,22 @@
    const coverage=document.createElement('span');
    coverage.className='freedom-lifestyle-result private';
    coverage.textContent=Number.isFinite(percent)?(percent>=100?st('covered'):fmt(percent,0)+'% '+st('percent')):'—';
+   // Time to afford one full instance of this item from the projected
+   // *spendable* daily rewards (after the selected prudence buffer).
+   // This is separate from monthly coverage of its recurring schedule.
+   const cadence=document.createElement('small');
+   cadence.className='freedom-lifestyle-cadence private';
+   if(!complete||!Number.isFinite(dailyEUR)){
+    cadence.textContent='—';
+   }else if(dailyEUR<=0){
+    cadence.textContent=language()==='en'?'NOT COVERED':'NON COPERTO';
+   }else if(dailyEUR>=item.price){
+    const count=Math.floor(dailyEUR/item.price);
+    cadence.textContent=fmt(Math.max(1,count),0)+(language()==='en'?' PER DAY':' SPESE AL GIORNO');
+   }else{
+    const days=Math.ceil(item.price/dailyEUR);
+    cadence.textContent=language()==='en'?'1 EVERY '+fmt(days,0)+' DAYS':'1 SPESA OGNI '+fmt(days,0)+' GIORNI';
+   }
    const remove=document.createElement('button');
    remove.type='button';
    remove.className='freedom-lifestyle-remove';
@@ -403,7 +419,7 @@
    const fill=document.createElement('span');
    fill.style.width=Number.isFinite(percent)?Math.max(0,Math.min(100,percent))+'%':'0%';
    bar.append(fill);
-   node.append(icon,detail,coverage,remove,bar);
+   node.append(icon,detail,coverage,cadence,remove,bar);
    host.append(node);
   }
  }
