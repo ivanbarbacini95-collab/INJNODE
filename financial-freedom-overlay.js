@@ -62,9 +62,9 @@
     stopWatchdog();
     loadWatchdog=window.setTimeout(()=>{if(open&&!isFinancialPage())showRecovery();},6500);
     if(!child.getAttribute('src')){
-      child.src='./financial-freedom.html?v=20261028freedom7';
+      child.src='./financial-freedom.html?v=20261028freedom8';
     }else if(!isFinancialPage()){
-      child.src='./financial-freedom.html?v=20261028freedom7';
+      child.src='./financial-freedom.html?v=20261028freedom8';
     }else {
       try{child.contentWindow?.postMessage({type:'injnode:freedom-refresh'},location.origin)}catch(_){}
       stopWatchdog();
