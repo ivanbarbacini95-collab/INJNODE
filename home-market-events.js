@@ -458,7 +458,7 @@
   const events=visibleEvents(), host=$('injEventsRows');
   host.replaceChildren();updatePeriodUI();
   $('injEventsCount').textContent=String(events.length);
-  const next=events.find(e=>Date.parse(e.date)>=now()-60000);
+  const next=events.find(e=>Date.parse(e.date)>=now()-60000&&!validActual(e.actual));
   $('injEventsNext').textContent=next?countdown(Date.parse(next.date)-now()):'—';
   $('injEventsDataStatus').textContent=!state.source?'OFFLINE':now()-state.lastCalendar>180000?tr('DATI DATATI','STALE DATA'):tr('SINCRONIZZATO','SYNCED');
   const featured=$('injEventsFeatured');featured.hidden=!next;
