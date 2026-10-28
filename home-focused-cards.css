@@ -1,0 +1,22 @@
+/* INJ Node · Focused Home price cards · 2026-10-28
+   Hide redundant wallet metrics below the top overview and P/L below
+   the 24h chart, only on Home. Keep their DOM IDs and live calculations
+   available to wallet updates, screen transitions and other sections. */
+html[data-inj-page="index"] body #entryGate#entryGate
+ :is(#entryOverview,.entry-wallet-card-slide) .entry-overview-stats,
+html[data-inj-page="index"] body #entryGate#entryGate
+ #entryInsights .entry-price-pnl {
+  display:none!important;
+  visibility:hidden!important;
+  height:0!important;
+  min-height:0!important;
+  max-height:0!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+/* The chart now ends naturally at its UTC timeline: no abandoned metric gap. */
+html[data-inj-page="index"] body #entryGate#entryGate #entryInsights .entry-price-chart{
+  margin-bottom:0!important;
+}

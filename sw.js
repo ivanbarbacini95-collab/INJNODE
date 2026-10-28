@@ -1,5 +1,7 @@
-const CACHE_NAME = 'inj-node-v16.10.28-metric-strip-v2';
+const CACHE_NAME = 'inj-node-v16.10.28-market-events-editorial-v1';
 const APP_SHELL = [
+  './market-events-layout-pro.css?v=20261028editorial1',
+  './home-focused-cards.css?v=20261028focused1',
   './home-settings-scroll-lock.css?v=20261028menu-lock1',
   './app.js?v=20261028menu-lock1',
   './market-events-footer-seamless.css?v=20261028foot1',
@@ -262,7 +264,7 @@ self.addEventListener('fetch', (event) => {
   if (url.pathname.startsWith('/api/')) {event.respondWith(fetch(request));return;}
   // Always prefer the current Market Events assets after a Git deploy. Keep an
   // offline copy, but never trap users on a stale pre-update CSS/JS pair.
-  if (url.pathname.endsWith('/home-market-events.css') || url.pathname.endsWith('/home-market-events.js') || url.pathname.endsWith('/inj-top-seamless.css')) {
+  if (url.pathname.endsWith('/home-market-events.css') || url.pathname.endsWith('/home-market-events.js') || url.pathname.endsWith('/inj-top-seamless.css') || url.pathname.endsWith('/market-events-layout-pro.css') || url.pathname.endsWith('/home-focused-cards.css')) {
     event.respondWith(
       fetch(request,{cache:'no-store'}).then(response=>{
         if(response.ok){
