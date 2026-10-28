@@ -138,6 +138,7 @@ window.INJ_FINANCIAL_FREEDOM_SOURCE = function () {
     price:Number(state.price)>0?Number(state.price):null,
     priceAt:state.lastMarketUpdate || 0,
     eurRate:Number(state.eurRate)>0?Number(state.eurRate):null,
+    fxVerified:Number(localStorage.getItem('inj_monitor_eur_rate'))>0,
     currency:state.currency === 'EUR'?'EUR':'USD',
     theme:document.documentElement.dataset.theme || 'navy',
     language:window.INJ_I18N?.getLanguage?.() === 'en'?'en':(document.documentElement.lang==='en'?'en':'it'),
