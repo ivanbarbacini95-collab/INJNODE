@@ -164,7 +164,10 @@
   });
   txt('freedomTier',String(index+1).padStart(2,'0')+' / 06');
   const next=tiers[index+1];
-  txt('freedomTierFoot',t('tierFoot')+(next?' · '+t('next')+': '+money(next.min,'EUR')+' (+'+money(Math.max(0,next.min-worthEUR),'EUR')+')':' · '+t('max')));
+  const currency=shownCurrency;
+  const convertedNext=currency==='USD'?(next?.min||0)/rateEURperUSD:next?.min||0;
+  const convertedShort=currency==='USD'?Math.max(0,(next?.min||0)-worthEUR)/rateEURperUSD:Math.max(0,(next?.min||0)-worthEUR);
+  txt('freedomTierFoot',next?t('next')+': '+money(convertedNext,currency)+' · +'+money(convertedShort,currency):t('max')+' · '+t('tierFoot'));
  }
  function lifestyleRows(dailyEUR,complete){
   const host=$('freedomLifestyle');host.replaceChildren();
@@ -174,7 +177,7 @@
    const icon=document.createElement('span');icon.className='freedom-lifestyle-emoji';icon.textContent=item.symbol;
    const title=document.createElement('div');title.className='freedom-lifestyle-name';
    const strong=document.createElement('strong');strong.textContent=item[language()];
-   const price=document.createElement('small');price.textContent=money(item.price,'EUR')+(item.type==='monthly'?' / '+t('monthly'):'');
+   const price=document.createElement('small');price.textContent=money(shownCurrency==='USD'?item.price/rateEURperUSD:item.price,shownCurrency)+(item.type==='monthly'?' / '+t('monthly'):'');
    title.append(strong,price);
    const result=document.createElement('span');result.className='freedom-lifestyle-result private';
    if(!complete){result.textContent='—';node.classList.add('not-yet')}
@@ -260,13 +263,24 @@
   $('freedomClose').addEventListener('click',close);
   $('freedomWallet').addEventListener('change',e=>{selected=e.target.value;hasUserSelected=true;render()});
   function updateInputs(){
-   prefs.budget=clamp(num($('freedomBudget').value),100,10000000,prefs.budget);
+   const raw=$('freedomBudget').value;
+   const value=raw.trim()?Number(raw):NaN;
+   if(Number.isFinite(value)&&value>0){
+    const amountEUR=value*(shownCurrency==='USD'?rateEURperUSD:1);
+    prefs.budget=clamp(amountEUR,100,10000000,prefs.budget);
+   }
    prefs.buffer=clamp(num($('freedomBuffer').value),0,90,prefs.buffer);
    writePrefs();render();
   }
   for(const id of ['freedomBudget','freedomBuffer']){
    $(id).addEventListener('input',updateInputs);
-   $(id).addEventListener('change',()=>{$(id).value=String(id==='freedomBudget'?prefs.budget:prefs.buffer);updateInputs()});
+   $(id).addEventListener('change',()=>{
+    updateInputs();
+    if(id==='freedomBudget'){
+     const formatted=String(Math.round(budgetAmountInCurrency()*100)/100);
+     $(id).value=formatted;lastFormattedBudget=formatted;
+    }else $(id).value=String(prefs.buffer);
+   });
   }
   window.addEventListener('message',e=>{if(e.origin===location.origin&&e.data?.type==='injnode:freedom-refresh'){hasUserSelected=false;render()}});
   window.addEventListener('pageshow',render);
