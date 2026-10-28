@@ -562,6 +562,7 @@
  function openPanel(){
   const root=$('injMarketEventsOverlay');if(state.open)return;
   state.open=true;root.hidden=false;root.scrollTop=0;
+  const preferences=$('injEventsPreferences');if(preferences)preferences.open=false;
   updatePeriodUI();
   $('injEventsRegion').value=state.region;
   $('injEventsReminder').value=String(state.reminder);
@@ -833,6 +834,14 @@
  $('injEventsReminder').addEventListener('change',e=>{state.reminder=Number(e.target.value);save()});
  $('injEventsAlerts').addEventListener('click',setAlerts);
  $('injEventsRefresh').addEventListener('click',()=>loadCalendar(true));
+ $('injEventsPreferencesDone')?.addEventListener('click',()=>{
+  // Every change is applied and saved as it is made; Done only collapses.
+  const prefs=$('injEventsPreferences');
+  if(!prefs)return;
+  prefs.open=false;
+  $('injEventsPreferencesToggle')?.focus({preventScroll:true});
+  list();
+ });
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&state.open){e.preventDefault();closePanel()}});
  new MutationObserver(()=>{applyLanguage();if(lastTickerPayload)renderTicker(lastTickerPayload);if(state.open)list()}).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
  updatePeriodUI();
