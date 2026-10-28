@@ -283,7 +283,7 @@
  }
  // Market-wide metrics are separate from exchange quotes and can be rate-limited.
  // Refresh them independently instead of showing frozen dashes in the strip.
- let cachedGlobal=null,lastGlobalFetch=0;
+ let cachedGlobal=null,lastGlobalFetch=0,lastGoodGlobalAt=0;
  const validGlobal=x=>x!==null&&x!==undefined&&Number.isFinite(Number(x));
  const fromPaprika=p=>({
   marketCapUsd:parseMarketFigure(p?.market_cap_usd),
@@ -306,7 +306,7 @@
   const existing=payload.global&&typeof payload.global==='object'?payload.global:{};
   const complete=['marketCapUsd','volume24hUsd','btcDominance','ethDominance','marketCapChange24h']
    .every(key=>validGlobal(existing[key]));
-  if(complete){cachedGlobal=existing;lastGlobalFetch=now();return {...payload,global:existing}}
+  if(complete){cachedGlobal=existing;lastGlobalFetch=now();lastGoodGlobalAt=now();return {...payload,global:existing}}
   const isFresh=lastGlobalFetch&&now()-lastGlobalFetch<120000;
   let additional=isFresh&&cachedGlobal?cachedGlobal:{};
   if(!isFresh){
@@ -316,9 +316,9 @@
     try{additional=fromLore(await tickerGet('https://api.coinlore.net/api/global/'))}
     catch{additional=cachedGlobal||{}}
    }
-   if(Object.values(additional).some(validGlobal))cachedGlobal={...cachedGlobal,...additional};
+   if(Object.values(additional).some(validGlobal)){cachedGlobal={...cachedGlobal,...additional};lastGoodGlobalAt=now()}
   }
-  const combined={...additional};
+  const combined=lastGoodGlobalAt&&now()-lastGoodGlobalAt<600000?{...additional}:{};
   for(const [key,val] of Object.entries(existing))if(validGlobal(val))combined[key]=val;
   return {...payload,global:combined};
  }
