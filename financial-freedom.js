@@ -251,6 +251,7 @@
  }
  function localize(){
   txt('freedomIntro',t('intro'));txt('freedomWalletLabel',t('selected'));txt('freedomPriceLabel',t('price'));
+  editSpendingLanguage();
   txt('freedomStatusLabel',t('status'));txt('freedomCoverageLabel',t('covered'));txt('freedomNetLabel',language()==='en'?'SPENDABLE / MONTH':'UTILIZZABILI / MESE');txt('freedomGoalLabel',language()==='en'?'SPENDING / MONTH':'SPESE / MESE');txt('freedomBufferHint',language()==='en'?'Rewards held back':'Reward non spendibili');
   txt('freedomWorthLabel',t('worth'));txt('freedomDayLabel',t('dayLabel'));txt('freedomMonthLabel',t('monthLabel'));txt('freedomWealthEyebrow',t('wealthEyebrow'));txt('freedomSpendEyebrow',t('spendEyebrow'));txt('freedomPlanEyebrow',t('planEyebrow'));txt('freedomWealthTitle',t('grade'));txt('freedomTierFoot',t('tierFoot'));
   txt('freedomSpendTitle',t('daily'));txt('freedomSpendHint',t('estimated'));txt('freedomLifestyleFoot',t('lifestyleNote'));
@@ -316,28 +317,54 @@
   txt('freedomTierFoot',next?t('next')+': '+money(convertedNext,currency)+' · +'+money(convertedShort,currency):t('max')+' · '+t('tierFoot'));
  }
  function lifestyleRows(dailyEUR,complete){
-  const host=$('freedomLifestyle');host.replaceChildren();
-  lifestyle.forEach(item=>{
-   const cost=item.type==='monthly'?item.price*12/365:item.price;
-   const node=document.createElement('article');node.className='freedom-lifestyle-item';
-   const icon=document.createElement('span');icon.className='freedom-lifestyle-emoji';icon.textContent=item.symbol;
-   const title=document.createElement('div');title.className='freedom-lifestyle-name';
-   const strong=document.createElement('strong');strong.textContent=item[language()];
-   const price=document.createElement('small');price.textContent=money(shownCurrency==='USD'?item.price/rateEURperUSD:item.price,shownCurrency)+(item.type==='monthly'?' / '+t('monthly'):'');
-   title.append(strong,price);
-   const result=document.createElement('span');result.className='freedom-lifestyle-result private';
-   if(!complete){result.textContent='—';node.classList.add('not-yet')}
-   else if(item.type==='monthly'){
-    const monthly= dailyEUR*365/12;
-    const percent=Math.min(9999,monthly/item.price*100);
-    result.textContent=percent>=100?t('coveredWord'):fmt(percent,0)+'%';
-    if(percent<100)node.classList.add('not-yet');
-   }
-   else if(dailyEUR>=cost){result.textContent=fmt(Math.floor(dailyEUR/cost),0)+'× '+t('each')}
-   else if(dailyEUR>0){result.textContent=t('once')+' '+fmt(Math.ceil(cost/dailyEUR),0)+' '+t('days');node.classList.add('not-yet')}
-   else{result.textContent=t('zero');node.classList.add('not-yet')}
-   node.append(icon,title,result);host.append(node);
-  });
+  const host=$('freedomLifestyle');
+  const monthlyAvailable=complete?dailyEUR*365/12:NaN;
+  const currency=shownCurrency;
+  const total=totalSpending();
+  const totalValid=Number.isFinite(total)&&total>0;
+  txt('freedomSpendingTotal',Number.isFinite(total)?money(currency==='USD'?total/rateEURperUSD:total,currency):'—');
+  const overall=complete&&totalValid?monthlyAvailable/total*100:NaN;
+  txt('freedomSpendingSummaryCoverage',Number.isFinite(overall)?st('coverage')+': '+fmt(Math.min(9999,overall),0)+'%':st('unavailable'));
+  $('freedomUseSpendingGoal').disabled=!totalValid;
+  host.replaceChildren();
+  if(!spending.length){
+   const empty=document.createElement('div');
+   empty.className='freedom-spending-empty';empty.textContent=st('empty');
+   host.append(empty);
+   return;
+  }
+  for(const item of spending){
+   const costMonth=monthlyCost(item);
+   const value=Number.isFinite(costMonth)&&costMonth>0&&complete?monthlyAvailable/costMonth*100:NaN;
+   const percent=Number.isFinite(value)?Math.min(9999,value):NaN;
+   const template=spendPresets.find(p=>p.id===item.preset);
+   const node=document.createElement('article');
+   node.className='freedom-lifestyle-item'+(Number.isFinite(percent)&&percent<100?' not-yet':'');
+   const icon=document.createElement('span');icon.className='freedom-lifestyle-emoji';
+   icon.textContent=template?.symbol||'◈';
+   const detail=document.createElement('div');detail.className='freedom-lifestyle-name';
+   const name=document.createElement('strong');name.textContent=presetName(item);
+   const price=document.createElement('small');
+   price.textContent=money(currency==='USD'?item.price/rateEURperUSD:item.price,currency)+' / '+st(item.period);
+   detail.append(name,price);
+   const coverage=document.createElement('span');
+   coverage.className='freedom-lifestyle-result private';
+   coverage.textContent=Number.isFinite(percent)?(percent>=100?st('covered'):fmt(percent,0)+'% '+st('percent')):'—';
+   const remove=document.createElement('button');
+   remove.type='button';
+   remove.className='freedom-lifestyle-remove';
+   remove.dataset.spendDelete=item.id;
+   remove.setAttribute('aria-label',st('remove')+' '+presetName(item));
+   remove.title=st('remove')+' '+presetName(item);
+   remove.textContent='×';
+   const bar=document.createElement('div');
+   bar.className='freedom-lifestyle-progress';
+   const fill=document.createElement('span');
+   fill.style.width=Number.isFinite(percent)?Math.max(0,Math.min(100,percent))+'%':'0%';
+   bar.append(fill);
+   node.append(icon,detail,coverage,remove,bar);
+   host.append(node);
+  }
  }
  function resetOutput(reason){
   txt('freedomStatusTitle',t(reason));txt('freedomStatusExplain',t(reason+'Info'));
@@ -429,6 +456,8 @@
  }
  function init(){
   readPrefs();
+  readSpending();
+  bindSpending();
   $('freedomClose').addEventListener('click',close);
   $('freedomWallet').addEventListener('change',e=>{selected=e.target.value;hasUserSelected=true;render()});
   function updateInputs(){
