@@ -19,8 +19,8 @@ try {
 <link rel="stylesheet" href="./ocean-x-series.css?v=160114">
 <link rel="stylesheet" href="./theme-harmony.css?v=160114">
 <link rel="stylesheet" href="./supply-mono.css?v=20261024">
-<link rel="stylesheet" href="./financial-freedom.css?v=20261028freedom5">
-<script defer src="./financial-freedom.js?v=20261028freedom5"></script>
+<link rel="stylesheet" href="./financial-freedom.css?v=20261028freedom6">
+<script defer src="./financial-freedom.js?v=20261028freedom6"></script>
 </head>
 <body>
 <main class="freedom-page" id="freedomPage">
@@ -66,7 +66,7 @@ try {
   </section>
   <div class="freedom-lower-grid">
   <section class="freedom-section freedom-options">
-    <div class="freedom-section-heading"><div><small id="freedomSpendEyebrow">SPESE QUOTIDIANE</small><h2 id="freedomSpendTitle">COSA POSSONO COPRIRE LE REWARD?</h2></div><span id="freedomSpendHint">Stime giornaliere</span></div>
+    <div class="freedom-section-heading"><div><small id="freedomSpendEyebrow">SPESE QUOTIDIANE</small><h2 id="freedomSpendTitle">COSA COPRONO LE REWARD</h2></div><div class="freedom-spending-header-actions"><span id="freedomSpendHint">STIME</span><button id="freedomSpendingManage" type="button" aria-pressed="false">GESTISCI</button></div></div>
     <div class="freedom-spending-summary" id="freedomSpendingSummary">
       <div class="freedom-spending-summary-copy">
         <small id="freedomSpendingSummaryLabel">TOTALE DELLA LISTA / MESE</small>
@@ -79,7 +79,7 @@ try {
     <details class="freedom-spending-editor" id="freedomSpendingEditor">
       <summary id="freedomSpendingEditorToggle"><span class="freedom-spending-plus" aria-hidden="true">+</span><span id="freedomSpendingEditorLabel">AGGIUNGI UNA SPESA</span><span aria-hidden="true" class="freedom-spending-chevron">⌄</span></summary>
       <form class="freedom-spending-form" id="freedomSpendingForm" novalidate>
-        <label class="freedom-spending-form-wide"><span id="freedomSpendingPresetLabel">SCEGLI UN ESEMPIO</span><select id="freedomSpendingPreset"></select></label>
+        <label class="freedom-spending-form-wide"><span id="freedomSpendingPresetLabel">SCEGLI UN ESEMPIO</span><select id="freedomSpendingPreset"><option value="">Seleziona una voce...</option></select></label>
         <label class="freedom-spending-form-wide"><span id="freedomSpendingNameLabel">COSA VUOI COPRIRE?</span><input id="freedomSpendingName" maxlength="56" type="text" autocomplete="off" placeholder="Es. bollette, palestra, viaggio"></label>
         <label><span id="freedomSpendingPriceLabel">IMPORTO (€)</span><input id="freedomSpendingPrice" type="number" min="0.01" step="any" inputmode="decimal" placeholder="0,00"></label>
         <label><span id="freedomSpendingPeriodLabel">FREQUENZA</span><select id="freedomSpendingPeriod"><option value="daily">Giorno</option><option value="weekly">Settimana</option><option value="monthly">Mese</option></select></label>
