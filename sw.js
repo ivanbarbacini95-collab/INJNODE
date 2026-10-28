@@ -1,9 +1,9 @@
-const CACHE_NAME = 'inj-node-v16.10.28-home-more-v2';
+const CACHE_NAME = 'inj-node-v16.10.28-home-more-v3';
 const APP_SHELL = [
   './inj-fluid-screen-fit.css?v=20261028fullmonitor1',
   './inj-monitor-readability.css?v=20261028readable3',
   './home-desktop-native-scroll.css?v=20261028home-scroll1',
-  './home-more-section.css?v=20261028more2',
+  './home-more-section.css?v=20261028more3',
   './home-tile-descriptions.css?v=20261028freedom2',
   './financial-freedom.html?v=20261028freedom8',
   './financial-freedom.js?v=20261028freedom8',
