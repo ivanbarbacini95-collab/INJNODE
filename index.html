@@ -345,8 +345,35 @@
 <link rel="stylesheet" href="./inj-top-seamless.css?v=20261028seam1"/>
 <script defer src="./inj-top-seamless.js?v=20261028ios27"></script>
 <link rel="stylesheet" href="./home-compact-value-bars.css?v=20261028compactbars1"/>
-<link rel="stylesheet" href="./home-market-events.css?v=20261028stars7"/>
-<script defer src="./home-market-events.js?v=20261028stars7"></script>
+<link rel="stylesheet" href="./home-market-events.css?v=20261028injnode1"/>
+<script defer src="./home-market-events.js?v=20261028injnode1"></script>
+<!-- Critical mobile tile sizing: survives an old cached grid stylesheet. -->
+<style id="injnode-market-tile-critical">
+@media(max-width:799px){
+ html[data-inj-page="index"] body #entryGate .entry-actions.entry-flat-v44 #entryMarketEventsButton{
+  grid-column:1/-1!important;grid-row:auto!important;order:13!important;
+  width:100%!important;min-width:0!important;max-width:100%!important;
+  height:80px!important;min-height:80px!important;max-height:80px!important;
+  display:flex!important;position:relative!important;
+  flex-direction:row!important;align-items:center!important;justify-content:flex-start!important;
+  padding:12px 102px 12px 20px!important;box-sizing:border-box!important;text-align:left!important
+ }
+ html[data-inj-page="index"] body #entryGate #entryMarketEventsButton>.inj-events-tile-copy{
+  flex:1 1 auto!important;min-width:0!important;display:flex!important;
+  flex-direction:column!important;align-items:flex-start!important;justify-content:center!important;
+  overflow:hidden!important
+ }
+ html[data-inj-page="index"] body #entryGate #entryMarketEventsButton>.inj-events-tile-copy>strong{
+  display:block!important;text-align:left!important;white-space:nowrap!important
+ }
+ html[data-inj-page="index"] body #entryGate #entryMarketEventsButton>.inj-events-tile-stars{
+  position:absolute!important;display:block!important;right:16px!important;top:50%!important;
+  width:max-content!important;height:auto!important;background:none!important;border:0!important;
+  white-space:nowrap!important;writing-mode:horizontal-tb!important;
+  transform:translateY(-50%)!important;font-size:20px!important;letter-spacing:3px!important
+ }
+}
+</style>
 </head>
 <body class="boot-loading">
 <div aria-label="Avvio INJ Node" aria-live="polite" aria-atomic="true" class="boot-splash node-pulse-splash" id="bootSplash" role="status">
