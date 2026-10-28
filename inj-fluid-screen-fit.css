@@ -41,11 +41,11 @@ html[data-inj-page] :is(
   min-width:0;
  }
  html[data-inj-page="treasury"] .treasury-shell{
-  width:calc(100% - 2 * var(--inj-screen-gutter))!important;
+  width:calc(100% - var(--inj-screen-gutter) - var(--inj-screen-gutter))!important;
   margin-inline:auto!important;
  }
  html[data-inj-page="live-rewards"] .rewards-shell{
-  width:calc(100% - 2 * var(--inj-screen-gutter))!important;
+  width:calc(100% - var(--inj-screen-gutter) - var(--inj-screen-gutter))!important;
   margin-inline:auto!important;
  }
  html[data-inj-page="visualize-wealth"] .wealth-shell,
@@ -98,7 +98,7 @@ html[data-inj-page] :is(
     internal layout regions while removing only the outer artificial cap. */
  html[data-inj-page="index"] body .app-shell,
  html[data-inj-page="index"] body #entryGate .entry-gate-shell:not(.first-access){
-  width:calc(100% - 2 * var(--inj-screen-gutter))!important;
+  width:calc(100% - var(--inj-screen-gutter) - var(--inj-screen-gutter))!important;
   max-width:none!important;
   min-width:0!important;
   margin-inline:auto!important;
