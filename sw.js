@@ -1,7 +1,7 @@
-const CACHE_NAME = 'inj-node-v16.10.28-monitor-readable-v2';
+const CACHE_NAME = 'inj-node-v16.10.28-monitor-readable-v3';
 const APP_SHELL = [
   './inj-fluid-screen-fit.css?v=20261028fullmonitor1',
-  './inj-monitor-readability.css?v=20261028readable1',
+  './inj-monitor-readability.css?v=20261028readable2',
   './home-tile-descriptions.css?v=20261028freedom2',
   './financial-freedom.html?v=20261028freedom8',
   './financial-freedom.js?v=20261028freedom8',
