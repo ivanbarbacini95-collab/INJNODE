@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.10.28-calendar-footer-seamless-v1';
+const CACHE_NAME = 'inj-node-v16.10.28-ios-status-blend-v3';
 const APP_SHELL = [
   './market-events-footer-seamless.css?v=20261028foot1',
   './home-launcher-typography-final.css?v=20261028labels1',
@@ -9,7 +9,7 @@ const APP_SHELL = [
   './home-compact-value-bars.css?v=20261028compactbars1',
   './home-market-events.css?v=20261028injnode3',
   './home-market-events.js?v=20261028injnode2',
-  './inj-top-seamless.css?v=20261028seam2',
+  './inj-top-seamless.css?v=20261028statusblend3',
   './inj-top-seamless.js?v=20261028ios27',
   './home-statusbar-continuity.css?v=20261028seam1',
   './menu-control-pro.css?v=20261028pro1',

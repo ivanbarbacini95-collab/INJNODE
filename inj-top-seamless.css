@@ -131,3 +131,56 @@
     background-image:none!important;
   }
 }
+
+/* INJ NODE · iOS native status-bar blend v3 · 2026-10-28
+   The dark block ABOVE the visible Web App is native iOS chrome (not a
+   removable HTML element on iOS 27). Its solid paint matches --theme-canvas
+   while the webview starts with a bright multi-stop theme gradient.
+   Feather the first pixels of the WEBVIEW from that exact solid colour to
+   the original gradient, removing the abrupt straight horizontal seam.
+   Do not add a fake top bar, change safe areas, or touch scroll positions.
+   Works for every theme, including Ocean X, Aqua, Velvet and light mode. */
+@supports (-webkit-touch-callout:none) {
+ @media (max-width:900px), (hover:none) and (pointer:coarse) {
+  html[data-theme] {
+   --inj-native-top-tone:var(--theme-canvas,var(--bg,#07121b));
+   --inj-native-top-blend:linear-gradient(to bottom,
+      var(--inj-native-top-tone) 0px,
+      color-mix(in srgb,var(--inj-native-top-tone) 78%,transparent) 24px,
+      color-mix(in srgb,var(--inj-native-top-tone) 40%,transparent) 73px,
+      transparent 152px);
+  }
+  /* One real root canvas behind regular Home and all standard sections. */
+  html[data-theme][data-inj-page]:not([data-inj-page="workspace"]):not([data-inj-page="reward-ladder"]):not([data-inj-page="injc-etf"]),
+  html[data-inj-market][data-theme] {
+   background-color:var(--inj-native-top-tone)!important;
+   background-image:var(--inj-native-top-blend),var(--page-gradient,none)!important;
+   background-repeat:no-repeat!important;
+   background-position:center top!important;
+   background-attachment:scroll!important;
+  }
+  /* The Home owns a single background; don't let #entryGate paint another
+     independently scaled gradient over the root, reintroducing the seam. */
+  html[data-theme][data-inj-page="index"] body #entryGate.entry-gate {
+   background-color:transparent!important;
+   background-image:none!important;
+  }
+  /* Market Events covers the whole webview. It therefore needs its own
+     feathered background instead of starting the bright gradient at y=0,
+     directly below the native status bar. Keep calendar contents unchanged. */
+  html[data-theme][data-inj-page="index"] body #injMarketEventsOverlay.inj-events-overlay {
+   background-color:var(--inj-native-top-tone)!important;
+   background-image:var(--inj-native-top-blend),var(--page-gradient,none)!important;
+   background-repeat:no-repeat!important;
+   background-position:center top!important;
+   background-attachment:scroll!important;
+  }
+  /* In-app full-screen views also start at the webview's upper boundary. */
+  html[data-theme][data-inj-page="index"] body :is(#performanceTimelineView.open,#converterView.open) {
+   background-color:var(--inj-native-top-tone)!important;
+   background-image:var(--inj-native-top-blend),var(--page-gradient,none)!important;
+   background-repeat:no-repeat!important;
+   background-position:center top!important;
+  }
+ }
+}
