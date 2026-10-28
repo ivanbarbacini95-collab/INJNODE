@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.10.28-settings-freeze-v1';
+const CACHE_NAME = 'inj-node-v16.10.28-metric-strip-v2';
 const APP_SHELL = [
   './home-settings-scroll-lock.css?v=20261028menu-lock1',
   './app.js?v=20261028menu-lock1',
@@ -8,7 +8,7 @@ const APP_SHELL = [
   './home-premium-titles.css?v=20261027p1',
   './home-treasury-brand-layout.css?v=20261028bcg1',
   './home-overview-price-first.css?v=20261028compact2',
-  './home-compact-value-bars.css?v=20261028compactbars1',
+  './home-compact-value-bars.css?v=20261028compactbars2',
   './home-market-events.css?v=20261028injnode3',
   './home-market-events.js?v=20261028injnode2',
   './inj-top-seamless.css?v=20261028statusblend3',
