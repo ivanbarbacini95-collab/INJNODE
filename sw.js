@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.10.28-eventflow-i18n-v1';
+const CACHE_NAME = 'inj-node-v16.10.28-global-languages-v3';
 const APP_SHELL = [
   './ambient-wallet-reward-glow.css?v=20261028ambient1',
   './market-events-layout-pro.css?v=20261028risk1',
@@ -20,10 +20,10 @@ const APP_SHELL = [
   './menu-control-pro.css?v=20261028pro1',
   './menu-control-pro.js?v=20261028pro1',
   './inj-node-telemetry.js?v=20261028officialpro2',
-  './i18n.js?v=20261028menupro1',
+  './i18n.js?v=20261028allsections1',
   './home-terminal-header-20261027.js?v=h2',
   './workspace-sections.js?v=20261027-live2',
-  './navigation.js?v=20261027-sync1',
+  './navigation.js?v=20261028allsections1',
   './cloud-sync-agent.js?v=20261027sync1',
   './cloud-sync-config.js?v=20261027sync1',
   './cloud-sync.html?v=20261027sync2',
@@ -39,7 +39,7 @@ const APP_SHELL = [
   './market-portal.js?v=20261027-g1',
   './first-access-unified.css?v=20261027-official-fix1',
   './wallet-manager-reliable.css?v=20261027a',
-  './i18n.js?v=20261027titles1',
+  './i18n.js?v=20261028allsections1',
   './app.js?v=20261028menu-lock1',
   './performance-timeline-fit.css?v=20261026-fit1',
   './home-premium-iconography.js?v=20261027luxb1',
@@ -265,7 +265,7 @@ self.addEventListener('fetch', (event) => {
   if (url.pathname.startsWith('/api/')) {event.respondWith(fetch(request));return;}
   // Always prefer the current Market Events assets after a Git deploy. Keep an
   // offline copy, but never trap users on a stale pre-update CSS/JS pair.
-  if (url.pathname.endsWith('/home-market-events.css') || url.pathname.endsWith('/home-market-events.js') || url.pathname.endsWith('/inj-top-seamless.css') || url.pathname.endsWith('/market-events-layout-pro.css') || url.pathname.endsWith('/home-focused-cards.css') || url.pathname.endsWith('/ambient-wallet-reward-glow.css')) {
+  if (url.pathname.endsWith('/i18n.js') || url.pathname.endsWith('/navigation.js') || url.pathname.endsWith('/home-market-events.css') || url.pathname.endsWith('/home-market-events.js') || url.pathname.endsWith('/inj-top-seamless.css') || url.pathname.endsWith('/market-events-layout-pro.css') || url.pathname.endsWith('/home-focused-cards.css') || url.pathname.endsWith('/ambient-wallet-reward-glow.css')) {
     event.respondWith(
       fetch(request,{cache:'no-store'}).then(response=>{
         if(response.ok){
