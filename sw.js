@@ -1,5 +1,6 @@
-const CACHE_NAME = 'inj-node-v16.10.28-financial-freedom-v8';
+const CACHE_NAME = 'inj-node-v16.10.28-fluid-monitor-v1';
 const APP_SHELL = [
+  './inj-fluid-screen-fit.css?v=20261028fullmonitor1',
   './home-tile-descriptions.css?v=20261028freedom2',
   './financial-freedom.html?v=20261028freedom8',
   './financial-freedom.js?v=20261028freedom8',
@@ -59,7 +60,7 @@ const APP_SHELL = [
   './home-launcher-grid.css?v=20261028freedom2',
   './workspace-fullscreen-lock.css?v=16102413',
   './workspace.js?v=16102413',
-  './workspace-pro.js?v=16102413',
+  './workspace-pro.js?v=20261028screenfit1',
   './workspace-model.js?v=16102412',
   './workspace-favorites-controls.css?v=16102411',
   './workspace-sections.js?v=16102411',
@@ -81,7 +82,7 @@ const APP_SHELL = [
   './workspace-model.js?v=1610247',
   './workspace.js?v=1610249',
   './workspace-pro.js?v=160801',
-  './workspace-pro.css?v=1610249',
+  './workspace-pro.css?v=20261028screenfit1',
   './navigation.js?v=160743',
   './reward-ladder-home.css?v=160739',
   './reward-ladder.html',
@@ -274,7 +275,7 @@ self.addEventListener('fetch', (event) => {
   if (url.pathname.startsWith('/api/')) {event.respondWith(fetch(request));return;}
   // Always prefer the current Market Events assets after a Git deploy. Keep an
   // offline copy, but never trap users on a stale pre-update CSS/JS pair.
-  if (url.pathname.endsWith('/i18n.js') || url.pathname.endsWith('/navigation.js') || url.pathname.endsWith('/home-market-events.css') || url.pathname.endsWith('/home-market-events.js') || url.pathname.endsWith('/inj-top-seamless.css') || url.pathname.endsWith('/financial-freedom.html') || url.pathname.endsWith('/financial-freedom.css') || url.pathname.endsWith('/financial-freedom.js') || url.pathname.endsWith('/financial-freedom-home.css') || url.pathname.endsWith('/financial-freedom-overlay.js') || url.pathname.endsWith('/market-events-layout-pro.css') || url.pathname.endsWith('/home-focused-cards.css') || url.pathname.endsWith('/ambient-wallet-reward-glow.css')) {
+  if (url.pathname.endsWith('/i18n.js') || url.pathname.endsWith('/navigation.js') || url.pathname.endsWith('/inj-fluid-screen-fit.css') || url.pathname.endsWith('/workspace-pro.js') || url.pathname.endsWith('/workspace-pro.css') || url.pathname.endsWith('/home-market-events.css') || url.pathname.endsWith('/home-market-events.js') || url.pathname.endsWith('/inj-top-seamless.css') || url.pathname.endsWith('/financial-freedom.html') || url.pathname.endsWith('/financial-freedom.css') || url.pathname.endsWith('/financial-freedom.js') || url.pathname.endsWith('/financial-freedom-home.css') || url.pathname.endsWith('/financial-freedom-overlay.js') || url.pathname.endsWith('/market-events-layout-pro.css') || url.pathname.endsWith('/home-focused-cards.css') || url.pathname.endsWith('/ambient-wallet-reward-glow.css')) {
     event.respondWith(
       fetch(request,{cache:'no-store'}).then(response=>{
         if(response.ok){
