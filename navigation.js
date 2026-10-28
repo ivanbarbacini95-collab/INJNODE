@@ -151,6 +151,9 @@ window.INJ_OPEN_SECTION=function(url){
    requestAnimationFrame(()=>{
      if(section===currentSection)currentSection.dataset.ready='true';
    });
+   const currentLanguage=localStorage.getItem('inj_node_language_v1')==='en'?'en':'it';
+   currentSection.contentWindow?.postMessage({type:'injnode:languagechange',language:currentLanguage},location.origin);
+   currentSection.contentWindow?.postMessage({type:'injnode:market:language',language:currentLanguage},location.origin);
  });
  document.body.append(sectionCover,section);
  document.body.classList.add('inj-section-open');
@@ -178,6 +181,13 @@ if(main){
  document.addEventListener('keydown',event=>{if(event.key==='Escape' && !document.querySelector('dialog[open]'))home();});
 }
 function language(){const en=localStorage.getItem('inj_node_language_v1')==='en';const el=document.querySelector('#entryMarketButton strong');if(el)el.textContent=en?'Market':'Mercato';}
-window.addEventListener('injnode:languagechange',language);window.addEventListener('storage',language);language();
+window.addEventListener('injnode:languagechange',event=>{
+ language();
+ if(section?.contentWindow){
+  const lang=event.detail?.language || (localStorage.getItem('inj_node_language_v1')==='en'?'en':'it');
+  section.contentWindow.postMessage({type:'injnode:languagechange',language:lang},location.origin);
+  section.contentWindow.postMessage({type:'injnode:market:language',language:lang},location.origin);
+ }
+});window.addEventListener('storage',language);language();
 // The common i18n observer owns live text translation (no competing observer).
 })();
