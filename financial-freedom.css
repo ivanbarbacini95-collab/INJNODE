@@ -274,3 +274,153 @@ html[data-inj-page="financial-freedom"] .freedom-page{
 html[data-inj-page="financial-freedom"] .freedom-settings input{
  min-width:0;max-width:100%;
 }
+
+
+/* v5 · Personal spending list — editable, persistent, theme-adaptive. */
+.freedom-options{min-width:0}
+.freedom-spending-summary{
+ display:flex;align-items:center;justify-content:space-between;gap:12px;
+ min-width:0;padding:12px 13px;margin:-1px 0 11px;
+ border-radius:11px;border:1px solid color-mix(in srgb,var(--accent) 24%,var(--line));
+ background:color-mix(in srgb,var(--surface) 81%,transparent);
+}
+.freedom-spending-summary-copy{min-width:0;display:flex;flex-direction:column;gap:3px}
+.freedom-spending-summary-copy small{font-size:9px;font-weight:780;letter-spacing:.065em;color:var(--muted-strong)}
+.freedom-spending-summary-copy strong{
+ min-width:0;max-width:100%;
+ font-size:clamp(20px,2.3vw,27px);line-height:1.15;font-weight:800;
+ letter-spacing:-.03em;font-variant-numeric:tabular-nums;
+ overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.freedom-spending-summary-copy>span{
+ font-size:10px;line-height:1.35;color:var(--muted-strong);
+}
+.freedom-spending-use-goal{
+ display:flex;align-items:center;justify-content:center;
+ flex:0 0 auto;max-width:43%;min-height:32px;padding:9px 12px;
+ border:1px solid color-mix(in srgb,var(--accent) 48%,var(--line));
+ border-radius:8px;background:color-mix(in srgb,var(--accent) 9%,var(--surface));
+ color:var(--accent);font-size:9px;font-weight:850;letter-spacing:.03em;
+ text-align:center;line-height:1.3;
+}
+.freedom-spending-use-goal:disabled{opacity:.33;cursor:default}
+.freedom-options .freedom-lifestyle{
+ display:grid;grid-template-columns:1fr!important;gap:6px!important;
+ min-width:0;
+}
+.freedom-options .freedom-lifestyle-item{
+ display:grid!important;
+ grid-template-columns:29px minmax(0,1fr) minmax(65px,auto) 25px!important;
+ grid-template-rows:auto 4px!important;
+ align-items:center!important;
+ gap:7px 9px!important;padding:10px 9px!important;
+ min-width:0;border:1px solid var(--line);border-radius:9px;
+ background:color-mix(in srgb,var(--surface) 49%,transparent);
+}
+.freedom-options .freedom-lifestyle-emoji{grid-column:1;grid-row:1;font-size:18px}
+.freedom-options .freedom-lifestyle-name{grid-column:2;grid-row:1;min-width:0;gap:3px}
+.freedom-options .freedom-lifestyle-name strong{
+ display:block;font-size:11px;line-height:1.24;white-space:normal;overflow-wrap:anywhere;
+}
+.freedom-options .freedom-lifestyle-name small{
+ display:block;font-size:9px;line-height:1.3;color:var(--muted-strong);
+ white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.freedom-options .freedom-lifestyle-result{
+ grid-column:3!important;grid-row:1!important;
+ min-width:0!important;max-width:115px!important;
+ color:var(--accent);font-size:10px;font-weight:800;
+ line-height:1.25;text-align:right!important;white-space:normal;
+}
+.freedom-options .freedom-lifestyle-remove{
+ display:grid;grid-column:4!important;grid-row:1!important;place-items:center;
+ width:25px;height:26px;min-width:25px;padding:0!important;
+ border:1px solid color-mix(in srgb,var(--muted) 23%,transparent);
+ border-radius:7px;background:color-mix(in srgb,var(--surface) 68%,transparent);
+ color:var(--muted-strong);font-size:18px;line-height:1;
+}
+.freedom-options .freedom-lifestyle-remove:hover{
+ color:var(--text);border-color:var(--accent);
+}
+.freedom-options .freedom-lifestyle-progress{
+ grid-column:2/5;grid-row:2;height:4px;width:100%;
+ border-radius:5px;overflow:hidden;
+ background:color-mix(in srgb,var(--accent) 10%,var(--surface));
+}
+.freedom-options .freedom-lifestyle-progress span{
+ display:block;height:100%;width:0;border-radius:inherit;
+ background:var(--accent);opacity:.83;transition:width .2s ease;
+}
+.freedom-options .freedom-spending-empty{
+ padding:16px 10px;border:1px dashed var(--line);
+ border-radius:9px;text-align:center;font-size:10px;color:var(--muted-strong);
+}
+.freedom-spending-editor{
+ margin-top:10px;border:1px solid var(--line);border-radius:10px;
+ background:color-mix(in srgb,var(--surface) 54%,transparent);
+ overflow:hidden;
+}
+.freedom-spending-editor>summary{
+ display:flex;align-items:center;gap:9px;
+ min-height:41px;padding:9px 12px;
+ font-size:10px;font-weight:830;letter-spacing:.065em;
+ cursor:pointer;list-style:none;user-select:none;
+}
+.freedom-spending-editor>summary::-webkit-details-marker{display:none}
+.freedom-spending-plus{
+ display:grid;place-items:center;width:25px;height:25px;flex:0 0 25px;
+ border:1px solid color-mix(in srgb,var(--accent) 42%,var(--line));
+ border-radius:6px;color:var(--accent);font-size:18px;font-weight:600;line-height:1;
+}
+.freedom-spending-chevron{margin-left:auto;font-size:18px;transition:transform .2s ease}
+.freedom-spending-editor[open] .freedom-spending-chevron{transform:rotate(180deg)}
+.freedom-spending-form{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:10px;padding:12px;border-top:1px solid var(--line);
+}
+.freedom-spending-form label{
+ display:flex;flex-direction:column;gap:6px;min-width:0;
+}
+.freedom-spending-form-wide{grid-column:1/-1}
+.freedom-spending-form label>span{
+ font-size:9px;font-weight:790;letter-spacing:.065em;color:var(--muted-strong);
+}
+.freedom-spending-form :is(input,select){
+ width:100%;min-width:0;max-width:100%;height:38px;
+ border:1px solid var(--line);border-radius:8px;
+ background:color-mix(in srgb,var(--surface) 92%,transparent);
+ color:var(--text);padding:8px 10px;
+ font-size:12px;font-variant-numeric:tabular-nums;
+}
+.freedom-spending-form input::placeholder{color:var(--muted)}
+.freedom-spending-form select option{background:var(--surface);color:var(--text)}
+.freedom-spending-form>button{
+ grid-column:1/-1;min-height:39px;
+ border:1px solid color-mix(in srgb,var(--accent) 46%,var(--line));
+ border-radius:8px;background:color-mix(in srgb,var(--accent) 11%,var(--surface));
+ color:var(--accent);font-size:10px;font-weight:850;letter-spacing:.055em;
+}
+.freedom-spending-form>button:active{opacity:.72}
+.freedom-spending-form #freedomSpendingError{
+ grid-column:1/-1;min-height:0;font-size:9px;color:var(--muted-strong);line-height:1.3;
+}
+.freedom-spending-form #freedomSpendingError:empty{display:none}
+.privacy-active .freedom-spending-summary-copy{filter:blur(10px);pointer-events:none;user-select:none}
+@media(max-width:560px){
+ .freedom-spending-summary{padding:11px 10px;gap:8px}
+ .freedom-spending-summary-copy strong{font-size:22px}
+ .freedom-spending-use-goal{font-size:8px;padding:8px 9px;max-width:42%}
+ .freedom-options .freedom-lifestyle-item{
+  grid-template-columns:25px minmax(0,1fr) minmax(58px,auto) 24px!important;
+  gap:7px 6px!important;padding:10px 8px!important;
+ }
+ .freedom-options .freedom-lifestyle-emoji{font-size:17px}
+ .freedom-options .freedom-lifestyle-name strong{font-size:11px}
+ .freedom-options .freedom-lifestyle-result{font-size:9px!important}
+ .freedom-options .freedom-lifestyle-progress{grid-column:2/5}
+ .freedom-spending-editor>summary{padding:10px}
+ .freedom-spending-form{gap:8px;padding:10px}
+}
+@media(prefers-reduced-motion:reduce){
+ .freedom-spending-chevron,.freedom-options .freedom-lifestyle-progress span{transition:none}
+}
