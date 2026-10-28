@@ -150,17 +150,22 @@
   const addSymbol=symbol=>{
    if(bySymbol.has(symbol))result.push({kind:'coin',key:symbol,record:bySymbol.get(symbol)});
   };
-  ['INJ','BTC','ETH','SOL'].forEach(addSymbol);
   const g=data.global||{};
-  result.push({kind:'global',key:'CAP',label:tr('CAP. CRYPTO','CRYPTO CAP'),value:usdCompact(g.marketCapUsd)});
-  result.push({kind:'global',key:'BTCD',label:'BTC DOM',value:percent(g.btcDominance)});
-  result.push({kind:'global',key:'VOL',label:tr('VOL. 24H','24H VOL'),value:usdCompact(g.volume24hUsd)});
+  const positive=value=>value!==null&&value!==undefined&&Number.isFinite(Number(value))&&Number(value)>0;
+  const numeric=value=>value!==null&&value!==undefined&&Number.isFinite(Number(value));
+  const addGlobal=(key,label,value,display,trend)=>{
+   if(numeric(value))result.push({kind:'global',key,label,value:display,trend});
+  };
+  ['INJ','BTC','ETH','SOL'].forEach(addSymbol);
+  if(positive(g.marketCapUsd))addGlobal('CAP',tr('CAP. CRYPTO','CRYPTO CAP'),g.marketCapUsd,usdCompact(g.marketCapUsd));
+  addGlobal('BTCD','BTC DOM',g.btcDominance,percent(g.btcDominance));
+  if(positive(g.volume24hUsd))addGlobal('VOL',tr('VOL. 24H','24H VOL'),g.volume24hUsd,usdCompact(g.volume24hUsd));
   ['BNB','XRP','AVAX','DOT','LINK','ADA','DOGE'].forEach(addSymbol);
-  result.push({kind:'global',key:'ETHD',label:'ETH DOM',value:percent(g.ethDominance)});
-  result.push({kind:'global',key:'CAP24',label:tr('MERCATO 24H','MARKET 24H'),value:percent(g.marketCapChange24h,true),
-   trend:g.marketCapChange24h});
+  addGlobal('ETHD','ETH DOM',g.ethDominance,percent(g.ethDominance));
+  addGlobal('CAP24',tr('MERCATO 24H','MARKET 24H'),g.marketCapChange24h,
+    percent(g.marketCapChange24h,true),g.marketCapChange24h);
   for(const tick of ticks)if(!result.some(item=>item.kind==='coin'&&item.key===tick.symbol))
-   result.push({kind:'coin',key:tick.symbol,record:tick});
+    result.push({kind:'coin',key:tick.symbol,record:tick});
   return result;
  }
  function createTickerItem(item){
@@ -276,6 +281,47 @@
   }catch{}
   return liveHomeTicker();
  }
+ // Market-wide metrics are separate from exchange quotes and can be rate-limited.
+ // Refresh them independently instead of showing frozen dashes in the strip.
+ let cachedGlobal=null,lastGlobalFetch=0;
+ const validGlobal=x=>x!==null&&x!==undefined&&Number.isFinite(Number(x));
+ const fromPaprika=p=>({
+  marketCapUsd:parseMarketFigure(p?.market_cap_usd),
+  volume24hUsd:parseMarketFigure(p?.volume_24h_usd),
+  btcDominance:parseMarketFigure(p?.bitcoin_dominance_percentage),
+  ethDominance:null,
+  marketCapChange24h:parseMarketFigure(p?.market_cap_change_24h)
+ });
+ const fromLore=data=>{
+  const p=Array.isArray(data)?data[0]:data;
+  return {
+   marketCapUsd:parseMarketFigure(p?.total_mcap),
+   volume24hUsd:parseMarketFigure(p?.total_volume),
+   btcDominance:parseMarketFigure(p?.btc_d),
+   ethDominance:parseMarketFigure(p?.eth_d),
+   marketCapChange24h:parseMarketFigure(p?.mcap_change)
+  };
+ };
+ async function augmentGlobals(payload){
+  const existing=payload.global&&typeof payload.global==='object'?payload.global:{};
+  const complete=['marketCapUsd','volume24hUsd','btcDominance','ethDominance','marketCapChange24h']
+   .every(key=>validGlobal(existing[key]));
+  if(complete){cachedGlobal=existing;lastGlobalFetch=now();return {...payload,global:existing}}
+  const isFresh=lastGlobalFetch&&now()-lastGlobalFetch<120000;
+  let additional=isFresh&&cachedGlobal?cachedGlobal:{};
+  if(!isFresh){
+   lastGlobalFetch=now();
+   try{additional=fromPaprika(await tickerGet('https://api.coinpaprika.com/v1/global'))}
+   catch{
+    try{additional=fromLore(await tickerGet('https://api.coinlore.net/api/global/'))}
+    catch{additional=cachedGlobal||{}}
+   }
+   if(Object.values(additional).some(validGlobal))cachedGlobal={...cachedGlobal,...additional};
+  }
+  const combined={...additional};
+  for(const [key,val] of Object.entries(existing))if(validGlobal(val))combined[key]=val;
+  return {...payload,global:combined};
+ }
  let tickerUpdating=false;
  async function updateTicker(){
   if(document.hidden||tickerUpdating)return;
@@ -288,6 +334,7 @@
     payload=response;
    }catch{payload=await alternateTicker()}
    if(!payload)throw Error('No live quote source');
+   payload=await augmentGlobals(payload);
    renderTicker(payload);state.lastMarket=now();
   }catch{
    if(!tickerMotion.hadData){
