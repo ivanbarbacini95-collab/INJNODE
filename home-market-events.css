@@ -847,3 +847,38 @@ html[data-inj-page="index"] body #entryGate .inj-market-events-slot > #entryMark
   right:16px!important;font-size:20px!important;letter-spacing:3px!important
  }
 }
+
+/* INJNODE / ECONOMIC CALENDAR / EVENT SEPARATORS v3 */
+.inj-events-body > .inj-events-item{
+ position:relative!important;
+ border-bottom:0!important;
+}
+
+/* Draw only between consecutive events, not underneath the last event or
+   between a date header and the first entry of that day. */
+.inj-events-body > .inj-events-item + .inj-events-item::before{
+ content:"";
+ position:absolute;
+ left:9px;
+ right:9px;
+ top:0;
+ height:1px;
+ display:block;
+ pointer-events:none;
+ z-index:1;
+ background:linear-gradient(
+  90deg,
+  transparent 0%,
+  color-mix(in srgb,var(--accent,#85dfc6) 18%,transparent) 11%,
+  color-mix(in srgb,var(--accent,#85dfc6) 42%,transparent) 50%,
+  color-mix(in srgb,var(--accent,#85dfc6) 18%,transparent) 89%,
+  transparent 100%
+ );
+ box-shadow:0 0 7px color-mix(in srgb,var(--accent,#85dfc6) 13%,transparent);
+}
+@media(max-width:700px){
+ .inj-events-body > .inj-events-item + .inj-events-item::before{
+  left:3px;
+  right:3px;
+ }
+}
