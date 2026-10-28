@@ -383,6 +383,8 @@
 <link rel="stylesheet" href="./home-focused-cards.css?v=20261028micro2"/>
 <link rel="stylesheet" href="./ambient-wallet-reward-glow.css?v=20261028ambient1"/>
 <link rel="stylesheet" href="./home-final-four-titles.css?v=20261028four1"/>
+<link rel="stylesheet" href="./financial-freedom-home.css?v=20261028freedom1"/>
+<script defer src="./financial-freedom-overlay.js?v=20261028freedom1"></script>
 </head>
 <body class="boot-loading">
 <div aria-label="Avvio INJ Node" aria-live="polite" aria-atomic="true" class="boot-splash node-pulse-splash" id="bootSplash" role="status">
@@ -820,6 +822,11 @@
 </a>
 <a class="entry-action entry-action-workspace" id="entryWorkspaceButton" href="./workspace.html?v=160803" aria-label="INJ Workspace">
 <span aria-hidden="true" class="entry-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="14" y="3" width="7" height="12" rx="2"/><rect x="3" y="14" width="8" height="7" rx="2"/><path d="M14 19h7m-3.5-3.5v7"/></svg></span><span><strong class="inj-home-tile-title" data-it="INJ Workspace" data-en="INJ Workspace">INJ Workspace</strong><small class="inj-tile-description" data-it="Crea la tua schermata" data-en="Build your workspace">Crea la tua schermata</small></span><span aria-hidden="true" class="inj-tile-scene"><svg viewBox="0 0 120 68"><rect x="8" y="9" width="43" height="23" rx="4"/><rect x="59" y="9" width="51" height="48" rx="4"/><rect x="8" y="39" width="43" height="18" rx="4"/><path d="M74 33h20m-10-10v20"/></svg></span><svg aria-hidden="true" class="entry-action-arrow" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
+<button class="entry-action entry-action-freedom" id="entryFreedomButton" type="button" aria-label="Apri Financial Freedom">
+<span aria-hidden="true" class="entry-action-icon"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h17M7 15l4-4 3 2 5-7"/><path d="M15.5 6H19v3.5"/></svg></span>
+<span class="freedom-entry-copy"><strong class="inj-home-tile-title" data-it="Financial Freedom" data-en="Financial Freedom">Financial Freedom</strong><small class="inj-tile-description" data-it="Il tuo livello di ricchezza e libertà finanziaria" data-en="Your wealth tier and financial independence">Il tuo livello di ricchezza e libertà finanziaria</small></span>
+<svg aria-hidden="true" class="entry-action-arrow" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
+</button>
 <a class="entry-action entry-action-treasury" id="entryTreasuryButton" href="./treasury.html?v=160525" aria-label="Apri B Capital Group · INJ Treasury">
 <span aria-hidden="true" class="entry-action-icon treasury-menu-icon"><svg viewBox="0 0 24 24"><path d="M4 9h16v10H4z"></path><path d="M7 9V6.7L12 4l5 2.7V9"></path><path d="M8 13h8M8 16h5"></path><circle cx="17" cy="16" r="1.5"></circle></svg></span>
 <span class="treasury-entry-copy"><strong class="inj-home-tile-title" data-it="B Capital Group" data-en="B Capital Group">B Capital Group</strong><span class="treasury-entry-details"><small class="treasury-entry-subtitle" data-i18n-skip="true">INJ Treasury</small><small class="inj-tile-description" data-it="Totale dei tuoi wallet" data-en="All-wallet overview">Totale dei tuoi wallet</small></span></span>
@@ -832,6 +839,9 @@
 </div>
 </section>
 <footer id="injHomeBrandFooter" class="inj-home-signature inj-brand-credit" data-i18n-skip="true" aria-label="INJ Node by B Capital Group"><strong>INJ Node</strong><span>by B Capital Group</span></footer>
+<section id="injFreedomOverlay" class="inj-freedom-overlay" role="dialog" aria-modal="true" aria-label="Financial Freedom" hidden>
+  <iframe id="injFreedomFrame" title="INJ Node Financial Freedom" loading="lazy" referrerpolicy="same-origin"></iframe>
+</section>
 <section aria-hidden="true" aria-label="Performance Timeline" class="performance-timeline-view" hidden id="performanceTimelineView">
   <div class="performance-timeline-shell">
     <header class="performance-timeline-header">
@@ -1406,7 +1416,7 @@
   </article>
 </section>
 <div aria-live="polite" class="toast" id="toast" role="status"></div>
-<script defer="" src="app.js?v=20261028pnlaxis2"></script>
+<script defer="" src="app.js?v=20261028freedom1"></script>
 <script defer src="./morning-brief.js?v=160737"></script>
 <script>
 (function(){
