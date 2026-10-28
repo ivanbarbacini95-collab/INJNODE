@@ -251,7 +251,6 @@
  }
  function localize(){
   txt('freedomIntro',t('intro'));txt('freedomWalletLabel',t('selected'));txt('freedomPriceLabel',t('price'));
-  editSpendingLanguage();
   txt('freedomStatusLabel',t('status'));txt('freedomCoverageLabel',t('covered'));txt('freedomNetLabel',language()==='en'?'SPENDABLE / MONTH':'UTILIZZABILI / MESE');txt('freedomGoalLabel',language()==='en'?'SPENDING / MONTH':'SPESE / MESE');txt('freedomBufferHint',language()==='en'?'Rewards held back':'Reward non spendibili');
   txt('freedomWorthLabel',t('worth'));txt('freedomDayLabel',t('dayLabel'));txt('freedomMonthLabel',t('monthLabel'));txt('freedomWealthEyebrow',t('wealthEyebrow'));txt('freedomSpendEyebrow',t('spendEyebrow'));txt('freedomPlanEyebrow',t('planEyebrow'));txt('freedomWealthTitle',t('grade'));txt('freedomTierFoot',t('tierFoot'));
   txt('freedomSpendTitle',t('daily'));txt('freedomSpendHint',t('estimated'));txt('freedomLifestyleFoot',t('lifestyleNote'));
@@ -259,6 +258,7 @@
   txt('freedomTargetLabel',t('needs'));txt('freedomMissingLabel',t('missing'));
   txt('freedomStressLabel',t('stress'));txt('freedomStressInfo',t('stressNote'));txt('freedomDisclaimer',t('disclaimer'));
   $('freedomClose').ariaLabel=language()==='en'?'Close Financial Freedom':'Torna alla Home';
+  editSpendingLanguage();
  }
  function walletOptions(source){
   const wallets=Array.isArray(source?.wallets)?source.wallets:[];
@@ -381,7 +381,7 @@
    localize();txt('freedomPrice','—');txt('freedomUpdated',t('offline'));resetOutput('notReady');
    $('freedomFeed').classList.add('is-offline');return;
   }
-  setTheme(source);localize();syncBudgetCurrency(source);walletOptions(source);
+  setTheme(source);localize();syncBudgetCurrency(source);editSpendingLanguage();walletOptions(source);
   const p=selectedPortfolio(source);
   const price=num(source.price),fx=num(source.eurRate);
   const marketFresh=positive(num(source.priceAt))&&Date.now()-num(source.priceAt)<120000;
