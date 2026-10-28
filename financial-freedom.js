@@ -184,10 +184,12 @@
   setTheme(source);localize();walletOptions(source);
   const p=selectedPortfolio(source);
   const price=num(source.price),fx=num(source.eurRate);
-  const live=positive(price)&&positive(fx)&&p.ready;
+  const marketFresh=positive(num(source.priceAt))&&Date.now()-num(source.priceAt)<120000;
+  const fxConfirmed=source.fxVerified===true;
+  const live=positive(price)&&positive(fx)&&p.ready&&marketFresh&&fxConfirmed;
   const c=source.currency==='EUR'?'EUR':'USD';
   txt('freedomPrice',positive(price)?money(price*(c==='EUR'?fx:1),c):'—');
-  txt('freedomUpdated',p.stale?t('stale'):live?t('synced'):t('priceWaiting'));
+  txt('freedomUpdated',p.stale||(!marketFresh&&positive(price))||(!fxConfirmed&&positive(fx))?t('stale'):live?t('synced'):t('priceWaiting'));
   $('freedomFeed').classList.toggle('is-offline',!live||!p.complete);
   const updated=(live&&p.complete)?'LIVE':(p.ready?'CHECK':'—');
   $('freedomFeed').lastChild.textContent=updated;
@@ -208,7 +210,7 @@
   txt('freedomMonth',money(convert(monthGrossEUR),c));
   txt('freedomRewardInfo',t('reward')+': '+(p.staked>0?fmt(p.apr,2)+'%':'0%'));
   renderTiers(worthEUR);
-  const usable=p.complete&&positive(price)&&positive(fx);
+  const usable=p.complete&&marketFresh&&fxConfirmed&&positive(price)&&positive(fx);
   const safeCoverage=usable?coverage:0;
   const ratioDisplay=Math.min(9999,Math.max(0,Math.round(coverage)));
   txt('freedomCoverage',usable?fmt(ratioDisplay,0)+'%':'—');
@@ -220,7 +222,7 @@
   txt('freedomGoal',t('spend')+': '+money(convert(prefs.budget),c));
   lifestyleRows(adjustedEUR,usable);
   const annualEURPerInj=(p.apr/100)*price*fx*(1-prefs.buffer/100);
-  const target=annualEURPerInj>0?prefs.budget*12/annualEURPerInj:NaN;
+  const target=usable&&annualEURPerInj>0?prefs.budget*12/annualEURPerInj:NaN;
   txt('freedomTargetInj',valid(target)?inj(target)+' INJ':'—');
   txt('freedomMissingInj',valid(target)?inj(Math.max(0,target-p.staked))+' INJ':'—');
   txt('freedomStressCoverage',usable?fmt(Math.round(coverage*.5*.7),0)+'%':'—');
