@@ -6,7 +6,7 @@
  var STORE='inj_node_font_v1', ACTIVE='inter', root=document.documentElement;
  var FONTS=[
   {id:'inter',name:'Inter Light',stack:'"Inter",Arial,sans-serif',url:''},
-  {id:'bitcount',name:'Bitcount Grid Single · Micro Dot',stack:'"Doto","Bitcount Grid Single",monospace',url:'https://fonts.googleapis.com/css2?family=Doto:ROND,wght@100,350..600&display=swap'},
+  {id:'bitcount',name:'Bitcount Grid Single · Micro Dot',stack:'"Doto","IBM Plex Mono",monospace',url:'https://fonts.googleapis.com/css2?family=Doto:ROND,wght@100,400..700&display=swap'},
   {id:'roboto',name:'Roboto',stack:'"Roboto",Arial,sans-serif',url:'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400&display=swap'},
   {id:'dm-sans',name:'DM Sans',stack:'"DM Sans",Arial,sans-serif',url:'https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400&display=swap'},
   {id:'jakarta',name:'Plus Jakarta Sans',stack:'"Plus Jakarta Sans",Arial,sans-serif',url:'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400&display=swap'},
@@ -97,8 +97,8 @@
    /* Important inline faces overcome the pre-existing high-specificity Inter reset. */
    title.style.setProperty('font-family',f.stack,'important');
    sample.style.setProperty('font-family',f.stack,'important');
-   sample.style.setProperty('font-weight',f.id==='bitcount'?'520':'400','important');
-   if(f.id==='bitcount')sample.style.setProperty('font-variation-settings','"ROND" 100,"wght" 520','important');
+   sample.style.setProperty('font-weight',f.id==='bitcount'?'550':'400','important');
+   if(f.id==='bitcount')sample.style.setProperty('font-variation-settings','"ROND" 100,"wght" 550','important');
    item.append(nam,sample);
    item.addEventListener('click',function(){apply(f.id,true)});
    opts.appendChild(item);
