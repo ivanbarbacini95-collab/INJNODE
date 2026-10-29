@@ -170,3 +170,41 @@
     background-attachment:scroll!important;
   }
 }
+
+/* v5 · Never restart the selected theme underneath scrolled content.
+   One viewport-locked gradient is painted on the document root. Other
+   page/shell backgrounds stay transparent; fixed ambient animations remain.
+   Bespoke Workspace, Reward Ladder and ETF canvases are intentionally
+   excluded and retain their own designs. */
+html[data-theme][data-inj-page]:not([data-inj-page="workspace"]):not([data-inj-page="reward-ladder"]):not([data-inj-page="injc-etf"]),
+html[data-inj-market][data-theme]{
+ background-color:var(--theme-canvas,var(--bg,#07121b))!important;
+ background-image:var(--page-gradient,none)!important;
+ background-position:center center!important;
+ background-size:100% 100%!important;
+ background-repeat:no-repeat!important;
+ background-attachment:fixed!important;
+}
+html[data-theme][data-inj-page]:not([data-inj-page="workspace"]):not([data-inj-page="reward-ladder"]):not([data-inj-page="injc-etf"]) body,
+html[data-inj-market][data-theme] body{
+ background:transparent!important;
+ background-color:transparent!important;
+ background-image:none!important;
+}
+html[data-theme][data-inj-page]:not([data-inj-page="workspace"]):not([data-inj-page="reward-ladder"]):not([data-inj-page="injc-etf"]) body
+:is(.app-shell,.treasury-shell,.rewards-shell,.live-page,.book-page,.cc-shell,.cap-shell,.wealth-shell),
+html[data-inj-market][data-theme] body > .shell{
+ background:transparent!important;
+ background-color:transparent!important;
+ background-image:none!important;
+}
+/* Header chrome is not a second, darker mask. Actual market cards retain
+   their surfaces, shadows, labels, data and click regions. */
+html[data-theme] body :is(
+ .app-shell > .topbar,.treasury-header,.rewards-header,
+ .terminal-header,.book-topbar,.cc-topbar,.cap-header,
+ .wealth-header,.shell > .header
+){
+ background-color:transparent!important;
+ background-image:none!important;
+}
