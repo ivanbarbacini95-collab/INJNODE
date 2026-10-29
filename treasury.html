@@ -63,6 +63,70 @@
 <link rel="stylesheet" href="./inj-monitor-readability.css?v=20261028readable3"/>
 <link rel="stylesheet" href="./home-font-unified.css?v=20261029homefont1"/>
 <link rel="stylesheet" href="./inj-editorial-typography.css?v=20261029interlight2">
+  <style id="treasury-hero-value-order-v1">
+    /* Treasury hero: currency is primary, INJ quantity is secondary.
+       Reuses the existing live values and desktop/mobile grid areas. */
+    .treasury-hero-copy .treasury-hero-worth {
+      grid-area:total;
+      align-self:end;
+      max-width:100%;
+      min-width:0;
+      margin-top:2px;
+      color:var(--text);
+      font-size:clamp(2.1rem,5.8vw,4.15rem)!important;
+      font-weight:400!important;
+      line-height:1.08;
+      letter-spacing:-.04em;
+      font-variant-numeric:tabular-nums;
+      overflow-wrap:anywhere;
+      opacity:1;
+      text-align:left;
+    }
+    .treasury-hero-copy .treasury-total-display {
+      grid-area:worth;
+      align-self:start;
+      justify-content:flex-start;
+      max-width:100%;
+      min-width:0;
+      margin-top:8px;
+    }
+    .treasury-hero-copy .treasury-total-major {
+      font-size:clamp(1.05rem,2vw,1.45rem)!important;
+      font-weight:400!important;
+      line-height:1.2!important;
+      letter-spacing:-.015em!important;
+      color:var(--muted-strong);
+    }
+    .treasury-hero-copy .treasury-total-decimals {
+      font-size:clamp(.98rem,1.9vw,1.33rem)!important;
+      font-weight:400!important;
+      line-height:1.2!important;
+      letter-spacing:-.015em!important;
+      color:var(--muted-strong);
+    }
+    .treasury-hero-copy .treasury-total-display > small {
+      font-size:.63rem;
+      font-weight:500!important;
+      letter-spacing:.12em;
+      color:var(--muted);
+      transform:none;
+    }
+    @media(max-width:760px) {
+      .treasury-hero-copy .treasury-hero-worth {
+        font-size:clamp(1.85rem,8.3vw,2.8rem)!important;
+        text-align:center;
+      }
+      .treasury-hero-copy .treasury-total-display {
+        justify-content:center;
+        margin-top:4px;
+      }
+    }
+    @media(max-width:430px) {
+      .treasury-hero-copy .treasury-hero-worth {
+        font-size:clamp(1.75rem,8.2vw,2.4rem)!important;
+      }
+    }
+  </style>
 </head>
 <body>
   <div class="treasury-shell">
@@ -85,10 +149,10 @@
         <div class="treasury-hero-orbit" aria-hidden="true"><i></i><i></i><i></i></div>
         <div class="treasury-hero-copy">
           <span class="treasury-kicker">TOTAL MANAGED</span>
+          <div class="treasury-hero-worth" id="treasuryTotalWorth" aria-label="Controvalore del totale gestito">—</div>
           <div class="treasury-total-display" id="treasuryTotalDisplay" aria-label="Totale INJ gestiti">
             <strong class="treasury-total-major" id="treasuryTotalMajor">—</strong><strong class="treasury-total-decimals" id="treasuryTotalDecimals"></strong><small>INJ</small>
           </div>
-          <div class="treasury-hero-worth" id="treasuryTotalWorth">—</div>
           <div class="treasury-hero-pnl neutral" id="treasuryPnl24" aria-label="Profit loss Treasury ultime 24 ore">
             <span>P/L 24H</span>
             <strong id="treasuryPnl24Value">—</strong>
