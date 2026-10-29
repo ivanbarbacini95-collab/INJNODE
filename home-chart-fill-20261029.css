@@ -1,0 +1,28 @@
+/* Home price card: fill unused vertical space, preserve time labels and P/L. */
+html[data-inj-page="index"] body #entryGate#entryGate #entryInsights.entry-price-card{
+ display:flex!important;flex-direction:column!important;
+ box-sizing:border-box!important;height:auto!important;min-height:0!important;max-height:none!important;
+ padding-bottom:7px!important;
+}
+html[data-inj-page="index"] body #entryGate#entryGate #entryInsights>.entry-insights-head{
+ flex:0 0 auto!important;margin-bottom:2px!important;
+}
+html[data-inj-page="index"] body #entryGate#entryGate #entryInsights>.entry-sparkline.entry-price-chart{
+ display:flex!important;flex:1 1 auto!important;flex-direction:column!important;
+ width:100%!important;min-height:0!important;margin:0!important;padding:0!important;
+}
+html[data-inj-page="index"] body #entryGate#entryGate #entryInsights #entrySparkStage.entry-spark-stage{
+ display:block!important;position:relative!important;box-sizing:border-box!important;
+ flex:1 1 auto!important;width:100%!important;height:clamp(170px,23vh,270px)!important;
+ min-height:170px!important;margin:0!important;padding:0!important;
+}
+html[data-inj-page="index"] body #entryGate#entryGate #entryInsights #entrySparkStage>svg{
+ display:block!important;position:absolute!important;inset:0!important;
+ width:100%!important;height:100%!important;margin:0!important;padding:0!important;
+}
+html[data-inj-page="index"] body #entryGate#entryGate #entryInsights .entry-price-timebar{
+ flex:0 0 auto!important;min-height:17px!important;margin:0!important;padding:2px 0 0!important;
+}
+html[data-inj-page="index"] body #entryGate#entryGate #entryInsights .entry-price-pnl{
+ flex:0 0 auto!important;margin-top:2px!important;margin-bottom:0!important;
+}
