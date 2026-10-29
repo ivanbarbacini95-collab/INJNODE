@@ -94,7 +94,10 @@
 
     const mainD=`M ${fixed(mid)} ${fixed(start)} L ${fixed(mid)} ${fixed(finish)}`;
     const lines=[`<path class="inj-circuit-wire inj-circuit-wire-main" d="${mainD}"/>`];
-    const beams=[`<path class="inj-circuit-beam inj-circuit-beam-main" d="${mainD}" pathLength="100"/>`];
+    const beams=[
+      `<path class="inj-circuit-beam-aura" d="${mainD}" pathLength="100"/>`,
+      `<path class="inj-circuit-beam inj-circuit-beam-main" d="${mainD}" pathLength="100"/>`
+    ];
     const nodes=[];
     for(const j of junctions){
       const y=fixed(j.y),cx=fixed(mid),delay=fixed(j.delay);
@@ -114,9 +117,10 @@
         lines.push(`<path class="inj-circuit-wire" d="${d}"/>`);
         beams.push(`<path class="inj-circuit-beam inj-circuit-beam-branch" d="${d}" pathLength="100" style="--inj-circuit-delay:${delay}s"/>`);
       }
-      nodes.push(`<circle class="inj-circuit-node-halo" cx="${cx}" cy="${y}" r="4.4"/>`);
-      nodes.push(`<circle class="inj-circuit-node-core" cx="${cx}" cy="${y}" r="1.85"/>`);
-      nodes.push(`<circle class="inj-circuit-node-signal" cx="${cx}" cy="${y}" r="3.3" style="--inj-circuit-delay:${delay}s"/>`);
+      nodes.push(`<circle class="inj-circuit-node-halo" cx="${cx}" cy="${y}" r="3.5"/>`);
+      nodes.push(`<circle class="inj-circuit-node-core" cx="${cx}" cy="${y}" r="1.4"/>`);
+      nodes.push(`<circle class="inj-circuit-node-aura" cx="${cx}" cy="${y}" r="7" style="--inj-circuit-delay:${delay}s"/>`);
+      nodes.push(`<circle class="inj-circuit-node-signal" cx="${cx}" cy="${y}" r="2.4" style="--inj-circuit-delay:${delay}s"/>`);
     }
     svg.setAttribute('viewBox',`0 0 ${width} ${height}`);
     svg.innerHTML=lines.join('')+beams.join('')+nodes.join('');
