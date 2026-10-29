@@ -135,17 +135,96 @@ function renderSummary(group,arr){
  const latest=Math.max(...arr.map(x=>Number(x.time)||0));
  status.textContent=n.up+' '+tr('in rialzo','up')+' · '+n.down+' '+tr('in ribasso','down')+' · '+tr('ultima quotazione ','last quote ')+(latest?stamp(latest):'—');
 }
+/* The U.S. trading-session clock is independent of last-quote timestamps.
+   America/New_York handles the 1-2 week U.S./European DST mismatches. */
+const usFullHolidays=new Set([
+ '2026-01-01','2026-01-19','2026-02-16','2026-04-03','2026-05-25',
+ '2026-06-19','2026-07-03','2026-09-07','2026-11-26','2026-12-25',
+ '2027-01-01','2027-01-18','2027-02-15','2027-03-26','2027-05-31',
+ '2027-06-18','2027-07-05','2027-09-06','2027-11-25','2027-12-24'
+]);
+const usEarlyClose=new Set(['2026-11-27','2026-12-24','2027-11-26']);
+const nyClock=new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',
+ year:'numeric',month:'2-digit',day:'2-digit',weekday:'short',
+ hour:'2-digit',minute:'2-digit',hourCycle:'h23'});
+function usStockSession(date=new Date()){
+ const data=Object.fromEntries(nyClock.formatToParts(date).filter(x=>x.type!=='literal').map(x=>[x.type,x.value]));
+ const day=data.year+'-'+data.month+'-'+data.day;
+ const minutes=Number(data.hour)*60+Number(data.minute);
+ const closed=data.weekday==='Sat'||data.weekday==='Sun'||usFullHolidays.has(day);
+ const end=usEarlyClose.has(day)?13*60:16*60;
+ const kind=closed?'closed':minutes>=570&&minutes<end?'open':
+  minutes<570&&minutes>=240?'pre':minutes>=end&&minutes<1200?'after':'closed';
+ return {kind,day,time:data.hour+':'+data.minute,early:usEarlyClose.has(day)};
+}
+function marketDateLabel(seconds){
+ if(!Number.isFinite(seconds)||seconds<=0)return '';
+ return stamp(seconds);
+}
+function ensureUsSessionHeader(){
+ const hero=$('injWorldMarket')?.querySelector('.inj-wm-hero');
+ if(!hero)return;
+ let line=$('injWorldUsSessionLine');
+ if(!line){
+  line=el('div','inj-wm-live-session-line');
+  line.id='injWorldUsSessionLine';
+  const badge=el('span','inj-wm-us-session-badge');
+  badge.id='injWorldUsSessionBadge';
+  const quote=el('small','inj-wm-us-quote-age');
+  quote.id='injWorldUsQuoteAge';
+  line.append(badge,quote);
+  hero.append(line);
+ }
+}
+function updateUsSessionUI(){
+ if(!initialized)return;
+ ensureUsSessionHeader();
+ const us=usStockSession();
+ const label=us.kind==='open'?tr('USA · APERTO','US · OPEN'):
+  us.kind==='pre'?tr('USA · PRE-MARKET','US · PRE-MARKET'):
+  us.kind==='after'?tr('USA · POST-MARKET','US · AFTER HOURS'):
+  tr('USA · CHIUSO','US · CLOSED');
+ const badge=$('injWorldUsSessionBadge');
+ if(badge){
+  badge.textContent=label;
+  badge.dataset.session=us.kind;
+  badge.title=tr('Sessione ordinaria NYSE/Nasdaq: 09:30–','NYSE/Nasdaq regular session: 09:30–')+(us.early?'13:00':'16:00')+' ET · '+us.time+' ET';
+ }
+ const stocks=quotes.get('stocks')||[];
+ const indices=quotes.get('indices')||[];
+ const source=stocks.length?stocks:indices.filter(x=>['sp500','nasdaq','dow','russell'].includes(x.id));
+ const latest=Math.max(0,...source.filter(x=>Number.isFinite(x.price)&&x.price>0).map(x=>Number(x.time)||0));
+ const age=Math.max(0,Date.now()/1000-latest);
+ const ageLabel=$('injWorldUsQuoteAge');
+ if(ageLabel){
+  ageLabel.textContent=latest?
+   (age>1200?tr('Quotazioni USA ritardate · ','US quotes delayed · '):tr('Ultima quotazione USA · ','Last US quote · '))+marketDateLabel(latest):
+   tr('Quotazioni USA in attesa della fonte','Awaiting US price source');
+  ageLabel.dataset.stale=String(!latest||age>1200);
+ }
+ for(const region of root.querySelectorAll('[data-us-session-region]')){
+  region.textContent=label;
+  region.dataset.session=us.kind;
+ }
+}
+
 function renderIndices(items){
  const idx=byId(items);const list=$('injWorldIndexRegions');if(!list)return;
  list.replaceChildren();
  regions.forEach(([name,assetIds])=>{
   const group=el('div','inj-wm-region');group.append(el('h4','inj-wm-region-title',en()?name.replace('Europa / Europe','Europe').replace('Asia / Pacifico','Asia / Pacific'):name.replace('Europa / Europe','Europa').replace('Asia / Pacifico','Asia / Pacifico')));
+  if(name==='America'){
+   const chip=el('small','inj-wm-session-chip');
+   chip.setAttribute('data-us-session-region','');
+   group.append(chip);
+  }
   const cards=el('div','inj-wm-grid indices');
   assetIds.forEach(id=>{const q=idx.get(id);if(q)cards.append(quoteTile(q,true))});
   group.append(cards);list.append(group);
  });
  renderPins(items);
  renderSummary('indices',items);
+ updateUsSessionUI();
 }
 function renderSectors(items){
  const data=byId(items),rootGrid=$('injWorldSectorGrid');if(!rootGrid)return;
@@ -288,6 +367,7 @@ async function loadGroup(group,force=false){
   quotes.set(group,arr);
   if(body.quotes.some(q=>Number.isFinite(q.price))){updated.set(group,Date.now());saveQuotes();}
   renderGroup(group,arr);
+  updateUsSessionUI();
   if(!body.quotes.some(q=>Number.isFinite(q.price)))statusWithRetry(group,
    body.status==='unavailable'?tr('Prossimo aggiornamento GitHub in attesa · nessun dato inventato','Waiting for next GitHub refresh · no estimated data'):tr('Fonte prezzi non disponibile · valori non simulati','Price feed unavailable · no estimated values'));
   else if(body.available<arr.length&&label)label.textContent+=' · '+tr('quotazioni parziali','partial quotes');
@@ -401,6 +481,7 @@ function localize(){
   if(hint)hint.textContent=hints[group][en()?1:0];
   const rows=quotes.get(group);if(rows)renderGroup(group,rows);
  }
+ updateUsSessionUI();
  $('injWorldMapCaption').textContent=tr('Seleziona un punto per leggere l’indice di riferimento','Tap a point to view its benchmark index');
  const sectorNote=root.querySelector('[data-translation="sector-note"]');if(sectorNote)sectorNote.textContent=tr('I colori e le variazioni rispecchiano ETF rappresentativi di ciascun settore.','Colors and changes reflect representative ETFs for each sector.');
 }
@@ -410,7 +491,9 @@ function mount(){
   const b=e.target.closest('[data-world-jump]');if(!b)return;
   $('injWorldSection'+b.dataset.worldJump)?.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
  });
+ ensureUsSessionHeader();
  localize();renderPlaceholders();loadWorldGeometry();
+ updateUsSessionUI();
  if('IntersectionObserver' in window){
   observer=new IntersectionObserver(entries=>{
    entries.forEach(e=>{if(e.isIntersecting&&active){const id=e.target.dataset.worldGroup;observed.add(id);loadGroup(id);observer.unobserve(e.target)}});
@@ -420,13 +503,17 @@ function mount(){
 }
 function activate(show){
  active=!!show;root.hidden=!active;
- if(active){mount();for(const id of observed)if(!updated.has(id))void loadGroup(id);}
+ if(active){mount();updateUsSessionUI();for(const id of observed)if(!updated.has(id))void loadGroup(id);}
 }
 function languageChange(){if(initialized)localize();}
 window.INJ_WORLD_MARKETS={activate,languageChange};
 window.addEventListener('storage',e=>{if(e.key==='inj_node_language_v1'&&active)languageChange()});
 document.addEventListener('visibilitychange',()=>{
- if(!document.hidden&&active)for(const id of observed)if(!updated.has(id)||Date.now()-updated.get(id)>MAX_AGE)void loadGroup(id,true);
+ if(!document.hidden&&active){
+  updateUsSessionUI();
+  for(const id of observed)if(!updated.has(id)||Date.now()-updated.get(id)>MAX_AGE)void loadGroup(id,true);
+ }
 });
 setInterval(()=>{if(active&&!document.hidden)for(const id of observed)if(Date.now()-(updated.get(id)||0)>MAX_AGE)void loadGroup(id,true)},180000);
+setInterval(()=>{if(active&&!document.hidden)updateUsSessionUI()},25000);
 })();
