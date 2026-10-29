@@ -1055,3 +1055,15 @@ html[data-inj-page="index"] body #entryGate
   margin-top:2px!important;
   margin-bottom:10px!important;
 }
+
+/* 2026-10-29 · Borderless Home market ticker: keep the live scrolling text,
+   drag/swipe and the compact position beneath the INJ Node title. */
+html[data-inj-page="index"] body #entryGate
+.entry-gate-shell:not(.first-access) .entry-wallet-section > #injMarketTicker.inj-market-ticker {
+  border:none!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  outline:none!important;
+  padding:0!important;
+}
