@@ -5,7 +5,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
 <meta content="#07121b" name="theme-color"/>
-<style id="inj-prepaint-canvas">html,body{background-color:#07121b;color-scheme:dark}html[data-theme="black"],html[data-theme="black"] body{background-color:#000}html[data-theme="light"],html[data-theme="light"] body{background-color:#eef5ff;color-scheme:light}html[data-theme="amber"],html[data-theme="amber"] body{background-color:#05080d}html[data-theme="ocean"],html[data-theme="ocean"] body{background-color:#07131f}html[data-theme="chromatic"],html[data-theme="chromatic"] body{background-color:#111323}html[data-theme="velvet"],html[data-theme="velvet"] body{background-color:#0a1024}html[data-theme="aqua"],html[data-theme="aqua"] body{background-color:#d7e9ef;color-scheme:light}html[data-theme="ocean-x-electric"],html[data-theme="ocean-x-electric"] body{background-color:#06132d}html[data-theme="ocean-x-ion"],html[data-theme="ocean-x-ion"] body{background-color:#130c2c}html[data-theme="ocean-x-toxic"],html[data-theme="ocean-x-toxic"] body{background-color:#061c1d}html[data-theme="ocean-x-solar"],html[data-theme="ocean-x-solar"] body{background-color:#1b122c}</style>
+<style id="inj-prepaint-canvas">html,body{background-color:#07121b;color-scheme:dark}html[data-theme="black"],html[data-theme="black"] body{background-color:#000}html[data-theme="light"],html[data-theme="light"] body{background-color:#eef5ff;color-scheme:light}html[data-theme="amber"],html[data-theme="amber"] body{background-color:#05080d}html[data-theme="velvet"],html[data-theme="velvet"] body{background-color:#0a1024}html[data-theme="ocean-x-solar"],html[data-theme="ocean-x-solar"] body{background-color:#1b122c}</style>
 
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="INJ Node" name="apple-mobile-web-app-title"/>
@@ -20,8 +20,8 @@
 <script>
     try {
       const savedTheme = (localStorage.getItem('inj_monitor_theme') === 'dynamic' ? 'ocean' : localStorage.getItem('inj_monitor_theme'));
-      document.documentElement.dataset.theme = ['navy', 'black', 'light', 'amber', 'ocean', 'chromatic', 'velvet', 'aqua', 'ocean-x-electric', 'ocean-x-ion', 'ocean-x-toxic', 'ocean-x-solar'].includes(savedTheme) ? savedTheme : 'navy';
-      const initialTone = {navy:'#07121b',black:'#000000',light:'#eef5ff',amber:'#05080d',ocean:'#07131f',chromatic:'#111323',velvet:'#0a1024',aqua:'#d7e9ef','ocean-x-electric':'#06132d','ocean-x-ion':'#130c2c','ocean-x-toxic':'#061c1d','ocean-x-solar':'#1b122c'};
+      document.documentElement.dataset.theme = ['navy', 'black', 'light', 'amber', 'velvet', 'ocean-x-solar'].includes(savedTheme) ? savedTheme : 'navy';
+      const initialTone = {navy:'#07121b',black:'#000000',light:'#eef5ff',amber:'#05080d',velvet:'#0a1024','ocean-x-solar':'#1b122c'};
       document.querySelector('meta[name="theme-color"]')?.setAttribute('content',initialTone[document.documentElement.dataset.theme]||'#07121b');
       const savedUiStyle = localStorage.getItem('inj_monitor_ui_style');
       document.documentElement.dataset.uiStyle = ['elegant', 'futuristic', 'ultra'].includes(savedUiStyle) ? savedUiStyle : 'elegant';
@@ -137,15 +137,9 @@
 <link rel="stylesheet" href="./home-pnl-focus.css?v=20261026f">
 <link rel="stylesheet" href="./node-pulse.css?v=160103">
 <link rel="stylesheet" href="./jn-branding.css?v=160106">
-<link rel="stylesheet" href="./ocean-aurora.css?v=160109">
-<script defer src="./ocean-aurora.js?v=160109"></script>
-<link rel="stylesheet" href="./chromatic-mist.css?v=160110">
-<script defer src="./chromatic-mist.js?v=160110"></script>
 <link rel="stylesheet" href="./theme-harmony.css?v=160114">
 <link rel="stylesheet" href="./velvet-nebula.css?v=160112">
 <script defer src="./velvet-nebula.js?v=160112"></script>
-<link rel="stylesheet" href="./aqua-mirage.css?v=160113">
-<script defer src="./aqua-mirage.js?v=160113"></script>
 <link rel="stylesheet" href="./ocean-x-series.css?v=160114">
 <script defer src="./ocean-x-series.js?v=160114"></script>
 <link rel="stylesheet" href="./theme-catalog.css?v=160114">
@@ -373,6 +367,8 @@
 <link rel="stylesheet" href="./home-rounded-launchers-20261029.css?v=1"/>
 <link rel="stylesheet" href="./home-macro-calendar-tile-20261029.css?v=1"/>
 <link rel="stylesheet" href="./home-icon-micro-motion-20261029.css?v=1"/>
+<link rel="stylesheet" href="./inj-theme-continuity-20261029.css?v=1"/>
+<link rel="stylesheet" href="./theme-unified-list-20261029.css?v=1"/>
 <script defer src="./home-card-height-sync-20261029.js?v=1"></script>
 </head>
 <body class="boot-loading">
@@ -517,44 +513,19 @@
 <span class="menu-action-value">N/D</span>
 </button>
 <div class="theme-control menu-theme-control" id="themeControl">
-<button aria-controls="themePicker" aria-expanded="false" aria-label="Scegli tema" class="menu-action menu-setting" id="themeButton" title="Scegli tema" type="button">
+<button aria-controls="themePicker" aria-expanded="false" aria-label="Scegli Theme" class="menu-action menu-setting" id="themeButton" title="Theme" type="button">
 <span aria-hidden="true" class="menu-action-icon"><svg viewbox="0 0 24 24"><path d="M12 3.5a8.5 8.5 0 1 0 0 17h1.1a1.7 1.7 0 0 0 0-3.4h-.8a1.8 1.8 0 0 1 0-3.6H15a5.5 5.5 0 0 0 0-11h-3Z"></path><circle cx="8" cy="9" r=".7"></circle><circle cx="11" cy="6.8" r=".7"></circle><circle cx="7.2" cy="13" r=".7"></circle></svg></span>
-<span class="menu-action-copy"><strong>Tema</strong><small>12 temi disponibili</small></span>
+<span class="menu-action-copy"><strong>Theme</strong><small>6 temi disponibili</small></span>
 <svg aria-hidden="true" class="menu-action-chevron" viewbox="0 0 24 24"><path d="m8 10 4 4 4-4"></path></svg>
 </button>
-<div aria-label="Scegli tema" class="theme-picker" id="themePicker" role="group">
-<details class="theme-category" open name="inj-theme-catalog">
-<summary><span>Essenziali</span><span class="theme-category-count">3</span></summary>
-<div class="theme-category-options">
+<div aria-label="Theme" class="theme-picker" id="themePicker" role="group">
+<div class="theme-category-options theme-list-unified">
 <button data-theme-choice="black" type="button"><i class="theme-swatch black"></i><span>Nero</span></button>
 <button data-theme-choice="light" type="button"><i class="theme-swatch light"></i><span>Chiaro</span></button>
 <button data-theme-choice="amber" type="button"><i class="theme-swatch amber"></i><span>Midnight Ember</span></button>
-</div>
-</details>
-<details class="theme-category" name="inj-theme-catalog">
-<summary><span>Aurora</span><span class="theme-category-count">2</span></summary>
-<div class="theme-category-options">
 <button data-theme-choice="navy" type="button"><i class="theme-swatch navy"></i><span>Aurora</span></button>
-<button data-theme-choice="ocean" type="button"><i class="theme-swatch ocean"></i><span>Ocean Aurora · fluido</span></button>
-</div>
-</details>
-<details class="theme-category" name="inj-theme-catalog">
-<summary><span>Premium</span><span class="theme-category-count">3</span></summary>
-<div class="theme-category-options">
-<button data-theme-choice="chromatic" type="button"><i class="theme-swatch chromatic"></i><span>Chromatic Mist · multicolore</span></button>
-<button data-theme-choice="velvet" type="button"><i class="theme-swatch velvet"></i><span>Velvet Nebula · profondo</span></button>
-<button data-theme-choice="aqua" type="button"><i class="theme-swatch aqua"></i><span>Aqua Mirage · cristallino</span></button>
-</div>
-</details>
-<details class="theme-category" name="inj-theme-catalog">
-<summary><span>Ocean X Series</span><span class="theme-category-count">4</span></summary>
-<div class="theme-category-options">
-<button data-theme-choice="ocean-x-electric" type="button"><i class="theme-swatch ocean-x-electric"></i><span>Electric Ocean</span></button>
-<button data-theme-choice="ocean-x-ion" type="button"><i class="theme-swatch ocean-x-ion"></i><span>Ion Storm</span></button>
-<button data-theme-choice="ocean-x-toxic" type="button"><i class="theme-swatch ocean-x-toxic"></i><span>Toxic Abyss</span></button>
+<button data-theme-choice="velvet" type="button"><i class="theme-swatch velvet"></i><span>Velvet Nebula</span></button>
 <button data-theme-choice="ocean-x-solar" type="button"><i class="theme-swatch ocean-x-solar"></i><span>Solar Surge</span></button>
-</div>
-</details>
 </div>
 </div>
 </div>
