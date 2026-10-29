@@ -1043,3 +1043,15 @@ html[data-inj-page="index"] body #entryGate #entryMarketEventsButton:active .inj
 @media(prefers-reduced-motion:reduce){
  #injMarketEventsOverlay .inj-events-preferences-chevron{transition:none!important}
 }
+
+/* 2026-10-29: bring the quote ribbon and every following Home section closer to the title.
+   Only reduce vertical margins; keep the draggable ribbon, safe-area and layout intact. */
+html[data-inj-page="index"] body #entryGate
+.entry-gate-shell:not(.first-access) .entry-wallet-section > .home-safe-heading.inj-terminal-hero-arranged {
+  margin-bottom:4px!important;
+}
+html[data-inj-page="index"] body #entryGate
+.entry-gate-shell:not(.first-access) .entry-wallet-section > #injMarketTicker.inj-market-ticker {
+  margin-top:2px!important;
+  margin-bottom:10px!important;
+}
