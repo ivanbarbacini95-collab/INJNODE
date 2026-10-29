@@ -1,0 +1,93 @@
+/* INJ Node / Editorial Light Typography — 2026-10-29.
+   Reference: light, clean, geometric financial UI.
+   Typography only: preserves every theme, component geometry, price/reward
+   calculation, chart, scroll behavior, translation and interaction.
+   Revert by removing the single stylesheet link on each page. */
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700&display=swap");
+
+:root {
+  --inj-editorial-face:"Outfit","Avenir Next",Avenir,"Helvetica Neue",Arial,sans-serif;
+  --inj-editorial-mono:"IBM Plex Mono","SFMono-Regular",Menlo,Monaco,Consolas,monospace;
+  /* Work with the existing Supply Mono and Home unified typography layers. */
+  --inj-node-terminal-font:var(--inj-editorial-face);
+  --inj-home-title-face:var(--inj-editorial-face);
+  --inj-home-description-face:var(--inj-editorial-face);
+}
+html,body,
+html body :is(button,input,select,option,textarea) {
+  font-family:var(--inj-editorial-face)!important;
+  -webkit-font-smoothing:antialiased;
+}
+html body {
+  font-variant-numeric:tabular-nums lining-nums;
+  text-rendering:optimizeLegibility;
+}
+html body :is(h1,h2,h3,h4,h5,h6) {
+  font-family:var(--inj-editorial-face)!important;
+  font-weight:500!important;
+  letter-spacing:-.025em;
+}
+html body :is(button,input,select,textarea) {
+  letter-spacing:0;
+}
+/* Code, transaction hashes and raw wallet IDs stay unambiguous. */
+html body :is(code,kbd,samp,pre,.tx-hash,.wallet-address,.address-hash,[data-monospace]) {
+  font-family:var(--inj-editorial-mono)!important;
+  font-variant-numeric:tabular-nums;
+}
+/* The original reference uses generous light weights, not thick terminal text. */
+html body :is(.card-title,.card-heading,.card-label,.section-heading,.metric-label,
+  .section-label,.ws-card-heading strong,.ws-card-title,.ws-section-title,
+  .treasury-kicker,.rewards-kicker,.cap-panel-title,.ladder-eyebrow,
+  .market-terminal-kicker,.inj-mi-hero h2) {
+  font-family:var(--inj-editorial-face)!important;
+  font-weight:500!important;
+  letter-spacing:.035em;
+}
+html body :is(.caption,.subtitle,.description,.hint,.note,.inj-tile-description,
+  .ws-sub,.ws-data-status,.treasury-hero-copy>span,.rewards-total-label) {
+  font-family:var(--inj-editorial-face)!important;
+  font-weight:400!important;
+  letter-spacing:.005em;
+}
+/* Home: retain existing all-caps tile titles and mobile 2x2 arrangement. */
+html[data-inj-page="index"] body #entryGate#entryGate#entryGate
+:is(.entry-action,.inj-market-events-slot) .inj-home-tile-title {
+  font-family:var(--inj-editorial-face)!important;
+  font-weight:500!important;
+  letter-spacing:.045em!important;
+}
+html[data-inj-page="index"] body #entryGate#entryGate#entryGate
+:is(.entry-action,.inj-market-events-slot) :is(.inj-tile-description,.inj-events-next-text) {
+  font-family:var(--inj-editorial-face)!important;
+  font-weight:400!important;
+  letter-spacing:.002em!important;
+}
+/* Financial hero values: slimmer than titles, but readable on dark themes. */
+html[data-inj-page="index"] body #entryGate#entryGate#entryGate
+:is(#entryOverview,.entry-wallet-card-slide) :is(.entry-market-mini,.entry-overview-worth)>strong,
+html[data-inj-page="index"] body #entryGate#entryGate#entryGate
+:is(#entryOverview,.entry-wallet-card-slide) :is(#entryMarketPrice,#entryWalletWorth) {
+  font-family:var(--inj-editorial-face)!important;
+  font-weight:300!important;
+  letter-spacing:-.042em!important;
+  font-variant-numeric:tabular-nums lining-nums!important;
+}
+html body :is(.treasury-hero-value,.treasury-hero-amount,
+  .rewards-total-value,.rewards-total strong,.wealth-total-value,
+  .wealth-result-value,.market-price>strong,.market-live-price,
+  .ws-price-value,.ws-main-price,.cc-now-price,.cap-total-value) {
+  font-family:var(--inj-editorial-face)!important;
+  font-weight:300!important;
+  letter-spacing:-.035em!important;
+  font-variant-numeric:tabular-nums lining-nums!important;
+}
+/* Compact trading data stays a little stronger for real-time readability. */
+html body :is(.ws-section-value,.ws-data-value,.treasury-metric>strong,
+  .market-asset-price,.heatmap-card .price,.book-price,.reward-amount,
+  .entry-overview-stats strong) {
+  font-family:var(--inj-editorial-face)!important;
+  font-weight:500!important;
+  font-variant-numeric:tabular-nums lining-nums!important;
+}
+/* No effect on icon fonts or vector chart labels. */
