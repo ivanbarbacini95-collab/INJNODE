@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.10.28-home-more-v3';
+const CACHE_NAME = 'inj-node-v16.10.29-homefont-1';
 const APP_SHELL = [
   './inj-fluid-screen-fit.css?v=20261028fullmonitor1',
   './inj-monitor-readability.css?v=20261028readable3',
@@ -71,6 +71,7 @@ const APP_SHELL = [
   './market.js?v=16102450',
   './market-portal.js?v=16102450',
   './supply-mono.css?v=20261024',
+  './home-font-unified.css?v=20261029homefont1',
   './workspace.html',
   './workspace-layout.css?v=160749',
   './workspace-premium.css?v=160747','./workspace-widgets.css?v=1610245',
