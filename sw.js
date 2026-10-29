@@ -1,8 +1,8 @@
-const CACHE_NAME = 'inj-node-v16.10.29-handjet-round9';
+const CACHE_NAME = 'inj-node-v16.10.29-handjet-bold10';
 const APP_SHELL = [
   './assets/fonts/Handjet-Variable.woff2',
-  './inj-font-switcher-20261029.css?v=fontchoice9',
-  './inj-font-switcher-20261029.js?v=fontchoice9',
+  './inj-font-switcher-20261029.css?v=fontchoice10',
+  './inj-font-switcher-20261029.js?v=fontchoice10',
   './inj-fluid-screen-fit.css?v=20261028fullmonitor1',
   './inj-monitor-readability.css?v=20261028readable3',
   './home-desktop-native-scroll.css?v=20261028home-scroll1',
