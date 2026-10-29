@@ -105,3 +105,79 @@ html body :is(*,#__injMinimalWeight#__injMinimalWeight):is(code,kbd,samp,pre,.tx
  letter-spacing:0!important;
 }
 /* Price-change color/glow, user themes, SVG charts and icons stay intact. */
+
+
+/* INJ NODE 2026-10-29 — Dashboard + Live View lightweight pass v2 */
+/* The preceding global reset kept these values at 400 because their
+   real DOM IDs were not in the earlier 300-weight list. These selectors
+   cover Dashboard and the fullscreen Live View without changing layout. */
+html body :is(*,#__injMinimalWeight#__injMinimalWeight):is(
+ /* Dashboard: principal numbers, personal balance, rewards and milestones */
+ .app-shell .hero-number,
+ .app-shell .hero-secondary,
+ .app-shell .metric-card .metric-value,
+ .app-shell .reward-rate-grid strong,
+ .app-shell .aggregate-metric>strong,
+ .app-shell .target-progress-copy,
+ .app-shell .target-live-missing>strong,
+ .app-shell .target-stats strong,
+ .app-shell #nativeUsdcBalance,
+ .app-shell #ownedVsStakedInj,
+ .app-shell #netWorthChange24h,
+ .app-shell #netWorthPnl,
+ .app-shell #marketChange,
+ .app-shell #marketChangeAmount,
+ .app-shell #rewardMilestoneLabel,
+ .app-shell #rewardAutoTargetLabel,
+ .app-shell .market-tf-meta b,
+ /* Fullscreen Live View: exact real IDs, plus live range/secondary figures */
+ #focusDisplayPrice,#focusDisplayWorth,
+ #focusDisplayTotalInj,#focusDisplayDailyReward,
+ #focusDisplayApr,#focusDisplayStaked,#focusDisplayRewards,
+ .focus-display-dialog .focus-display-primary>strong,
+ .focus-display-dialog .focus-display-clock,
+ /* Related chart-dialog quote and live chart headline */
+ #chartHeaderPrice,
+ #headerLivePrice,
+ /* Smaller number-heavy pages previously missed in the first pass */
+ #treasuryRewards,#treasuryAvailable,#treasuryStaked,#treasuryApr,
+ #treasuryNetWorthCurrent,#treasuryRewardDay,#treasuryRewardMonth,
+ #ccDailyReward,#ccDailyPnl,#ccAvailable,#ccStaked,
+ #rewardsHeaderPrice,
+ #capWalletNow,#capWalletFuture,
+ #wealthPrice,#wealthGrowthSimpleValue,#wealthGrowthCompoundValue,
+ #ladderPrice,#ladderStaked,
+ #freedomInj,#freedomSpendingTotal
+){
+ font-family:var(--inj-minimal-font)!important;
+ font-weight:300!important;
+ font-synthesis-weight:none;
+ font-variant-numeric:tabular-nums lining-nums!important;
+}
+/* Keep tiny details at 400. These are visually slimmer than bold
+   terminal labels while staying legible on iPhone, iPad, and 4K screens. */
+html body :is(*,#__injMinimalWeight#__injMinimalWeight):is(
+ .app-shell .market-tf-meta strong,
+ .app-shell .card-label,
+ .app-shell .timeframe-collapse-toggle strong,
+ .app-shell .allocation-labels b,
+ .app-shell .reward-auto-target-meta b,
+ .focus-display-dialog .focus-display-range-copy b,
+ .focus-display-dialog .focus-display-label,
+ .focus-display-dialog .focus-display-wallet,
+ .focus-display-dialog .focus-display-live,
+ .focus-display-dialog .focus-display-system,
+ .native-chart-summary strong,
+ .rewards-total-metrics strong,
+ .treasury-metric strong,
+ .ws-section-value,
+ .ws-data-value,
+ .levels strong,
+ .heatmap-card strong
+){
+ font-family:var(--inj-minimal-font)!important;
+ font-weight:400!important;
+ font-synthesis-weight:none;
+}
+/* Retain existing positive/negative color, brief change glows, and
+   responsive font sizing: no text-shadow, transform or font-size overrides. */
