@@ -100,8 +100,9 @@ const fmtValue=(v,currency)=>{
 };
 const byId=(arr)=>new Map((Array.isArray(arr)?arr:[]).map(x=>[x.id,x]));
 const englishNames={
- commodities:{gold:'Gold',silver:'Silver',wti:'WTI Crude',brent:'Brent Crude',gas:'Natural gas',copper:'Copper',corn:'Corn'},
- bonds:{us10y:'US Treasury 10Y yield',us30y:'US Treasury 30Y yield'},
+ indices:{vix:'VIX Volatility',ndx:'Nasdaq 100',ibex:'IBEX 35',smi:'Swiss Market Index',shanghai:'Shanghai Composite'},
+ commodities:{gold:'Gold',silver:'Silver',wti:'WTI Crude',brent:'Brent Crude',gas:'Natural gas',copper:'Copper',corn:'Corn',platinum:'Platinum',palladium:'Palladium',wheat:'Wheat',soybeans:'Soybeans',sugar:'Sugar'},
+ bonds:{us10y:'US Treasury 10Y yield',us30y:'US Treasury 30Y yield',us5y:'US Treasury 5Y yield',us13w:'US Treasury 13-week yield'},
  forex:{},etf:{}
 };
 const quotedName=(group,q)=>en()?(englishNames[group]?.[q.id]||q.name):q.name;
@@ -238,7 +239,7 @@ function renderIndices(items){
    group.append(chip);
   }
   const cards=el('div','inj-wm-grid indices');
-  assetIds.forEach(id=>{const q=idx.get(id);if(q)cards.append(quoteTile(q,true))});
+  assetIds.forEach(id=>{const q=idx.get(id);if(q)cards.append(quoteTile({...q,name:quotedName('indices',q)},true))});
   group.append(cards);list.append(group);
  });
  renderPins(items);
@@ -513,7 +514,7 @@ function localize(){
  }
  updateUsSessionUI();
  $('injWorldMapCaption').textContent=tr('Seleziona un punto per leggere l’indice di riferimento','Tap a point to view its benchmark index');
- const sectorNote=root.querySelector('[data-translation="sector-note"]');if(sectorNote)sectorNote.textContent=tr('I colori e le variazioni rispecchiano ETF rappresentativi di ciascun settore.','Colors and changes reflect representative ETFs for each sector.');
+ const sectorNote=root.querySelector('[data-translation="sector-note"]');if(sectorNote)sectorNote.textContent=tr('11 settori S&P 500 e 5 categorie tematiche, rappresentati da ETF. Le variazioni sono le ultime disponibili.','11 S&P 500 sectors and 5 thematic ETF categories. Changes reflect the latest available session.');
 }
 function mount(){
  if(initialized)return;initialized=true;
