@@ -89,3 +89,41 @@ html[data-inj-page="index"] body #entryGate#entryGate
    transition:none!important;
  }
 }
+
+/* Keep the Market Event subtitle after retiring the circuit stylesheet.
+   The live calendar keeps its independent hidden data element. */
+html[data-inj-page="index"] body #entryGate#entryGate
+#entryMarketEventsButton.entry-action-market-events
+>.inj-home-unified-copy>.inj-home-market-caption.inj-tile-description{
+ display:block!important;
+ visibility:visible!important;
+ opacity:.85!important;
+ position:relative!important;
+ flex:0 0 auto!important;
+ width:100%!important;
+ min-width:0!important;
+ max-width:100%!important;
+ min-height:12px!important;
+ max-height:none!important;
+ height:auto!important;
+ padding:0!important;
+ margin:0!important;
+ font-family:var(--inj-minimal-font,system-ui,-apple-system,sans-serif)!important;
+ font-size:clamp(9px,2.55vw,10.5px)!important;
+ font-weight:400!important;
+ line-height:1.2!important;
+ letter-spacing:0!important;
+ white-space:nowrap!important;
+ overflow:hidden!important;
+ text-overflow:ellipsis!important;
+ text-align:center!important;
+ color:var(--muted-strong,var(--muted,#a9b0b5))!important;
+}
+@media(min-width:800px){
+ html[data-inj-page="index"] body #entryGate#entryGate
+ #entryMarketEventsButton.entry-action-market-events
+ >.inj-home-unified-copy>.inj-home-market-caption.inj-tile-description{
+   font-size:11px!important;
+   text-align:left!important;
+ }
+}
