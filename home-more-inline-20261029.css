@@ -65,8 +65,8 @@ html[data-inj-page="index"] body #entryGate#entryGate
  .inj-home-tile-title{
   display:block!important;width:100%!important;max-width:100%!important;
   min-width:0!important;margin:0!important;
-  font-family:var(--inj-node-terminal-font,ui-monospace,monospace)!important;
-  font-size:clamp(11.3px,3.03vw,12.7px)!important;font-weight:400!important;
+  font-family:var(--inj-minimal-font,var(--inj-node-terminal-font,system-ui,sans-serif))!important;
+  font-size:clamp(12px,3.35vw,14px)!important;font-weight:400!important;
   line-height:1.25!important;letter-spacing:.015em!important;text-transform:uppercase!important;
   text-align:center!important;white-space:normal!important;text-wrap:balance!important;
   overflow:visible!important;
@@ -130,7 +130,7 @@ html[data-inj-page="index"] body #entryGate#entryGate
  .entry-actions.entry-flat-v44
  >:is(#entryMarketEventsButton,#entryInjcEtfButton,#entryWorkspaceButton,#entryFreedomButton)
  .inj-home-tile-title{
-  display:block!important;width:100%!important;font-family:var(--inj-node-terminal-font,ui-monospace,monospace)!important;
+  display:block!important;width:100%!important;font-family:var(--inj-minimal-font,var(--inj-node-terminal-font,system-ui,sans-serif))!important;
   font-size:clamp(14px,1.08vw,17px)!important;font-weight:400!important;line-height:1.26!important;
   letter-spacing:.015em!important;text-transform:uppercase!important;text-align:left!important;
   white-space:normal!important;overflow:visible!important;
