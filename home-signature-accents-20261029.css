@@ -1,8 +1,7 @@
 /* INJ Node · Home signature accents & precision micro-motion · 29 Oct 2026
    Decorative only: preserve Home navigation, copy, wallet state, sizes and themes.
    Each destination has a soft individual hue and a different icon detail motion. */
-html[data-inj-page="index"] body #entryGate#entryGate
-.entry-gate-shell:not(.first-access) > .entry-actions.entry-flat-v44 > .entry-action {
+.entry-actions.entry-flat-v44 > .entry-action {
   --home-card-tone:#a2bdc3;
   --home-motion-speed:8s;
 }
