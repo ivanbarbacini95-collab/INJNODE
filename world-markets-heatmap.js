@@ -9,6 +9,16 @@ const root=$('injWorldMarket');if(!root)return;
 const en=()=>document.documentElement.lang==='en';
 const tr=(it,english)=>en()?english:it;
 const ids=['indices','sectors','stocks','etf','forex','commodities','bonds','crypto'];
+const fallbackCatalog={
+ indices:[['sp500','S&P 500','^GSPC'],['nasdaq','NASDAQ','^IXIC'],['dow','Dow Jones','^DJI'],['russell','Russell 2000','^RUT'],['stoxx','Euro Stoxx 50','^STOXX50E'],['dax','DAX','^GDAXI'],['cac','CAC 40','^FCHI'],['ftse','FTSE 100','^FTSE'],['nikkei','Nikkei 225','^N225'],['hangseng','Hang Seng','^HSI'],['nifty','Nifty 50','^NSEI'],['asx','ASX 200','^AXJO'],['bovespa','Ibovespa','^BVSP']],
+ sectors:[['technology','Tecnologia','XLK'],['finance','Finanza','XLF'],['energy','Energia','XLE'],['healthcare','Sanità','XLV'],['industrial','Industria','XLI'],['consumer','Consumi discrezionali','XLY'],['staples','Beni essenziali','XLP'],['utilities','Utilities','XLU'],['realestate','Immobiliare','XLRE'],['materials','Materiali','XLB'],['communications','Comunicazioni','XLC']],
+ stocks:[['aapl','Apple','AAPL'],['msft','Microsoft','MSFT'],['nvda','NVIDIA','NVDA'],['jpm','JPMorgan','JPM'],['bac','Bank of America','BAC'],['xom','ExxonMobil','XOM'],['cvx','Chevron','CVX'],['lly','Eli Lilly','LLY'],['jnj','Johnson & Johnson','JNJ'],['cat','Caterpillar','CAT'],['ge','GE Aerospace','GE'],['amzn','Amazon','AMZN'],['tsla','Tesla','TSLA'],['wmt','Walmart','WMT'],['cost','Costco','COST'],['nee','NextEra Energy','NEE'],['duk','Duke Energy','DUK'],['googl','Alphabet','GOOGL'],['meta','Meta','META'],['amt','American Tower','AMT'],['lin','Linde','LIN'],['fcx','Freeport-McMoRan','FCX']],
+ etf:[['spy','S&P 500 ETF','SPY'],['qqq','Nasdaq 100 ETF','QQQ'],['iwm','Small Caps ETF','IWM'],['efa','Developed Markets','EFA'],['eem','Emerging Markets','EEM'],['tlt','Long Treasury','TLT'],['gld','Gold ETF','GLD'],['vnq','Real Estate ETF','VNQ']],
+ forex:[['eurusd','EUR / USD','EURUSD=X'],['gbpusd','GBP / USD','GBPUSD=X'],['usdjpy','USD / JPY','JPY=X'],['usdchf','USD / CHF','CHF=X'],['audusd','AUD / USD','AUDUSD=X'],['usdcny','USD / CNY','CNY=X'],['usdinr','USD / INR','INR=X']],
+ commodities:[['gold','Oro','GC=F'],['silver','Argento','SI=F'],['wti','Petrolio WTI','CL=F'],['brent','Petrolio Brent','BZ=F'],['gas','Gas naturale','NG=F'],['copper','Rame','HG=F'],['corn','Mais','ZC=F']],
+ bonds:[['us10y','USA 10Y rendimento','^TNX'],['us30y','USA 30Y rendimento','^TYX'],['bnd','Bond aggregate ETF','BND'],['ief','Treasury 7-10Y ETF','IEF'],['shy','Treasury 1-3Y ETF','SHY'],['lqd','Corporate IG ETF','LQD'],['hyg','High Yield ETF','HYG'],['tip','Inflation-linked ETF','TIP']]
+};
+
 const titles={
  indices:['Mercati mondiali','World markets'],sectors:['Settori azionari','Stock market sectors'],
  stocks:['Azioni per settore','Stocks by sector'],etf:['ETF e asset class','ETFs & asset classes'],
@@ -45,6 +55,31 @@ const regions=[
 ];
 const hotspot=[['sp500',38,-97],['bovespa',-14,-51],['stoxx',51,8],['nifty',23,78],['hangseng',23,114],['nikkei',37,139],['asx',-25,134]];
 const quotes=new Map(),updated=new Map(),pending=new Set(),observed=new Set();
+const offlineKey='inj_world_quotes_cache_v2';
+function definitions(group){
+ if(group==='crypto')return [
+  ['bitcoin','Bitcoin','BTC'],['ethereum','Ethereum','ETH'],['solana','Solana','SOL'],
+  ['binancecoin','BNB','BNB'],['ripple','XRP','XRP'],['hyperliquid','Hyperliquid','HYPE'],
+  ['injective-protocol','Injective','INJ'],['avalanche-2','Avalanche','AVAX'],
+  ['chainlink','Chainlink','LINK'],['polkadot','Polkadot','DOT']
+ ].map(([id,name,symbol])=>({id,name,symbol,price:null,change:null,time:null,currency:'USD'}));
+ return (fallbackCatalog[group]||[]).map(([id,name,symbol])=>({id,name,symbol,price:null,change:null,time:null,currency:null}));
+}
+function restoreQuotes(){
+ try{
+  const saved=JSON.parse(localStorage.getItem(offlineKey)||'{}');
+  for(const group of ids){
+   const arr=saved[group]?.quotes;
+   if(Array.isArray(arr)&&arr.length&&arr.some(q=>Number.isFinite(q.price)))quotes.set(group,arr);
+  }
+ }catch(_){}
+}
+function saveQuotes(){
+ const data={};
+ for(const [group,arr] of quotes)if(arr.some(q=>Number.isFinite(q.price)))data[group]={quotes:arr,at:Date.now()};
+ try{localStorage.setItem(offlineKey,JSON.stringify(data))}catch(_){}
+}
+restoreQuotes();
 let active=false,initialized=false,observer=null,geometryStarted=false,geoReady=false;
 const MAX_AGE=3*60*1000;
 const fmtPercent=n=>Number.isFinite(n)?(n>0?'+':'')+new Intl.NumberFormat(en()?'en-US':'it-IT',{maximumFractionDigits:2,minimumFractionDigits:2}).format(n)+'%':'—';
@@ -147,25 +182,43 @@ function renderGroup(group,items){
  else if(group==='stocks')renderStocks(items);
  else renderPlain(group,items);
 }
+function errorDescription(code){
+ if(code===404)return tr('Endpoint API non pubblicato (404)','Market API endpoint not deployed (404)');
+ if(code===429)return tr('Fonte dati limitata (429)','Data source rate limited (429)');
+ if(code===403)return tr('Accesso alla fonte negato (403)','Data source access denied (403)');
+ if(code===503)return tr('Feed prezzi non disponibile (503)','Price feed unavailable (503)');
+ if(code)return tr('Errore HTTP ','HTTP error ')+code;
+ return tr('Connessione quotazioni non disponibile','Quote connection unavailable');
+}
+function renderPlaceholders(){
+ for(const group of ids)renderGroup(group,quotes.get(group)||definitions(group));
+}
 async function loadGroup(group,force=false){
  if(pending.has(group)||(!force&&updated.has(group)&&Date.now()-updated.get(group)<MAX_AGE))return;
  const section=$('injWorldSection'+group);if(!section)return;
+ const label=$('injWorld'+group+'Status');
  pending.add(group);section.classList.add('is-loading');
+ if(label)label.textContent=tr('Aggiornamento quotazioni…','Updating market quotes…');
  try{
-  let r,body;
-  if(group==='crypto'){body=await cryptoSnapshot();r={ok:!!body?.quotes?.some(q=>Number.isFinite(q.price))};}
-  else {
-   r=await fetch('./api/global-markets?group='+encodeURIComponent(group),{cache:'no-store',headers:{Accept:'application/json'}});
+  let body;
+  if(group==='crypto')body=await cryptoSnapshot();
+  else{
+   const r=await fetch('./api/global-markets?group='+encodeURIComponent(group),{cache:'no-store',headers:{Accept:'application/json'}});
+   if(!r.ok)throw Object.assign(new Error('Server failure'),{code:r.status});
+   if(!(r.headers.get('content-type')||'').includes('application/json'))throw Object.assign(new Error('Non-JSON data'),{code:404});
    body=await r.json();
   }
-  if(!Array.isArray(body?.quotes))throw Error('Missing quote data');
-  quotes.set(group,body.quotes);
-  if(body.quotes.some(q=>Number.isFinite(q.price)))updated.set(group,Date.now());
-  renderGroup(group,body.quotes);
- }catch(_){
-  if(!quotes.has(group)){
-   const label=$('injWorld'+group+'Status');if(label)label.textContent=tr('Fonte temporaneamente non disponibile','Data source temporarily unavailable');
-  }
+  if(!Array.isArray(body?.quotes))throw Object.assign(new Error('Invalid data'),{code:502});
+  const old=byId(quotes.get(group)||[]);
+  const arr=body.quotes.map(q=>(Number.isFinite(q.price)?q:(old.get(q.id)&&Number.isFinite(old.get(q.id).price)?old.get(q.id):q)));
+  quotes.set(group,arr);
+  if(body.quotes.some(q=>Number.isFinite(q.price))){updated.set(group,Date.now());saveQuotes();}
+  renderGroup(group,arr);
+  if(!body.quotes.some(q=>Number.isFinite(q.price))&&label)label.textContent=tr('Fonte prezzi non disponibile · valori non simulati','Price feed unavailable · no estimated values');
+  else if(body.available<arr.length&&label)label.textContent+=' · '+tr('quotazioni parziali','partial quotes');
+ }catch(err){
+  renderGroup(group,quotes.get(group)||definitions(group));
+  if(label)label.textContent=errorDescription(Number(err.code)||0)+(quotes.has(group)?tr(' · ultimo dato salvato',' · last saved quotes'):'');
  }finally{pending.delete(group);section.classList.remove('is-loading');}
 }
 async function cryptoSnapshot(){
@@ -282,7 +335,7 @@ function mount(){
   const b=e.target.closest('[data-world-jump]');if(!b)return;
   $('injWorldSection'+b.dataset.worldJump)?.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
  });
- localize();loadWorldGeometry();
+ localize();renderPlaceholders();loadWorldGeometry();
  if('IntersectionObserver' in window){
   observer=new IntersectionObserver(entries=>{
    entries.forEach(e=>{if(e.isIntersecting&&active){const id=e.target.dataset.worldGroup;observed.add(id);loadGroup(id);observer.unobserve(e.target)}});
