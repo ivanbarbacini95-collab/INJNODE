@@ -161,3 +161,45 @@ html[data-inj-page="index"] body #headerMenuPanel .menu-font-option[data-inj-fon
  font-variation-settings:"ROND" 100,"wght" 550!important;
  letter-spacing:0!important;
 }
+
+/* FIX 2026-10-29 | Home's real prices are rendered with per-digit DOM spans.
+   Older Inter !important resets applied to every span and defeated inheritance.
+   This matches stable/rolling digits, INCLUDING wallet-carousel clones without IDs.
+   Inherits the visual metric size and keeps the existing odometer animations. */
+html[data-inj-font="bitcount"] body :is(*,#__injMicroDot5#__injMicroDot5#__injMicroDot5#__injMicroDot5#__injMicroDot5):is(
+ .home-safe-heading h1,.home-safe-heading h1 strong,.home-safe-heading h1 span,
+ #marketPrice,#netWorthUsd,#entryMarketPrice,#entryWalletWorth,#entryInsightPnl,
+ #entryDesktopAvailable,#entryDesktopStakeRatio,#entryDesktopDailyRewardValue,
+ #focusDisplayPrice,#focusDisplayWorth,#focusDisplayTotalInj,#focusDisplayDailyReward,
+ #chartHeaderPrice,#headerLivePrice,#bookLivePrice,#treasuryTotalMajor,#treasuryTotalDecimals,
+ #treasuryTotalWorth,#treasuryHeaderPrice,#treasuryPnl24Value,
+ #rewardsTotal,#rewardsTotalFiat,#ccLivePrice,#ccNetWorth,#ccTotalInj,#ccTotalPnl,
+ #capSourcePrice,#capProjectedPrice,#wealthTotal,#wealthStaked,#wealthAllWorth,
+ #ladderRewardValue,#ladderRewardInj,#etfSpotPrice,#freedomPrice,#freedomWorth,
+ #ownedTotalInj,#availableInj,#stakedInj,#rewardsInj,#aprValue,
+ #marketChange,#marketChangeAmount,#netWorthPnl,#netWorthChange24h,
+ #treasuryAvailable,#treasuryStaked,#treasuryApr,#treasuryRewards,
+ #rewardsHeaderPrice,#treasuryNetWorthCurrent,
+ .app-shell .hero-number,.app-shell .hero-secondary,
+ .app-shell .metric-card .metric-value,.app-shell .reward-rate-grid strong,
+ .app-shell .aggregate-metric>strong,.app-shell .target-stats strong,
+ .entry-overview-worth>strong,.entry-market-mini>strong,.entry-price-pnl strong,
+ .entry-desktop-metric>strong,.treasury-total-display>strong,.treasury-hero-worth,
+ .treasury-hero-pnl>strong,.rewards-total-value>strong,
+ .market-price-line>strong,.market-price>strong,.market-price-row>strong,
+ .ws-main-price,.ws-price-value,.ws-price-main,.ws-price,.ws-hero-price,
+ .cc-now-price,.cc-price,.cc-primary-value,.wealth-amount,.wealth-growth-result-value,
+ .cap-total-value,.cap-hero-value,.freedom-figure-worth,.freedom-hero-figure,
+ .inj-mi-snapshot article>strong,.overview article>strong,
+ .etf-hero-price,.etf-main-price,.rewards-total-fiat
+) :is(span,.number-roll-text,.number-roll-static-digit,.number-roll-digit,.number-roll-digit-layer){
+ font-family:"INJ Doto",ui-monospace,monospace!important;
+ font-weight:550!important;
+ font-variation-settings:"ROND" 100,"wght" 550!important;
+ font-synthesis:none!important;
+ font-feature-settings:"tnum" 1,"lnum" 1!important;
+ font-kerning:none!important;
+ font-variant-numeric:tabular-nums lining-nums!important;
+ font-stretch:normal!important;
+ letter-spacing:0!important;
+}
