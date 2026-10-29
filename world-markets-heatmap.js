@@ -182,6 +182,15 @@ function renderGroup(group,items){
  else if(group==='stocks')renderStocks(items);
  else renderPlain(group,items);
 }
+function statusWithRetry(group,message){
+ const status=$('injWorld'+group+'Status');if(!status)return;
+ status.replaceChildren(document.createTextNode(message+' · '));
+ const retry=document.createElement('button');retry.type='button';retry.className='inj-wm-retry';
+ retry.textContent=tr('Riprova','Retry');
+ retry.setAttribute('aria-label',tr('Riprova caricamento dati: ','Retry loading market data: ')+titles[group][en()?1:0]);
+ retry.addEventListener('click',()=>{void loadGroup(group,true)});
+ status.append(retry);
+}
 function errorDescription(code){
  if(code===404)return tr('Endpoint API non pubblicato (404)','Market API endpoint not deployed (404)');
  if(code===429)return tr('Fonte dati limitata (429)','Data source rate limited (429)');
@@ -214,11 +223,12 @@ async function loadGroup(group,force=false){
   quotes.set(group,arr);
   if(body.quotes.some(q=>Number.isFinite(q.price))){updated.set(group,Date.now());saveQuotes();}
   renderGroup(group,arr);
-  if(!body.quotes.some(q=>Number.isFinite(q.price))&&label)label.textContent=tr('Fonte prezzi non disponibile · valori non simulati','Price feed unavailable · no estimated values');
+  if(!body.quotes.some(q=>Number.isFinite(q.price)))statusWithRetry(group,
+   body.providerStatus==='rate-limited'?errorDescription(429):tr('Fonte prezzi non disponibile · valori non simulati','Price feed unavailable · no estimated values'));
   else if(body.available<arr.length&&label)label.textContent+=' · '+tr('quotazioni parziali','partial quotes');
  }catch(err){
   renderGroup(group,quotes.get(group)||definitions(group));
-  if(label)label.textContent=errorDescription(Number(err.code)||0)+(quotes.has(group)?tr(' · ultimo dato salvato',' · last saved quotes'):'');
+  statusWithRetry(group,errorDescription(Number(err.code)||0)+(quotes.has(group)?tr(' · ultimo dato salvato',' · last saved quotes'):''));
  }finally{pending.delete(group);section.classList.remove('is-loading');}
 }
 async function cryptoSnapshot(){
