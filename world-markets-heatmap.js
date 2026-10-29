@@ -395,6 +395,17 @@ async function loadGroup(group,force=false){
    if(prev&&Number.isFinite(prev.price)&&(!Number.isFinite(q.price)||oldAt>newAt&&newAt>0))return prev;
    return q;
   });
+  // The static GitHub snapshot may briefly predate an expanded watchlist.
+  // Show every configured instrument immediately as unavailable (—) until
+  // the next real provider snapshot arrives; never manufacture market data.
+  const present=new Set(arr.map(q=>q.id));
+  for(const item of definitions(group)){
+   if(!present.has(item.id)){
+    const prior=old.get(item.id);
+    arr.push(prior&&Number.isFinite(prior.price)?prior:item);
+    present.add(item.id);
+   }
+  }
   quotes.set(group,arr);
   if(body.quotes.some(q=>Number.isFinite(q.price))){updated.set(group,Date.now());saveQuotes();}
   renderGroup(group,arr);
