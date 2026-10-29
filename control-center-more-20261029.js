@@ -77,7 +77,7 @@
   panel.classList.add('menu-compact-pro');
  };
  const home=()=>{
-  const events=$('entryMarketEventsButton');
+  const events=$('entryMacroCalendarButton');
   if(events&&!events.querySelector('.inj-more-market-symbol')){
    const icon=document.createElement('span');
    icon.className='inj-more-market-symbol';icon.setAttribute('aria-hidden','true');
