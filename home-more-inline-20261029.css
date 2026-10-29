@@ -146,3 +146,227 @@ html[data-inj-page="index"] body #entryGate#entryGate
   text-overflow:ellipsis!important;
  }
 }
+
+
+/* 29 Oct · Screenshot correction: the first and fourth former-More tiles
+   were inheriting full-width decoration and the live-event preview text.
+   Preserve their 92px/2-column hit areas, center art above labels, and
+   keep the real Market Events control / data-fetch machinery unchanged. */
+html[data-inj-page="index"] body #entryGate#entryGate
+#entryMarketEventsButton.entry-action-market-events #injMarketNextSummary,
+html[data-inj-page="index"] body #entryGate#entryGate
+#entryMarketEventsButton.entry-action-market-events > .inj-events-tile-stars,
+html[data-inj-page="index"] body #entryGate#entryGate
+#entryFreedomButton.entry-action-freedom > .freedom-entry-micro {
+  display:none!important;
+  visibility:hidden!important;
+}
+@media(max-width:799px){
+  /* Market Event: only a short title under a contained top-center chart icon. */
+  html[data-inj-page="index"] body #entryGate#entryGate
+  .entry-gate-shell:not(.first-access) > .entry-actions.entry-flat-v44
+  > #entryMarketEventsButton.entry-action-market-events{
+    display:block!important;
+    position:relative!important;
+    grid-column:auto!important;
+    width:100%!important;
+    min-width:0!important;
+    height:92px!important;
+    min-height:92px!important;
+    max-height:92px!important;
+    padding:0!important;
+    margin:0!important;
+    overflow:hidden!important;
+    text-align:center!important;
+  }
+  html[data-inj-page="index"] body #entryGate#entryGate
+  #entryMarketEventsButton.entry-action-market-events > .inj-more-market-symbol.inj-tile-scene{
+    display:block!important;
+    position:absolute!important;
+    z-index:1!important;
+    left:50%!important;
+    right:auto!important;
+    top:6px!important;
+    bottom:auto!important;
+    width:65px!important;
+    max-width:66%!important;
+    height:35px!important;
+    max-height:35px!important;
+    min-height:0!important;
+    margin:0!important;
+    padding:0!important;
+    border:0!important;
+    box-shadow:none!important;
+    background:transparent!important;
+    transform:translateX(-50%)!important;
+    pointer-events:none!important;
+  }
+  html[data-inj-page="index"] body #entryGate#entryGate
+  #entryMarketEventsButton.entry-action-market-events > .inj-more-market-symbol.inj-tile-scene svg{
+    width:100%!important;
+    height:100%!important;
+    max-width:100%!important;
+    max-height:100%!important;
+  }
+  html[data-inj-page="index"] body #entryGate#entryGate
+  #entryMarketEventsButton.entry-action-market-events > .inj-events-tile-copy{
+    display:flex!important;
+    position:absolute!important;
+    z-index:2!important;
+    left:5px!important;
+    right:5px!important;
+    top:auto!important;
+    bottom:12px!important;
+    width:auto!important;
+    min-width:0!important;
+    max-width:none!important;
+    height:19px!important;
+    min-height:0!important;
+    margin:0!important;
+    padding:0!important;
+    flex:none!important;
+    flex-direction:column!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:0!important;
+    text-align:center!important;
+    overflow:hidden!important;
+    background:transparent!important;
+  }
+  html[data-inj-page="index"] body #entryGate#entryGate
+  #entryMarketEventsButton.entry-action-market-events > .inj-events-tile-copy > .inj-home-tile-title{
+    display:block!important;
+    flex:0 0 auto!important;
+    width:100%!important;
+    min-width:0!important;
+    margin:0!important;
+    padding:0!important;
+    font-size:clamp(12px,3.35vw,14px)!important;
+    font-weight:400!important;
+    line-height:1.2!important;
+    letter-spacing:.015em!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    text-align:center!important;
+  }
+
+  /* Financial Freedom: constrain animation to a separate icon zone.
+     The two-line heading and the short caption never touch the artwork. */
+  html[data-inj-page="index"] body #entryGate#entryGate
+  .entry-gate-shell:not(.first-access) > .entry-actions.entry-flat-v44
+  > #entryFreedomButton.entry-action-freedom{
+    display:block!important;
+    position:relative!important;
+    grid-column:auto!important;
+    height:92px!important;
+    min-height:92px!important;
+    max-height:92px!important;
+    padding:0!important;
+    margin:0!important;
+    overflow:hidden!important;
+    text-align:center!important;
+  }
+  html[data-inj-page="index"] body #entryGate#entryGate
+  #entryFreedomButton.entry-action-freedom > .freedom-entry-emblem.entry-action-icon{
+    display:grid!important;
+    position:absolute!important;
+    z-index:1!important;
+    top:5px!important;
+    bottom:auto!important;
+    left:50%!important;
+    right:auto!important;
+    width:33px!important;
+    height:33px!important;
+    min-width:0!important;
+    min-height:0!important;
+    max-width:33px!important;
+    max-height:33px!important;
+    flex:none!important;
+    margin:0!important;
+    padding:0!important;
+    border:0!important;
+    border-radius:0!important;
+    background:transparent!important;
+    box-shadow:none!important;
+    transform:translateX(-50%)!important;
+    pointer-events:none!important;
+    place-items:center!important;
+  }
+  html[data-inj-page="index"] body #entryGate#entryGate
+  #entryFreedomButton.entry-action-freedom > .freedom-entry-emblem.entry-action-icon .freedom-mark{
+    display:block!important;
+    width:33px!important;
+    height:33px!important;
+    min-width:0!important;
+    min-height:0!important;
+    max-width:33px!important;
+    max-height:33px!important;
+  }
+  html[data-inj-page="index"] body #entryGate#entryGate
+  #entryFreedomButton.entry-action-freedom > .freedom-entry-copy{
+    display:flex!important;
+    position:absolute!important;
+    z-index:2!important;
+    top:auto!important;
+    bottom:7px!important;
+    left:3px!important;
+    right:3px!important;
+    width:auto!important;
+    min-width:0!important;
+    max-width:none!important;
+    height:45px!important;
+    min-height:0!important;
+    max-height:45px!important;
+    flex:none!important;
+    margin:0!important;
+    padding:0!important;
+    gap:2px!important;
+    flex-direction:column!important;
+    justify-content:flex-end!important;
+    align-items:center!important;
+    align-self:auto!important;
+    background:transparent!important;
+    overflow:hidden!important;
+    text-align:center!important;
+  }
+  html[data-inj-page="index"] body #entryGate#entryGate
+  #entryFreedomButton.entry-action-freedom > .freedom-entry-copy > .inj-home-tile-title{
+    display:block!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    max-height:30px!important;
+    margin:0!important;
+    padding:0!important;
+    font-family:var(--inj-minimal-font,system-ui,sans-serif)!important;
+    font-size:clamp(11.3px,3.1vw,13px)!important;
+    font-weight:400!important;
+    line-height:1.15!important;
+    letter-spacing:0!important;
+    text-transform:uppercase!important;
+    white-space:normal!important;
+    overflow:hidden!important;
+    overflow-wrap:normal!important;
+    word-break:normal!important;
+    text-align:center!important;
+  }
+  html[data-inj-page="index"] body #entryGate#entryGate
+  #entryFreedomButton.entry-action-freedom > .freedom-entry-copy > .inj-tile-description{
+    display:block!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    height:auto!important;
+    margin:0!important;
+    padding:0!important;
+    font-family:var(--inj-minimal-font,system-ui,sans-serif)!important;
+    font-size:clamp(9px,2.45vw,10.5px)!important;
+    font-weight:400!important;
+    line-height:1.15!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    text-align:center!important;
+  }
+}
