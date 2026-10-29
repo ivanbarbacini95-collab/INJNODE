@@ -22,13 +22,7 @@ html,html body{
 }
 /* The impossible ID pair in :is() boosts specificity; * matches all real
    elements. Keep vector charts and font icons untouched. */
-html body :is(*,#__injMinimalWeight#__injMinimalWeight)
-:not(svg):not(svg *):not(.material-icons)
-:not(.material-symbols-outlined):not(.material-symbols-rounded)
-:not(.material-symbols-sharp)
-:not(.fa):not(.fas):not(.far):not(.fab):not(.fal):not(.fad)
-:not(.fa-solid):not(.fa-regular):not(.fa-brands)
-:not(.iconfont):not(.icon-font){
+html body :is(*,#__injMinimalWeight#__injMinimalWeight):not(svg):not(svg *):not(.material-icons):not(.material-symbols-outlined):not(.material-symbols-rounded):not(.material-symbols-sharp):not(.fa):not(.fas):not(.far):not(.fab):not(.fal):not(.fad):not(.fa-solid):not(.fa-regular):not(.fa-brands):not(.iconfont):not(.icon-font){
  font-family:var(--inj-minimal-font)!important;
  font-weight:400!important;
  font-synthesis-weight:none;
@@ -36,8 +30,7 @@ html body :is(*,#__injMinimalWeight#__injMinimalWeight)
  font-variant-numeric:tabular-nums lining-nums;
 }
 /* Large prices, balances and wealth values use light 300. */
-html body :is(*,#__injMinimalWeight#__injMinimalWeight)
-:is(
+html body :is(*,#__injMinimalWeight#__injMinimalWeight):is(
  #entryMarketPrice,#entryWalletWorth,#entryInsightPnl,
  #entryDesktopDailyRewardValue,
  #treasuryTotalMajor,#treasuryTotalDecimals,#treasuryTotalWorth,
@@ -71,8 +64,7 @@ html body :is(*,#__injMinimalWeight#__injMinimalWeight)
  font-variant-numeric:tabular-nums lining-nums!important;
 }
 /* Dense trading and microdata remain regular 400 for readability. */
-html body :is(*,#__injMinimalWeight#__injMinimalWeight)
-:is(
+html body :is(*,#__injMinimalWeight#__injMinimalWeight):is(
  .levels,.levels span,.levels strong,
  .heatmap-card,.heatmap-card strong,.heatmap-card .price,
  .ws-section-value,.ws-data-value,.ws-card-heading,
@@ -86,8 +78,7 @@ html body :is(*,#__injMinimalWeight#__injMinimalWeight)
  letter-spacing:0!important;
 }
 /* Understated titles: preserve original sizing and translated text. */
-html body :is(*,#__injMinimalWeight#__injMinimalWeight)
-:is(
+html body :is(*,#__injMinimalWeight#__injMinimalWeight):is(
  h1,h2,h3,h4,h5,h6,
  .inj-home-tile-title,.ws-card-heading strong,.ws-card-title,
  .treasury-kicker,.rewards-kicker,
@@ -99,16 +90,14 @@ html body :is(*,#__injMinimalWeight#__injMinimalWeight)
  font-weight:400!important;
  letter-spacing:.015em!important;
 }
-html body :is(*,#__injMinimalWeight#__injMinimalWeight)
-:is(.inj-tile-description,.inj-events-next-text,.ws-sub,
+html body :is(*,#__injMinimalWeight#__injMinimalWeight):is(.inj-tile-description,.inj-events-next-text,.ws-sub,
  .ws-data-status,.caption,.subtitle,.description,.hint,
  .note,.treasury-hero-copy>span,.rewards-total-label){
  font-weight:400!important;
  letter-spacing:0!important;
 }
 /* Keep addresses, transaction hashes and code distinct and unambiguous. */
-html body :is(*,#__injMinimalWeight#__injMinimalWeight)
-:is(code,kbd,samp,pre,.tx-hash,.wallet-address,
+html body :is(*,#__injMinimalWeight#__injMinimalWeight):is(code,kbd,samp,pre,.tx-hash,.wallet-address,
  .address-hash,.mono,[data-monospace]){
  --inj-node-terminal-font:var(--inj-minimal-mono);
  font-family:var(--inj-minimal-mono)!important;
