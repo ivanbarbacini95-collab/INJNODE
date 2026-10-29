@@ -72,6 +72,7 @@ function el(tag,cls,text){
 }
 function quoteTile(q,compact=false){
  const tile=el('article','inj-wm-tile '+state(q)+(compact?' compact':''));
+ if(Number.isFinite(q.change))tile.style.setProperty('--inj-wm-strength',Math.max(8,Math.min(55,8+Math.abs(q.change)*8)).toFixed(1)+'%');
  const head=el('div','inj-wm-tile-head');
  const label=el('strong','inj-wm-name',q.name||q.symbol||'—');
  const ticker=el('span','inj-wm-symbol',q.symbol||'');
@@ -184,7 +185,17 @@ async function cryptoSnapshot(){
   return {id,name:x.name||id.replaceAll('-',' ').toUpperCase(),symbol:(x.symbol||'').toUpperCase(),price:Number.isFinite(p)&&p>0?p:null,change:Number.isFinite(d)?d:null,currency:'USD',time:x.last_updated?Math.round(new Date(x.last_updated).getTime()/1000):null};
  })};
 }
+const countryIds=[['sp500',/united states/i],['bovespa',/brazil/i],['dax',/germany/i],['cac',/france/i],['ftse',/united kingdom/i],['nikkei',/japan/i],['nifty',/^india$/i],['hangseng',/hong kong/i],['asx',/australia/i]];
+function updateMapColors(items){
+ const data=byId(items);
+ $('injWorldMapSvg')?.querySelectorAll('[data-market-country]')?.forEach(node=>{
+  const id=node.getAttribute('data-market-country');const change=data.get(id)?.change;
+  node.classList.toggle('up',Number.isFinite(change)&&change>0);
+  node.classList.toggle('down',Number.isFinite(change)&&change<0);
+ });
+}
 function renderPins(items){
+ updateMapColors(items);
  const layer=$('injWorldMapPins');const note=$('injWorldMapSpotlight');if(!layer||!note)return;
  const data=byId(items);layer.replaceChildren();
  for(const [id,lat,lon] of hotspot){
@@ -242,9 +253,13 @@ async function loadWorldGeometry(){
   const group=document.createElementNS(ns,'g');group.setAttribute('class','inj-wm-land');
   for(const feature of payload.features){
    const d=shapePath(feature);if(!d)continue;
-   const path=document.createElementNS(ns,'path');path.setAttribute('d',d);group.append(path);
+   const path=document.createElementNS(ns,'path');path.setAttribute('d',d);
+   const country=String(feature?.properties?.name||feature?.properties?.ADMIN||feature?.id||'');
+   const match=countryIds.find(([,re])=>re.test(country));
+   if(match)path.setAttribute('data-market-country',match[0]);
+   group.append(path);
   }
-  if(group.childNodes.length>80){svg.replaceChildren(group);geoReady=true;}
+  if(group.childNodes.length>80){svg.replaceChildren(group);geoReady=true;const indices=quotes.get('indices');if(indices)updateMapColors(indices);}
  }catch(_){/* Keep the built-in map outline, never block the page. */}
 }
 function localize(){
