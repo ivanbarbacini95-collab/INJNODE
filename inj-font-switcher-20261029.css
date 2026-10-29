@@ -1,4 +1,14 @@
-@import url("https://fonts.googleapis.com/css2?family=Doto:ROND,wght@100,400..700&family=IBM+Plex+Mono:wght@400;500&display=swap");
+/* Self-hosted Doto variable font (6×10 dot matrix), SIL OFL 1.1.
+   Bundled to guarantee correct rendering in the iOS Home Screen PWA,
+   without a runtime dependency on Google Fonts. */
+@font-face {
+ font-family:"INJ Doto";
+ src:url("./assets/fonts/Doto-Variable.ttf") format("truetype");
+ font-style:normal;
+ font-weight:100 900;
+ font-display:swap;
+}
+
 /* INJ Node · Font selector · October 29 2026
    Appearance-only, compatible with existing Inter Light typography cascade. */
 html[data-inj-font="bitcount"]{--inj-inter-light-font:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
@@ -82,73 +92,72 @@ html[data-inj-page="index"] body #headerMenuPanel .menu-font-note{
 
 
 
-/* INJ NODE · Micro Dot visual typography, stable revision
- * Only applies when the stored "bitcount" option is selected.
- * Doto is a real 6×10 dot grid; labels retain Inter, compact data use Plex Mono.
- * All existing font sizes, card dimensions, navigation and data logic are preserved.
- */
-html[data-inj-font="bitcount"] body :is(*,#__injMicroDotForce#__injMicroDotForce#__injMicroDotForce#__injMicroDotForce#__injMicroDotForce):not(svg):not(svg *):not(.material-icons):not(.material-symbols-outlined):not(.material-symbols-rounded):not(.material-symbols-sharp):not(.fa):not(.fas):not(.far):not(.fab):not(.fal):not(.fad):not(.fa-solid):not(.fa-regular):not(.fa-brands):not(.iconfont):not(.icon-font){
-  font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif!important;
-  font-weight:400!important;
-  font-synthesis:none!important;
-  font-variation-settings:normal!important;
-  font-feature-settings:normal!important;
-  -webkit-font-smoothing:antialiased!important;
+
+/* The Bitcount selection is rendered as a refined MICRO DOT variant:
+   Doto for display and important financial figures; Inter for small labels.
+   Other seven fonts are unaffected. */
+html[data-inj-font="bitcount"] body :is(*,#__injMicroDot5#__injMicroDot5#__injMicroDot5#__injMicroDot5#__injMicroDot5):not(svg):not(svg *):not(.material-icons):not(.material-symbols-outlined):not(.material-symbols-rounded):not(.material-symbols-sharp):not(.fa):not(.fas):not(.far):not(.fab):not(.fal):not(.fad):not(.fa-solid):not(.fa-regular):not(.fa-brands):not(.iconfont):not(.icon-font){
+ font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif!important;
+ font-weight:400!important;
+ font-synthesis:none!important;
+ font-variation-settings:normal!important;
+ font-feature-settings:normal!important;
+ -webkit-font-smoothing:antialiased!important;
 }
-/* The prominent display figures from Home, Dashboard and all subpages. */
-html[data-inj-font="bitcount"] body :is(*,#__injMicroDotForce#__injMicroDotForce#__injMicroDotForce#__injMicroDotForce#__injMicroDotForce):is(
-  #marketPrice,#netWorthUsd,#entryMarketPrice,#entryWalletWorth,#entryInsightPnl,
-  #focusDisplayPrice,#focusDisplayWorth,#focusDisplayTotalInj,#focusDisplayDailyReward,
-  #chartHeaderPrice,#headerLivePrice,#bookLivePrice,#treasuryTotalMajor,
-  #treasuryTotalDecimals,#treasuryTotalWorth,#treasuryHeaderPrice,#treasuryPnl24Value,
-  #rewardsTotal,#rewardsTotalFiat,#ccLivePrice,#ccNetWorth,#ccTotalInj,#ccTotalPnl,
-  #capSourcePrice,#capProjectedPrice,#wealthTotal,#wealthStaked,#wealthAllWorth,
-  #ladderRewardValue,#ladderRewardInj,#etfSpotPrice,#freedomPrice,#freedomWorth,
-  #ownedTotalInj,#availableInj,#stakedInj,#rewardsInj,#aprValue,
-  #marketChange,#marketChangeAmount,#netWorthPnl,#netWorthChange24h,
-  #treasuryAvailable,#treasuryStaked,#treasuryApr,#treasuryRewards,
-  #rewardsHeaderPrice,#treasuryNetWorthCurrent,
-  .app-shell .hero-number,.app-shell .hero-secondary,
-  .app-shell .metric-card .metric-value,.app-shell .reward-rate-grid strong,
-  .app-shell .aggregate-metric>strong,.app-shell .target-stats strong,
-  .entry-overview-worth>strong,.entry-market-mini>strong,.entry-price-pnl strong,
-  .entry-desktop-metric>strong,.treasury-total-display>strong,.treasury-hero-worth,
-  .treasury-hero-pnl>strong,.rewards-total-value>strong,
-  .market-price-line>strong,.market-price>strong,.market-price-row>strong,
-  .ws-main-price,.ws-price-value,.ws-price-main,.ws-price,.ws-hero-price,
-  .cc-now-price,.cc-price,.cc-primary-value,.wealth-amount,.wealth-growth-result-value,
-  .cap-total-value,.cap-hero-value,.freedom-figure-worth,.freedom-hero-figure,
-  .inj-mi-snapshot article>strong,.overview article>strong,
-  .etf-hero-price,.etf-main-price,.rewards-total-fiat
+/* Numeric headlines and readable home wordmark: visible across all themes. */
+html[data-inj-font="bitcount"] body :is(*,#__injMicroDot5#__injMicroDot5#__injMicroDot5#__injMicroDot5#__injMicroDot5):is(
+ .home-safe-heading h1,.home-safe-heading h1 strong,.home-safe-heading h1 span,
+ #marketPrice,#netWorthUsd,#entryMarketPrice,#entryWalletWorth,#entryInsightPnl,
+ #entryDesktopAvailable,#entryDesktopStakeRatio,#entryDesktopDailyRewardValue,
+ #focusDisplayPrice,#focusDisplayWorth,#focusDisplayTotalInj,#focusDisplayDailyReward,
+ #chartHeaderPrice,#headerLivePrice,#bookLivePrice,#treasuryTotalMajor,#treasuryTotalDecimals,
+ #treasuryTotalWorth,#treasuryHeaderPrice,#treasuryPnl24Value,
+ #rewardsTotal,#rewardsTotalFiat,#ccLivePrice,#ccNetWorth,#ccTotalInj,#ccTotalPnl,
+ #capSourcePrice,#capProjectedPrice,#wealthTotal,#wealthStaked,#wealthAllWorth,
+ #ladderRewardValue,#ladderRewardInj,#etfSpotPrice,#freedomPrice,#freedomWorth,
+ #ownedTotalInj,#availableInj,#stakedInj,#rewardsInj,#aprValue,
+ #marketChange,#marketChangeAmount,#netWorthPnl,#netWorthChange24h,
+ #treasuryAvailable,#treasuryStaked,#treasuryApr,#treasuryRewards,
+ #rewardsHeaderPrice,#treasuryNetWorthCurrent,
+ .app-shell .hero-number,.app-shell .hero-secondary,
+ .app-shell .metric-card .metric-value,.app-shell .reward-rate-grid strong,
+ .app-shell .aggregate-metric>strong,.app-shell .target-stats strong,
+ .entry-overview-worth>strong,.entry-market-mini>strong,.entry-price-pnl strong,
+ .entry-desktop-metric>strong,.treasury-total-display>strong,.treasury-hero-worth,
+ .treasury-hero-pnl>strong,.rewards-total-value>strong,
+ .market-price-line>strong,.market-price>strong,.market-price-row>strong,
+ .ws-main-price,.ws-price-value,.ws-price-main,.ws-price,.ws-hero-price,
+ .cc-now-price,.cc-price,.cc-primary-value,.wealth-amount,.wealth-growth-result-value,
+ .cap-total-value,.cap-hero-value,.freedom-figure-worth,.freedom-hero-figure,
+ .inj-mi-snapshot article>strong,.overview article>strong,
+ .etf-hero-price,.etf-main-price,.rewards-total-fiat
 ){
-  font-family:"Doto","IBM Plex Mono",ui-monospace,monospace!important;
-  font-weight:550!important;
-  font-variation-settings:"ROND" 100,"wght" 550!important;
-  font-synthesis:none!important;
-  font-feature-settings:"tnum" 1,"lnum" 1!important;
-  font-kerning:none!important;
-  font-variant-numeric:tabular-nums lining-nums!important;
-  font-stretch:normal!important;
-  letter-spacing:0!important;
-  -webkit-font-smoothing:antialiased!important;
+ font-family:"INJ Doto",ui-monospace,monospace!important;
+ font-weight:550!important;
+ font-variation-settings:"ROND" 100,"wght" 550!important;
+ font-synthesis:none!important;
+ font-feature-settings:"tnum" 1,"lnum" 1!important;
+ font-kerning:none!important;
+ font-variant-numeric:tabular-nums lining-nums!important;
+ font-stretch:normal!important;
+ letter-spacing:0!important;
 }
-/* Compact trading tables and technical codes must stay readable. */
-html[data-inj-font="bitcount"] body :is(*,#__injMicroDotForce#__injMicroDotForce#__injMicroDotForce#__injMicroDotForce#__injMicroDotForce):is(
+/* Technical details and tiny numeric cells need crisp monospaced glyphs. */
+html[data-inj-font="bitcount"] body :is(*,#__injMicroDot5#__injMicroDot5#__injMicroDot5#__injMicroDot5#__injMicroDot5):is(
  code,pre,kbd,samp,.tx-hash,.wallet-address,.address-hash,[data-monospace],
  .levels,.levels *,.market-table,.market-asset-price,
  .heatmap-card .price,.heatmap-card strong,.ws-data-value,.ws-section-value,
  .ws-chart-ticks,.ws-book,.book-meta,.entry-overview-stats strong,
  .rewards-total-metrics strong,.treasury-metric strong
 ){
-  font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace!important;
-  font-weight:400!important;
-  font-variation-settings:normal!important;
-  letter-spacing:0!important;
+ font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace!important;
+ font-weight:400!important;
+ font-variation-settings:normal!important;
+ letter-spacing:0!important;
 }
-/* Preview displays the actual dot matrix rather than an old Bitcount fallback. */
-html[data-inj-page="index"] body #headerMenuPanel .menu-font-option[data-inj-font-choice="bitcount"] .menu-font-sample{
-  font-family:"Doto","IBM Plex Mono",ui-monospace,monospace!important;
-  font-weight:550!important;
-  font-variation-settings:"ROND" 100,"wght" 550!important;
-  letter-spacing:0!important;
+html[data-inj-page="index"] body #headerMenuPanel .menu-font-option[data-inj-font-choice="bitcount"] .menu-font-sample {
+ font-family:"INJ Doto",ui-monospace,monospace!important;
+ font-weight:550!important;
+ font-variation-settings:"ROND" 100,"wght" 550!important;
+ letter-spacing:0!important;
 }

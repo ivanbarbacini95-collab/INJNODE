@@ -1,7 +1,8 @@
-const CACHE_NAME = 'inj-node-v16.10.29-microdot-fix4';
+const CACHE_NAME = 'inj-node-v16.10.29-microdot-local5';
 const APP_SHELL = [
-  './inj-font-switcher-20261029.css?v=fontchoice4',
-  './inj-font-switcher-20261029.js?v=fontchoice4',
+  './assets/fonts/Doto-Variable.ttf',
+  './inj-font-switcher-20261029.css?v=fontchoice5',
+  './inj-font-switcher-20261029.js?v=fontchoice5',
   './inj-fluid-screen-fit.css?v=20261028fullmonitor1',
   './inj-monitor-readability.css?v=20261028readable3',
   './home-desktop-native-scroll.css?v=20261028home-scroll1',
