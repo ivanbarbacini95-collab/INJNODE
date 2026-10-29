@@ -1,0 +1,79 @@
+/* INJ Node · Font selector · October 29 2026
+   Appearance-only, compatible with existing Inter Light typography cascade. */
+html[data-inj-font="bitcount"]{--inj-inter-light-font:"Bitcount Grid Single","IBM Plex Mono",ui-monospace,monospace}
+html[data-inj-font="roboto"]{--inj-inter-light-font:"Roboto",Arial,sans-serif}
+html[data-inj-font="dm-sans"]{--inj-inter-light-font:"DM Sans",Arial,sans-serif}
+html[data-inj-font="jakarta"]{--inj-inter-light-font:"Plus Jakarta Sans",Arial,sans-serif}
+html[data-inj-font="neue-haas"]{--inj-inter-light-font:"Neue Haas Grotesk Text","Neue Haas Grotesk Display","Neue Haas Grotesk",Helvetica,Arial,sans-serif}
+html[data-inj-font="helvetica"]{--inj-inter-light-font:Helvetica,"Helvetica Neue",Arial,sans-serif}
+html[data-inj-font="plex-mono"]{--inj-inter-light-font:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace}
+/* Current font: no attribute (or inter), inherited from Inter Light stylesheet. */
+html[data-inj-page="index"] body #headerMenuPanel .menu-font-control{
+ width:100%!important;min-width:0!important;grid-column:1/-1!important;
+ border:0!important;background:none!important;box-shadow:none!important;
+ margin:0!important;padding:0!important;
+}
+html[data-inj-page="index"] body #headerMenuPanel .menu-font-control > summary{
+ list-style:none!important;cursor:pointer!important;
+}
+html[data-inj-page="index"] body #headerMenuPanel .menu-font-control > summary::-webkit-details-marker{display:none}
+html[data-inj-page="index"] body #headerMenuPanel .menu-font-control .menu-font-chevron{
+ width:16px;height:16px;flex:0 0 16px;
+ transition:transform .22s ease;
+}
+html[data-inj-page="index"] body #headerMenuPanel .menu-font-control[open] .menu-font-chevron{transform:rotate(180deg)}
+html[data-inj-page="index"] body #headerMenuPanel .menu-font-control .menu-action-copy{flex:1;min-width:0}
+html[data-inj-page="index"] body #headerMenuPanel .menu-font-control .menu-font-current{
+ color:var(--muted,var(--text,#cedcdd));font-size:10px!important;
+ letter-spacing:0!important;font-weight:400!important;
+ overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
+}
+html[data-inj-page="index"] body #headerMenuPanel .menu-font-options{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:8px;padding:10px 0 4px;margin:0;
+ background:transparent!important;border:0!important;
+}
+html[data-inj-page="index"] body #headerMenuPanel .menu-font-option{
+ display:flex!important;flex-direction:column!important;justify-content:center!important;
+ gap:5px;min-width:0;min-height:82px;padding:11px 10px!important;
+ margin:0!important;text-align:left!important;cursor:pointer;
+ border:1px solid color-mix(in srgb,var(--line,#64747a) 70%,transparent)!important;
+ border-radius:13px!important;
+ background:color-mix(in srgb,var(--surface,#152229) 93%,var(--text,#dbe8e9) 7%)!important;
+ box-shadow:none!important;
+ transition:background-color .2s ease,border-color .2s ease!important;
+}
+html[data-inj-page="index"] body #headerMenuPanel .menu-font-option[aria-pressed="true"]{
+ background:color-mix(in srgb,var(--surface,#152229) 90%,var(--accent,#92c6bf) 10%)!important;
+ border-color:color-mix(in srgb,var(--line,#63737a) 30%,var(--accent,#a1cec8) 70%)!important;
+}
+html[data-inj-page="index"] body #headerMenuPanel .menu-font-option:focus-visible{
+ outline:2px solid var(--accent,#91beb7);outline-offset:2px;
+}
+html[data-inj-page="index"] body #headerMenuPanel .menu-font-name{
+ display:flex;align-items:flex-start;justify-content:space-between;gap:4px;
+ font-size:11.5px!important;line-height:1.2!important;font-weight:400!important;
+ color:var(--text,#edf4f5)!important;text-wrap:balance;overflow-wrap:anywhere;
+}
+html[data-inj-page="index"] body #headerMenuPanel .menu-font-check{
+ opacity:0;flex:none;color:var(--accent,#b4d9d5);font-size:14px!important;
+ line-height:1!important;
+}
+html[data-inj-page="index"] body #headerMenuPanel .menu-font-option[aria-pressed="true"] .menu-font-check{opacity:1}
+html[data-inj-page="index"] body #headerMenuPanel .menu-font-sample{
+ display:block;max-width:100%;min-width:0;overflow:hidden;text-overflow:ellipsis;
+ white-space:nowrap;line-height:1.35!important;font-size:15px!important;
+ letter-spacing:0!important;color:var(--text,#dfe8e8)!important;
+}
+html[data-inj-page="index"] body #headerMenuPanel .menu-font-note{
+ color:var(--muted,#a9b9bd)!important;font-size:10px!important;
+ font-weight:400!important;line-height:1.4!important;
+ margin:7px 2px 0!important;padding:0!important;
+}
+@media(max-width:360px){
+ html[data-inj-page="index"] body #headerMenuPanel .menu-font-options{grid-template-columns:1fr}
+ html[data-inj-page="index"] body #headerMenuPanel .menu-font-option{min-height:64px}
+}
+@media(prefers-reduced-motion:reduce){
+ html[data-inj-page="index"] body #headerMenuPanel .menu-font-control *{transition:none!important}
+}
