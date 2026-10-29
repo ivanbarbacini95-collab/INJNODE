@@ -1,93 +1,282 @@
-/* INJ Node · Global Markets Heatmap — official, lazily loaded TradingView widgets.
-   No synthetic quotes, no undocumented scraping, no polling in INJ Node. */
+/* INJ Node · native Global Markets v2.
+ * In-house heatmap and world map UI. Quotes via same-origin /api/global-markets.
+ * No TradingView scripts/elements/iframes, no fabricated prices or percentages.
+ */
 (()=>{
- 'use strict';
- const root=document.getElementById('injWorldMarket');
- const categories=document.getElementById('injWorldCategories');
- const stage=document.getElementById('injWorldStage');
- const title=document.getElementById('injWorldStageTitle');
- const detail=document.getElementById('injWorldStageDetail');
- const status=document.getElementById('injWorldStatus');
- if(!root||!categories||!stage||!title||!detail||!status)return;
- const en=()=>document.documentElement.lang==='en';
- const tr=(it,eng)=>en()?eng:it;
- const base='https://widgets.tradingview-widget.com/w/en/';
- const catalogs=[
-  {id:'world',name:['Panoramica mondiale','World overview'],desc:['Indici principali per Paese · mappa interattiva','Leading indices by country · interactive map'],tag:'tv-world-market-summary',script:'tv-world-market-summary.js',attrs:{},height:580,link:'https://www.tradingview.com/markets/indices/'},
-  {id:'equity',name:['Azioni e settori','Stocks & sectors'],desc:['S&P 500 · tecnologia, energia, salute e altri settori','S&P 500 · technology, energy, healthcare and more'],tag:'tv-heatmap',script:'tv-heatmap.js',attrs:{'heatmap-type':'stock','data-source':'SPX500','grouping':'sector','block-size':'market_cap_basic','block-color':'change'},height:620,link:'https://www.tradingview.com/heatmap/stock/'},
-  {id:'etf',name:['ETF e asset class','ETFs & asset classes'],desc:['Azioni, obbligazioni, immobili e commodity tramite ETF','Equities, bonds, real estate and commodities via ETFs'],tag:'tv-heatmap',script:'tv-heatmap.js',attrs:{'heatmap-type':'etf','data-source':'AllUSEtf','grouping':'asset_class','block-size':'volume','block-color':'change'},height:620,link:'https://www.tradingview.com/heatmap/etf/'},
-  {id:'forex',name:['Valute globali','Global currencies'],desc:['Forza relativa delle principali valute · heatmap giornaliera','Major currency relative strength · daily heatmap'],tag:'tv-forex-table',script:'tv-forex-table.js',attrs:{'displayed-value':'dailyChange','heatmap':''},height:530,link:'https://www.tradingview.com/markets/currencies/'},
-  {id:'commodities',name:['Materie prime','Commodities'],desc:['Oro, petrolio, argento, gas e agricole · tabella quotazioni','Gold, oil, silver, gas and agriculture · quotes table'],tag:'tv-market-data',script:'tv-market-data.js',attrs:{'symbol-sectors':JSON.stringify([{sectionName:'Commodities',symbols:['CMCMARKETS:GOLD','TVC:SILVER','TVC:USOIL','TVC:UKOIL','NYMEX:NG1!','BMFBOVESPA:CCM1!']}])},height:580,link:'https://www.tradingview.com/markets/futures/'},
-  {id:'bonds',name:['Obbligazioni e tassi','Bonds & rates'],desc:['Bund, BTP e scadenze governative · quotazioni','Bund, BTP and government bond benchmarks · quotes'],tag:'tv-market-data',script:'tv-market-data.js',attrs:{'symbol-sectors':JSON.stringify([{sectionName:'Bond futures',symbols:['EUREX:FGBL1!','EUREX:FBTP1!','EUREX:FGBM1!']},{sectionName:'Government yields',symbols:['TVC:US10Y','TVC:DE10Y']}])},height:560,link:'https://www.tradingview.com/markets/bonds/'},
-  {id:'crypto',name:['Criptovalute','Cryptocurrencies'],desc:['Mercato crypto mondiale · Heatmap per capitalizzazione','Global crypto market · market-cap heatmap'],tag:'tv-heatmap',script:'tv-heatmap.js',attrs:{'heatmap-type':'crypto-coins','data-source':'Crypto','block-size':'market_cap_calc','block-color':'24h_close_change|5'},height:620,link:'https://www.tradingview.com/heatmap/crypto/'}
- ];
- const loaders=new Map();
- let active=false,selected='world',mounted=null;
- const load=script=>{
-  if(loaders.has(script))return loaders.get(script);
-  const p=new Promise((resolve,reject)=>{
-   const el=document.createElement('script');
-   el.type='module';el.src=base+script;
-   el.onload=resolve;
-   el.onerror=()=>reject(new Error('Widget unavailable'));
-   document.head.appendChild(el);
+'use strict';
+const $=id=>document.getElementById(id);
+const root=$('injWorldMarket');if(!root)return;
+const en=()=>document.documentElement.lang==='en';
+const tr=(it,english)=>en()?english:it;
+const ids=['indices','sectors','stocks','etf','forex','commodities','bonds','crypto'];
+const titles={
+ indices:['Mercati mondiali','World markets'],sectors:['Settori azionari','Stock market sectors'],
+ stocks:['Azioni per settore','Stocks by sector'],etf:['ETF e asset class','ETFs & asset classes'],
+ forex:['Valute globali','Global currencies'],commodities:['Materie prime','Commodities'],
+ bonds:['Obbligazioni e tassi','Bonds & rates'],crypto:['Criptovalute','Cryptocurrencies']
+};
+const hints={
+ indices:['Indici rappresentativi delle principali borse mondiali','Representative indices of major global exchanges'],
+ sectors:['11 settori S&P 500 · ETF settoriali rappresentativi','11 S&P 500 sectors · representative sector ETFs'],
+ stocks:['Società raggruppate per attività economica','Companies grouped by economic activity'],
+ etf:['Esposizioni a indici, aree geografiche e asset class','Index, geographical and asset-class exposures'],
+ forex:['Coppie valutarie principali','Major currency pairs'],
+ commodities:['Contratti futures rappresentativi','Representative futures contracts'],
+ bonds:['Rendimenti Treasury USA e ETF obbligazionari','US Treasury yields and bond ETFs'],
+ crypto:['Prezzi dal mercato crypto già utilizzato da INJ Node','Prices from INJ Node’s existing crypto market feed']
+};
+const sectors=[
+ ['technology','Tecnologia','Technology',['aapl','msft','nvda']],
+ ['finance','Finanza','Financials',['jpm','bac']],
+ ['energy','Energia','Energy',['xom','cvx']],
+ ['healthcare','Sanità','Healthcare',['lly','jnj']],
+ ['industrial','Industria','Industrials',['cat','ge']],
+ ['consumer','Consumi discrezionali','Consumer discretionary',['amzn','tsla']],
+ ['staples','Beni essenziali','Consumer staples',['wmt','cost']],
+ ['utilities','Servizi pubblici','Utilities',['nee','duk']],
+ ['realestate','Immobiliare','Real estate',['amt']],
+ ['materials','Materiali','Materials',['lin','fcx']],
+ ['communications','Comunicazioni','Communication services',['googl','meta']]
+];
+const regions=[
+ ['America',['sp500','nasdaq','dow','russell','bovespa']],
+ ['Europa / Europe',['stoxx','dax','cac','ftse']],
+ ['Asia / Pacifico',['nikkei','hangseng','nifty','asx']]
+];
+const hotspot=[['sp500',38,-97],['bovespa',-14,-51],['stoxx',51,8],['nifty',23,78],['hangseng',23,114],['nikkei',37,139],['asx',-25,134]];
+const quotes=new Map(),updated=new Map(),pending=new Set(),observed=new Set();
+let active=false,initialized=false,observer=null,geometryStarted=false,geoReady=false;
+const MAX_AGE=3*60*1000;
+const fmtPercent=n=>Number.isFinite(n)?(n>0?'+':'')+new Intl.NumberFormat(en()?'en-US':'it-IT',{maximumFractionDigits:2,minimumFractionDigits:2}).format(n)+'%':'—';
+const fmtValue=(v,currency)=>{
+ if(!Number.isFinite(v)||v<=0)return '—';
+ const precision=v<1?4:2;
+ return new Intl.NumberFormat(en()?'en-US':'it-IT',{minimumFractionDigits:precision,maximumFractionDigits:precision}).format(v)+(currency?' '+currency:'');
+};
+const byId=(arr)=>new Map((Array.isArray(arr)?arr:[]).map(x=>[x.id,x]));
+const stamp=t=>{
+ if(!Number.isFinite(t)||t<=0)return '';
+ const date=new Date(t*1000);
+ if(!Number.isFinite(date.getTime()))return '';
+ return date.toLocaleString(en()?'en-GB':'it-IT',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',timeZone:'Europe/Rome'});
+};
+const state=x=>!Number.isFinite(x?.change)?'neutral':x.change>0?'up':x.change<0?'down':'neutral';
+function el(tag,cls,text){
+ const node=document.createElement(tag);if(cls)node.className=cls;if(text!==undefined)node.textContent=text;return node;
+}
+function quoteTile(q,compact=false){
+ const tile=el('article','inj-wm-tile '+state(q)+(compact?' compact':''));
+ const head=el('div','inj-wm-tile-head');
+ const label=el('strong','inj-wm-name',q.name||q.symbol||'—');
+ const ticker=el('span','inj-wm-symbol',q.symbol||'');
+ head.append(label,ticker);
+ const value=el('div','inj-wm-tile-values');
+ value.append(el('span','inj-wm-price',fmtValue(q.price,q.currency)),el('strong','inj-wm-change',fmtPercent(q.change)));
+ tile.append(head,value);
+ if(q.time)tile.title=tr('Ultima quotazione: ','Last quote: ')+stamp(q.time);
+ return tile;
+}
+const statsOf=arr=>{
+ const available=arr.filter(x=>Number.isFinite(x.change));
+ const up=available.filter(x=>x.change>0).length;
+ return {total:available.length,up,down:available.filter(x=>x.change<0).length};
+};
+function renderSummary(group,arr){
+ const status=$('injWorld'+group+'Status');
+ if(!status)return;
+ const n=statsOf(arr);
+ if(!n.total){status.textContent=tr('Dati non disponibili · riprova più tardi','Data unavailable · retry later');return;}
+ const latest=Math.max(...arr.map(x=>Number(x.time)||0));
+ status.textContent=n.up+' '+tr('in rialzo','up')+' · '+n.down+' '+tr('in ribasso','down')+' · '+tr('ultima quotazione ','last quote ')+(latest?stamp(latest):'—');
+}
+function renderIndices(items){
+ const idx=byId(items);const list=$('injWorldIndexRegions');if(!list)return;
+ list.replaceChildren();
+ regions.forEach(([name,assetIds])=>{
+  const group=el('div','inj-wm-region');group.append(el('h4','inj-wm-region-title',name));
+  const cards=el('div','inj-wm-grid indices');
+  assetIds.forEach(id=>{const q=idx.get(id);if(q)cards.append(quoteTile(q,true))});
+  group.append(cards);list.append(group);
+ });
+ renderPins(items);
+ renderSummary('indices',items);
+}
+function renderSectors(items){
+ const data=byId(items),rootGrid=$('injWorldSectorGrid');if(!rootGrid)return;
+ rootGrid.replaceChildren();
+ sectors.forEach(([id,it,english])=>{
+  const q=data.get(id)||{id,name:tr(it,english),symbol:''};
+  const card=quoteTile({...q,name:tr(it,english),symbol:q.symbol},false);
+  card.classList.add('inj-wm-sector-card');
+  const tag=el('small','inj-wm-proxy',tr('ETF settoriale','Sector ETF'));
+  card.append(tag);
+  rootGrid.append(card);
+ });
+ renderSummary('sectors',items);
+}
+function renderStocks(items){
+ const data=byId(items),out=$('injWorldStockGroups');if(!out)return;out.replaceChildren();
+ sectors.forEach(([id,it,english,stocks])=>{
+  const group=el('section','inj-wm-stock-sector');
+  group.append(el('h4','inj-wm-stock-heading',tr(it,english)));
+  const grid=el('div','inj-wm-grid stocks');
+  stocks.forEach(stock=>{const q=data.get(stock);if(q)grid.append(quoteTile(q,true))});
+  group.append(grid);out.append(group);
+ });
+ renderSummary('stocks',items);
+}
+function renderPlain(group,items){
+ const grid=$('injWorld'+group+'Grid');if(!grid)return;
+ grid.replaceChildren();items.forEach(item=>grid.append(quoteTile(item,true)));
+ if(group==='bonds'){
+  const first=grid.querySelector('.inj-wm-tile');
+  if(first){const note=el('small','inj-wm-proxy',tr('Rendimento mostrato come indice ×10','Yield displayed as index ×10'));first.append(note)}
+ }
+ renderSummary(group,items);
+}
+function renderGroup(group,items){
+ if(group==='indices')renderIndices(items);
+ else if(group==='sectors')renderSectors(items);
+ else if(group==='stocks')renderStocks(items);
+ else renderPlain(group,items);
+}
+async function loadGroup(group,force=false){
+ if(pending.has(group)||(!force&&updated.has(group)&&Date.now()-updated.get(group)<MAX_AGE))return;
+ const section=$('injWorldSection'+group);if(!section)return;
+ pending.add(group);section.classList.add('is-loading');
+ try{
+  let r,body;
+  if(group==='crypto'){body=await cryptoSnapshot();r={ok:!!body?.quotes?.some(q=>Number.isFinite(q.price))};}
+  else {
+   r=await fetch('./api/global-markets?group='+encodeURIComponent(group),{cache:'no-store',headers:{Accept:'application/json'}});
+   body=await r.json();
+  }
+  if(!Array.isArray(body?.quotes))throw Error('Missing quote data');
+  quotes.set(group,body.quotes);
+  if(body.quotes.some(q=>Number.isFinite(q.price)))updated.set(group,Date.now());
+  renderGroup(group,body.quotes);
+ }catch(_){
+  if(!quotes.has(group)){
+   const label=$('injWorld'+group+'Status');if(label)label.textContent=tr('Fonte temporaneamente non disponibile','Data source temporarily unavailable');
+  }
+ }finally{pending.delete(group);section.classList.remove('is-loading');}
+}
+async function cryptoSnapshot(){
+ const wanted=['bitcoin','ethereum','solana','binancecoin','ripple','hyperliquid','injective-protocol','avalanche-2','chainlink','polkadot'];
+ const api=window.INJ_MARKET_VIEW_API;
+ let coins=api?.getCoins?.()||[];
+ if(!Array.isArray(coins)||coins.length<5){
+  try{
+   const url='https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids='+wanted.join(',')+'&price_change_percentage=24h';
+   const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),6000);
+   try{const response=await fetch(url,{signal:ctrl.signal,headers:{Accept:'application/json'}});if(response.ok)coins=await response.json()}finally{clearTimeout(timer)}
+  }catch(_){}
+ }
+ const data=new Map((Array.isArray(coins)?coins:[]).map(coin=>[coin.id,coin]));
+ return {quotes:wanted.map(id=>{
+  const x=data.get(id)||{},p=Number(x.current_price),d=Number(x.price_change_percentage_24h_in_currency??x.price_change_percentage_24h);
+  return {id,name:x.name||id.replaceAll('-',' ').toUpperCase(),symbol:(x.symbol||'').toUpperCase(),price:Number.isFinite(p)&&p>0?p:null,change:Number.isFinite(d)?d:null,currency:'USD',time:x.last_updated?Math.round(new Date(x.last_updated).getTime()/1000):null};
+ })};
+}
+function renderPins(items){
+ const layer=$('injWorldMapPins');const note=$('injWorldMapSpotlight');if(!layer||!note)return;
+ const data=byId(items);layer.replaceChildren();
+ for(const [id,lat,lon] of hotspot){
+  const q=data.get(id);if(!q)continue;
+  const pin=el('button','inj-wm-pin '+state(q));pin.type='button';
+  pin.style.left=((lon+180)/360*100).toFixed(3)+'%';pin.style.top=((90-lat)/180*100).toFixed(3)+'%';
+  pin.setAttribute('aria-label',q.name+': '+fmtPercent(q.change));
+  pin.title=q.name+' · '+fmtPercent(q.change);
+  pin.addEventListener('click',()=>{
+   note.textContent=q.name+' · '+fmtValue(q.price,q.currency)+' · '+fmtPercent(q.change);
   });
-  loaders.set(script,p);return p;
- };
- function drawCategories(){
-  categories.replaceChildren();
-  catalogs.forEach(c=>{
-   const b=document.createElement('button');
-   b.type='button';b.className='inj-world-category';
-   b.dataset.worldCategory=c.id;
-   b.setAttribute('aria-pressed',String(c.id===selected));
-   const name=document.createElement('strong');name.textContent=c.name[en()?1:0];
-   const sub=document.createElement('small');sub.textContent=c.desc[en()?1:0];
-   b.append(name,sub);
-   b.addEventListener('click',()=>show(c.id));
-   categories.append(b);
-  });
+  layer.append(pin);
  }
- function show(id){
-  const c=catalogs.find(item=>item.id===id)||catalogs[0];selected=c.id;
-  for(const b of categories.querySelectorAll('button'))b.setAttribute('aria-pressed',String(b.dataset.worldCategory===selected));
-  title.textContent=c.name[en()?1:0];
-  detail.textContent=c.desc[en()?1:0];
-  status.textContent=tr('Fonte: TradingView · frequenza e ritardo dipendono dalla borsa','Source: TradingView · update rate and delay depend on the exchange');
-  document.getElementById('injWorldProviderLink').href=c.link;
-  stage.replaceChildren();
-  const widget=document.createElement(c.tag);
-  for(const [name,value] of Object.entries(c.attrs))widget.setAttribute(name,value);
-  widget.setAttribute('locale',en()?'en':'it');
-  widget.style.width='100%';widget.style.display='block';
-  widget.style.minHeight=c.height+'px';
-  stage.append(widget);
-  mounted=c.id;
-  load(c.script).catch(()=>{
-   if(mounted!==c.id)return;
-   stage.replaceChildren();
-   const warning=document.createElement('p');
-   warning.className='inj-world-error';
-   warning.textContent=tr('Widget non disponibile. Apri la fonte per consultare i mercati.','Widget unavailable. Open the source to check the markets.');
-   stage.append(warning);
-  });
+ const available=items.find(x=>x.id==='sp500'&&Number.isFinite(x.price))||items.find(x=>Number.isFinite(x.price));
+ if(available)note.textContent=available.name+' · '+fmtValue(available.price,available.currency)+' · '+fmtPercent(available.change);
+}
+function fallbackMap(){
+ const svg=$('injWorldMapSvg');if(!svg)return;
+ svg.innerHTML='<g class="inj-wm-land"><path d="M75 110 L120 60 200 38 248 80 230 125 192 145 181 199 146 218 134 181 95 163Z"/><path d="M210 230 L278 244 309 292 291 343 265 421 226 386 204 306Z"/><path d="M392 104 L448 76 502 90 527 123 521 178 490 191 475 235 435 233 413 168Z"/><path d="M510 83 L620 49 757 57 861 103 845 160 786 191 747 167 703 214 650 213 621 174 566 195 538 150Z"/><path d="M754 307 L812 295 866 339 834 382 768 370Z"/><path d="M904 392 L920 385 930 408 911 425Z"/></g>';
+}
+const ns='http://www.w3.org/2000/svg';
+function shapePath(feature){
+ const coords=feature?.geometry?.coordinates;if(!coords)return '';
+ const polygons=feature.geometry.type==='Polygon'?[coords]:feature.geometry.type==='MultiPolygon'?coords:[];
+ let path='';
+ for(const polygon of polygons){
+  for(const ring of polygon){
+   if(!Array.isArray(ring)||ring.length<3)continue;
+   const stride=Math.max(1,Math.ceil(ring.length/150));
+   let started=false,lastX=0;
+   for(let i=0;i<ring.length;i+=stride){
+    const p=ring[i],lon=Number(p?.[0]),lat=Number(p?.[1]);
+    if(!Number.isFinite(lon)||!Number.isFinite(lat))continue;
+    const x=(lon+180)*960/360,y=(90-lat)*460/180;
+    if(!started||Math.abs(x-lastX)>400){path+='M'+x.toFixed(1)+' '+y.toFixed(1);started=true}
+    else path+='L'+x.toFixed(1)+' '+y.toFixed(1);
+    lastX=x;
+   }
+   if(started)path+='Z';
+  }
  }
- function languageChange(){
-  document.getElementById('injWorldEyebrow').textContent='INJ NODE / WORLD MARKET TERMINAL';
-  document.getElementById('injWorldHeading').textContent='Global Markets Heatmap';
-  document.getElementById('injWorldIntro').textContent=tr('Un punto di osservazione sui mercati mondiali, diviso per categorie.','One observation point for worldwide financial markets, organised by category.');
-  document.getElementById('injWorldDisclosure').textContent=tr('Quotazioni di terze parti: possono essere ritardate e non includere tutte le borse. Le categorie obbligazioni e materie prime mostrano strumenti rappresentativi, non il mercato completo.','Third-party quotes may be delayed and do not cover every exchange. Bonds and commodities show representative instruments, not the entire market.');
-  document.getElementById('injWorldProviderLink').textContent=tr('Visualizza su TradingView ↗','View on TradingView ↗');
-  drawCategories();
-  if(active&&mounted!==null)show(selected);
+ return path;
+}
+async function loadWorldGeometry(){
+ if(geometryStarted)return;geometryStarted=true;
+ fallbackMap();
+ try{
+  const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),6500);
+  let response;
+  try{response=await fetch('https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson',{signal:ctrl.signal,cache:'force-cache'});}finally{clearTimeout(timer)}
+  if(!response.ok)return;
+  const payload=await response.json();
+  if(!Array.isArray(payload?.features)||payload.features.length<80)return;
+  const svg=$('injWorldMapSvg');if(!svg)return;
+  const group=document.createElementNS(ns,'g');group.setAttribute('class','inj-wm-land');
+  for(const feature of payload.features){
+   const d=shapePath(feature);if(!d)continue;
+   const path=document.createElementNS(ns,'path');path.setAttribute('d',d);group.append(path);
+  }
+  if(group.childNodes.length>80){svg.replaceChildren(group);geoReady=true;}
+ }catch(_){/* Keep the built-in map outline, never block the page. */}
+}
+function localize(){
+ $('injWorldHeading').textContent='Global Markets';
+ $('injWorldIntro').textContent=tr('La situazione dei mercati mondiali, settore per settore. Scorri in verticale per esplorare.','World financial markets, sector by sector. Scroll vertically to explore.');
+ $('injWorldDisclosure').textContent=tr('Le variazioni indicano l’ultima sessione disponibile, non movimenti in tempo reale. Le quotazioni possono essere ritardate. I settori sono rappresentati da ETF, non da indici ufficiali.','Changes reflect the latest available session, not real-time ticks. Quotes may be delayed. Sectors use representative ETFs rather than official sector indices.');
+ const n=$('injWorldQuickNav');if(n)n.querySelectorAll('[data-world-jump]').forEach(b=>b.textContent=titles[b.dataset.worldJump][en()?1:0]);
+ for(const group of ids){
+  const title=$('injWorldTitle'+group),hint=$('injWorldHint'+group);
+  if(title)title.textContent=titles[group][en()?1:0];
+  if(hint)hint.textContent=hints[group][en()?1:0];
+  const rows=quotes.get(group);if(rows)renderGroup(group,rows);
  }
- function activate(next){
-  active=!!next;root.hidden=!active;
-  if(!active)return;
-  languageChange();
-  if(mounted===null)show(selected);
- }
- languageChange();
- window.addEventListener('storage',e=>{if(e.key==='inj_node_language_v1'&&active)languageChange()});
- window.INJ_WORLD_MARKETS={activate,languageChange};
+ $('injWorldMapCaption').textContent=tr('Seleziona un punto per leggere l’indice di riferimento','Tap a point to view its benchmark index');
+}
+function mount(){
+ if(initialized)return;initialized=true;
+ const nav=$('injWorldQuickNav');nav?.addEventListener('click',e=>{
+  const b=e.target.closest('[data-world-jump]');if(!b)return;
+  $('injWorldSection'+b.dataset.worldJump)?.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
+ });
+ localize();loadWorldGeometry();
+ if('IntersectionObserver' in window){
+  observer=new IntersectionObserver(entries=>{
+   entries.forEach(e=>{if(e.isIntersecting&&active){const id=e.target.dataset.worldGroup;observed.add(id);loadGroup(id);observer.unobserve(e.target)}});
+  },{root:null,rootMargin:'400px 0px',threshold:0.01});
+  ids.forEach(id=>observer.observe($('injWorldSection'+id)));
+ }else{ids.forEach(id=>loadGroup(id))}
+}
+function activate(show){
+ active=!!show;root.hidden=!active;
+ if(active){mount();for(const id of observed)if(!updated.has(id))void loadGroup(id);}
+}
+function languageChange(){if(initialized)localize();}
+window.INJ_WORLD_MARKETS={activate,languageChange};
+window.addEventListener('storage',e=>{if(e.key==='inj_node_language_v1'&&active)languageChange()});
+document.addEventListener('visibilitychange',()=>{
+ if(!document.hidden&&active)for(const id of observed)if(!updated.has(id)||Date.now()-updated.get(id)>MAX_AGE)void loadGroup(id,true);
+});
+setInterval(()=>{if(active&&!document.hidden)for(const id of observed)if(Date.now()-(updated.get(id)||0)>MAX_AGE)void loadGroup(id,true)},180000);
 })();
