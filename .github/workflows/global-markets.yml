@@ -1,0 +1,46 @@
+name: INJ Node Global Markets - refreshed quotes
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '*/10 * * * *'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/global-markets.yml'
+      - 'scripts/update-global-markets.mjs'
+      - 'api/global-markets.js'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: injnode-global-market-snapshot
+  cancel-in-progress: false
+
+jobs:
+  market-snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout INJNODE
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Fetch actual market quotes
+        run: node scripts/update-global-markets.mjs
+      - name: Publish static JSON for GitHub Pages
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add market-data/global-markets.json
+          if git diff --cached --quiet; then
+            echo "No data changes"
+            exit 0
+          fi
+          git commit -m "data: refresh INJ Node Global Markets"
+          git push
