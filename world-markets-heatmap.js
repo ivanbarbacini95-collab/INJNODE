@@ -27,7 +27,7 @@ const titles={
 };
 const hints={
  indices:['Indici rappresentativi delle principali borse mondiali','Representative indices of major global exchanges'],
- sectors:['11 settori S&P 500 · ETF settoriali rappresentativi','11 S&P 500 sectors · representative sector ETFs'],
+ sectors:['11 settori S&P 500 e 5 ETF tematici','11 S&P 500 sectors and 5 thematic ETFs'],
  stocks:['Società raggruppate per attività economica','Companies grouped by economic activity'],
  etf:['Esposizioni a indici, aree geografiche e asset class','Index, geographical and asset-class exposures'],
  forex:['Coppie valutarie principali','Major currency pairs'],
@@ -36,22 +36,29 @@ const hints={
  crypto:['Prezzi dal mercato crypto già utilizzato da INJ Node','Prices from INJ Node’s existing crypto market feed']
 };
 const sectors=[
- ['technology','Tecnologia','Technology',['aapl','msft','nvda']],
- ['finance','Finanza','Financials',['jpm','bac']],
- ['energy','Energia','Energy',['xom','cvx']],
- ['healthcare','Sanità','Healthcare',['lly','jnj']],
- ['industrial','Industria','Industrials',['cat','ge']],
- ['consumer','Consumi discrezionali','Consumer discretionary',['amzn','tsla']],
- ['staples','Beni essenziali','Consumer staples',['wmt','cost']],
+ ['technology','Tecnologia','Technology',['aapl','msft','nvda','adbe','crm']],
+ ['finance','Finanza','Financials',['jpm','bac','gs','v']],
+ ['energy','Energia','Energy',['xom','cvx','slb']],
+ ['healthcare','Sanità','Healthcare',['lly','jnj','abbv']],
+ ['industrial','Industria','Industrials',['cat','ge','de']],
+ ['consumer','Consumi discrezionali','Consumer discretionary',['amzn','tsla','hd']],
+ ['staples','Beni essenziali','Consumer staples',['wmt','cost','pg']],
  ['utilities','Servizi pubblici','Utilities',['nee','duk']],
- ['realestate','Immobiliare','Real estate',['amt']],
- ['materials','Materiali','Materials',['lin','fcx']],
- ['communications','Comunicazioni','Communication services',['googl','meta']]
+ ['realestate','Immobiliare','Real estate',['amt','pld']],
+ ['materials','Materiali','Materials',['lin','fcx','nue']],
+ ['communications','Comunicazioni','Communication services',['googl','meta','nflx']]
+];
+const thematicSectors=[
+ ['semis','Semiconduttori','Semiconductors'],
+ ['biotech','Biotecnologie','Biotechnology'],
+ ['cleanenergy','Energia pulita','Clean energy'],
+ ['aerospace','Aerospazio e difesa','Aerospace & defense'],
+ ['banks','Banche regionali','Regional banks']
 ];
 const regions=[
- ['America',['sp500','nasdaq','dow','russell','bovespa']],
- ['Europa / Europe',['stoxx','dax','cac','ftse']],
- ['Asia / Pacifico',['nikkei','hangseng','nifty','asx']]
+ ['America',['sp500','nasdaq','ndx','dow','russell','vix','bovespa']],
+ ['Europa / Europe',['stoxx','dax','cac','ftse','ibex','smi']],
+ ['Asia / Pacifico',['nikkei','hangseng','nifty','shanghai','asx']]
 ];
 const hotspot=[['sp500',38,-97],['bovespa',-14,-51],['stoxx',51,8],['nifty',23,78],['hangseng',23,114],['nikkei',37,139],['asx',-25,134]];
 const quotes=new Map(),updated=new Map(),pending=new Set(),observed=new Set();
@@ -61,7 +68,10 @@ function definitions(group){
   ['bitcoin','Bitcoin','BTC'],['ethereum','Ethereum','ETH'],['solana','Solana','SOL'],
   ['binancecoin','BNB','BNB'],['ripple','XRP','XRP'],['hyperliquid','Hyperliquid','HYPE'],
   ['injective-protocol','Injective','INJ'],['avalanche-2','Avalanche','AVAX'],
-  ['chainlink','Chainlink','LINK'],['polkadot','Polkadot','DOT']
+  ['chainlink','Chainlink','LINK'],['polkadot','Polkadot','DOT'],
+  ['cardano','Cardano','ADA'],['dogecoin','Dogecoin','DOGE'],['tron','TRON','TRX'],
+  ['sui','Sui','SUI'],['litecoin','Litecoin','LTC'],['stellar','Stellar','XLM'],
+  ['monero','Monero','XMR'],['aptos','Aptos','APT']
  ].map(([id,name,symbol])=>({id,name,symbol,price:null,change:null,time:null,currency:'USD'}));
  return (fallbackCatalog[group]||[]).map(([id,name,symbol])=>({id,name,symbol,price:null,change:null,time:null,currency:null}));
 }
@@ -237,6 +247,17 @@ function renderSectors(items){
   card.append(tag);
   rootGrid.append(card);
  });
+ // These are thematic ETF proxies, separate from the eleven official S&P sectors.
+ if(thematicSectors.length){
+  const title=el('div','inj-wm-subgroup-title',tr('TEMI DI MERCATO · ETF','MARKET THEMES · ETFs'));
+  rootGrid.append(title);
+  thematicSectors.forEach(([id,it,english])=>{
+   const q=data.get(id)||{id,name:tr(it,english),symbol:''};
+   const card=quoteTile({...q,name:tr(it,english),symbol:q.symbol},true);
+   card.classList.add('inj-wm-theme-card');
+   rootGrid.append(card);
+  });
+ }
  renderSummary('sectors',items);
 }
 function renderStocks(items){
@@ -377,7 +398,7 @@ async function loadGroup(group,force=false){
  }finally{pending.delete(group);section.classList.remove('is-loading');}
 }
 async function cryptoSnapshot(){
- const wanted=['bitcoin','ethereum','solana','binancecoin','ripple','hyperliquid','injective-protocol','avalanche-2','chainlink','polkadot'];
+ const wanted=['bitcoin','ethereum','solana','binancecoin','ripple','hyperliquid','injective-protocol','avalanche-2','chainlink','polkadot','cardano','dogecoin','tron','sui','litecoin','stellar','monero','aptos'];
  const api=window.INJ_MARKET_VIEW_API;
  let coins=api?.getCoins?.()||[];
  if(!Array.isArray(coins)||coins.length<5){
