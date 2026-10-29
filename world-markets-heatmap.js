@@ -127,7 +127,11 @@ function renderSummary(group,arr){
  const status=$('injWorld'+group+'Status');
  if(!status)return;
  const n=statsOf(arr);
- if(!n.total){status.textContent=tr('Dati non disponibili · riprova più tardi','Data unavailable · retry later');return;}
+ if(!n.total){
+  const hasPrice=arr.some(q=>Number.isFinite(q.price));
+  status.textContent=hasPrice?tr('Prezzi disponibili · variazione non comunicata','Prices available · change unavailable'):tr('Quotazioni ancora non disponibili','Quotes not yet available');
+  return;
+ }
  const latest=Math.max(...arr.map(x=>Number(x.time)||0));
  status.textContent=n.up+' '+tr('in rialzo','up')+' · '+n.down+' '+tr('in ribasso','down')+' · '+tr('ultima quotazione ','last quote ')+(latest?stamp(latest):'—');
 }
