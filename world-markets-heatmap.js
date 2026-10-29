@@ -195,6 +195,29 @@ function statusWithRetry(group,message){
  retry.addEventListener('click',()=>{void loadGroup(group,true)});
  status.append(retry);
 }
+/* Prefer the direct INJNODE Vercel quote gateway when present. GitHub Pages
+   has no serverless runtime, so static GitHub Action snapshots remain fallback. */
+let directQuoteGateway='unknown';
+async function getCurrentMarketQuotes(group){
+ if(directQuoteGateway==='unsupported')return null;
+ const ctrl=new AbortController();
+ const timeout=setTimeout(()=>ctrl.abort(),16500);
+ try{
+  const url='./api/global-markets?group='+encodeURIComponent(group)+'&t='+Math.floor(Date.now()/120000);
+  const response=await fetch(url,{cache:'no-store',headers:{Accept:'application/json'},signal:ctrl.signal});
+  const type=response.headers.get('content-type')||'';
+  if(response.status===404||response.status===405||type.indexOf('json')<0){
+   directQuoteGateway='unsupported';return null;
+  }
+  if(!response.ok)return null;
+  const result=await response.json();
+  if(result?.group!==group||!Array.isArray(result.quotes)||!result.quotes.length)return null;
+  directQuoteGateway='supported';
+  if(!result.quotes.some(x=>Number.isFinite(x.price)&&x.price>0))return null;
+  return result;
+ }catch(_){return null}
+ finally{clearTimeout(timeout)}
+}
 let sharedSnapshot=null,sharedSnapshotAt=0,sharedSnapshotPromise=null;
 async function getStaticMarketSnapshot(force=false){
  const now=Date.now();
@@ -242,16 +265,26 @@ async function loadGroup(group,force=false){
   let body;
   if(group==='crypto')body=await cryptoSnapshot();
   else{
-   // GitHub Pages serves this file statically. A scheduled GitHub Action updates
-   // the actual prices; no serverless /api route is required or attempted.
-   const snapshot=await getStaticMarketSnapshot(force);
-   body=snapshot?.groups?.[group];
+   // On Vercel try the actual provider gateway first. The scheduled
+   // snapshot is an honest fallback if the API is absent, delayed or down.
+   body=await getCurrentMarketQuotes(group);
+   if(!body){
+    const snapshot=await getStaticMarketSnapshot(force);
+    body=snapshot?.groups?.[group];
+   }
    if(!Array.isArray(body?.quotes)||!body.quotes.length)
     throw Object.assign(new Error('Waiting for first market snapshot'),{code:503});
   }
   if(!Array.isArray(body?.quotes))throw Object.assign(new Error('Invalid data'),{code:502});
   const old=byId(quotes.get(group)||[]);
-  const arr=body.quotes.map(q=>(Number.isFinite(q.price)?q:(old.get(q.id)&&Number.isFinite(old.get(q.id).price)?old.get(q.id):q)));
+  const arr=body.quotes.map(q=>{
+   const prev=old.get(q.id);
+   const newAt=Number(q.time)||0,oldAt=Number(prev?.time)||0;
+   // A provider returning yesterday's quote must never overwrite a newer
+   // verified tick held in this device's last cached snapshot.
+   if(prev&&Number.isFinite(prev.price)&&(!Number.isFinite(q.price)||oldAt>newAt&&newAt>0))return prev;
+   return q;
+  });
   quotes.set(group,arr);
   if(body.quotes.some(q=>Number.isFinite(q.price))){updated.set(group,Date.now());saveQuotes();}
   renderGroup(group,arr);
