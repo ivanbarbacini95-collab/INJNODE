@@ -235,5 +235,12 @@ html[data-inj-page="index"] body #entryGate#entryGate
  .entry-actions.entry-flat-v44 > .entry-action,
  html[data-inj-page="index"] body #entryGate#entryGate
  .entry-actions.entry-flat-v44 > .entry-action svg,
-
+ html[data-inj-page="index"] body #entryGate#entryGate
+ #entryTreasuryButton .bcg-orbit,
+ html[data-inj-page="index"] body #entryGate#entryGate
+ #entryTreasuryButton .bcg-signal{
+   animation:none!important;
+   transition:none!important;
+   translate:none!important;
+ }
 }
