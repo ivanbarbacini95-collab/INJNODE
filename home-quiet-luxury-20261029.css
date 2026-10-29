@@ -176,22 +176,17 @@ html[data-inj-page="index"] body #entryGate#entryGate
 }
 html[data-inj-page="index"] body #entryGate#entryGate
 #entryTreasuryButton > svg.entry-action-arrow{display:none!important}
-@keyframes inj-bcg-glyph-float{
- 0%,100%{transform:translateY(0);opacity:.78}
- 50%{transform:translateY(-2px);opacity:.98}
+/* The existing animated B Capital SVG remains the single official brand icon. */
+html[data-inj-page="index"] body #entryGate#entryGate
+#entryTreasuryButton > .bcg-treasury-visual{
+ color:color-mix(in srgb,#ceb68e 44%,var(--accent,#b9c9c3))!important;
+ opacity:.76!important;
+ filter:drop-shadow(0 0 9px rgba(200,170,125,.055))!important;
 }
 html[data-inj-page="index"] body #entryGate#entryGate
-#entryTreasuryButton > .inj-home-bcg-mark{
- display:grid!important;place-items:center!important;
- flex:0 0 26px!important;width:26px!important;height:32px!important;
- margin:0!important;padding:0!important;
- color:color-mix(in srgb,#dbc39b 78%,var(--text,#fff))!important;
- font:400 21px/1 Georgia,"Times New Roman",serif!important;
- text-shadow:0 0 11px rgba(207,177,130,.1)!important;
- opacity:.87!important;
- animation:inj-bcg-glyph-float 12s ease-in-out infinite;
- pointer-events:none!important;
-}
+#entryTreasuryButton .bcg-orbit{animation-duration:26s!important}
+html[data-inj-page="index"] body #entryGate#entryGate
+#entryTreasuryButton .bcg-signal{animation-duration:8s!important}
 html[data-inj-page="index"] body #entryGate#entryGate
 #entryTreasuryButton .treasury-entry-copy > strong.inj-home-tile-title{
  font-weight:400!important;letter-spacing:.075em!important;
@@ -224,9 +219,6 @@ html[data-inj-page="index"] body #entryGate#entryGate
  .entry-actions.entry-flat-v44 > .inj-home-group-divider{
    min-height:22px!important;margin-top:7px!important;
  }
- html[data-inj-page="index"] body #entryGate#entryGate #entryTreasuryButton > .inj-home-bcg-mark{
-   flex-basis:19px!important;width:19px!important;font-size:19px!important;
- }
 }
 @media(max-width:360px){
  html[data-inj-page="index"] body #entryGate#entryGate
@@ -243,7 +235,5 @@ html[data-inj-page="index"] body #entryGate#entryGate
  .entry-actions.entry-flat-v44 > .entry-action,
  html[data-inj-page="index"] body #entryGate#entryGate
  .entry-actions.entry-flat-v44 > .entry-action svg,
- html[data-inj-page="index"] body #entryGate#entryGate #entryTreasuryButton > .inj-home-bcg-mark{
-   animation:none!important;transition:none!important;translate:none!important;transform:none!important;
- }
+
 }
