@@ -125,7 +125,16 @@ function quoteTile(q,compact=false){
  const value=el('div','inj-wm-tile-values');
  value.append(el('span','inj-wm-price',fmtValue(q.price,q.currency)),el('strong','inj-wm-change',fmtPercent(q.change)));
  tile.append(head,value);
- if(q.time)tile.title=tr('Ultima quotazione: ','Last quote: ')+stamp(q.time);
+ // A dated provider quote is not a guaranteed live price.
+ // Keep the timestamp visible even in the compact view; never synthesize one.
+ if(q.time){
+  const last=stamp(q.time);
+  const note=el('small','inj-wm-tile-meta',tr('ULTIMA · ','LAST · ')+last);
+  tile.append(note);
+  tile.title=tr('Ultima quotazione: ','Last quote: ')+last+(q.source?' · '+q.source:'');
+ }else if(q.source){
+  tile.title=tr('Fonte: ','Source: ')+q.source;
+ }
  return tile;
 }
 const statsOf=arr=>{
