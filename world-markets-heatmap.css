@@ -1,0 +1,26 @@
+/* INJ Node — world markets, isolated from existing crypto heatmap and card layouts. */
+html[data-inj-market] #injWorldMarket[hidden]{display:none!important}
+html[data-inj-market] #injWorldMarket{min-width:0;width:100%;max-width:100%;padding:4px 0 30px;color:var(--text);font:inherit}
+html[data-inj-market] .inj-world-eyebrow{display:block;color:var(--accent);font-size:10px;letter-spacing:.14em;font-weight:850;margin-bottom:7px}
+html[data-inj-market] #injWorldHeading{font-size:clamp(25px,4vw,42px);line-height:1.13;letter-spacing:-.04em;margin:0 0 8px}
+html[data-inj-market] #injWorldIntro{margin:0;color:var(--muted);font-size:12px;line-height:1.65;max-width:740px}
+html[data-inj-market] #injWorldCategories{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:22px 0}
+html[data-inj-market] .inj-world-category{font:inherit;min-width:0;min-height:80px;text-align:left;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:5px;padding:13px 14px;border:1px solid var(--line);border-radius:14px;color:var(--text);background:color-mix(in srgb,var(--surface,transparent) 82%,transparent);cursor:pointer;transition:background .18s,border-color .18s,transform .18s;touch-action:manipulation}
+html[data-inj-market] .inj-world-category strong{font-size:12px;line-height:1.2;font-weight:800;letter-spacing:.01em}
+html[data-inj-market] .inj-world-category small{font-size:10px;line-height:1.45;font-weight:450;color:var(--muted)}
+html[data-inj-market] .inj-world-category[aria-pressed="true"]{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 13%,var(--surface,transparent))}
+html[data-inj-market] .inj-world-category:hover{border-color:color-mix(in srgb,var(--accent) 48%,var(--line))}
+html[data-inj-market] .inj-world-category:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+html[data-inj-market] .inj-world-panel{border:1px solid var(--line);border-radius:17px;background:color-mix(in srgb,var(--surface,transparent) 90%,transparent);padding:clamp(11px,2vw,20px);min-width:0;overflow:hidden}
+html[data-inj-market] .inj-world-panel-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:7px 16px;margin-bottom:7px}
+html[data-inj-market] #injWorldStageTitle{margin:0;font-size:clamp(16px,2.2vw,21px);line-height:1.2;font-weight:850}
+html[data-inj-market] #injWorldStageDetail{margin:3px 0 12px;color:var(--muted);font-size:11px;line-height:1.5}
+html[data-inj-market] #injWorldStage{width:100%;min-width:0;min-height:500px;overflow:visible}
+html[data-inj-market] #injWorldStage>tv-heatmap,html[data-inj-market] #injWorldStage>tv-world-market-summary,html[data-inj-market] #injWorldStage>tv-forex-table,html[data-inj-market] #injWorldStage>tv-market-data{display:block;width:100%;max-width:100%;min-width:0}
+html[data-inj-market] .inj-world-foot{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:9px 20px;padding-top:16px;margin-top:15px;border-top:1px solid var(--line);font-size:10px;color:var(--muted);line-height:1.55}
+html[data-inj-market] .inj-world-foot a{color:var(--accent);text-decoration:none;font-weight:750}
+html[data-inj-market] #injWorldDisclosure{max-width:780px;display:block;color:var(--muted);font-size:10px;line-height:1.65;margin:10px 1px 0}
+html[data-inj-market] .inj-world-error{padding:70px 15px;text-align:center;color:var(--muted);font-size:12px}
+@media(max-width:980px){html[data-inj-market] #injWorldCategories{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:660px){html[data-inj-market] #injWorldCategories{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:15px 0}html[data-inj-market] .inj-world-category{min-height:76px;padding:11px 12px;border-radius:12px}html[data-inj-market] .inj-world-category strong{font-size:11px}html[data-inj-market] .inj-world-category small{font-size:9px}html[data-inj-market] .inj-world-panel{padding:10px;border-radius:12px}html[data-inj-market] #injWorldStage{min-height:470px}}
+@media(prefers-reduced-motion:reduce){html[data-inj-market] .inj-world-category{transition:none!important}}
