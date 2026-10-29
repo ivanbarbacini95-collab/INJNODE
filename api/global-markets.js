@@ -47,10 +47,35 @@ async function spark(symbols){
  }
  return {quotes:map,status:result.status};
 }
-async function chart(symbol){
+function parseNasdaqNumber(v){
+ if(typeof v==='number'&&Number.isFinite(v))return v;
+ if(typeof v!=='string')return null;
+ const cleaned=v.replace(/[,$%\s]/g,'').trim();
+ if(!/^[-+]?\d+(?:\.\d+)?$/.test(cleaned))return null;
+ const n=Number(cleaned);return Number.isFinite(n)?n:null;
+}
+async function nasdaq(symbol,assetClass='stocks'){
+ if(!/^[A-Z][A-Z0-9.\-]{0,12}$/.test(symbol))return null;
+ const url='https://api.nasdaq.com/api/quote/'+encodeURIComponent(symbol)+'/info?assetclass='+assetClass;
+ const response=await request(url,3000);
+ const raw=response.data?.data?.primaryData;
+ if(!raw)return null;
+ const price=parseNasdaqNumber(raw.lastSalePrice);
+ if(!(price>0))return null;
+ const change=parseNasdaqNumber(raw.percentageChange);
+ const delta=parseNasdaqNumber(raw.netChange);
+ let dt=Date.parse(raw.lastTradeTimestamp||'');
+ const previous=delta!==null&&price-delta>0?price-delta:null;
+ return {symbol,price,change:change??(previous?(price/previous-1)*100:null),previous,time:Number.isFinite(dt)?Math.round(dt/1000):null,currency:'USD',source:'Nasdaq'};
+}
+async function chart(symbol,group){
+ if(group==='stocks'||group==='sectors'||group==='etf'){
+  const fromNasdaq=await nasdaq(symbol,group==='etf'||group==='sectors'?'etf':'stocks');
+  if(fromNasdaq)return {quote:fromNasdaq,status:200};
+ }
  const tail='/v8/finance/chart/'+encodeURIComponent(symbol)+'?range=5d&interval=1d';
  for(const host of ['query1.finance.yahoo.com','query2.finance.yahoo.com']){
-  const response=await request('https://'+host+tail,3800);
+  const response=await request('https://'+host+tail,2800);
   const data=normalizeChart(response.data?.chart?.result?.[0],symbol);
   if(data)return {quote:data,status:200};
   if(response.status===429)return {quote:null,status:429};
@@ -69,15 +94,15 @@ async function getGroup(group){
  }
  const pending=symbols.filter(symbol=>!found.has(symbol));
  let next=0;
- await Promise.all(Array.from({length:Math.min(6,pending.length)},async()=>{
+ await Promise.all(Array.from({length:Math.min(8,pending.length)},async()=>{
   while(next<pending.length){
    const symbol=pending[next++];
-   const r=await chart(symbol);
+   const r=await chart(symbol,group);
    if(r.quote)found.set(symbol,r.quote);
    else errors.push(r.status);
   }
  }));
- return {group,asOf:Date.now(),source:'Yahoo Finance (unofficial)',delayed:true,
+ return {group,asOf:Date.now(),source:[...new Set([...found.values()].map(q=>q.source))].join(' / ')||'Yahoo Finance / Nasdaq (unofficial)',delayed:true,
   session:'latest available quote',quotes:def.map(([id,name,symbol])=>({
    id,name,symbol,...(found.get(symbol)||{price:null,change:null,previous:null,time:null,currency:null,source:'Yahoo Finance'})
   })),available:found.size,total:def.length,providerStatus:errors.includes(429)?'rate-limited':found.size?'partial':'unavailable'};
