@@ -6,7 +6,7 @@
  var STORE='inj_node_font_v1', ACTIVE='inter', root=document.documentElement;
  var FONTS=[
   {id:'inter',name:'Inter Light',stack:'"Inter",Arial,sans-serif',url:''},
-  {id:'bitcount',name:'Micro Dot Refined',stack:'"INJ Microdot Refined","INJ Doto",monospace',url:''},
+  {id:'bitcount',name:'Handjet · Double Round',stack:'"INJ Handjet","Inter",sans-serif',url:''},
   {id:'roboto',name:'Roboto',stack:'"Roboto",Arial,sans-serif',url:'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400&display=swap'},
   {id:'dm-sans',name:'DM Sans',stack:'"DM Sans",Arial,sans-serif',url:'https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400&display=swap'},
   {id:'jakarta',name:'Plus Jakarta Sans',stack:'"Plus Jakarta Sans",Arial,sans-serif',url:'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400&display=swap'},
@@ -50,8 +50,8 @@
   if(title)title.textContent='Font';
   if(caption)caption.textContent=(en?'Current: ':'Attuale: ')+name;
   if(note)note.textContent=en?
-   'Applies to every section of this app on this device. Micro Dot Refined uses balanced 12×16 rounded micro-dot numerals for main values; compact text remains crisp. Neue Haas Grotesk requires a licensed font; otherwise Helvetica or Arial is used.':
-   'La scelta vale in questa app su questo dispositivo. Micro Dot Refined usa numeri più proporzionati, a micro-punti tondi su griglia 12×16, e testi piccoli nitidi. Neue Haas Grotesk richiede una licenza; altrimenti si usa Helvetica o Arial.';
+   'Applies to every section of this app on this device. Handjet Double Round uses a real double-grid of small circular dots for main values; compact labels stay crisp. Neue Haas Grotesk requires a licensed font; otherwise Helvetica or Arial is used.':
+   'La scelta vale in questa app su questo dispositivo. Handjet Double Round usa una vera griglia doppia di micro-punti circolari per i valori principali; le etichette restano nitide. Neue Haas Grotesk richiede una licenza; altrimenti si usa Helvetica o Arial.';
   holder.setAttribute('aria-label',en?'Interface font':'Carattere interfaccia');
   var options=holder.querySelectorAll('[data-inj-font-choice]');
   options.forEach(function(button){
@@ -98,7 +98,10 @@
    title.style.setProperty('font-family',f.stack,'important');
    sample.style.setProperty('font-family',f.stack,'important');
    sample.style.setProperty('font-weight','400','important');
-   if(f.id==='bitcount')sample.style.setProperty('font-variation-settings','normal','important');
+   if(f.id==='bitcount'){
+    sample.style.setProperty('font-variation-settings','"ELGR" 2,"ELSH" 8,"wght" 510','important');
+    title.style.setProperty('font-variation-settings','"ELGR" 2,"ELSH" 8,"wght" 510','important');
+   }
    item.append(nam,sample);
    item.addEventListener('click',function(){apply(f.id,true)});
    opts.appendChild(item);
