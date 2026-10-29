@@ -6,7 +6,7 @@
  var STORE='inj_node_font_v1', ACTIVE='inter', root=document.documentElement;
  var FONTS=[
   {id:'inter',name:'Inter Light',stack:'"Inter",Arial,sans-serif',url:''},
-  {id:'bitcount',name:'Bitcount Grid Single · Micro Dot Dense',stack:'"INJ Microdot Dense","INJ Doto",monospace',url:''},
+  {id:'bitcount',name:'Micro Dot Refined',stack:'"INJ Microdot Refined","INJ Doto",monospace',url:''},
   {id:'roboto',name:'Roboto',stack:'"Roboto",Arial,sans-serif',url:'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400&display=swap'},
   {id:'dm-sans',name:'DM Sans',stack:'"DM Sans",Arial,sans-serif',url:'https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400&display=swap'},
   {id:'jakarta',name:'Plus Jakarta Sans',stack:'"Plus Jakarta Sans",Arial,sans-serif',url:'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400&display=swap'},
@@ -50,8 +50,8 @@
   if(title)title.textContent='Font';
   if(caption)caption.textContent=(en?'Current: ':'Attuale: ')+name;
   if(note)note.textContent=en?
-   'Applies to every section of this app on this device. Micro Dot Dense uses rounded 16×22 micro-dot numerals with crisp labels. Neue Haas Grotesk requires a licensed font; otherwise Helvetica or Arial is used.':
-   'La scelta vale in questa app su questo dispositivo. Micro Dot Dense usa cifre a micro-punti tondi su griglia 16×22 e testi nitidi sulle etichette. Neue Haas Grotesk richiede una licenza; altrimenti si usa Helvetica o Arial.';
+   'Applies to every section of this app on this device. Micro Dot Refined uses balanced 12×16 rounded micro-dot numerals for main values; compact text remains crisp. Neue Haas Grotesk requires a licensed font; otherwise Helvetica or Arial is used.':
+   'La scelta vale in questa app su questo dispositivo. Micro Dot Refined usa numeri più proporzionati, a micro-punti tondi su griglia 12×16, e testi piccoli nitidi. Neue Haas Grotesk richiede una licenza; altrimenti si usa Helvetica o Arial.';
   holder.setAttribute('aria-label',en?'Interface font':'Carattere interfaccia');
   var options=holder.querySelectorAll('[data-inj-font-choice]');
   options.forEach(function(button){

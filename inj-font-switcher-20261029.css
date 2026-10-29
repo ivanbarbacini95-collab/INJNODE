@@ -205,19 +205,19 @@ html[data-inj-font="bitcount"] body :is(*,#__injMicroDot5#__injMicroDot5#__injMi
 }
 
 
-/* MICROCIRCLE-DENSE · Original rounded 16 x 22 dot-grid figures.
- * Real small circular vector contours, up to 114 dot clusters per number.
- * Replaces sparse 6x10 numeric glyphs ONLY for the selected Bitcount mode.
- * The price and wallet odometer are composed of nested spans; include those.
- * Compact width built into the font prevents fullscreen price overflow. */
-@font-face{
- font-family:"INJ Microdot Dense";
- src:url("./assets/fonts/INJ-Microdot-Dense.woff2") format("woff2");
- font-weight:400;
- font-style:normal;
- font-display:swap;
+
+/* INJ Node · Micro Dot Refined 12×16 (Original circular vector font).
+   Shorter and calmer figures, two rows of micro-dots per stroke rather than
+   tall hollow outlines. Local font; stable in iOS PWA; other fonts untouched. */
+@font-face {
+  font-family:"INJ Microdot Refined";
+  src:url("./assets/fonts/INJ-Microdot-Refined.woff2") format("woff2");
+  font-weight:400;
+  font-style:normal;
+  font-display:swap;
 }
-html[data-inj-font="bitcount"] body :is(*,#__injMicroDotDense7#__injMicroDotDense7#__injMicroDotDense7#__injMicroDotDense7#__injMicroDotDense7):is(
+/* Numeric display values. Keep original font-size/line-height/layout. */
+html[data-inj-font="bitcount"] body :is(*,#__injMicroDotRefined8#__injMicroDotRefined8#__injMicroDotRefined8#__injMicroDotRefined8#__injMicroDotRefined8):is(
  #marketPrice,#netWorthUsd,#entryMarketPrice,#entryWalletWorth,#entryInsightPnl,
  #entryDesktopAvailable,#entryDesktopStakeRatio,#entryDesktopDailyRewardValue,
  #focusDisplayPrice,#focusDisplayWorth,#focusDisplayTotalInj,#focusDisplayDailyReward,
@@ -243,17 +243,19 @@ html[data-inj-font="bitcount"] body :is(*,#__injMicroDotDense7#__injMicroDotDens
  .inj-mi-snapshot article>strong,.overview article>strong,
  .etf-hero-price,.etf-main-price,.rewards-total-fiat
 ){
- font-family:"INJ Microdot Dense","INJ Doto",ui-monospace,monospace!important;
- font-weight:400!important;
- font-variation-settings:normal!important;
- font-synthesis:none!important;
- font-feature-settings:normal!important;
- font-kerning:none!important;
- font-variant-numeric:tabular-nums lining-nums!important;
- font-stretch:normal!important;
- letter-spacing:0!important;
+  font-family:"INJ Microdot Refined","INJ Doto",ui-monospace,monospace!important;
+  font-weight:400!important;
+  font-variation-settings:normal!important;
+  font-synthesis:none!important;
+  font-feature-settings:normal!important;
+  font-kerning:none!important;
+  font-variant-numeric:tabular-nums lining-nums!important;
+  font-stretch:normal!important;
+  letter-spacing:0!important;
 }
-html[data-inj-font="bitcount"] body :is(*,#__injMicroDotDense7#__injMicroDotDense7#__injMicroDotDense7#__injMicroDotDense7#__injMicroDotDense7):is(
+/* Home uses individual spans for animated rolling digits; wallet-carousel
+   clones lack their parent IDs. Cover them through matching class selectors. */
+html[data-inj-font="bitcount"] body :is(*,#__injMicroDotRefined8#__injMicroDotRefined8#__injMicroDotRefined8#__injMicroDotRefined8#__injMicroDotRefined8):is(
  #marketPrice,#netWorthUsd,#entryMarketPrice,#entryWalletWorth,#entryInsightPnl,
  #entryDesktopAvailable,#entryDesktopStakeRatio,#entryDesktopDailyRewardValue,
  #focusDisplayPrice,#focusDisplayWorth,#focusDisplayTotalInj,#focusDisplayDailyReward,
@@ -279,19 +281,19 @@ html[data-inj-font="bitcount"] body :is(*,#__injMicroDotDense7#__injMicroDotDens
  .inj-mi-snapshot article>strong,.overview article>strong,
  .etf-hero-price,.etf-main-price,.rewards-total-fiat
 ) :is(span,.number-roll-text,.number-roll-static-digit,.number-roll-digit,.number-roll-digit-layer){
- font-family:"INJ Microdot Dense","INJ Doto",ui-monospace,monospace!important;
- font-weight:400!important;
- font-variation-settings:normal!important;
- font-synthesis:none!important;
- font-feature-settings:normal!important;
- font-kerning:none!important;
- font-variant-numeric:tabular-nums lining-nums!important;
- font-stretch:normal!important;
- letter-spacing:0!important;
+  font-family:"INJ Microdot Refined","INJ Doto",ui-monospace,monospace!important;
+  font-weight:400!important;
+  font-variation-settings:normal!important;
+  font-synthesis:none!important;
+  font-feature-settings:normal!important;
+  font-kerning:none!important;
+  font-variant-numeric:tabular-nums lining-nums!important;
+  font-stretch:normal!important;
+  letter-spacing:0!important;
 }
-/* The preview also contains separately styled inline spans. */
+/* Font picker preview always displays the actual local face. */
 html[data-inj-page="index"] body #headerMenuPanel .menu-font-option[data-inj-font-choice="bitcount"] .menu-font-sample{
- font-family:"INJ Microdot Dense","INJ Doto",ui-monospace,monospace!important;
+ font-family:"INJ Microdot Refined","INJ Doto",ui-monospace,monospace!important;
  font-weight:400!important;
  font-variation-settings:normal!important;
  font-synthesis:none!important;
