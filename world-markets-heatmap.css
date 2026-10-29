@@ -102,3 +102,12 @@ html[data-inj-market] .inj-world-section.is-loading .inj-wm-section-status::befo
  html[data-inj-market] #injIntelRoot::-webkit-scrollbar{display:none}
  html[data-inj-market] #injIntelRoot>[data-inj-intel-view]{flex:0 0 auto!important;white-space:nowrap;padding-inline:11px!important}
 }
+
+/* Explicit quote-feed status: accessible tap target without changing card geometry. */
+html[data-inj-market] .inj-wm-retry{
+ font:inherit;font-weight:800;font-size:11px;line-height:1.3;
+ color:var(--accent);background:transparent;border:1px solid var(--line);
+ border-radius:8px;padding:6px 10px;min-height:30px;cursor:pointer;
+ touch-action:manipulation;white-space:nowrap;
+}
+html[data-inj-market] .inj-wm-retry:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
