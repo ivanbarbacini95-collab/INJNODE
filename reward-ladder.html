@@ -10,9 +10,9 @@ try{var t=localStorage.getItem('inj_monitor_theme')||'navy';document.documentEle
 </script>
 <link rel="stylesheet" href="./navigation.css?v=160090">
 <link rel="stylesheet" href="./viewport.css?v=16.00.74">
-<link rel="stylesheet" href="./reward-ladder.css?v=160739">
+<link rel="stylesheet" href="./reward-ladder.css?v=20261029goals1">
 <script defer src="./navigation.js?v=20261027-g1"></script>
-<script defer src="./reward-ladder.js?v=160739"></script>
+<script defer src="./reward-ladder.js?v=20261029goals1"></script>
 <link rel="manifest" href="./manifest.webmanifest?v=16.06.29">
 <!-- Global INJ Node terminal typography -->
 <link rel="stylesheet" href="./supply-mono.css?v=20261024">
@@ -68,9 +68,26 @@ try{var t=localStorage.getItem('inj_monitor_theme')||'navy';document.documentEle
     </section>
 
     <div class="ladder-roadmap-head">
-      <div><span class="ladder-eyebrow" id="ladderRoadmapEyebrow">NOVE TRAGUARDI</span><h2 id="ladderRoadmapTitle">La tua progressione</h2></div>
-      <div class="ladder-current-step" id="ladderNextTarget">—</div>
+      <div><span class="ladder-eyebrow" id="ladderRoadmapEyebrow">9 TRAGUARDI</span><h2 id="ladderRoadmapTitle">La tua progressione</h2></div>
+      <div class="ladder-roadmap-controls">
+        <div class="ladder-current-step" id="ladderNextTarget">—</div>
+        <button type="button" class="ladder-add-goal" id="ladderAddGoal" aria-controls="ladderGoalEditor" aria-expanded="false" aria-label="Aggiungi obiettivo" title="Aggiungi obiettivo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+      </div>
     </div>
+    <form class="ladder-goal-editor" id="ladderGoalEditor" hidden>
+      <label for="ladderGoalInput" id="ladderGoalLabel">NUOVO OBIETTIVO IN USD</label>
+      <div class="ladder-goal-editor-row">
+        <span aria-hidden="true">$</span>
+        <input type="number" id="ladderGoalInput" name="goal" inputmode="decimal" min="0.01" max="1000000" step="0.01" placeholder="25.00" required>
+        <button type="submit" class="ladder-goal-save" id="ladderGoalSave">Aggiungi</button>
+        <button type="button" class="ladder-goal-cancel" id="ladderGoalCancel" aria-label="Annulla" title="Annulla">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5 5l14 14M19 5 5 19"/></svg>
+        </button>
+      </div>
+      <p class="ladder-goal-error" id="ladderGoalError" role="alert" hidden></p>
+    </form>
     <section class="ladder-steps" id="ladderSteps" aria-label="Traguardi e conto alla rovescia" aria-live="off"></section>
 
     <div class="ladder-bottom">
