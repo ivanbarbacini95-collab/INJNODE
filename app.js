@@ -6917,7 +6917,7 @@ function renderPortfolio() {
   $('walletState').textContent = activeWallet ? `${activeWallet.label} · ${shortAddress(state.address)}` : state.address ? shortAddress(state.address) : 'Wallet non caricato';
   setValue('netWorthUsd', state.address ? money(netWorth, 2) : '—', state.address ? netWorth : NaN, { roll: true });
   setValue('netWorthInj', formatInj(totalInj, 4), totalInj);
-  setValue('availableInj', formatInj(state.available, 5), state.available);
+  setValue('availableInj', formatInj(state.available, 5).replace(/ INJ$/, ''), state.available);
   setValue('availableUsd', money(state.available * state.price), state.available * state.price);
   const nativeUsdcRow = $('nativeUsdcRow');
   if (nativeUsdcRow) {
@@ -6926,11 +6926,11 @@ function renderPortfolio() {
     nativeUsdcRow.setAttribute('aria-hidden', hasNativeUsdc ? 'false' : 'true');
     if (hasNativeUsdc) setValue('nativeUsdcBalance', formatUsdc(state.nativeUsdc), state.nativeUsdc, { flash: false });
   }
-  setValue('ownedTotalInj', formatInj(totalInj), totalInj);
+  setValue('ownedTotalInj', formatInj(totalInj).replace(/ INJ$/, ''), totalInj);
   setValue('ownedTotalUsd', money(totalInj * state.price), totalInj * state.price);
   const ownedVsStaked = Math.max(0, totalInj - state.staked);
   setValue('ownedVsStakedInj', formatInj(ownedVsStaked), ownedVsStaked);
-  setValue('stakedInj', formatInj(state.staked), state.staked);
+  setValue('stakedInj', formatInj(state.staked).replace(/ INJ$/, ''), state.staked);
   setValue('stakedUsd', money(state.staked * state.price), state.staked * state.price);
   setAccruedRewardValue(formatInj(state.rewards, 5), state.rewards);
   setValue('rewardsUsd', money(state.rewards * state.price), state.rewards * state.price, { flash: false });
