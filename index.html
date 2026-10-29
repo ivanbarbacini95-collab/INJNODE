@@ -19,7 +19,7 @@
 
 <script>
     try {
-      const savedTheme = (localStorage.getItem('inj_monitor_theme') === 'dynamic' ? 'ocean' : localStorage.getItem('inj_monitor_theme'));
+      const savedTheme = (localStorage.getItem('inj_monitor_theme') === 'dynamic' ? 'navy' : localStorage.getItem('inj_monitor_theme'));
       document.documentElement.dataset.theme = ['navy', 'black', 'light', 'amber', 'velvet', 'ocean-x-solar'].includes(savedTheme) ? savedTheme : 'navy';
       const initialTone = {navy:'#07121b',black:'#000000',light:'#eef5ff',amber:'#05080d',velvet:'#0a1024','ocean-x-solar':'#1b122c'};
       document.querySelector('meta[name="theme-color"]')?.setAttribute('content',initialTone[document.documentElement.dataset.theme]||'#07121b');
@@ -339,7 +339,7 @@
 <script defer src="./menu-control-pro.js?v=20261028pro1"></script>
 <script defer src="./control-center-more-20261029.js?v=20261029macro4"></script>
 
-<link rel="stylesheet" href="./inj-top-seamless.css?v=20261028fullbleed4"/>
+<link rel="stylesheet" href="./inj-top-seamless.css?v=20261029continuity5"/>
 <script defer src="./inj-top-seamless.js?v=20261028ios27"></script>
 <link rel="stylesheet" href="./home-compact-value-bars.css?v=20261028compactbars2"/>
 <link rel="stylesheet" href="./home-market-events.css?v=20261029borderless1"/>
@@ -515,13 +515,13 @@
 <div class="theme-control menu-theme-control" id="themeControl">
 <button aria-controls="themePicker" aria-expanded="false" aria-label="Scegli Theme" class="menu-action menu-setting" id="themeButton" title="Theme" type="button">
 <span aria-hidden="true" class="menu-action-icon"><svg viewbox="0 0 24 24"><path d="M12 3.5a8.5 8.5 0 1 0 0 17h1.1a1.7 1.7 0 0 0 0-3.4h-.8a1.8 1.8 0 0 1 0-3.6H15a5.5 5.5 0 0 0 0-11h-3Z"></path><circle cx="8" cy="9" r=".7"></circle><circle cx="11" cy="6.8" r=".7"></circle><circle cx="7.2" cy="13" r=".7"></circle></svg></span>
-<span class="menu-action-copy"><strong>Theme</strong><small>6 temi disponibili</small></span>
+<span class="menu-action-copy"><strong data-it="Theme" data-en="Theme">Theme</strong><small data-it="6 temi disponibili" data-en="6 themes available">6 temi disponibili</small></span>
 <svg aria-hidden="true" class="menu-action-chevron" viewbox="0 0 24 24"><path d="m8 10 4 4 4-4"></path></svg>
 </button>
 <div aria-label="Theme" class="theme-picker" id="themePicker" role="group">
 <div class="theme-category-options theme-list-unified">
-<button data-theme-choice="black" type="button"><i class="theme-swatch black"></i><span>Nero</span></button>
-<button data-theme-choice="light" type="button"><i class="theme-swatch light"></i><span>Chiaro</span></button>
+<button data-theme-choice="black" type="button"><i class="theme-swatch black"></i><span data-it="Nero" data-en="Black">Nero</span></button>
+<button data-theme-choice="light" type="button"><i class="theme-swatch light"></i><span data-it="Chiaro" data-en="Light">Chiaro</span></button>
 <button data-theme-choice="amber" type="button"><i class="theme-swatch amber"></i><span>Midnight Ember</span></button>
 <button data-theme-choice="navy" type="button"><i class="theme-swatch navy"></i><span>Aurora</span></button>
 <button data-theme-choice="velvet" type="button"><i class="theme-swatch velvet"></i><span>Velvet Nebula</span></button>
