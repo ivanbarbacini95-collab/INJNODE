@@ -54,6 +54,12 @@ const fmtValue=(v,currency)=>{
  return new Intl.NumberFormat(en()?'en-US':'it-IT',{minimumFractionDigits:precision,maximumFractionDigits:precision}).format(v)+(currency?' '+currency:'');
 };
 const byId=(arr)=>new Map((Array.isArray(arr)?arr:[]).map(x=>[x.id,x]));
+const englishNames={
+ commodities:{gold:'Gold',silver:'Silver',wti:'WTI Crude',brent:'Brent Crude',gas:'Natural gas',copper:'Copper',corn:'Corn'},
+ bonds:{us10y:'US Treasury 10Y yield',us30y:'US Treasury 30Y yield'},
+ forex:{},etf:{}
+};
+const quotedName=(group,q)=>en()?(englishNames[group]?.[q.id]||q.name):q.name;
 const stamp=t=>{
  if(!Number.isFinite(t)||t<=0)return '';
  const date=new Date(t*1000);
@@ -93,7 +99,7 @@ function renderIndices(items){
  const idx=byId(items);const list=$('injWorldIndexRegions');if(!list)return;
  list.replaceChildren();
  regions.forEach(([name,assetIds])=>{
-  const group=el('div','inj-wm-region');group.append(el('h4','inj-wm-region-title',name));
+  const group=el('div','inj-wm-region');group.append(el('h4','inj-wm-region-title',en()?name.replace('Europa / Europe','Europe').replace('Asia / Pacifico','Asia / Pacific'):name.replace('Europa / Europe','Europa').replace('Asia / Pacifico','Asia / Pacifico')));
   const cards=el('div','inj-wm-grid indices');
   assetIds.forEach(id=>{const q=idx.get(id);if(q)cards.append(quoteTile(q,true))});
   group.append(cards);list.append(group);
@@ -127,7 +133,7 @@ function renderStocks(items){
 }
 function renderPlain(group,items){
  const grid=$('injWorld'+group+'Grid');if(!grid)return;
- grid.replaceChildren();items.forEach(item=>grid.append(quoteTile(item,true)));
+ grid.replaceChildren();items.forEach(item=>grid.append(quoteTile({...item,name:quotedName(group,item)},true)));
  if(group==='bonds'){
   const first=grid.querySelector('.inj-wm-tile');
   if(first){const note=el('small','inj-wm-proxy',tr('Rendimento mostrato come indice ×10','Yield displayed as index ×10'));first.append(note)}
@@ -253,6 +259,7 @@ function localize(){
   const rows=quotes.get(group);if(rows)renderGroup(group,rows);
  }
  $('injWorldMapCaption').textContent=tr('Seleziona un punto per leggere l’indice di riferimento','Tap a point to view its benchmark index');
+ const sectorNote=root.querySelector('[data-translation="sector-note"]');if(sectorNote)sectorNote.textContent=tr('I colori e le variazioni rispecchiano ETF rappresentativi di ciascun settore.','Colors and changes reflect representative ETFs for each sector.');
 }
 function mount(){
  if(initialized)return;initialized=true;
