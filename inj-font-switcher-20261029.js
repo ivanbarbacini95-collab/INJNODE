@@ -6,7 +6,7 @@
  var STORE='inj_node_font_v1', ACTIVE='inter', root=document.documentElement;
  var FONTS=[
   {id:'inter',name:'Inter Light',stack:'"Inter",Arial,sans-serif',url:''},
-  {id:'bitcount',name:'Bitcount Grid Single',stack:'"Bitcount Grid Single","IBM Plex Mono",monospace',url:'https://fonts.googleapis.com/css2?family=Bitcount+Grid+Single:wght@400;500;600&display=swap'},
+  {id:'bitcount',name:'Bitcount Grid Single · Micro Dot',stack:'"Doto","Bitcount Grid Single",monospace',url:'https://fonts.googleapis.com/css2?family=Doto:ROND,wght@100,350..600&display=swap'},
   {id:'roboto',name:'Roboto',stack:'"Roboto",Arial,sans-serif',url:'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400&display=swap'},
   {id:'dm-sans',name:'DM Sans',stack:'"DM Sans",Arial,sans-serif',url:'https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400&display=swap'},
   {id:'jakarta',name:'Plus Jakarta Sans',stack:'"Plus Jakarta Sans",Arial,sans-serif',url:'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400&display=swap'},
@@ -50,8 +50,8 @@
   if(title)title.textContent='Font';
   if(caption)caption.textContent=(en?'Current: ':'Attuale: ')+name;
   if(note)note.textContent=en?
-   'The selection applies to every section on this device. Neue Haas Grotesk requires a licensed, available font; Helvetica and Arial are used as fallbacks.':
-   'La scelta vale per tutte le sezioni su questo dispositivo. Neue Haas Grotesk richiede il font disponibile con licenza; in alternativa si usano Helvetica o Arial.';
+   'Applies to every section on this device. Bitcount Micro Dot uses a dense 6×10 matrix for main numbers and crisp labels. Neue Haas Grotesk requires a licensed font; otherwise Helvetica or Arial is used.':
+   'La scelta vale su tutto il dispositivo. Bitcount Micro Dot usa una matrice 6×10 sui valori grandi e testi nitidi sulle etichette. Neue Haas Grotesk richiede una licenza; altrimenti si usa Helvetica o Arial.';
   holder.setAttribute('aria-label',en?'Interface font':'Carattere interfaccia');
   var options=holder.querySelectorAll('[data-inj-font-choice]');
   options.forEach(function(button){
@@ -97,7 +97,8 @@
    /* Important inline faces overcome the pre-existing high-specificity Inter reset. */
    title.style.setProperty('font-family',f.stack,'important');
    sample.style.setProperty('font-family',f.stack,'important');
-   sample.style.setProperty('font-weight',f.id==='bitcount'?'500':'400','important');
+   sample.style.setProperty('font-weight',f.id==='bitcount'?'520':'400','important');
+   if(f.id==='bitcount')sample.style.setProperty('font-variation-settings','"ROND" 100,"wght" 520','important');
    item.append(nam,sample);
    item.addEventListener('click',function(){apply(f.id,true)});
    opts.appendChild(item);

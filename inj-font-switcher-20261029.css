@@ -118,3 +118,75 @@ html[data-inj-page="index"] body #headerMenuPanel .menu-font-option[data-inj-fon
   font-kerning:none!important;
   -webkit-font-smoothing:auto!important;
 }
+
+
+/* INJ NODE · Micro Dot 6×10
+   The original Bitcount Grid Single has fixed glyph geometry and cannot gain
+   extra dots via CSS. Display numerals use Doto's denser 6×10 matrix instead,
+   while navigation, captions and compact text remain crisp Inter. This layer
+   takes effect ONLY for the existing saved Bitcount selection. */
+html[data-inj-font="bitcount"] body :is(*,#__injMicroDot#__injMicroDot#__injMicroDot#__injMicroDot#__injMicroDot#__injMicroDot):not(svg):not(svg *):not(.material-icons):not(.material-symbols-outlined):not(.material-symbols-rounded):not(.material-symbols-sharp):not(.fa):not(.fas):not(.far):not(.fab):not(.fal):not(.fad):not(.fa-solid):not(.fa-regular):not(.fa-brands):not(.iconfont):not(.icon-font){
+  font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
+  font-weight:400!important;
+  font-variation-settings:normal!important;
+  font-feature-settings:normal!important;
+  font-synthesis:none!important;
+  -webkit-font-smoothing:antialiased!important;
+  text-rendering:optimizeLegibility!important;
+}
+/* Financial hero and overview numbers: real dense-dot glyphs, not enlarged dots. */
+html[data-inj-font="bitcount"] body :is(*,#__injMicroDot#__injMicroDot#__injMicroDot#__injMicroDot#__injMicroDot#__injMicroDot):is(
+  #marketPrice,#netWorthUsd,#entryMarketPrice,#entryWalletWorth,#entryInsightPnl,
+  #focusDisplayPrice,#focusDisplayWorth,#focusDisplayTotalInj,#focusDisplayDailyReward,
+  #chartHeaderPrice,#headerLivePrice,#bookLivePrice,#treasuryTotalMajor,
+  #treasuryTotalDecimals,#treasuryTotalWorth,#treasuryHeaderPrice,#treasuryPnl24Value,
+  #rewardsTotal,#rewardsTotalFiat,#ccLivePrice,#ccNetWorth,#ccTotalInj,#ccTotalPnl,
+  #capSourcePrice,#capProjectedPrice,#wealthTotal,#wealthStaked,#wealthAllWorth,
+  #ladderRewardValue,#ladderRewardInj,#etfSpotPrice,#freedomPrice,#freedomWorth,
+  .app-shell .hero-number,.app-shell .hero-secondary,
+  .app-shell .metric-card .metric-value,.app-shell .reward-rate-grid strong,
+  .app-shell .aggregate-metric > strong,
+  .entry-overview-worth > strong,.entry-market-mini > strong,
+  .entry-price-pnl strong,.entry-desktop-metric > strong,
+  .treasury-total-display > strong,.treasury-hero-worth,
+  .treasury-hero-pnl > strong,.rewards-total-value > strong,
+  .market-price-line > strong,.market-price > strong,.market-price-row > strong,
+  .ws-main-price,.ws-price-value,.ws-price-main,.ws-price,.ws-hero-price,
+  .cc-now-price,.cc-price,.cc-primary-value,.wealth-amount,
+  .cap-total-value,.cap-hero-value,.freedom-figure-worth,.freedom-hero-figure,
+  .inj-mi-snapshot article > strong,.overview article > strong,
+  .etf-hero-price,.etf-main-price,.rewards-total-fiat
+){
+  font-family:"Doto","Bitcount Grid Single",ui-monospace,monospace!important;
+  font-weight:520!important;
+  font-variation-settings:"ROND" 100,"wght" 520!important;
+  font-variant-numeric:tabular-nums lining-nums!important;
+  font-feature-settings:"tnum" 1,"lnum" 1!important;
+  font-synthesis:none!important;
+  font-kerning:none!important;
+  font-stretch:normal!important;
+  letter-spacing:-.012em!important;
+  -webkit-font-smoothing:antialiased!important;
+}
+/* Short figures, tables, wallet hashes and details: no broken microscopic dots. */
+html[data-inj-font="bitcount"] body :is(*,#__injMicroDot#__injMicroDot#__injMicroDot#__injMicroDot#__injMicroDot#__injMicroDot):is(
+  code,pre,kbd,samp,.tx-hash,.wallet-address,.address-hash,[data-monospace],
+  .levels,.levels *, .market-table,.market-asset-price,
+  .heatmap-card .price,.heatmap-card strong,
+  .ws-data-value,.ws-section-value,.ws-chart-ticks,.ws-book,
+  .book-meta,.entry-overview-stats strong,.rewards-total-metrics strong,
+  .treasury-metric strong,.app-shell .target-stats strong
+){
+  font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace!important;
+  font-weight:400!important;
+  font-variation-settings:normal!important;
+  font-feature-settings:"tnum" 1!important;
+  letter-spacing:0!important;
+}
+/* The selector preview uses the same refined display face. */
+html[data-inj-page="index"] body #headerMenuPanel .menu-font-option[data-inj-font-choice="bitcount"] .menu-font-sample{
+  font-family:"Doto","Bitcount Grid Single",ui-monospace,monospace!important;
+  font-weight:520!important;
+  font-variation-settings:"ROND" 100,"wght" 520!important;
+  letter-spacing:0!important;
+}
