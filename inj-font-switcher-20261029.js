@@ -6,7 +6,7 @@
  var STORE='inj_node_font_v1', ACTIVE='inter', root=document.documentElement;
  var FONTS=[
   {id:'inter',name:'Inter Light',stack:'"Inter",Arial,sans-serif',url:''},
-  {id:'bitcount',name:'Handjet · Double Round Bold',stack:'"INJ Handjet","Inter",sans-serif',url:''},
+  {id:'bitcount',name:'Handjet · Double Round',stack:'"INJ Handjet","Inter",sans-serif',url:''},
   {id:'roboto',name:'Roboto',stack:'"Roboto",Arial,sans-serif',url:'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400&display=swap'},
   {id:'dm-sans',name:'DM Sans',stack:'"DM Sans",Arial,sans-serif',url:'https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400&display=swap'},
   {id:'jakarta',name:'Plus Jakarta Sans',stack:'"Plus Jakarta Sans",Arial,sans-serif',url:'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400&display=swap'},
@@ -50,8 +50,8 @@
   if(title)title.textContent='Font';
   if(caption)caption.textContent=(en?'Current: ':'Attuale: ')+name;
   if(note)note.textContent=en?
-   'Applies to every section of this app on this device. Handjet Double Round Bold uses a thicker double-grid of round dots and slightly wider spacing on key figures; compact labels stay crisp. Neue Haas Grotesk requires a licensed font; otherwise Helvetica or Arial is used.':
-   'La scelta vale in questa app su questo dispositivo. Handjet Double Round Bold ha punti circolari più marcati e cifre leggermente più distese; le etichette restano nitide. Neue Haas Grotesk richiede una licenza; altrimenti si usa Helvetica o Arial.';
+   'Applies to every section of this app on this device. Handjet Double Round uses a clear semi-bold double grid of circular dots, with visible space between them and slightly expanded figures. Compact labels stay crisp. Neue Haas Grotesk requires a licensed font; otherwise Helvetica or Arial is used.':
+   'La scelta vale in questa app su questo dispositivo. Handjet Double Round usa punti circolari semi-bold, più separati tra loro, e cifre leggermente distese; le etichette restano nitide. Neue Haas Grotesk richiede una licenza; altrimenti si usa Helvetica o Arial.';
   holder.setAttribute('aria-label',en?'Interface font':'Carattere interfaccia');
   var options=holder.querySelectorAll('[data-inj-font-choice]');
   options.forEach(function(button){
@@ -97,10 +97,10 @@
    /* Important inline faces overcome the pre-existing high-specificity Inter reset. */
    title.style.setProperty('font-family',f.stack,'important');
    sample.style.setProperty('font-family',f.stack,'important');
-   sample.style.setProperty('font-weight',f.id==='bitcount'?'700':'400','important');
+   sample.style.setProperty('font-weight',f.id==='bitcount'?'600':'400','important');
    if(f.id==='bitcount'){
-    sample.style.setProperty('font-variation-settings','"ELGR" 2,"ELSH" 8,"wght" 700','important');
-    title.style.setProperty('font-variation-settings','"ELGR" 2,"ELSH" 8,"wght" 700','important');
+    sample.style.setProperty('font-variation-settings','"ELGR" 2,"ELSH" 8,"wght" 600','important');
+    title.style.setProperty('font-variation-settings','"ELGR" 2,"ELSH" 8,"wght" 600','important');
    }
    item.append(nam,sample);
    item.addEventListener('click',function(){apply(f.id,true)});
