@@ -1,33 +1,102 @@
-/* INJ Node — world markets, isolated from existing crypto heatmap and card layouts. */
+/* INJ Node / native World Markets 2026-10-29.
+ * Vertical mobile-first sections. No TradingView web components. */
 html[data-inj-market] #injWorldMarket[hidden]{display:none!important}
-html[data-inj-market] #injWorldMarket{min-width:0;width:100%;max-width:100%;padding:4px 0 30px;color:var(--text);font:inherit}
-html[data-inj-market] .inj-world-eyebrow{display:block;color:var(--accent);font-size:10px;letter-spacing:.14em;font-weight:850;margin-bottom:7px}
-html[data-inj-market] #injWorldHeading{font-size:clamp(25px,4vw,42px);line-height:1.13;letter-spacing:-.04em;margin:0 0 8px}
-html[data-inj-market] #injWorldIntro{margin:0;color:var(--muted);font-size:12px;line-height:1.65;max-width:740px}
-html[data-inj-market] #injWorldCategories{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:22px 0}
-html[data-inj-market] .inj-world-category{font:inherit;min-width:0;min-height:80px;text-align:left;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:5px;padding:13px 14px;border:1px solid var(--line);border-radius:14px;color:var(--text);background:color-mix(in srgb,var(--surface,transparent) 82%,transparent);cursor:pointer;transition:background .18s,border-color .18s,transform .18s;touch-action:manipulation}
-html[data-inj-market] .inj-world-category strong{font-size:12px;line-height:1.2;font-weight:800;letter-spacing:.01em}
-html[data-inj-market] .inj-world-category small{font-size:10px;line-height:1.45;font-weight:450;color:var(--muted)}
-html[data-inj-market] .inj-world-category[aria-pressed="true"]{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 13%,var(--surface,transparent))}
-html[data-inj-market] .inj-world-category:hover{border-color:color-mix(in srgb,var(--accent) 48%,var(--line))}
-html[data-inj-market] .inj-world-category:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-html[data-inj-market] .inj-world-panel{border:1px solid var(--line);border-radius:17px;background:color-mix(in srgb,var(--surface,transparent) 90%,transparent);padding:clamp(11px,2vw,20px);min-width:0;overflow:hidden}
-html[data-inj-market] .inj-world-panel-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:7px 16px;margin-bottom:7px}
-html[data-inj-market] #injWorldStageTitle{margin:0;font-size:clamp(16px,2.2vw,21px);line-height:1.2;font-weight:850}
-html[data-inj-market] #injWorldStageDetail{margin:3px 0 12px;color:var(--muted);font-size:11px;line-height:1.5}
-html[data-inj-market] #injWorldStage{width:100%;min-width:0;min-height:500px;overflow:visible}
-html[data-inj-market] #injWorldStage>tv-heatmap,html[data-inj-market] #injWorldStage>tv-world-market-summary,html[data-inj-market] #injWorldStage>tv-forex-table,html[data-inj-market] #injWorldStage>tv-market-data{display:block;width:100%;max-width:100%;min-width:0}
-html[data-inj-market] .inj-world-foot{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:9px 20px;padding-top:16px;margin-top:15px;border-top:1px solid var(--line);font-size:10px;color:var(--muted);line-height:1.55}
-html[data-inj-market] .inj-world-foot a{color:var(--accent);text-decoration:none;font-weight:750}
-html[data-inj-market] #injWorldDisclosure{max-width:780px;display:block;color:var(--muted);font-size:10px;line-height:1.65;margin:10px 1px 0}
-html[data-inj-market] .inj-world-error{padding:70px 15px;text-align:center;color:var(--muted);font-size:12px}
-@media(max-width:980px){html[data-inj-market] #injWorldCategories{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media(max-width:660px){html[data-inj-market] #injWorldCategories{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:15px 0}html[data-inj-market] .inj-world-category{min-height:76px;padding:11px 12px;border-radius:12px}html[data-inj-market] .inj-world-category strong{font-size:11px}html[data-inj-market] .inj-world-category small{font-size:9px}html[data-inj-market] .inj-world-panel{padding:10px;border-radius:12px}html[data-inj-market] #injWorldStage{min-height:470px}}
-@media(prefers-reduced-motion:reduce){html[data-inj-market] .inj-world-category{transition:none!important}}
-
-/* Keep five Market modes on one precise, horizontally swipeable line on phones. */
+html[data-inj-market] #injWorldMarket{display:block;min-width:0;width:100%;max-width:none;padding:0 0 max(40px,env(safe-area-inset-bottom));color:var(--text);font:inherit}
+html[data-inj-market][data-market-section="world"] body{overflow-y:auto!important;overflow-x:clip!important;height:auto!important;max-height:none!important;touch-action:pan-x pan-y!important}
+html[data-inj-market][data-market-section="world"] .shell,html[data-inj-market][data-market-section="world"] main{max-height:none!important;min-height:100dvh!important;overflow:visible!important;transform:none!important}
+html[data-inj-market][data-market-section="world"] .shell{width:100%!important;max-width:none!important}
+html[data-inj-market] .inj-wm-hero{padding:3px 0 13px;margin:0!important}
+html[data-inj-market] .inj-world-eyebrow{color:var(--accent);display:block;font-weight:800;font-size:10px;letter-spacing:.14em;margin:0 0 6px}
+html[data-inj-market] #injWorldHeading{font-size:clamp(26px,4vw,42px);line-height:1.08;letter-spacing:-.045em;margin:3px 0 7px}
+html[data-inj-market] #injWorldIntro{margin:0;color:var(--muted);font-size:clamp(12px,1.1vw,15px);line-height:1.65;max-width:780px}
+html[data-inj-market] .inj-world-section{min-width:0;width:100%;margin:13px 0 0;padding:clamp(13px,1.8vw,23px);border:1px solid color-mix(in srgb,var(--line) 80%,transparent);border-radius:17px;background:color-mix(in srgb,var(--panel,#0b1525) 35%,transparent);scroll-margin-top:18px}
+html[data-inj-market] .inj-wm-section-head{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:10px 20px;border-bottom:1px solid var(--line);padding:0 0 13px;margin:0 0 14px}
+html[data-inj-market] .inj-wm-section-head>div{min-width:0;flex:1}
+html[data-inj-market] .inj-wm-eyebrow{font-size:10px;font-weight:850;color:var(--accent);letter-spacing:.13em}
+html[data-inj-market] .inj-wm-section-head h3{font-size:clamp(18px,2.6vw,26px);line-height:1.2;font-weight:850;letter-spacing:-.025em;margin:4px 0}
+html[data-inj-market] .inj-wm-section-head p{font-size:11px;line-height:1.55;color:var(--muted);margin:5px 0 0}
+html[data-inj-market] .inj-wm-section-status{font-size:10px;line-height:1.5;color:var(--muted);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+html[data-inj-market] .inj-wm-explainer{font-size:11px;line-height:1.6;color:var(--muted);margin:4px 0 13px}
+html[data-inj-market] .inj-wm-quick-nav{margin:16px 0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+html[data-inj-market] .inj-wm-quick-nav button{min-width:0;min-height:43px;padding:9px 11px;cursor:pointer;text-align:center;border:1px solid var(--line);border-radius:10px;background:color-mix(in srgb,var(--accent) 5%,var(--panel));color:var(--text);font:inherit;font-size:11px;font-weight:800;line-height:1.32;touch-action:manipulation}
+html[data-inj-market] .inj-wm-quick-nav button:hover,html[data-inj-market] .inj-wm-quick-nav button:focus-visible{border-color:var(--accent);outline-offset:3px}
+html[data-inj-market] .inj-wm-grid{display:grid;width:100%;min-width:0;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+html[data-inj-market] .inj-wm-grid.sectors{grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}
+html[data-inj-market] .inj-wm-grid.indices{grid-template-columns:repeat(4,minmax(0,1fr))}
+html[data-inj-market] .inj-wm-tile{position:relative;min-width:0;min-height:112px;display:flex;flex-direction:column;justify-content:space-between;gap:8px;padding:14px;border:1px solid color-mix(in srgb,var(--line) 87%,transparent);border-radius:13px;background:color-mix(in srgb,var(--panel,#0b1525) 90%,transparent);isolation:isolate;overflow:hidden}
+html[data-inj-market] .inj-wm-tile::before{position:absolute;z-index:-1;inset:0;content:"";opacity:.88;pointer-events:none}
+html[data-inj-market] .inj-wm-tile.up::before{background:linear-gradient(120deg,rgba(21,164,107,.19),rgba(21,164,107,.035) 74%)}
+html[data-inj-market] .inj-wm-tile.down::before{background:linear-gradient(120deg,rgba(219,65,85,.2),rgba(219,65,85,.035) 74%)}
+html[data-inj-market] .inj-wm-tile.up{border-color:color-mix(in srgb,var(--positive,#2bc48d) 40%,var(--line))}
+html[data-inj-market] .inj-wm-tile.down{border-color:color-mix(in srgb,var(--negative,#ef6f82) 40%,var(--line))}
+html[data-inj-market] .inj-wm-tile-head{display:flex;align-items:flex-start;justify-content:space-between;gap:6px;min-width:0}
+html[data-inj-market] .inj-wm-name{display:block;font-size:clamp(11px,1.05vw,15px);font-weight:850;line-height:1.25;letter-spacing:0;overflow-wrap:break-word}
+html[data-inj-market] .inj-wm-symbol{flex-shrink:0;color:var(--muted);font-size:10px;white-space:nowrap}
+html[data-inj-market] .inj-wm-tile-values{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:7px 10px;font-variant-numeric:tabular-nums}
+html[data-inj-market] .inj-wm-price{font-size:clamp(11px,1.18vw,16px);font-weight:760;line-height:1.35;overflow-wrap:anywhere}
+html[data-inj-market] .inj-wm-change{font-size:clamp(12px,1.2vw,16px);font-weight:900;line-height:1.2}
+html[data-inj-market] .inj-wm-tile.up .inj-wm-change{color:var(--positive,#31d99c)}
+html[data-inj-market] .inj-wm-tile.down .inj-wm-change{color:var(--negative,#fa6b84)}
+html[data-inj-market] .inj-wm-tile.neutral .inj-wm-change{color:var(--muted)}
+html[data-inj-market] .inj-wm-sector-card{min-height:124px;padding:16px}
+html[data-inj-market] .inj-wm-proxy{display:block;color:var(--muted);font-size:9px;letter-spacing:.025em;line-height:1.4}
+html[data-inj-market] .inj-wm-regions{display:grid;gap:17px;margin-top:19px}
+html[data-inj-market] .inj-wm-region{min-width:0}
+html[data-inj-market] .inj-wm-region-title{font-size:12px;font-weight:850;letter-spacing:.075em;margin:0 0 9px;text-transform:uppercase}
+html[data-inj-market] .inj-wm-stocks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:23px 18px}
+html[data-inj-market] .inj-wm-stock-sector{min-width:0}
+html[data-inj-market] .inj-wm-stock-heading{font-size:13px;font-weight:850;line-height:1.3;padding:0 0 9px;margin:0 0 9px;border-bottom:1px solid var(--line)}
+html[data-inj-market] .inj-wm-stock-sector .inj-wm-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+html[data-inj-market] .inj-world-mapframe{position:relative;min-height:210px;width:100%;aspect-ratio:960/460;border:1px solid color-mix(in srgb,var(--line) 70%,transparent);border-radius:13px;overflow:hidden;background:radial-gradient(ellipse at 50% 45%,color-mix(in srgb,var(--accent) 7%,transparent),transparent 70%),color-mix(in srgb,var(--panel,#0a1625) 65%,transparent)}
+html[data-inj-market] #injWorldMapSvg{display:block;width:100%;height:100%;position:absolute;inset:0}
+html[data-inj-market] .inj-wm-land{fill:color-mix(in srgb,var(--accent) 12%,var(--panel));stroke:color-mix(in srgb,var(--accent) 28%,var(--line));stroke-width:1.2;stroke-linejoin:round}
+html[data-inj-market] .inj-world-map-pins{position:absolute;inset:0}
+html[data-inj-market] .inj-wm-pin{position:absolute;transform:translate(-50%,-50%);width:clamp(13px,2vw,20px);height:clamp(13px,2vw,20px);border-radius:100%;border:2px solid var(--bg);background:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent),0 0 13px color-mix(in srgb,var(--accent) 18%,transparent);cursor:pointer;touch-action:manipulation;z-index:1}
+html[data-inj-market] .inj-wm-pin.up{background:var(--positive,#31d99c)}
+html[data-inj-market] .inj-wm-pin.down{background:var(--negative,#fa6b84)}
+html[data-inj-market] .inj-wm-pin:focus-visible{outline:3px solid var(--accent);outline-offset:4px}
+html[data-inj-market] .inj-wm-map-meta{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:9px 15px;border-bottom:1px solid var(--line);padding:11px 0 14px;font-size:11px}
+html[data-inj-market] #injWorldMapCaption{color:var(--muted);font-size:10px}
+html[data-inj-market] #injWorldMapSpotlight{font-variant-numeric:tabular-nums;font-weight:850;font-size:12px}
+html[data-inj-market] .inj-wm-foot{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 20px;justify-content:space-between;padding:20px 2px 25px;color:var(--muted);font-size:10px}
+html[data-inj-market] #injWorldDisclosure{width:100%;font-size:10px;line-height:1.6}
+html[data-inj-market] .inj-world-section.is-loading .inj-wm-section-status::before{content:"● ";color:var(--accent)}
+@media(max-width:1000px){
+ html[data-inj-market] .inj-wm-grid,html[data-inj-market] .inj-wm-grid.indices{grid-template-columns:repeat(3,minmax(0,1fr))}
+ html[data-inj-market] .inj-wm-stock-sector .inj-wm-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:690px){
+ html[data-inj-market][data-market-section="world"] .shell{padding-left:clamp(8px,3vw,13px)!important;padding-right:clamp(8px,3vw,13px)!important}
+ html[data-inj-market] .inj-world-section{padding:12px 10px;margin-top:13px;border-radius:13px}
+ html[data-inj-market] .inj-wm-section-head{align-items:flex-start;gap:8px;margin-bottom:12px;padding-bottom:10px}
+ html[data-inj-market] .inj-wm-section-head h3{font-size:19px}
+ html[data-inj-market] .inj-wm-section-status{width:100%;font-size:10px}
+ html[data-inj-market] .inj-wm-quick-nav{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+ html[data-inj-market] .inj-wm-quick-nav button{font-size:11px;min-height:46px}
+ html[data-inj-market] .inj-wm-grid,html[data-inj-market] .inj-wm-grid.sectors,html[data-inj-market] .inj-wm-grid.indices{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ html[data-inj-market] .inj-wm-stocks{grid-template-columns:1fr;gap:20px}
+ html[data-inj-market] .inj-wm-tile{min-height:108px;padding:12px 10px;gap:11px;border-radius:12px}
+ html[data-inj-market] .inj-wm-sector-card{min-height:132px}
+ html[data-inj-market] .inj-wm-name{font-size:12px;line-height:1.35}
+ html[data-inj-market] .inj-wm-symbol{font-size:9px}
+ html[data-inj-market] .inj-wm-price{font-size:12px}
+ html[data-inj-market] .inj-wm-change{font-size:13px}
+ html[data-inj-market] .inj-wm-tile-values{display:grid;gap:6px;align-items:start;justify-content:start}
+ html[data-inj-market] .inj-world-mapframe{min-height:210px;aspect-ratio:1.65}
+ html[data-inj-market] .inj-wm-pin{width:16px;height:16px}
+ html[data-inj-market] .inj-wm-region-title{font-size:11px}
+ html[data-inj-market] .inj-wm-stock-sector .inj-wm-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ html[data-inj-market] .inj-wm-stock-heading{font-size:13px}
+}
+@media(max-width:340px){
+ html[data-inj-market] .inj-wm-grid,html[data-inj-market] .inj-wm-grid.sectors,html[data-inj-market] .inj-wm-grid.indices{grid-template-columns:1fr}
+ html[data-inj-market] .inj-wm-tile-values{display:flex}
+}
+@media(prefers-reduced-motion:reduce){html[data-inj-market] .inj-wm-tile,html[data-inj-market] .inj-wm-pin{animation:none!important;transition:none!important}}
+/* Keep only the Market top-level tabs horizontally scrollable.
+   All *financial sectors* are now full-width sections below, not hidden tabs. */
 @media(max-width:760px){
- html[data-inj-market] #injIntelRoot{display:flex!important;flex-wrap:nowrap!important;overflow-x:auto!important;overflow-y:hidden!important;max-width:100%;overscroll-behavior-inline:contain;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity;scrollbar-width:none;gap:4px;padding-bottom:10px}
+ html[data-inj-market] #injIntelRoot{display:flex!important;flex-wrap:nowrap!important;overflow-x:auto!important;overflow-y:hidden!important;max-width:100%;-webkit-overflow-scrolling:touch;scrollbar-width:none;gap:4px;padding-bottom:10px}
  html[data-inj-market] #injIntelRoot::-webkit-scrollbar{display:none}
- html[data-inj-market] #injIntelRoot>[data-inj-intel-view]{flex:0 0 auto!important;white-space:nowrap;scroll-snap-align:start;padding-inline:11px!important}
+ html[data-inj-market] #injIntelRoot>[data-inj-intel-view]{flex:0 0 auto!important;white-space:nowrap;padding-inline:11px!important}
 }
