@@ -1,11 +1,11 @@
-/* INJ Node / Minimal Finance — Inter Light, 2026-10-29
+/* INJ Node / Balanced Finance — Inter 350/400, 2026-10-29
    Replaces the previous typography trial on INJNODE only.
    Layout, themes, live data, canvas charts and interactive controls unchanged.
-   Weights: 300 hero numbers; 400 all other text.
+   Weights: 350 hero numbers; 400 readable labels and supporting data.
    Legacy pages include font-weight:800/900!important. The specificity bridge
    below overrides these old rules without rewriting many separate stylesheets.
 */
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;350;400;450;500&display=swap");
 :root{
  --inj-minimal-font:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
  --inj-minimal-mono:"IBM Plex Mono","SFMono-Regular",Menlo,Consolas,monospace;
@@ -29,7 +29,7 @@ html body :is(*,#__injMinimalWeight#__injMinimalWeight):not(svg):not(svg *):not(
  -webkit-font-smoothing:antialiased;
  font-variant-numeric:tabular-nums lining-nums;
 }
-/* Large prices, balances and wealth values use light 300. */
+/* Primary prices and balances use an intermediate 350 weight: slim, not skeletal. */
 html body :is(*,#__injMinimalWeight#__injMinimalWeight):is(
  #entryMarketPrice,#entryWalletWorth,#entryInsightPnl,
  #entryDesktopDailyRewardValue,
@@ -58,9 +58,9 @@ html body :is(*,#__injMinimalWeight#__injMinimalWeight):is(
  .etf-hero-price,.etf-main-price
 ){
  font-family:var(--inj-minimal-font)!important;
- font-weight:300!important;
+ font-weight:350!important;
  font-synthesis-weight:none;
- letter-spacing:-.035em!important;
+ letter-spacing:-.012em!important;
  font-variant-numeric:tabular-nums lining-nums!important;
 }
 /* Dense trading and microdata remain regular 400 for readability. */
@@ -107,7 +107,7 @@ html body :is(*,#__injMinimalWeight#__injMinimalWeight):is(code,kbd,samp,pre,.tx
 /* Price-change color/glow, user themes, SVG charts and icons stay intact. */
 
 
-/* INJ NODE 2026-10-29 — Dashboard + Live View lightweight pass v2 */
+/* INJ NODE 2026-10-29 — Dashboard + Live View proportion pass v3 */
 /* The preceding global reset kept these values at 400 because their
    real DOM IDs were not in the earlier 300-weight list. These selectors
    cover Dashboard and the fullscreen Live View without changing layout. */
@@ -150,7 +150,7 @@ html body :is(*,#__injMinimalWeight#__injMinimalWeight):is(
  #freedomInj,#freedomSpendingTotal
 ){
  font-family:var(--inj-minimal-font)!important;
- font-weight:300!important;
+ font-weight:350!important;
  font-synthesis-weight:none;
  font-variant-numeric:tabular-nums lining-nums!important;
 }
@@ -181,3 +181,75 @@ html body :is(*,#__injMinimalWeight#__injMinimalWeight):is(
 }
 /* Retain existing positive/negative color, brief change glows, and
    responsive font sizing: no text-shadow, transform or font-size overrides. */
+
+
+/* Proportional type tune-up: prevent compressed-looking figures in the
+   fullscreen Live View. Only font metrics change; the DOM, layout, prices,
+   status colors and responsive sizes are preserved. */
+html body :is(*,#__injMinimalWeight#__injMinimalWeight):is(
+ #focusDisplayPrice,#focusDisplayWorth,
+ .focus-display-dialog .focus-display-primary > strong
+){
+ font-family:var(--inj-minimal-font)!important;
+ font-weight:350!important;
+ font-stretch:normal!important;
+ letter-spacing:-.008em!important;
+ font-kerning:normal!important;
+ font-variant-numeric:tabular-nums lining-nums!important;
+}
+html body :is(*,#__injMinimalWeight#__injMinimalWeight):is(
+ #focusDisplayClock,
+ #focusDisplayTotalInj,#focusDisplayDailyReward,
+ #focusDisplayApr,#focusDisplayStaked,#focusDisplayRewards,
+ #focusDisplayRangeMin,#focusDisplayRangeMax,
+ #focusDisplayChange24h,#focusDisplaySystemText
+){
+ font-family:var(--inj-minimal-font)!important;
+ font-weight:400!important;
+ font-stretch:normal!important;
+ letter-spacing:0!important;
+ font-variant-numeric:tabular-nums lining-nums!important;
+}
+html body :is(*,#__injMinimalWeight#__injMinimalWeight):is(
+ .focus-display-dialog .focus-display-clock,
+ .focus-display-dialog .focus-display-label,
+ .focus-display-dialog .focus-display-live,
+ .focus-display-dialog .focus-display-wallet,
+ .focus-display-dialog .focus-display-stats > div > span,
+ .focus-display-dialog .focus-display-range-copy,
+ .focus-display-dialog .focus-display-system
+){
+ font-family:var(--inj-minimal-font)!important;
+ font-weight:400!important;
+ font-stretch:normal!important;
+ letter-spacing:.012em!important;
+}
+/* Shared financial numerals: generous kerning without excessive visual
+   compression. Small trading rows retain weight 400 from the rules above. */
+html body :is(*,#__injMinimalWeight#__injMinimalWeight):is(
+ .app-shell .hero-number,.app-shell .hero-secondary,
+ .app-shell .metric-card .metric-value,
+ #entryMarketPrice,#entryWalletWorth,#entryInsightPnl,
+ #treasuryTotalMajor,#treasuryTotalWorth,
+ #chartHeaderPrice,#headerLivePrice,
+ #ccLivePrice,#ccNetWorth,.ws-main-price,.ws-price-value,
+ .market-price-line > strong,.rewards-total-value,
+ .wealth-amount,.cap-total-value,.ladder-reward-value
+){
+ font-weight:350!important;
+ font-stretch:normal!important;
+ letter-spacing:-.012em!important;
+ font-variant-numeric:tabular-nums lining-nums!important;
+}
+html body :is(*,#__injMinimalWeight#__injMinimalWeight):is(
+ .ws-data-value,.ws-section-value,
+ .levels strong,.heatmap-card strong,.market-asset-price,
+ .entry-overview-stats strong,.treasury-metric strong,
+ .rewards-total-metrics strong
+){
+ font-weight:400!important;
+ font-stretch:normal!important;
+ letter-spacing:0!important;
+}
+/* Respect device accessibility settings, font icons, and system text zoom:
+   no scaleX(), scaleY(), custom width/height, or forced nowrap. */
