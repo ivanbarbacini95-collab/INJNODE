@@ -1,7 +1,7 @@
-const CACHE_NAME = 'inj-node-v16.10.29-font-picker1';
+const CACHE_NAME = 'inj-node-v16.10.29-font-precision2';
 const APP_SHELL = [
-  './inj-font-switcher-20261029.css?v=fontchoice1',
-  './inj-font-switcher-20261029.js?v=fontchoice1',
+  './inj-font-switcher-20261029.css?v=fontchoice2',
+  './inj-font-switcher-20261029.js?v=fontchoice2',
   './inj-fluid-screen-fit.css?v=20261028fullmonitor1',
   './inj-monitor-readability.css?v=20261028readable3',
   './home-desktop-native-scroll.css?v=20261028home-scroll1',

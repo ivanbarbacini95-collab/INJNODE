@@ -77,3 +77,44 @@ html[data-inj-page="index"] body #headerMenuPanel .menu-font-note{
 @media(prefers-reduced-motion:reduce){
  html[data-inj-page="index"] body #headerMenuPanel .menu-font-control *{transition:none!important}
 }
+
+
+/* Bitcount Grid Single — precision mode, only when selected. The previous
+   Inter Light layer forced a 300 stroke that fragmented pixel-grid glyphs. */
+html[data-inj-font="bitcount"] body :is(*,#__bitPrecise#__bitPrecise#__bitPrecise#__bitPrecise#__bitPrecise):not(svg):not(svg *):not(.material-icons):not(.material-symbols-outlined):not(.material-symbols-rounded):not(.material-symbols-sharp):not(.fa):not(.fas):not(.far):not(.fab):not(.fal):not(.fad):not(.fa-solid):not(.fa-regular):not(.fa-brands):not(.iconfont):not(.icon-font){
+  font-family:"Bitcount Grid Single","IBM Plex Mono",ui-monospace,monospace!important;
+  font-weight:400!important;
+  font-synthesis:none!important;
+  font-variation-settings:"CRSV" 0,"ELSH" 0,"ELXP" 0,"slnt" 0!important;
+  font-feature-settings:"liga" 0,"calt" 0;
+  font-kerning:none!important;
+  -webkit-font-smoothing:auto!important;
+  text-rendering:geometricPrecision!important;
+}
+/* Medium strokes make micro data more distinguishable at existing sizes. */
+html[data-inj-font="bitcount"] body :is(*,#__bitPrecise#__bitPrecise#__bitPrecise#__bitPrecise#__bitPrecise):is(
+ small,label,input,textarea,select,option,button,
+ .inj-tile-description,.caption,.subtitle,.description,.hint,.note,
+ .menu-action-copy small,.menu-compact-subtitle,.menu-font-current,
+ .market-ticker,.market-table,.market-asset-price,
+ .heatmap-card,.heatmap-card *,.market-heatmap-card,.market-heatmap-card *,
+ .levels,.levels *,.book-meta,.columns,.ws-data-value,.ws-section-value,
+ .ws-chart-ticks,.ws-book,.focus-display-label,.focus-display-wallet,
+ .focus-display-live,.entry-desktop-metrics small,.entry-overview-stats small,
+ .treasury-metric small,.rewards-total-metrics small
+){font-weight:500!important}
+/* Keep important financial figures fully defined, without enlarging them. */
+html[data-inj-font="bitcount"] body :is(*,#__bitPrecise#__bitPrecise#__bitPrecise#__bitPrecise#__bitPrecise):is(
+ #entryMarketPrice,#entryWalletWorth,#entryInsightPnl,
+ #focusDisplayPrice,#focusDisplayWorth,#chartHeaderPrice,#headerLivePrice,
+ #treasuryTotalMajor,#treasuryTotalWorth,#bookLivePrice,
+ #ccLivePrice,#ccNetWorth,.app-shell .hero-number,
+ .app-shell .metric-card .metric-value,.ws-main-price,.ws-price-value
+){font-weight:400!important;font-variant-numeric:tabular-nums lining-nums!important}
+/* Match the font picker preview to the refined grid. */
+html[data-inj-page="index"] body #headerMenuPanel .menu-font-option[data-inj-font-choice="bitcount"] .menu-font-sample{
+  font-weight:500!important;
+  font-variation-settings:"CRSV" 0,"ELSH" 0,"ELXP" 0,"slnt" 0!important;
+  font-kerning:none!important;
+  -webkit-font-smoothing:auto!important;
+}
