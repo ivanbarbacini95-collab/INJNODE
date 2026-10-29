@@ -395,7 +395,7 @@
 <link rel="stylesheet" href="./inj-editorial-typography.css?v=20261029interlight2">
 <link rel="stylesheet" href="./home-borderless-dividers-20261029.css?v=2"/>
 <link rel="stylesheet" href="./home-chart-fill-20261029.css?v=1"/>
-<link rel="stylesheet" href="./home-more-inline-20261029.css?v=2"/>
+<link rel="stylesheet" href="./home-more-inline-20261029.css?v=20261029tilefix1"/>
 </head>
 <body class="boot-loading">
 <div aria-label="Avvio INJ Node" aria-live="polite" aria-atomic="true" class="boot-splash node-pulse-splash" id="bootSplash" role="status">
@@ -819,9 +819,9 @@
 <span><strong class="inj-home-tile-title" data-it="Reward Ladder" data-en="Reward Ladder">Reward Ladder</strong><small class="inj-tile-description" data-it="Obiettivi dei reward" data-en="Reward milestones">Obiettivi dei reward</small></span>
 <svg aria-hidden="true" class="entry-action-arrow" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
 </a>
-<button class="entry-action entry-action-market-events" id="entryMarketEventsButton" type="button" aria-label="Apri calendario Market Events" aria-haspopup="dialog" aria-controls="injMarketEventsOverlay">
-  <span class="inj-events-tile-copy"><strong class="inj-home-tile-title" data-it="Eventi di mercato" data-en="Market Events">Eventi di mercato</strong><small id="injMarketNextSummary" class="inj-events-next-text" data-it="Calendario macro ★★★ · USA / Europa / Asia" data-en="★★★ macro calendar · US / Europe / Asia">Calendario macro ★★★ · USA / Europa / Asia</small></span>
-  <span class="inj-events-tile-stars" aria-hidden="true">★★★</span>
+<button class="entry-action entry-action-market-events" id="entryMarketEventsButton" type="button" aria-label="Apri calendario Market Event" aria-haspopup="dialog" aria-controls="injMarketEventsOverlay">
+  <span aria-hidden="true" class="inj-more-market-symbol inj-tile-scene"><svg viewBox="0 0 100 66" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="9" y="11" width="82" height="45" rx="9" stroke="currentColor" stroke-opacity=".43" stroke-width="1.5"/><path d="M18 43h64M18 23h64M26 19v29M50 19v29M74 19v29" stroke="currentColor" stroke-opacity=".2"/><path d="m19 40 13-13 13 8 13-13 12 6 12-11" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/><circle class="more-market-pulse" cx="82" cy="17" r="3.7" fill="currentColor"/></svg></span>
+  <span class="inj-events-tile-copy"><strong class="inj-home-tile-title" data-it="Market Event" data-en="Market Event">Market Event</strong><small id="injMarketNextSummary" class="inj-events-next-text" aria-hidden="true" data-it="Calendario macro ★★★ · USA / Europa / Asia" data-en="★★★ macro calendar · US / Europe / Asia">Calendario macro ★★★ · USA / Europa / Asia</small></span>
 </button>
 <a class="entry-action entry-action-injc" id="entryInjcEtfButton" href="./injc-etf.html?v=20261026" aria-label="Apri INJC ETF Terminal">
 <span aria-hidden="true" class="entry-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2.5"/><path d="M8 8h8M8 12h3m-3 5 2.5-2.5 2 1.6 3.5-4.1"/><circle cx="17" cy="17" r="1"/></svg></span>
@@ -842,8 +842,7 @@
 <circle class="freedom-mark-signal" cx="55" cy="19" r="3.4"/>
 </svg>
 </span>
-<span class="freedom-entry-copy"><strong class="inj-home-tile-title" data-it="Financial Freedom" data-en="Financial Freedom">Financial Freedom</strong><small class="inj-tile-description" data-it="Patrimonio · reward · libertà" data-en="Wealth · rewards · freedom">Patrimonio · reward · libertà</small></span>
-<span class="freedom-entry-micro" aria-hidden="true"><span></span>WEALTH INDEX</span>
+<span class="freedom-entry-copy"><strong class="inj-home-tile-title" data-it="Financial Freedom" data-en="Financial Freedom">Financial Freedom</strong><small class="inj-tile-description" data-it="Patrimonio e reward" data-en="Wealth &amp; rewards">Patrimonio e reward</small></span>
 <svg aria-hidden="true" class="entry-action-arrow" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
 </button>
 
