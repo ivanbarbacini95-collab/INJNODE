@@ -160,6 +160,19 @@ function updateGlobalTicker(){
  const signature=JSON.stringify(values);
  if(signature===state.tickerSignature)return;
  state.tickerSignature=signature;
+ // Preserve the running marquee's visual position as live numbers update.
+ // Rebuilding its two groups resets CSS animation and makes the strip jump.
+ const existing=Array.from(host.querySelectorAll(':scope > .market-ticker-group'));
+ if(existing.length===2&&existing.every(group=>group.querySelectorAll('.market-ticker-item').length===values.length)){
+  existing.forEach(group=>Array.from(group.querySelectorAll('.market-ticker-item')).forEach((item,i)=>{
+   const [label,value,tint]=values[i];
+   const labelNode=item.querySelector('.market-ticker-label');
+   const valueNode=item.querySelector('.market-ticker-number');
+   if(labelNode&&labelNode.textContent!==label)labelNode.textContent=label;
+   if(valueNode){if(valueNode.textContent!==value)valueNode.textContent=value;valueNode.className='market-ticker-number '+tint;}
+  }));
+  return;
+ }
  const groups=[document.createElement('div'),document.createElement('div')];
  groups.forEach((group,i)=>{
    group.className='market-ticker-group';if(i)group.setAttribute('aria-hidden','true');
