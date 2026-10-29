@@ -48,11 +48,11 @@ const cnbcAliases={
 async function cnbc(symbols){
  const known=new Map();
  for(const symbol of symbols)known.set(cnbcAliases[symbol]||symbol,symbol);
- const allSymbols=[...known.keys()],mapped=new Map();
+ const allSymbols=[...known.keys()],mapped=new Map(),requests=[];
  for(let i=0;i<allSymbols.length;i+=18){
   const chunk=allSymbols.slice(i,i+18);
   const uri='https://quote.cnbc.com/quote-html-webservice/restQuote/symbolType/symbol?symbols='+encodeURIComponent(chunk.join('|'))+'&requestMethod=itv&noform=1&partnerId=2&fund=1&exthrs=1&output=json';
-  const response=await request(uri,4300);
+  requests.push(request(uri,3000).then(response=>{
   let rows=response.data?.FormattedQuoteResult?.FormattedQuote||[];
   if(!Array.isArray(rows))rows=rows?[rows]:[];
   for(const row of rows){
@@ -69,12 +69,14 @@ async function cnbc(symbols){
     time:Number.isFinite(parsed)?Math.round(parsed/1000):null,currency:String(row.currency||'').slice(0,7),
     source:'CNBC'});
   }
+ }));
  }
+ await Promise.all(requests);
  return mapped;
 }
 async function spark(symbols){
  const url='https://query1.finance.yahoo.com/v7/finance/spark?symbols='+encodeURIComponent(symbols.join(','))+'&range=5d&interval=1d';
- const result=await request(url,3400);
+ const result=await request(url,2200);
  const map=new Map();
  for(const item of result.data?.spark?.result||[]){
   const symbol=item.symbol,chart=item.response?.[0];
@@ -93,7 +95,7 @@ function parseNasdaqNumber(v){
 async function nasdaq(symbol,assetClass='stocks'){
  if(!/^[A-Z][A-Z0-9.\-]{0,12}$/.test(symbol))return null;
  const url='https://api.nasdaq.com/api/quote/'+encodeURIComponent(symbol)+'/info?assetclass='+assetClass;
- const response=await request(url,3000);
+ const response=await request(url,2300);
  const raw=response.data?.data?.primaryData;
  if(!raw)return null;
  const price=parseNasdaqNumber(raw.lastSalePrice);
@@ -111,7 +113,7 @@ async function chart(symbol,group){
  }
  const tail='/v8/finance/chart/'+encodeURIComponent(symbol)+'?range=5d&interval=1d';
  for(const host of ['query1.finance.yahoo.com','query2.finance.yahoo.com']){
-  const response=await request('https://'+host+tail,2800);
+  const response=await request('https://'+host+tail,1800);
   const data=normalizeChart(response.data?.chart?.result?.[0],symbol);
   if(data)return {quote:data,status:200};
   if(response.status===429)return {quote:null,status:429};
@@ -119,23 +121,21 @@ async function chart(symbol,group){
  return {quote:null,status:0};
 }
 async function getGroup(group){
- const def=S[group],symbols=def.map(q=>q[2]),found=new Map(),errors=[];
+ const def=S[group],symbols=def.map(q=>q[2]),found=new Map(),errors=[],started=Date.now();
  // Batch source can fill a whole market category in one request, reducing Yahoo throttling.
  const first=await cnbc(symbols);
  first.forEach((v,k)=>found.set(k,v));
  // One inexpensive batch attempt before chart fallbacks; individual requests use
  // bounded concurrency to avoid exhausting serverless time and provider quotas.
  const remaining=symbols.filter(k=>!found.has(k));
- for(let i=0;i<remaining.length;i+=12){
-  const chunk=remaining.slice(i,i+12);
-  const r=await spark(chunk);
-  r.quotes.forEach((v,k)=>{if(!found.has(k))found.set(k,v)});
-  if(!r.quotes.size)errors.push(r.status);
- }
+ const chunks=[];
+ for(let i=0;i<remaining.length;i+=12)chunks.push(remaining.slice(i,i+12));
+ const batches=await Promise.all(chunks.map(spark));
+ for(const r of batches){r.quotes.forEach((v,k)=>{if(!found.has(k))found.set(k,v)});if(!r.quotes.size)errors.push(r.status);}
  const pending=symbols.filter(symbol=>!found.has(symbol));
  let next=0;
  await Promise.all(Array.from({length:Math.min(8,pending.length)},async()=>{
-  while(next<pending.length){
+  while(next<pending.length && Date.now()-started<22000){
    const symbol=pending[next++];
    const r=await chart(symbol,group);
    if(r.quote)found.set(symbol,r.quote);
