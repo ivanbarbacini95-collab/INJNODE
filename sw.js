@@ -1,8 +1,9 @@
-const CACHE_NAME = 'inj-node-v16.10.29-microdot-digits6';
+const CACHE_NAME = 'inj-node-v16.10.29-microdot-dense7';
 const APP_SHELL = [
+  './assets/fonts/INJ-Microdot-Dense.woff2',
   './assets/fonts/Doto-Variable.ttf',
-  './inj-font-switcher-20261029.css?v=fontchoice6',
-  './inj-font-switcher-20261029.js?v=fontchoice5',
+  './inj-font-switcher-20261029.css?v=fontchoice7',
+  './inj-font-switcher-20261029.js?v=fontchoice7',
   './inj-fluid-screen-fit.css?v=20261028fullmonitor1',
   './inj-monitor-readability.css?v=20261028readable3',
   './home-desktop-native-scroll.css?v=20261028home-scroll1',
