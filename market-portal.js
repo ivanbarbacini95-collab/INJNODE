@@ -33,7 +33,7 @@
     portal.setAttribute('aria-label', titleFor());
     frame.title = titleFor();
     // The primary app, wallet selection and Home are untouched underneath.
-    frame.src = './market.html?v=16102450&lang=' + (window.INJ_I18N?.getLanguage?.() || localStorage.getItem('inj_node_language_v1') || 'it');
+    frame.src = './market.html?v=20261029marketpro2&lang=' + (window.INJ_I18N?.getLanguage?.() || localStorage.getItem('inj_node_language_v1') || 'it');
     document.title = 'INJ NODE | ' + titleFor();
     // Keep the parent URL/history stationary: an edge swipe must not close Market.
   }
