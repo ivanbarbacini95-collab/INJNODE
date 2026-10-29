@@ -18,7 +18,7 @@ const num=v=>typeof v==='number'&&Number.isFinite(v)?v:null;
 const clean=(r,meta={},symbol)=>{
  if(!r)return null;
  const m=r.meta||meta||{};
- const quotes=r.indicators?.quote?.[0]?.close||r.indicators?.quote?.[0]?.close||[];
+ const quotes=r.indicators?.quote?.[0]?.close||[];
  const closes=quotes.filter(v=>typeof v==='number'&&Number.isFinite(v)&&v>0);
  const last=num(m.regularMarketPrice)??closes.at(-1);
  let prev=num(m.previousClose)??num(m.chartPreviousClose);
@@ -47,7 +47,7 @@ async function fetchJson(url,timeout){
 }
 async function fromSpark(batch){
  const url='https://query2.finance.yahoo.com/v7/finance/spark?symbols='+encodeURIComponent(batch.join(','))+'&range=5d&interval=1d';
- const data=await fetchJson(url,3000);if(!data?.spark?.result)return new Map();
+ const data=await fetchJson(url,2400);if(!data?.spark?.result)return new Map();
  const out=new Map();for(const rec of data.spark.result||[]){
   const symbol=rec?.symbol;
   const x=unwrap({spark:{result:[rec]}},symbol);
@@ -57,7 +57,7 @@ async function fromSpark(batch){
 }
 async function fromChart(symbol){
  const endpoint='https://query2.finance.yahoo.com/v8/finance/chart/'+encodeURIComponent(symbol)+'?range=5d&interval=1d';
- const data=await fetchJson(endpoint,2600);
+ const data=await fetchJson(endpoint,2100);
  return unwrap(data,symbol);
 }
 async function getGroup(group){
