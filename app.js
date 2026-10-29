@@ -8171,17 +8171,11 @@ function registerPwa() {
 
 function applyTheme(theme, notify = false) {
   const themes = {
-    navy: { label: 'Aurora', color: '#03070b' },
-    black: { label: 'Obsidian', color: '#030303' },
+    navy: { label: 'Aurora', color: '#07121b' },
+    black: { label: 'Nero', color: '#000000' },
     light: { label: 'Chiaro', color: '#eef5ff' },
-    amber: { label: 'Midnight Ember', color: '#070b11' },
-    ocean: { label: 'Ocean Aurora', color: '#07131f' },
-    chromatic: { label: 'Chromatic Mist', color: '#111323' },
+    amber: { label: 'Midnight Ember', color: '#05080d' },
     velvet: { label: 'Velvet Nebula', color: '#0a1024' },
-    aqua: { label: 'Aqua Mirage', color: '#d7e9ef' },
-    'ocean-x-electric': { label: 'Electric Ocean', color: '#06132d' },
-    'ocean-x-ion': { label: 'Ion Storm', color: '#130c2c' },
-    'ocean-x-toxic': { label: 'Toxic Abyss', color: '#061c1d' },
     'ocean-x-solar': { label: 'Solar Surge', color: '#1b122c' }
   };
   const selected = themes[theme] ? theme : 'navy';
@@ -8196,9 +8190,7 @@ function applyTheme(theme, notify = false) {
     button.classList.toggle('active', active);
     button.setAttribute('aria-pressed', active ? 'true' : 'false');
   });
-  // Reopen the selected category while keeping the catalog compact.
-  const selectedGroup = document.querySelector('#themePicker [data-theme-choice="' + selected + '"]')?.closest('.theme-category');
-  if (selectedGroup) document.querySelectorAll('#themePicker .theme-category').forEach((group) => { group.open = group === selectedGroup; });
+  // All six approved palettes live directly inside the single Theme list.
   if (isChartOpen()) requestAnimationFrame(renderNativeChart);
   if (notify) toast(`Tema ${themes[selected].label}`);
 }
