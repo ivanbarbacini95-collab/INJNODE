@@ -32,6 +32,7 @@ html body :is(button,input,select,textarea) {
 }
 /* Code, transaction hashes and raw wallet IDs stay unambiguous. */
 html body :is(code,kbd,samp,pre,.tx-hash,.wallet-address,.address-hash,[data-monospace]) {
+  --inj-node-terminal-font:var(--inj-editorial-mono);
   font-family:var(--inj-editorial-mono)!important;
   font-variant-numeric:tabular-nums;
 }
@@ -88,6 +89,19 @@ html body :is(.ws-section-value,.ws-data-value,.treasury-metric>strong,
   .entry-overview-stats strong) {
   font-family:var(--inj-editorial-face)!important;
   font-weight:500!important;
+  font-variant-numeric:tabular-nums lining-nums!important;
+}
+/* Target the real hero-value elements from each independent screen. */
+html[data-inj-page="treasury"] body :is(
+  #treasuryTotalMajor,#treasuryTotalDecimals,#treasuryTotalWorth,
+  .treasury-total-major,.treasury-total-decimals,.treasury-hero-worth),
+html[data-inj-page="live-rewards"] body :is(
+  #rewardsTotal,.rewards-total-value>strong,.rewards-total-fiat),
+html[data-inj-page="visualize-wealth"] body .wealth-amount,
+html[data-inj-market] body :is(.inj-mi-snapshot strong,.overview article>strong) {
+  font-family:var(--inj-editorial-face)!important;
+  font-weight:300!important;
+  letter-spacing:-.035em!important;
   font-variant-numeric:tabular-nums lining-nums!important;
 }
 /* No effect on icon fonts or vector chart labels. */
