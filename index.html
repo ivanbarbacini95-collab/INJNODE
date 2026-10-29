@@ -350,33 +350,7 @@
 <link rel="stylesheet" href="./home-compact-value-bars.css?v=20261028compactbars2"/>
 <link rel="stylesheet" href="./home-market-events.css?v=20261029borderless1"/>
 <script defer src="./home-market-events.js?v=20261028prefs1"></script>
-<!-- Critical mobile tile sizing: survives an old cached grid stylesheet. -->
-<style id="injnode-market-tile-critical">
-@media(max-width:799px){
- html[data-inj-page="index"] body #entryGate .entry-actions.entry-flat-v44 #entryMarketEventsButton{
-  grid-column:1/-1!important;grid-row:auto!important;order:13!important;
-  width:100%!important;min-width:0!important;max-width:100%!important;
-  height:80px!important;min-height:80px!important;max-height:80px!important;
-  display:flex!important;position:relative!important;
-  flex-direction:row!important;align-items:center!important;justify-content:flex-start!important;
-  padding:12px 102px 12px 20px!important;box-sizing:border-box!important;text-align:left!important
- }
- html[data-inj-page="index"] body #entryGate #entryMarketEventsButton>.inj-events-tile-copy{
-  flex:1 1 auto!important;min-width:0!important;display:flex!important;
-  flex-direction:column!important;align-items:flex-start!important;justify-content:center!important;
-  overflow:hidden!important
- }
- html[data-inj-page="index"] body #entryGate #entryMarketEventsButton>.inj-events-tile-copy>strong{
-  display:block!important;text-align:left!important;white-space:nowrap!important
- }
- html[data-inj-page="index"] body #entryGate #entryMarketEventsButton>.inj-events-tile-stars{
-  position:absolute!important;display:block!important;right:16px!important;top:50%!important;
-  width:max-content!important;height:auto!important;background:none!important;border:0!important;
-  white-space:nowrap!important;writing-mode:horizontal-tb!important;
-  transform:translateY(-50%)!important;font-size:20px!important;letter-spacing:3px!important
- }
-}
-</style>
+<!-- Retired legacy wide-format Market Event inline rules; the tile is now a standard compact Home destination. -->
 <link rel="stylesheet" href="./home-launcher-typography-final.css?v=20261028labels1"/>
 <link rel="stylesheet" href="./market-events-footer-seamless.css?v=20261028foot1"/>
 <link rel="stylesheet" href="./home-settings-scroll-lock.css?v=20261028menu-lock1"/>
@@ -397,6 +371,8 @@
 <link rel="stylesheet" href="./home-chart-fill-20261029.css?v=2"/>
 <link rel="stylesheet" href="./home-more-inline-20261029.css?v=20261029isolated3"/>
 <link rel="stylesheet" href="./home-rounded-launchers-20261029.css?v=1"/>
+<link rel="stylesheet" href="./home-macro-calendar-tile-20261029.css?v=1"/>
+<link rel="stylesheet" href="./home-icon-micro-motion-20261029.css?v=1"/>
 <script defer src="./home-card-height-sync-20261029.js?v=1"></script>
 </head>
 <body class="boot-loading">
@@ -821,9 +797,9 @@
 <span><strong class="inj-home-tile-title" data-it="Reward Ladder" data-en="Reward Ladder">Reward Ladder</strong><small class="inj-tile-description" data-it="Obiettivi dei reward" data-en="Reward milestones">Obiettivi dei reward</small></span>
 <svg aria-hidden="true" class="entry-action-arrow" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
 </a>
-<button class="entry-action entry-action-market-events" id="entryMarketEventsButton" type="button" aria-label="Apri calendario Market Event" aria-haspopup="dialog" aria-controls="injMarketEventsOverlay">
-<span class="inj-tile-scene inj-more-market-symbol inj-home-market-art" aria-hidden="true"><svg viewBox="0 0 100 66" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="9" y="11" width="82" height="45" rx="9" stroke="currentColor" stroke-opacity=".43" stroke-width="1.5"/><path d="M18 43h64M18 23h64M26 19v29M50 19v29M74 19v29" stroke="currentColor" stroke-opacity=".2"/><path d="m19 40 13-13 13 8 13-13 12 6 12-11" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/><circle class="more-market-pulse" cx="82" cy="17" r="3.7" fill="currentColor"/></svg></span>
-<span class="inj-home-unified-copy"><strong class="inj-home-tile-title" data-it="Market Event" data-en="Market Event">Market Event</strong><span class="inj-tile-description inj-home-market-caption" data-it="Calendario macro" data-en="Macro calendar">Calendario macro</span></span>
+<button class="entry-action entry-action-macro-calendar" id="entryMacroCalendarButton" type="button" aria-label="Apri calendario Market Event" aria-haspopup="dialog" aria-controls="injMarketEventsOverlay">
+<span aria-hidden="true" class="inj-tile-scene inj-more-market-symbol inj-home-market-art"><svg viewBox="0 0 100 66" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="9" y="11" width="82" height="45" rx="9" stroke="currentColor" stroke-opacity=".43" stroke-width="1.5"/><path d="M18 43h64M18 23h64M26 19v29M50 19v29M74 19v29" stroke="currentColor" stroke-opacity=".2"/><path d="m19 40 13-13 13 8 13-13 12 6 12-11" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/><circle class="more-market-pulse" cx="82" cy="17" r="3.7" fill="currentColor"/></svg></span>
+<span class="inj-macro-calendar-copy"><strong class="inj-home-tile-title" data-it="Market Event" data-en="Market Event">Market Event</strong><small class="inj-tile-description" data-it="Calendario macro" data-en="Macro calendar">Calendario macro</small></span>
 <small id="injMarketNextSummary" class="inj-events-next-text" hidden aria-hidden="true" data-it="Calendario macro ★★★ · USA / Europa / Asia" data-en="★★★ macro calendar · US / Europe / Asia">Calendario macro ★★★ · USA / Europa / Asia</small>
 </button>
 <a class="entry-action entry-action-injc" id="entryInjcEtfButton" href="./injc-etf.html?v=20261026" aria-label="Apri INJC ETF Terminal">
