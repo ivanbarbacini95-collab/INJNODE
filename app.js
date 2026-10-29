@@ -2121,11 +2121,10 @@ function entrySparkPath(points) {
   const span = Math.max(1e-9, max - min);
   const width = 320;
   const height = 150;
-  // Reserve a visibly larger safe band above and below the real curve.
-  // This works together with price-domain padding, so even a sudden pump/dump
-  // remains comfortably inside the plot instead of touching the card edges.
-  const top = 24;
-  const bottom = 126;
+  // Home price chart: use the full vertical drawing area. Price-domain
+  // padding still keeps the peaks/troughs legible; the P/L stays below the plot.
+  const top = 10;
+  const bottom = 143;
   const timeSpan = Math.max(1, dayEnd - dayStart);
 
   const coords = rows.map((row) => {
