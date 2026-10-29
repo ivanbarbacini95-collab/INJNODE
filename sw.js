@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.10.29-native-market-v2';
+const CACHE_NAME = 'inj-node-v16.10.29-native-market-v3';
 const APP_SHELL = [
   './inj-fluid-screen-fit.css?v=20261028fullmonitor1',
   './inj-monitor-readability.css?v=20261028readable3',
@@ -172,8 +172,8 @@ const APP_SHELL = [
   './treasury-ownership.css?v=16102501',
   './treasury-ownership-theme.css?v=160702',
   './market.html',
-  './world-markets-heatmap.js?v=20261029native2',
-  './world-markets-heatmap.css?v=20261029native2',
+  './world-markets-heatmap.js?v=20261029native3',
+  './world-markets-heatmap.css?v=20261029native3',
   './market-intelligence-summary.js?v=20261029world1',
   './market-intelligence.css?v=160421',
   './market-intelligence-summary.js?v=160708',
