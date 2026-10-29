@@ -17,7 +17,6 @@ html[data-inj-page="index"] body #entryGate#entryGate
   border:1px solid color-mix(in srgb,var(--accent,#b2c7c4) 23%,var(--line,#48545b))!important;
   border-radius:18px!important;
   background:color-mix(in srgb,var(--surface,#152127) 67%,transparent)!important;
-  background-color:transparent!important;
   background-image:none!important;
   box-shadow:0 2px 10px rgba(0,0,0,.08)!important;
   -webkit-box-shadow:0 2px 10px rgba(0,0,0,.08)!important;
