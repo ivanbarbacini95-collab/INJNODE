@@ -572,7 +572,7 @@
  function closePanel(){
   if(!$('injEventsResultBackdrop').hidden){hideResult();return}
   state.open=false;$('injMarketEventsOverlay').hidden=true;
-  $('entryMarketEventsButton').focus({preventScroll:true});
+  $('entryMacroCalendarButton').focus({preventScroll:true});
  }
  function updateAlertButton(){
   const btn=$('injEventsAlerts');btn.setAttribute('aria-pressed',String(state.alerts));
@@ -817,7 +817,7 @@
  const hash=location.hash.match(/^#inj-market-event=(.+)$/);
  if(hash){try{openFromNotification(decodeURIComponent(hash[1]));history.replaceState(null,'',location.pathname+location.search)}catch{}}
 
- $('entryMarketEventsButton').addEventListener('click',openPanel);
+ $('entryMacroCalendarButton').addEventListener('click',openPanel);
  $('injMarketTickerEvents')?.addEventListener('click',openPanel);
  $('injEventsClose').addEventListener('click',closePanel);
  $('injEventsResultClose').addEventListener('click',hideResult);
