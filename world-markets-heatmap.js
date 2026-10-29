@@ -195,11 +195,37 @@ function statusWithRetry(group,message){
  retry.addEventListener('click',()=>{void loadGroup(group,true)});
  status.append(retry);
 }
+let sharedSnapshot=null,sharedSnapshotAt=0,sharedSnapshotPromise=null;
+async function getStaticMarketSnapshot(force=false){
+ const now=Date.now();
+ if(!force&&sharedSnapshot&&now-sharedSnapshotAt<120000)return sharedSnapshot;
+ if(sharedSnapshotPromise)return sharedSnapshotPromise;
+ sharedSnapshotPromise=(async()=>{
+  try{
+   const version=Math.floor(Date.now()/120000);
+   const response=await fetch('./market-data/global-markets.json?v='+version,{
+    cache:'no-store',headers:{Accept:'application/json'}
+   });
+   if(!response.ok)throw Object.assign(new Error('snapshot unavailable'),{code:response.status});
+   if(!(response.headers.get('content-type')||'').includes('json'))
+    throw Object.assign(new Error('snapshot not JSON'),{code:503});
+   const body=await response.json();
+   if(body?.schema!==1||typeof body.groups!=='object'||!body.groups)
+    throw Object.assign(new Error('snapshot invalid'),{code:503});
+   sharedSnapshot=body;sharedSnapshotAt=Date.now();
+   return body;
+  }catch(err){
+   if(sharedSnapshot)return sharedSnapshot;
+   throw err;
+  }
+ })();
+ try{return await sharedSnapshotPromise;}finally{sharedSnapshotPromise=null;}
+}
 function errorDescription(code){
- if(code===404)return tr('Endpoint API non pubblicato (404)','Market API endpoint not deployed (404)');
+ if(code===404)return tr('Archivio quotazioni non ancora pubblicato','Market quotes snapshot not published yet');
  if(code===429)return tr('Fonte dati limitata (429)','Data source rate limited (429)');
  if(code===403)return tr('Accesso alla fonte negato (403)','Data source access denied (403)');
- if(code===503)return tr('Feed prezzi non disponibile (503)','Price feed unavailable (503)');
+ if(code===503)return tr('Archivio quotazioni in aggiornamento','Market snapshot is being updated');
  if(code)return tr('Errore HTTP ','HTTP error ')+code;
  return tr('Connessione quotazioni non disponibile','Quote connection unavailable');
 }
@@ -216,10 +242,12 @@ async function loadGroup(group,force=false){
   let body;
   if(group==='crypto')body=await cryptoSnapshot();
   else{
-   const r=await fetch('./api/global-markets?group='+encodeURIComponent(group),{cache:'no-store',headers:{Accept:'application/json'}});
-   if(!r.ok)throw Object.assign(new Error('Server failure'),{code:r.status});
-   if(!(r.headers.get('content-type')||'').includes('application/json'))throw Object.assign(new Error('Non-JSON data'),{code:404});
-   body=await r.json();
+   // GitHub Pages serves this file statically. A scheduled GitHub Action updates
+   // the actual prices; no serverless /api route is required or attempted.
+   const snapshot=await getStaticMarketSnapshot(force);
+   body=snapshot?.groups?.[group];
+   if(!Array.isArray(body?.quotes)||!body.quotes.length)
+    throw Object.assign(new Error('Waiting for first market snapshot'),{code:503});
   }
   if(!Array.isArray(body?.quotes))throw Object.assign(new Error('Invalid data'),{code:502});
   const old=byId(quotes.get(group)||[]);
@@ -228,7 +256,7 @@ async function loadGroup(group,force=false){
   if(body.quotes.some(q=>Number.isFinite(q.price))){updated.set(group,Date.now());saveQuotes();}
   renderGroup(group,arr);
   if(!body.quotes.some(q=>Number.isFinite(q.price)))statusWithRetry(group,
-   body.providerStatus==='rate-limited'?errorDescription(429):tr('Fonte prezzi non disponibile · valori non simulati','Price feed unavailable · no estimated values'));
+   body.status==='unavailable'?tr('Prossimo aggiornamento GitHub in attesa · nessun dato inventato','Waiting for next GitHub refresh · no estimated data'):tr('Fonte prezzi non disponibile · valori non simulati','Price feed unavailable · no estimated values'));
   else if(body.available<arr.length&&label)label.textContent+=' · '+tr('quotazioni parziali','partial quotes');
  }catch(err){
   renderGroup(group,quotes.get(group)||definitions(group));
