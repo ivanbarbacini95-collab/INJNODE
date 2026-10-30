@@ -18,7 +18,7 @@ function persistMarket(coins,currency,at){
    const record={};for(const key of fields)if(c[key]!==undefined)record[key]=c[key];
    const points=c.sparkline_in_7d?.price;
    if(Array.isArray(points)&&points.length>1){
-    const stride=Math.max(1,Math.ceil(points.length/48));
+    const stride=Math.max(1,Math.ceil(points.length/185));
     record.sparkline_in_7d={price:points.filter((_,i)=>i===0||i===points.length-1||i%stride===0)};
    }
    return record;
