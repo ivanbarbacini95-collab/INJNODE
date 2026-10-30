@@ -16,7 +16,7 @@ const SETTINGS={
 };
 const KEY='inj_node_crypto_chart_frame_v1';
 const MIN_POINTS={'1h':9,'1d':22,'1w':28,'1m':25};
-const MIN_COVER={'1h':.75,'1d':.82,'1w':.84,'1m':.86};
+const MIN_COVER={'1h':.88,'1d':.88,'1w':.9,'1m':.92};
 const MAX_AGE={'1h':12*60000,'1d':3*3600000,'1w':20*3600000,'1m':48*3600000};
 const DIRECT_PAIRS={
  bitcoin:['btc','BTCUSDT'],ethereum:['eth','ETHUSDT'],binancecoin:['bnb','BNBUSDT'],
