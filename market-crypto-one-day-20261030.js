@@ -15,7 +15,7 @@ const SETTINGS={
  '1m':{interval:'4h',step:14400000,limit:186,ttl:2400000}
 };
 const KEY='inj_node_crypto_chart_frame_v1';
-const MIN_POINTS={'1h':9,'1d':22,'1w':28,'1m':32};
+const MIN_POINTS={'1h':9,'1d':22,'1w':28,'1m':25};
 const MIN_COVER={'1h':.75,'1d':.82,'1w':.84,'1m':.86};
 const MAX_AGE={'1h':12*60000,'1d':3*3600000,'1w':20*3600000,'1m':48*3600000};
 const DIRECT_PAIRS={
