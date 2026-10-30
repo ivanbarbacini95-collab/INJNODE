@@ -43,7 +43,7 @@ function checkCurrency(){
  for(const controller of inflight)controller.abort();
 }
 function sample(coin,now=Date.now()){
- if(!coin?.id||!good(coin.current_price))return;
+ if(!coin?.id||!good(coin.current_price)||api()?.isCached?.())return;
  checkCurrency();
  const arr=observed.get(coin.id)||[];
  while(arr.length&&arr[0].t<now-SPANS['1m'])arr.shift();
@@ -58,7 +58,9 @@ function sevenDay(coin,now){
  const src=coin?.sparkline_in_7d?.price;
  if(!Array.isArray(src)||src.length<2)return [];
  const updated=Number(api()?.getMarketUpdatedAt?.())||0;
- if(!updated||now-updated>MAX_AGE[frame])return [];
+ // The last verified 7d market sparkline can be shown immediately even
+ // during a temporary provider outage, but must be labeled as historical.
+ if(!updated||updated>now+60000||now-updated>48*3600000)return [];
  const end=Math.min(now,updated),duration=SPANS['1w'];
  return src.map((v,i)=>({t:end-duration*(src.length-1-i)/(src.length-1),v:Number(v)}))
   .filter(p=>good(p.v)&&p.t<=now);
@@ -94,7 +96,8 @@ function readDisk(key){
  try{
   if(!disk)disk=JSON.parse(localStorage.getItem(DISK_KEY)||'{}')||{};
   const saved=disk[key];
-  if(saved&&Array.isArray(saved.values)&&saved.until>Date.now())
+  if(saved&&Array.isArray(saved.values)&&saved.values.length>=MIN_POINTS[key.split(':').at(-1)]&&
+     saved.source!=='none'&&saved.until>Date.now()-48*3600000)
    return {values:saved.values,until:saved.until,source:saved.source,pair:saved.pair||''};
  }catch(_){disk={}}
  return null;
@@ -111,22 +114,34 @@ function writeDisk(key,item,period=frame){
 }
 function history(coin,now=Date.now()){
  checkCurrency();
- const key=currentKey(coin);
+ const key=currentKey(coin),lastMarketAt=Number(api()?.getMarketUpdatedAt?.())||0;
  let cached=prices.get(key);
  if(!cached){cached=readDisk(key);if(cached)prices.set(key,cached)}
+ let source=cached?.source||'',anchor=now;
  let data=cached?.values?.length?validSeries(cached.values,now):null;
- let source=cached?.source||'';
- // Only one-day or one-week feed previews: never turn 7d samples into 1h or 1m.
+ if(!data&&cached?.values?.length>=MIN_POINTS[frame]&&cached.source!=='none'){
+  // Present an older VERIFIED snapshot while the next network request runs.
+  // Never position it on the current time axis or mark it as live.
+  const end=Number(cached.values.at(-1)?.t);
+  if(Number.isFinite(end)&&now-end<48*3600000){
+   data=validSeries(cached.values,end);
+   if(data)anchor=end;
+  }
+ }
  if(!data&&(frame==='1d'||frame==='1w')){
-  data=validSeries(sevenDay(coin,now),now);
-  source='feed';
+  // The 7d market-feed sparkline is already included with the Top 200 and
+  // provides the fastest honest preview for the two supported windows.
+  const feedAt=lastMarketAt&&now-lastMarketAt<=48*3600000
+   ?(now-lastMarketAt>MAX_AGE[frame]||api()?.isCached?.()?lastMarketAt:now):now;
+  const preview=sevenDay(coin,now);
+  data=validSeries(preview,feedAt);
+  if(data){source='feed';anchor=feedAt}
  }
  if(!data)return null;
  let points=data;
  const last=points.at(-1),current=Number(coin.current_price);
- const marketFresh=!api()?.isCached?.()&&now-(Number(api()?.getMarketUpdatedAt?.())||0)<12*60000;
- // A constant normalization only when the quote is fresh keeps the
- // exchange line and displayed USD/EUR price on compatible scales.
+ const stale=Boolean(api()?.isCached?.())||now-anchor>MAX_AGE[frame];
+ const marketFresh=!stale&&now-lastMarketAt<12*60000;
  if(marketFresh&&good(current)&&good(last.v)){
   const ratio=current/last.v;
   if(ratio>.45&&ratio<2.2){
@@ -134,7 +149,7 @@ function history(coin,now=Date.now()){
    if(now-last.t>12000)points.push({t:now,v:current});
   }
  }
- return {points:inWindow(points,now),source};
+ return {points:inWindow(points,anchor),source,anchor,stale};
 }
 function percentFrom(coin,now=Date.now()){
  const series=history(coin,now)?.points;
@@ -153,15 +168,17 @@ function chart(coin,now=Date.now()){
   return '<span class="inj-1d-empty '+(wasTried?'inj-chart-unavailable':'inj-chart-loading')+'" aria-label="'+label+'">'+(wasTried?'—':'···')+'</span>';
  }
  const data=shrink(points),low=Math.min(...data.map(p=>p.v)),high=Math.max(...data.map(p=>p.v));
- const start=now-SPANS[frame],span=SPANS[frame],w=320,h=76,margin=7;
+ const start=(state?.anchor||now)-SPANS[frame],span=SPANS[frame],w=320,h=76,margin=7;
  const extra=(high-low)*.07||Math.abs(high)*.0005||.0000001,lo=low-extra,hi=high+extra;
  const px=t=>Math.max(0,Math.min(w,(t-start)/span*w));
  const py=v=>h-margin-(v-lo)/(hi-lo)*(h-2*margin);
  const path=data.map((p,i)=>(i?'L':'M')+px(p.t).toFixed(2)+' '+py(p.v).toFixed(2)).join(' ');
  const pct=percentFrom(coin,now);
  const up=Number.isFinite(pct)?pct>=0:data.at(-1).v>=data[0].v;
- const label=(document.documentElement.lang==='en'?'Real available price samples':'Campioni di prezzo reali disponibili')+' · '+frame.toUpperCase();
- return '<svg class="inj-1d-chart '+(up?'up':'down')+'" viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none" role="img" aria-label="'+label+'"><path d="'+path+'"/></svg>';
+ const label=(document.documentElement.lang==='en'?'Verified price history':'Storico prezzi verificato')+
+  ' · '+frame.toUpperCase()+
+  (state?.stale?(document.documentElement.lang==='en'?' · last verified snapshot, not live':' · ultimo storico verificato, non live'):'');
+ return '<svg class="inj-1d-chart '+(up?'up':'down')+(state?.stale?' is-verified-snapshot':'')+'" viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none" role="img" aria-label="'+label+'"><title>'+label+'</title><path d="'+path+'"/></svg>';
 }
 function render(coin,now=Date.now()){return chart(coin,now)}
 function selectedChange(coin){return percentFrom(coin)}
