@@ -290,7 +290,7 @@ function onRowsRendered(){
    for(const e of entries){
     if(!e.isIntersecting)continue;
     const row=e.target,coin=coins.get(row.dataset.coin);
-    if(coin)schedule(coin,row);
+    if(coin){paintRow(row,coin);schedule(coin,row)}
    }
   },{root:null,rootMargin:'250px 0px',threshold:0});
   rows.forEach(row=>observer.observe(row));
@@ -304,6 +304,11 @@ function repaint(){
  const coins=new Map((api()?.getCoins?.()||[]).map(c=>[c.id,c]));
  const now=Date.now();
  for(const row of document.querySelectorAll('#marketProRows .mp-row[data-coin]')){
+  // Avoid repainting ~200 SVG elements that are far offscreen on iPhone.
+  // Newly visible rows are always repainted by IntersectionObserver.
+  const rect=row.getBoundingClientRect?.();
+  const height=window.innerHeight||document.documentElement.clientHeight||800;
+  if(rect&&(rect.bottom< -220||rect.top>height+350))continue;
   const coin=coins.get(row.dataset.coin);
   if(coin)paintRow(row,coin,now);
  }
