@@ -1,6 +1,6 @@
-const CACHE_NAME = 'inj-node-v16.10.30-bottom-tabs2';
+const CACHE_NAME = 'inj-node-v16.10.30-bottom-tabs3';
 const APP_SHELL = [
-  './home-bottom-tabs-20261030.css?v=bottomnav2',
+  './home-bottom-tabs-20261030.css?v=bottomnav3',
   './home-bottom-tabs-20261030.js?v=bottomnav1',
   './inj-font-switcher-20261029.css?v=official-font7',
   './inj-font-switcher-20261029.js?v=official-font7',

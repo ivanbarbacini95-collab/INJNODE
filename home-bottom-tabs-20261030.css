@@ -79,7 +79,8 @@ html[data-inj-page="index"] body #entryGate#entryGate #injTabHeading[hidden]{
 }
 html[data-inj-page="index"] body #entryGate#entryGate #injTabHeading{
  display:flex!important;align-items:flex-end!important;justify-content:space-between!important;
- width:100%!important;min-width:0!important;
+ width:100%!important;min-width:0!important;grid-column:1/-1!important;grid-row:auto!important;
+ align-self:stretch!important;justify-self:stretch!important;
  box-sizing:border-box!important;margin:4px 0 15px!important;padding:3px 1px 12px!important;
  border-bottom:1px solid color-mix(in srgb,var(--line,#566866) 72%,transparent)!important;
  background:none!important;
