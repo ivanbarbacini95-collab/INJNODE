@@ -1,7 +1,7 @@
-const CACHE_NAME = 'inj-node-v16.10.30-crypto-scope1';
+const CACHE_NAME = 'inj-node-v16.10.30-crypto-swipe-fix1';
 const APP_SHELL = [
-  './market-crypto-scope-20261030.css?v=scope1',
-  './market-favorites-latched-20261030.css?v=latch2',
+  './market-crypto-scope-20261030.css?v=scope2',
+  './market-favorites-latched-20261030.css?v=latch3',
   './market-crypto-one-day-20261030.css?v=oneday4',
   './market-crypto-one-day-20261030.js?v=oneday1',
   './market.js?v=20261030oneday1',
