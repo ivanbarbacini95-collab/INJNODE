@@ -97,8 +97,8 @@ function readDisk(key){
  }catch(_){disk={}}
  return null;
 }
-function writeDisk(key,item){
- if(!item.values||item.values.length<MIN_POINTS[frame])return;
+function writeDisk(key,item,period=frame){
+ if(!item.values||item.values.length<MIN_POINTS[period])return;
  try{
   if(!disk)disk=JSON.parse(localStorage.getItem(DISK_KEY)||'{}')||{};
   disk[key]={values:item.values,until:item.until,source:item.source,pair:item.pair};
@@ -183,9 +183,14 @@ function paintRow(row,coin,now=Date.now()){
  if(slot.innerHTML!==markup)slot.innerHTML=markup;
  paintPercent(coin,row);
 }
+
 function pairFor(coin){
- const symbol=api()?.getPairForCoin?.(coin.id);
- return typeof symbol==='string'&&/^[A-Z0-9]{2,18}USDT$/.test(symbol)?symbol:'';
+ const verified=api()?.getPairForCoin?.(coin.id);
+ if(typeof verified==='string'&&/^[A-Z0-9]{2,18}USDT$/.test(verified))return verified;
+ // Direct, unambiguous CoinGecko ID mappings let the major coins load
+ // historical candles before Binance exchangeInfo completes.
+ const direct=DIRECT_PAIRS[coin?.id];
+ return direct&&String(coin.symbol||'').toLowerCase()===direct[0]?direct[1]:'';
 }
 async function json(url,timeout=9500){
  const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),timeout);
@@ -194,70 +199,74 @@ async function json(url,timeout=9500){
   return await res.json()
  }finally{clearTimeout(timer)}
 }
+
 async function loadHistory(coin,requestedFrame,pair){
- const span=SPANS[requestedFrame],now=Date.now();
+ const now=Date.now(),spec=SETTINGS[requestedFrame],span=SPANS[requestedFrame];
  if(pair){
   try{
-   const spec=SETTINGS[requestedFrame];
-   const url='https://data-api.binance.vision/api/v3/klines?symbol='+pair+'&interval='+spec.interval+'&limit='+spec.limit;
-   const raw=await json(url);
-   const arr=Array.isArray(raw)?raw.map(p=>({t:Number(p[0]),v:Number(p[4])})).filter(p=>good(p.v)&&p.t>=now-span-3600000&&p.t<=now):[];
-   if(arr.length>=2)return arr;
-  }catch(_){/* CoinGecko fallback; not a fake Binance price history. */}
+   const start=Math.max(0,Math.floor(now-span-2*spec.step));
+   const url='https://data-api.binance.vision/api/v3/klines?symbol='+pair+
+    '&interval='+spec.interval+'&startTime='+start+'&endTime='+now+'&limit='+spec.limit;
+   const raw=await json(url,10500);
+   // Kline close times, not artificial timestamps. The current candle's
+   // provisional last close is timestamped at now.
+   const arr=Array.isArray(raw)?raw.map(p=>({
+    t:Math.min(now,Number(p[6]??p[0])),v:Number(p[4])
+   })).filter(p=>good(p.v)&&Number.isFinite(p.t)):[];
+   if(validSeries(arr,now,requestedFrame))return {values:arr,source:'binance'};
+  }catch(_){/* Pair unavailable in this region: CoinGecko fallback. */}
  }
- if(Date.now()<cgBlockedUntil)return [];
- // Only a bounded number of fallback historical reads per minute.
+ if(Date.now()<cgBlockedUntil||Date.now()<cgAfter)return {values:[],source:'none'};
+ cgAfter=Date.now()+6500;
  const days=requestedFrame==='1h'||requestedFrame==='1d'?1:requestedFrame==='1w'?7:30;
- const url='https://api.coingecko.com/api/v3/coins/'+encodeURIComponent(coin.id)+'/market_chart?vs_currency='+encodeURIComponent(currencyKey)+'&days='+days;
+ const url='https://api.coingecko.com/api/v3/coins/'+encodeURIComponent(coin.id)+
+  '/market_chart?vs_currency='+encodeURIComponent(currencyKey)+'&days='+days;
  try{
-  const raw=await json(url,10500);
-  const arr=Array.isArray(raw?.prices)?raw.prices.map(p=>({t:Number(p[0]),v:Number(p[1])})).filter(p=>good(p.v)&&p.t>=now-span-3600000&&p.t<=now):[];
-  return arr.length>=2?arr:[];
+  const raw=await json(url,11500);
+  const arr=Array.isArray(raw?.prices)?raw.prices.map(p=>({t:Number(p[0]),v:Number(p[1])})):[];
+  if(validSeries(arr,Date.now(),requestedFrame))return {values:arr,source:'coingecko'};
+  return {values:[],source:'none'};
  }catch(e){
   if([401,403,418,429].includes(e?.status))cgBlockedUntil=Date.now()+180000;
-  return [];
+  return {values:[],source:'none'};
  }
 }
 function eligible(row,coin){
  return row?.isConnected&&coin?.id&&row.dataset.coin===coin.id&&
   document.documentElement.dataset.marketMode==='list';
 }
+
 function schedule(coin,row){
  if(!eligible(row,coin))return;
  checkCurrency();
- const key=currentKey(coin),cached=prices.get(key),now=Date.now();
- if(cached&&now<cached.until&&!(pairFor(coin)&&cached.values.length<2))return;
+ const key=currentKey(coin),now=Date.now(),pair=pairFor(coin);
+ let cached=prices.get(key);
+ if(!cached){cached=readDisk(key);if(cached)prices.set(key,cached)}
+ if(cached&&now<cached.until&&cached.pair===pair)return;
  if(pending.has(key)||queue.some(job=>job.key===key))return;
- const hasSeven=sevenDay(coin,now).length>=2;
- const pair=pairFor(coin);
- // The on-feed 1D and 1W history is immediately usable. Fetch a more
- // detailed pair history when one is verified and the coin is on screen.
- if(!pair&&(frame==='1d'||frame==='1w')&&hasSeven)return;
  queue.push({coin,key,frame,pair,currency:currencyKey});
  pump();
 }
 function pump(){
  while(active<2&&queue.length){
-  const index=queue.findIndex(job=>job.pair||Date.now()>=cgAfter);
-  if(index<0){
-   const wait=Math.max(100,cgAfter-Date.now());
-   setTimeout(pump,Math.min(wait,7000));return;
-  }
-  const job=queue.splice(index,1)[0];
+  const job=queue.shift();
   if(pending.has(job.key))continue;
   pending.add(job.key);active++;
-  if(!job.pair)cgAfter=Date.now()+6500;
-  loadHistory(job.coin,job.frame,job.pair).then(data=>{
-   if(!Array.isArray(data))return;
-   const ttl=data.length>=2?SETTINGS[job.frame].ttl:60000;
-   if(prices.size>650)prices.delete(prices.keys().next().value);
-   prices.set(job.key,{values:data,until:Date.now()+ttl});
+  loadHistory(job.coin,job.frame,job.pair).then(record=>{
+   if(job.currency!==currencyKey)return;
+   const values=Array.isArray(record?.values)?record.values:[];
+   const ttl=values.length>=MIN_POINTS[job.frame]?SETTINGS[job.frame].ttl:90000;
+   const item={values,source:record?.source||'none',until:Date.now()+ttl,pair:job.pair};
+   if(prices.size>500)prices.delete(prices.keys().next().value);
+   prices.set(job.key,item);
+   if(values.length>=MIN_POINTS[job.frame])writeDisk(job.key,item,job.frame);
   }).catch(()=>{}).finally(()=>{
    pending.delete(job.key);active--;pump();
    if(job.currency!==currencyKey||job.frame!==frame)return;
-   const coins=new Map((api()?.getCoins?.()||[]).map(c=>[c.id,c]));
+   const coin=api()?.getCoins?.()?.find(c=>c.id===job.coin.id);
+   if(!coin)return;
    document.querySelectorAll('#marketProRows .mp-row[data-coin]').forEach(row=>{
-    if(row.dataset.coin===job.coin.id)paintRow(row,coins.get(job.coin.id));
+    if(row.dataset.coin===coin.id)paintRow(row,coin);
    });
   });
  }
