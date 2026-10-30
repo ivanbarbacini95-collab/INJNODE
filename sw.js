@@ -1,9 +1,9 @@
-const CACHE_NAME = 'inj-node-v16.10.30-crypto-timeframes3';
+const CACHE_NAME = 'inj-node-v16.10.30-crypto-timeframes4';
 const APP_SHELL = [
   './market-crypto-scope-20261030.css?v=scope3',
   './market-favorites-latched-20261030.css?v=latch4',
   './market-crypto-one-day-20261030.css?v=frames2',
-  './market-crypto-one-day-20261030.js?v=frames3',
+  './market-crypto-one-day-20261030.js?v=frames4',
   './market.js?v=20261030frames2',
   './market-views.js?v=20261030frames2',
   './home-market-launcher-uniform-20261030.css?v=marketpolish2',
