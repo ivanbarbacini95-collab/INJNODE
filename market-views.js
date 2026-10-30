@@ -297,6 +297,8 @@
   const value=document.createElement('span');value.className='hm-change';
   const price=document.createElement('small');price.className='hm-price';
   node.append(price,value);
+  const icon=node.querySelector('img.hm-icon');
+  node.classList.toggle('heatmap-no-logo',!icon||!icon.complete||icon.naturalWidth===0);
   recolor(node,coin,v);
   return node;
  }
