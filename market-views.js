@@ -279,6 +279,7 @@
    if(active){
     active.closest('.market-favorite-row')?.classList.add('inj-swipe-open');
     active.style.setProperty('--inj-swipe-x','-116px');
+    active.setAttribute('aria-expanded','true');
    }else openSwipeId=null;
   }
   $('mpMetaCount').textContent=tr('Crypto visualizzate: ','Displayed assets: ')+coins.length;
@@ -522,7 +523,8 @@
   },1500);
  }
  function languageChange(){
-  $('injFavoriteTabLabel').textContent=tr('Preferiti','Favorites');
+  const favoriteTabLabel=$('injFavoriteTabLabel');
+  if(favoriteTabLabel)favoriteTabLabel.textContent=tr('Preferiti','Favorites');
   $('marketProSort').setAttribute('aria-label',tr('Ordina Crypto','Sort cryptos'));
   $('heatmapCount').textContent=tr('Crypto visualizzate: ','Displayed assets: ')+mapTiles.size;
   $('heatmapNote').textContent=tr('Verde: rialzo · Rosso: ribasso','Green: up · Red: down');
@@ -591,6 +593,7 @@
   if(!openSwipeId)return;
   const row=listTiles.get(openSwipeId);
   row?.style.removeProperty('--inj-swipe-x');
+  row?.setAttribute('aria-expanded','false');
   row?.closest('.market-favorite-row')?.classList.remove('inj-swipe-open','inj-swiping');
   openSwipeId=null;
  }
@@ -602,6 +605,7 @@
   wrap.classList.remove('inj-swiping');
   wrap.classList.add('inj-swipe-open');
   row.style.setProperty('--inj-swipe-x',REVEAL+'px');
+  row.setAttribute('aria-expanded','true');
  }
  function settleSwipe(cancelled=false){
   const s=touchSwipe;if(!s)return;touchSwipe=null;
