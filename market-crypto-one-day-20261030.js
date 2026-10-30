@@ -172,7 +172,7 @@ function schedule(coin,row){
  if(!eligible(row,coin))return;
  checkCurrency();
  const key=currentKey(coin),cached=prices.get(key),now=Date.now();
- if(cached&&now<cached.until)return;
+ if(cached&&now<cached.until&&!(pairFor(coin)&&cached.values.length<2))return;
  if(pending.has(key)||queue.some(job=>job.key===key))return;
  const hasSeven=sevenDay(coin,now).length>=2;
  const pair=pairFor(coin);
@@ -195,7 +195,7 @@ function pump(){
   if(!job.pair)cgAfter=Date.now()+6500;
   loadHistory(job.coin,job.frame,job.pair).then(data=>{
    if(!Array.isArray(data))return;
-   const ttl=data.length>=2?SETTINGS[job.frame].ttl:Math.max(180000,SETTINGS[job.frame].ttl/2);
+   const ttl=data.length>=2?SETTINGS[job.frame].ttl:60000;
    if(prices.size>650)prices.delete(prices.keys().next().value);
    prices.set(job.key,{values:data,until:Date.now()+ttl});
   }).catch(()=>{}).finally(()=>{
