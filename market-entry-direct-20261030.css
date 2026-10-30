@@ -44,3 +44,19 @@ html[data-inj-market-entry="crypto"] #injGlobalMarket .market-asset-section{marg
 @media(prefers-reduced-motion:reduce){
  #injGlobalCryptoLayoutSwitch [data-global-crypto-mode]{transition:none!important}
 }
+
+/* Each deep-linked launcher has one exclusive destination.
+   No Market-hub tabs bleed into either direct world or crypto experience. */
+html[data-inj-market-entry="world"] :is(#injIntelligenceMain,#injGlobalMarket),
+html[data-inj-market-entry="crypto"] :is(#injIntelligenceMain,#injWorldMarket),
+html[data-inj-market-entry="intel"] #injWorldMarket{
+ display:none!important;
+}
+html[data-inj-market-entry="crypto"] #injGlobalMarket>.overview{
+ display:none!important;
+}
+html[data-inj-market-entry="intel"] #injIntelRoot [data-inj-intel-view="global"],
+html[data-inj-market-entry="intel"] #injIntelRoot [data-inj-intel-view="world"],
+html[data-inj-market-entry="intel"] #injIntelRoot [data-inj-intel-view="heatmap"]{
+ display:none!important;
+}

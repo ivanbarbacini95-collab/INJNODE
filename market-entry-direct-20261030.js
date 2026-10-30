@@ -26,7 +26,9 @@
   const listButton=switcher?.querySelector('[data-global-crypto-mode="list"]');
   if(listButton)listButton.textContent=en?'List':'Lista';
   switcher?.querySelector('[data-crypto-switch-label]')?.replaceChildren(document.createTextNode(en?'VIEW':'VISUALIZZAZIONE'));
-  if(type==='world')document.getElementById('marketTitle')?.replaceChildren(document.createTextNode('Global Market'));
+  const title=document.getElementById('marketTitle');
+  if(type==='intel'&&title)title.textContent='INJ Intelligence';
+  if(type==='world'&&title)title.textContent='Global Market';
   if(type==='crypto'){
    document.getElementById('marketTitle')?.replaceChildren(document.createTextNode('Global Crypto'));
    const head=document.getElementById('marketHeading');
