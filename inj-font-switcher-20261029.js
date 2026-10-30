@@ -4,6 +4,7 @@
 const STORE='inj_node_font_v1',root=document.documentElement;
 const fonts=[
  {id:'original',name:'INJ Original',font:'"Supply Mono","PP Supply Mono","INJ IBM Plex Mono","IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace',subtitleIt:'Tipografia storica di INJ Node',subtitleEn:'Original INJ Node typography',weight:400},
+ {id:'inter-light',name:'Inter Light · Classico',font:'"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif',subtitleIt:'Il carattere utilizzato prima del cambio',subtitleEn:'Typeface used before the font change',weight:300},
  {id:'geist',name:'Geist',font:'"INJ Geist","Geist",-apple-system,BlinkMacSystemFont,sans-serif',subtitleIt:'Minimal premium',subtitleEn:'Minimal premium',weight:400},
  {id:'space',name:'Space Grotesk',font:'"INJ Space Grotesk","Space Grotesk",-apple-system,BlinkMacSystemFont,sans-serif',subtitleIt:'Tech luxury',subtitleEn:'Tech luxury',weight:500},
  {id:'plex',name:'IBM Plex Mono',font:'"INJ IBM Plex Mono","IBM Plex Mono",ui-monospace,monospace',subtitleIt:'Terminale finanziario',subtitleEn:'Financial terminal',weight:400},
@@ -11,7 +12,7 @@ const fonts=[
 ];
 const byId=Object.fromEntries(fonts.map(f=>[f.id,f]));
 let active='space';
-function current(){try{const id=localStorage.getItem(STORE);return byId[id]?id:'space'}catch(_){return 'space'}}
+function current(){try{const id=localStorage.getItem(STORE);return id==='inter'?'inter-light':(byId[id]?id:'space')}catch(_){return 'space'}}
 function english(){try{return localStorage.getItem('inj_node_language_v1')==='en'||root.lang==='en'}catch(_){return root.lang==='en'}}
 function change(id,save){
  active=byId[id]?id:'space';
@@ -27,8 +28,8 @@ function refresh(){
  if(caption)caption.textContent=(en?'Selected: ':'Selezionato: ')+byId[active].name;
  const note=holder.querySelector('.menu-font-note');
  if(note)note.textContent=en?
-  'Five ready-to-use choices, including INJ Original (Supply Mono if installed, otherwise IBM Plex Mono). Changes apply across the app and are saved on this device.':
-  'Cinque scelte disponibili, incluso INJ Original (Supply Mono se installato, altrimenti IBM Plex Mono). La scelta vale in tutta l’app e viene salvata sul dispositivo.';
+  'Six ready-to-use choices, including Inter Light and INJ Original (Supply Mono if installed, otherwise IBM Plex Mono). Changes apply across the app and are saved on this device.':
+  'Sei scelte disponibili, incluso Inter Light e INJ Original (Supply Mono se installato, altrimenti IBM Plex Mono). La scelta vale in tutta l’app e viene salvata sul dispositivo.';
  holder.setAttribute('aria-label',en?'Interface font':'Font interfaccia');
  holder.querySelectorAll('[data-inj-font-choice]').forEach(button=>{
   const f=byId[button.getAttribute('data-inj-font-choice')];
