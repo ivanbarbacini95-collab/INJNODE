@@ -54,8 +54,7 @@
      !document.body.classList.contains('menu-overlay-open') &&
      !document.body.classList.contains('drawer-open') &&
      !document.body.classList.contains('entry-live-launch') &&
-     !shell?.classList.contains('first-access') &&
-     (root.dataset.injHomeTab!=='home'||root.dataset.injHomeNavVisible==='true');
+     !shell?.classList.contains('first-access');
    if(visible&&!nav.matches(':popover-open')){
     try{nav.showPopover()}catch(_){/* Retry after the Home becomes renderable. */}
    }else if(!visible&&nav.matches(':popover-open')){
@@ -108,15 +107,14 @@
   });
  }
 
- /* Home ends at the INJ Treasury card. The dock is an earned reveal after
-    downward scrolling, while every other tab displays the dock immediately.
-    Read the active scroll owner: desktop document, iOS document, or legacy
-    fixed #entryGate scroll surface. Never lock document scrolling globally. */
- let scrollTick=0;
- let lastOwner=0;
+ /* Native Home scroll: no scrollTop clamp, no wheel/touch preventDefault.
+    The document's real height and small padding below Treasury determine its
+    natural endpoint. The scroll observer changes only the dock's CSS state. */
+ let revealFrame=0;
  const primaryScroller=()=>document.scrollingElement||document.documentElement;
  const isHomeForeground=()=>root.dataset.injHomeTab==='home' &&
-  gate.classList.contains('visible') && gate.getAttribute('aria-hidden')==='false' &&
+  gate.classList.contains('visible') &&
+  gate.getAttribute('aria-hidden')==='false' &&
   document.body.classList.contains('entry-gate-open') &&
   !document.body.classList.contains('boot-loading') &&
   !document.body.classList.contains('menu-overlay-open') &&
@@ -128,113 +126,35 @@
   !document.body.classList.contains('pulse-view-open') &&
   !document.body.classList.contains('live-charts-open') &&
   !document.querySelector('#injMarketEventsOverlay:not([hidden]),#injMarketPortal:not([hidden]),#injFreedomOverlay:not([hidden]),#converterView.open,#performanceTimelineView.open,dialog[open],.inj-content-frame');
- function currentScrollOwner(preferred){
-  const doc=primaryScroller();
-  if(preferred===gate && gate.scrollHeight>gate.clientHeight+2)return gate;
-  if(preferred==='document')return doc;
-  const docTop=Math.max(window.scrollY||0,doc.scrollTop||0);
-  return gate.scrollTop>docTop+2?gate:doc;
- }
- function treasuryBoundary(){
-  const treasury=document.getElementById('entryTreasuryButton');
-  if(!treasury||getComputedStyle(treasury).display==='none')return null;
-  const visual=window.visualViewport;
-  const viewportHeight=visual&&Math.abs(visual.scale-1)<.02
-   ?Math.min(window.innerHeight,visual.height):window.innerHeight;
-  const dockBox=nav.getBoundingClientRect();
-  const safeDockTop=dockBox.top>0 && dockBox.top<viewportHeight
-   ?dockBox.top-12:viewportHeight-112;
-  const visibleEnd=Math.min(viewportHeight-100,safeDockTop);
-  const owner=currentScrollOwner();
-  const currentTop=owner===gate?gate.scrollTop
-   :Math.max(0,window.scrollY||0,owner.scrollTop||0);
-  const cardEnd=treasury.getBoundingClientRect().bottom;
-  return {
-   owner,top:currentTop,
-   max:Math.max(0,currentTop+cardEnd-visibleEnd),
-   cardEnd,visibleEnd
-  };
- }
- function refreshDockAndHomeBoundary(preferred){
+ function updateDockReveal(){
   if(root.dataset.injHomeTab!=='home'){
-   root.dataset.injHomeNavVisible='true';
-   syncTopLayer();
+   if(root.dataset.injHomeNavVisible!=='true')root.dataset.injHomeNavVisible='true';
    return;
   }
   if(!isHomeForeground()){
-   root.dataset.injHomeNavVisible='false';
-   syncTopLayer();
+   if(root.dataset.injHomeNavVisible!=='false')root.dataset.injHomeNavVisible='false';
    return;
   }
-  const treasury=document.getElementById('entryTreasuryButton');
-  if(!treasury || getComputedStyle(treasury).display==='none'){
-   root.dataset.injHomeNavVisible='false';syncTopLayer();return;
-  }
-  const scroller=currentScrollOwner(preferred);
-  let top=scroller===gate?gate.scrollTop:Math.max(0,window.scrollY||0,scroller.scrollTop||0);
-  // The first screen shows no dock. Scrolling down exposes the nav.
-  const threshold=Math.min(145,Math.max(84,window.innerHeight*.13));
-  let reveal=top>=threshold;
-  root.dataset.injHomeNavVisible=String(reveal);
-  syncTopLayer();
-
-  // End at Treasury, using the actual dock top as the stopping line.
-  // The old minimum-scroll runway could expose the dashboard/footer beneath
-  // Home on iPhone when native momentum continued after the card was visible.
-  if(top>0){
-   const end=treasuryBoundary();
-   if(end && end.top>end.max+1){
-    const clampTo=Math.max(0,Math.min(end.max,end.owner.scrollHeight-end.owner.clientHeight));
-    if(end.owner===gate)gate.scrollTop=clampTo;
-    else{
-     end.owner.scrollTop=clampTo;
-     if(Math.abs(window.scrollY-clampTo)>1)window.scrollTo(0,clampTo);
-    }
-    top=clampTo;
-    reveal=top>=threshold-2;
-    root.dataset.injHomeNavVisible=String(reveal);
-    syncTopLayer();
-   }
-  }
+  const doc=primaryScroller();
+  const y=Math.max(0,window.scrollY||0,doc.scrollTop||0,gate.scrollTop||0);
+  const shown=root.dataset.injHomeNavVisible==='true';
+  // Hysteresis avoids oscillation when Safari settles around a pixel boundary.
+  const next=shown?y>64:y>=118;
+  const state=String(next);
+  if(root.dataset.injHomeNavVisible!==state)root.dataset.injHomeNavVisible=state;
  }
- let touchOrigin=null;
- document.addEventListener('touchstart',event=>{
-  if(!isHomeForeground()||event.touches.length!==1){touchOrigin=null;return;}
-  const p=event.touches[0];
-  touchOrigin={x:p.clientX,y:p.clientY,axis:null};
- },{capture:true,passive:true});
- document.addEventListener('touchmove',event=>{
-  if(!touchOrigin||!isHomeForeground()||event.touches.length!==1||!event.cancelable)return;
-  const p=event.touches[0],dx=p.clientX-touchOrigin.x,dy=p.clientY-touchOrigin.y;
-  if(!touchOrigin.axis&&Math.max(Math.abs(dx),Math.abs(dy))>9)
-   touchOrigin.axis=Math.abs(dy)>Math.abs(dx)*1.3?'vertical':'horizontal';
-  if(touchOrigin.axis!=='vertical'||dy>=0)return; // Allow scrolling back upward.
-  if(event.target.closest?.('input,textarea,select,[contenteditable="true"],canvas,[role="slider"],.entry-wallets,.entry-pnl-timeline-scroll'))return;
-  const end=treasuryBoundary();
-  if(end&&end.top>=end.max-3)event.preventDefault();
- },{capture:true,passive:false});
- for(const type of ['touchend','touchcancel'])
-  document.addEventListener(type,()=>{touchOrigin=null;},{capture:true,passive:true});
- window.addEventListener('wheel',event=>{
-  if(!isHomeForeground()||event.deltaY<=0||event.ctrlKey||!event.cancelable)return;
-  const end=treasuryBoundary();
-  if(end&&end.top>=end.max-2)event.preventDefault();
- },{capture:true,passive:false});
-
- function scheduleDockRefresh(preferred){
-  if(preferred)lastOwner=preferred;
-  if(scrollTick)return;
-  scrollTick=requestAnimationFrame(()=>{
-   scrollTick=0;
-   refreshDockAndHomeBoundary(lastOwner);
-   lastOwner=0;
+ function scheduleDockRefresh(){
+  if(revealFrame)return;
+  revealFrame=requestAnimationFrame(()=>{
+   revealFrame=0;
+   updateDockReveal();
   });
  }
- window.addEventListener('scroll',()=>scheduleDockRefresh('document'),{passive:true});
- gate.addEventListener('scroll',()=>scheduleDockRefresh(gate),{passive:true});
- window.addEventListener('resize',()=>scheduleDockRefresh(),{passive:true});
- window.visualViewport?.addEventListener('resize',()=>scheduleDockRefresh(),{passive:true});
- window.addEventListener('pageshow',()=>scheduleDockRefresh(),{passive:true});
+ window.addEventListener('scroll',scheduleDockRefresh,{passive:true});
+ gate.addEventListener('scroll',scheduleDockRefresh,{passive:true});
+ window.addEventListener('resize',scheduleDockRefresh,{passive:true});
+ window.visualViewport?.addEventListener('resize',scheduleDockRefresh,{passive:true});
+ window.addEventListener('pageshow',scheduleDockRefresh,{passive:true});
 
  function applyVisibility(section){
   const shown=new Set(section.ids);
@@ -252,6 +172,8 @@
  function activate(id,scroll){
   const section=sections.find(item=>item.id===id)||sections[0];
   root.dataset.injHomeTab=section.id;
+  if(section.id==='home')root.dataset.injHomeNavVisible='false';
+  else root.dataset.injHomeNavVisible='true';
   // The original launcher elements remain direct children in their original order.
   applyVisibility(section);
   heading.hidden=section.id==='home';
@@ -263,7 +185,7 @@
   }
   refreshLanguage();
   if(scroll)scrollHomeTop();
-  scheduleDockRefresh(scroll?'document':undefined);
+  scheduleDockRefresh();
  }
  // Only re-check direct launchers if other startup scripts append one.
  // Child text mutations from streaming prices do not trigger this observer.

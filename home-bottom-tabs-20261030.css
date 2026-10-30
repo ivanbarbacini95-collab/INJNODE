@@ -3,7 +3,7 @@
 html[data-inj-page="index"] body > #injPrimaryBottomNav{
  display:none!important;
 }
-html[data-inj-page="index"]:is(:not([data-inj-home-tab="home"]),[data-inj-home-nav-visible="true"]) body.entry-gate-open:not(
+html[data-inj-page="index"] body.entry-gate-open:not(
  .boot-loading,.menu-overlay-open,.drawer-open,.inj-section-open,
  .chart-overlay-open,.focus-display-open,.pulse-view-open,
  .live-charts-open,.entry-live-launch,.inj-freedom-open
@@ -300,13 +300,37 @@ html[data-inj-page="index"][data-inj-home-tab="home"]
  > .entry-gate-shell:not(.first-access){
  padding-bottom:calc(100px + env(safe-area-inset-bottom,0px))!important;
 }
-html[data-inj-page="index"][data-inj-home-tab="home"]
- body #injPrimaryBottomNav{
- transition:opacity .22s ease,transform .22s ease!important;
+/* True opacity/translate entrance. Unlike toggling display or popover
+   visibility, this animates without modifying the scrolling document. */
+html[data-inj-page="index"] body > #injPrimaryBottomNav{
+ opacity:1!important;
+ visibility:visible!important;
+ transition:opacity .46s cubic-bezier(.2,.7,.2,1),
+  transform .52s cubic-bezier(.2,.76,.24,1),
+  visibility .46s!important;
+ will-change:opacity,transform;
 }
 html[data-inj-page="index"][data-inj-home-tab="home"]:not([data-inj-home-nav-visible="true"])
  body > #injPrimaryBottomNav{
+ opacity:0!important;
+ visibility:hidden!important;
+ transform:translate(-50%,16px)!important;
  pointer-events:none!important;
+}
+html[data-inj-page="index"][data-inj-home-tab="home"][data-inj-home-nav-visible="true"]
+ body > #injPrimaryBottomNav{
+ opacity:1!important;
+ visibility:visible!important;
+ transform:translate(-50%,0)!important;
+ pointer-events:auto!important;
+}
+html[data-inj-page="index"][data-inj-home-tab="home"]:not([data-inj-home-nav-visible="true"])
+ body > #injPrimaryBottomNav:popover-open{
+ transform:translate(-50%,16px)!important;
+}
+html[data-inj-page="index"][data-inj-home-tab="home"][data-inj-home-nav-visible="true"]
+ body > #injPrimaryBottomNav:popover-open{
+ transform:translate(-50%,0)!important;
 }
 html[data-inj-page="index"][data-inj-home-tab="home"]{
  overscroll-behavior-y:none!important;
@@ -315,8 +339,9 @@ html[data-inj-page="index"][data-inj-home-tab="home"] body.entry-gate-open{
  overscroll-behavior-y:none!important;
 }
 @media(prefers-reduced-motion:reduce){
- html[data-inj-page="index"][data-inj-home-tab="home"] body #injPrimaryBottomNav{
+ html[data-inj-page="index"] body > #injPrimaryBottomNav{
   transition:none!important;
+  will-change:auto!important;
  }
 }
 
@@ -330,5 +355,5 @@ html[data-inj-page="index"][data-inj-home-tab="home"] body
 }
 html[data-inj-page="index"][data-inj-home-tab="home"] body
  #entryGate#entryGate.entry-gate.visible > .entry-gate-shell:not(.first-access){
- padding-bottom:calc(94px + env(safe-area-inset-bottom,0px))!important;
+ padding-bottom:calc(102px + env(safe-area-inset-bottom,0px))!important;
 }
