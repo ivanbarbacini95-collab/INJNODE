@@ -1,5 +1,6 @@
-const CACHE_NAME = 'inj-node-v16.10.30-bottom-tabs12';
+const CACHE_NAME = 'inj-node-v16.10.30-ticker-tight1';
 const APP_SHELL = [
+  './home-ticker-tight-20261030.css?v=ticker1',
   './home-bottom-tabs-20261030.css?v=bottomnav12',
   './home-card-reorder-20261030.css?v=order1',
   './home-card-reorder-20261030.js?v=order1',
