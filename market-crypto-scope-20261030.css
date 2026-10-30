@@ -51,8 +51,8 @@ html[data-inj-market-entry="crypto"] #injGlobalMarket #marketProRows
  fill:none!important;stroke:currentColor!important;
 }
 html[data-inj-market-entry="crypto"] #injGlobalMarket #marketProRows
- .market-favorite-row>.market-favorite-toggle.is-saved:not(.inj-swipe-ack) svg{
- fill:none!important;stroke:#ff7e8c!important;
+ .market-favorite-row.is-global>.market-favorite-toggle.is-saved:not(.inj-swipe-ack) svg{
+ fill:rgba(255,211,66,.72)!important;stroke:#ffd54a!important;
 }
 @media(prefers-reduced-motion:reduce){
  html[data-inj-market-entry="crypto"] #injCryptoScopeNav>button{transition:none!important}
