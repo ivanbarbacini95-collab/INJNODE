@@ -32,13 +32,13 @@
  etfFrame.setAttribute('loading','eager');
  etfFrame.setAttribute('referrerpolicy','same-origin');
  etfPanel.appendChild(etfFrame);
- actions.after(etfPanel);
+ document.body.appendChild(etfPanel);
  let etfLoaded=false;
  function loadEtfTab(){
   if(etfLoaded)return;
   etfLoaded=true;
   const source=document.getElementById('entryInjcEtfButton')?.getAttribute('href')||'./injc-etf.html';
-  etfFrame.src=source;
+  etfFrame.src=new URL(source,document.baseURI).href;
  }
  etfFrame.addEventListener('load',()=>{
   try{
@@ -210,6 +210,8 @@
   applyVisibility(section);
   heading.hidden=section.id==='home'||section.id==='etf';
   etfPanel.hidden=section.id!=='etf';
+  etfPanel.setAttribute('aria-hidden',section.id==='etf'?'false':'true');
+  etfFrame.tabIndex=section.id==='etf'?0:-1;
   if(section.id==='etf')loadEtfTab();
   for(const [key,button] of buttons){
    const selected=key===section.id;

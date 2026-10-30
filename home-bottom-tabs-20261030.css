@@ -433,3 +433,51 @@ html[data-inj-page="index"][data-inj-home-tab="home"] body
  max-height:none!important;
 }
 html[data-inj-page="index"] body #injHomeBrandFooter{display:none!important}
+
+
+/* INJC ETF direct tab — the iframe is mounted at body level instead of
+   inside Home's heavily constrained .entry-gate-shell. Earlier nested-grid
+   rules could clip the entire frame to zero height on iOS Safari. */
+html[data-inj-page="index"] body>#injEtfTabPanel[hidden]{
+ display:none!important;
+ visibility:hidden!important;
+ pointer-events:none!important;
+}
+html[data-inj-page="index"][data-inj-home-tab="etf"] body>#injEtfTabPanel:not([hidden]){
+ display:block!important;
+ position:fixed!important;
+ inset:0 0 calc(83px + env(safe-area-inset-bottom,0px)) 0!important;
+ z-index:2147483400!important;
+ width:100%!important;
+ height:auto!important;
+ min-height:0!important;
+ margin:0!important;
+ padding:0!important;
+ border:0!important;
+ overflow:hidden!important;
+ visibility:visible!important;
+ opacity:1!important;
+ pointer-events:auto!important;
+ background:var(--theme-canvas,var(--bg,#09191a))!important;
+}
+html[data-inj-page="index"][data-inj-home-tab="etf"] body>#injEtfTabPanel:not([hidden])
+ >.inj-etf-tab-frame{
+ display:block!important;
+ position:relative!important;
+ width:100%!important;
+ height:100%!important;
+ min-height:0!important;
+ border:0!important;
+ opacity:1!important;
+ visibility:visible!important;
+ background:var(--theme-canvas,var(--bg,#09191a))!important;
+ overflow:auto!important;
+}
+html[data-inj-page="index"][data-inj-home-tab="etf"] body #entryGate.entry-gate.visible{
+ pointer-events:none!important;
+}
+@media(min-width:800px){
+ html[data-inj-page="index"][data-inj-home-tab="etf"] body>#injEtfTabPanel:not([hidden]){
+  inset-block-end:102px!important;
+ }
+}
