@@ -489,7 +489,9 @@
     element.dataset.previousPrice=String(current.current_price);
     window.INJ_DAY_CHART?.tick?.(current,element.querySelector('.mp-chart'));
     window.INJ_DAY_CHART?.paintPercent?.(current,element);
-    for(const k of ['1h','24h','7d','30d']){
+    // The selected list percentage is owned by INJ_DAY_CHART; do not
+    // overwrite it with 24h during websocket ticks.
+    for(const k of ['1h','7d','30d']){
      const span=element.querySelector('.mp-'+k);
      if(!span)continue;
      const value=change(current,k);
