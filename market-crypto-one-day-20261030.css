@@ -68,9 +68,9 @@ html[data-inj-market-entry="crypto"] #injGlobalMarket .mp-chart .inj-1d-chart pa
 }
 html[data-inj-market-entry="crypto"] #injGlobalMarket .mp-chart .inj-1d-chart.up path{stroke:var(--positive,#52e4b0)!important}
 html[data-inj-market-entry="crypto"] #injGlobalMarket .mp-chart .inj-1d-chart.down path{stroke:var(--negative,#f36d88)!important}
-html[data-inj-market-entry="crypto"] #injGlobalMarket .mp-chart:after{
- content:"1D";display:block!important;margin-top:2px!important;font-size:9px!important;
- color:var(--muted)!important;text-align:right!important;letter-spacing:.07em!important;
+/* One shared timeframe heading replaces the repetitive label below each line. */
+html[data-inj-market-entry="crypto"] #injGlobalMarket .mp-chart::after{
+ content:none!important;display:none!important;
 }
 html[data-inj-market-entry="crypto"] #injGlobalMarket .mp-chart .inj-1d-empty{display:block;color:var(--muted)}
 @media(max-width:740px){
@@ -196,4 +196,87 @@ html[data-inj-market-entry="crypto"] #injGlobalMarket #marketProRows
  html[data-inj-market-entry="crypto"] #injGlobalMarket #marketProRows .market-favorite-row>.market-favorite-toggle{
  transition:none!important
  }
+}
+
+
+/* Quieter crypto watch — prices one notch larger, rows taller, four columns
+   still centered and evenly spaced. Every row keeps its swipe affordance. */
+html[data-inj-market-entry="crypto"] #injGlobalMarket .mp-meta{
+ display:flex!important;align-items:center!important;justify-content:space-between!important;
+ flex-wrap:wrap!important;gap:5px 10px!important;padding:11px 6px 10px!important;
+}
+html[data-inj-market-entry="crypto"] #injGlobalMarket .inj-chart-timeframe{
+ display:inline-flex!important;align-items:center!important;justify-content:center!important;
+ min-height:25px!important;padding:5px 9px!important;
+ border:1px solid color-mix(in srgb,var(--accent,#8bdaca) 26%,var(--line,#334743))!important;
+ border-radius:8px!important;
+ color:var(--text,#ecf8f4)!important;
+ background:color-mix(in srgb,var(--accent,#8bdaca) 8%,transparent)!important;
+ font-family:inherit!important;font-size:10px!important;
+ font-weight:650!important;line-height:1.15!important;letter-spacing:.07em!important;
+ white-space:nowrap!important;
+}
+html[data-inj-market-entry="crypto"] #injGlobalMarket .mp-meta #mpMetaCount{
+ margin-left:auto!important;
+}
+html:not([data-inj-market-entry="crypto"]) #injCryptoChartTimeframe{display:none!important}
+html[data-inj-market-entry="crypto"] #injGlobalMarket #marketProRows
+ .market-favorite-row>.mp-row{
+ min-height:88px!important;
+ padding-block:12px!important;
+}
+html[data-inj-market-entry="crypto"] #injGlobalMarket #marketProRows
+ .market-favorite-row>.mp-row .mp-price-value{
+ font-size:clamp(13px,1.65vw,17px)!important;
+ line-height:1.24!important;font-weight:650!important;
+ letter-spacing:-.025em!important;
+ overflow-wrap:anywhere!important;max-width:100%!important;
+}
+html[data-inj-market-entry="crypto"] #injGlobalMarket #marketProRows
+ .market-favorite-row>.mp-row .mp-day .mp-percent{
+ font-size:clamp(11px,1.32vw,14px)!important;
+ line-height:1.25!important;
+}
+html[data-inj-market-entry="crypto"] #injGlobalMarket #marketProRows
+ .market-favorite-row>.mp-row .mp-identity img{width:25px!important;height:25px!important;flex:0 0 25px!important}
+html[data-inj-market-entry="crypto"] #injGlobalMarket #marketProRows
+ .market-favorite-row>.mp-row .mp-chart .inj-1d-chart{height:38px!important}
+@media(max-width:740px){
+ html[data-inj-market-entry="crypto"] #injGlobalMarket .mp-meta{
+  display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;
+  gap:4px 8px!important;
+ }
+ html[data-inj-market-entry="crypto"] #injGlobalMarket #mpMetaTitle{grid-column:1!important;grid-row:1!important}
+ html[data-inj-market-entry="crypto"] #injGlobalMarket #injCryptoChartTimeframe{grid-column:2!important;grid-row:1!important}
+ html[data-inj-market-entry="crypto"] #injGlobalMarket #mpMetaCount{
+  grid-column:1/-1!important;grid-row:2!important;
+  margin-left:0!important;justify-self:start!important;
+ }
+ html[data-inj-market-entry="crypto"] #injGlobalMarket #marketProRows
+ .market-favorite-row>.mp-row{
+  min-height:84px!important;padding:10px 4px!important;
+  grid-template-columns:minmax(77px,1.09fr) minmax(82px,1.02fr)
+    minmax(60px,.75fr) minmax(75px,1fr)!important;
+  gap:4px!important;
+ }
+ html[data-inj-market-entry="crypto"] #injGlobalMarket #marketProRows
+ .market-favorite-row>.mp-row .mp-price-value{
+  font-size:clamp(12.5px,3.23vw,15px)!important;
+  line-height:1.22!important;
+ }
+ html[data-inj-market-entry="crypto"] #injGlobalMarket #marketProRows
+ .market-favorite-row>.mp-row .mp-day .mp-percent{
+  font-size:clamp(10.8px,2.8vw,12.5px)!important;
+ }
+}
+@media(max-width:360px){
+ html[data-inj-market-entry="crypto"] #injGlobalMarket #marketProRows
+ .market-favorite-row>.mp-row{
+  min-height:80px!important;
+  grid-template-columns:minmax(60px,1fr) minmax(70px,1.07fr)
+    minmax(55px,.79fr) minmax(66px,1fr)!important;
+  gap:3px!important;
+ }
+ html[data-inj-market-entry="crypto"] #injGlobalMarket #marketProRows
+ .market-favorite-row>.mp-row .mp-price-value{font-size:clamp(11.5px,3.28vw,13px)!important}
 }

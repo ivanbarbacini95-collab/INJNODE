@@ -51,3 +51,35 @@ html[data-inj-market-entry="crypto"] #marketProRows .market-favorite-row>:is(.in
 @media(prefers-reduced-motion:reduce){
  html[data-inj-market-entry="crypto"] #marketProRows .market-favorite-row>.inj-favorite-swipe-close{transition:none!important}
 }
+
+
+/* The swipe tray exposes ONE contextual action only:
+   unsaved => star; saved => X. Slide right or tap the row to close without a change. */
+html[data-inj-market-entry="crypto"] #marketProRows .market-favorite-row>.inj-favorite-swipe-close{
+ display:none!important;
+}
+html[data-inj-market-entry="crypto"] #marketProRows .market-favorite-row>.market-favorite-toggle{
+ right:15px!important;left:auto!important;
+ width:49px!important;height:49px!important;
+ border-radius:14px!important;
+}
+html[data-inj-market-entry="crypto"] #marketProRows .market-favorite-row>.market-favorite-toggle.is-saved{
+ color:#fb7381!important;
+ border-color:rgba(246,105,123,.33)!important;
+ background:rgba(239,92,112,.12)!important;
+ box-shadow:none!important;
+}
+html[data-inj-market-entry="crypto"] #marketProRows .market-favorite-row>.market-favorite-toggle.is-saved svg{
+ fill:none!important;stroke:#ff7e8c!important;
+ stroke-width:2!important;stroke-linecap:round!important;
+ stroke-linejoin:round!important;
+}
+html[data-inj-market-entry="crypto"] #marketProRows .market-favorite-row>.market-favorite-toggle.inj-swipe-ack{
+ color:#ffe170!important;
+ border-color:rgba(255,211,74,.6)!important;
+ background:rgba(255,210,55,.22)!important;
+ box-shadow:0 0 0 3px rgba(255,207,55,.13),0 0 23px rgba(255,207,55,.28)!important;
+}
+html[data-inj-market-entry="crypto"] #marketProRows .market-favorite-row>.market-favorite-toggle.inj-swipe-ack svg{
+ fill:rgba(255,221,88,.82)!important;stroke:#ffdf72!important;
+}
