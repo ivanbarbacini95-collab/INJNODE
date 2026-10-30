@@ -26,7 +26,8 @@ const DIRECT_PAIRS={
  polkadot:['dot','DOTUSDT'],litecoin:['ltc','LTCUSDT'],
  'bitcoin-cash':['bch','BCHUSDT']
 };
-const prices=new Map(),observed=new Map(),queue=[],pending=new Set();
+const prices=new Map(),observed=new Map(),queue=[],pending=new Set(),inflight=new Set();
+const MAX_PENDING=10,MAX_CONCURRENT=3;
 const DISK_KEY='inj_node_crypto_chart_history_v3';
 let frame='1d',currencyKey='',active=0,observer=null,cgAfter=0,cgBlockedUntil=0,disk=null;
 try{const stored=localStorage.getItem(KEY);if(SPANS[stored])frame=stored}catch(_){}
@@ -39,6 +40,7 @@ function checkCurrency(){
  if(cur===currencyKey)return;
  currencyKey=cur;prices.clear();observed.clear();
  queue.length=0;pending.clear();cgAfter=0;
+ for(const controller of inflight)controller.abort();
 }
 function sample(coin,now=Date.now()){
  if(!coin?.id||!good(coin.current_price))return;
@@ -175,13 +177,18 @@ function paintPercent(coin,row){
  const value=percentHtml(coin);
  if(field.innerHTML!==value)field.innerHTML=value;
 }
-function paintRow(row,coin,now=Date.now()){
+function paintRow(row,coin,now=Date.now(),force=false){
  if(!row||!coin)return;
  const slot=row.querySelector('.mp-chart');
  if(!slot)return;
+ // Keep chart and percentage in lockstep, but avoid rebuilding a 180-point
+ // SVG with each 1.5s websocket tick on mobile Safari.
+ if(!force&&row.dataset.injChartFrame===frame&&now-Number(row.dataset.injChartPaintAt||0)<12000)return;
  const markup=render(coin,now);
  if(slot.innerHTML!==markup)slot.innerHTML=markup;
  paintPercent(coin,row);
+ row.dataset.injChartFrame=frame;
+ row.dataset.injChartPaintAt=String(now);
 }
 
 function pairFor(coin){
@@ -194,10 +201,11 @@ function pairFor(coin){
 }
 async function json(url,timeout=9500){
  const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),timeout);
+ inflight.add(ctrl);
  try{const res=await fetch(url,{signal:ctrl.signal,cache:'no-store',headers:{accept:'application/json'}});
   if(!res.ok){const e=new Error('HTTP '+res.status);e.status=res.status;throw e}
   return await res.json()
- }finally{clearTimeout(timer)}
+ }finally{clearTimeout(timer);inflight.delete(ctrl)}
 }
 
 async function loadHistory(coin,requestedFrame,pair){
@@ -216,7 +224,7 @@ async function loadHistory(coin,requestedFrame,pair){
    if(validSeries(arr,now,requestedFrame))return {values:arr,source:'binance'};
   }catch(_){/* Pair unavailable in this region: CoinGecko fallback. */}
  }
- if(Date.now()<cgBlockedUntil)return {values:[],source:'none'};
+ if(requestedFrame!==frame||Date.now()<cgBlockedUntil)return {values:[],source:'none'};
  // Respect the shared public API quota without treating throttled requests as
  // permanent missing history, particularly after rapid timeframe switches.
  const delay=Math.max(0,cgAfter-Date.now());
@@ -237,28 +245,41 @@ async function loadHistory(coin,requestedFrame,pair){
   return {values:[],source:'none'};
  }
 }
+function nearViewport(row,margin=160){
+ if(!row?.isConnected)return false;
+ const rect=row.getBoundingClientRect?.();
+ if(!rect)return true;
+ const height=window.innerHeight||document.documentElement.clientHeight||800;
+ return rect.bottom>=-margin&&rect.top<=height+margin;
+}
 function eligible(row,coin){
  return row?.isConnected&&coin?.id&&row.dataset.coin===coin.id&&
   document.documentElement.dataset.marketMode==='list';
 }
 
 function schedule(coin,row){
- if(!eligible(row,coin))return;
+ if(!eligible(row,coin)||!nearViewport(row))return;
  checkCurrency();
  const key=currentKey(coin),now=Date.now(),pair=pairFor(coin);
  let cached=prices.get(key);
  if(!cached){cached=readDisk(key);if(cached)prices.set(key,cached)}
  if(cached&&now<cached.until&&cached.pair===pair)return;
  if(pending.has(key)||queue.some(job=>job.key===key))return;
- queue.push({coin,key,frame,pair,currency:currencyKey});
+ // Drop the jobs for coins that have scrolled away before starting requests.
+ for(let i=queue.length-1;i>=0;i--)
+  if(!nearViewport(queue[i].row)||queue[i].frame!==frame)queue.splice(i,1);
+ if(queue.length>=MAX_PENDING)return;
+ queue.push({coin,row,key,frame,pair,currency:currencyKey});
+ // First visible rows, then a small overscan. Never queue all 200 assets.
+ queue.sort((a,b)=>Math.abs(a.row.getBoundingClientRect?.().top||0)-Math.abs(b.row.getBoundingClientRect?.().top||0));
  pump();
 }
 function pump(){
- while(active<2&&queue.length){
+ while(active<MAX_CONCURRENT&&queue.length){
   const currentIndex=queue.findIndex(item=>item.frame===frame&&item.currency===currencyKey);
   if(currentIndex<0){queue.length=0;break}
   const job=queue.splice(currentIndex,1)[0];
-  if(pending.has(job.key))continue;
+  if(pending.has(job.key)||!eligible(job.row,job.coin)||!nearViewport(job.row,200))continue;
   pending.add(job.key);active++;
   loadHistory(job.coin,job.frame,job.pair).then(record=>{
    if(job.currency!==currencyKey)return;
@@ -274,7 +295,7 @@ function pump(){
    const coin=api()?.getCoins?.()?.find(c=>c.id===job.coin.id);
    if(!coin)return;
    document.querySelectorAll('#marketProRows .mp-row[data-coin]').forEach(row=>{
-    if(row.dataset.coin===coin.id)paintRow(row,coin);
+    if(row.dataset.coin===coin.id)paintRow(row,coin,Date.now(),true);
    });
   });
  }
@@ -292,7 +313,7 @@ function onRowsRendered(){
     const row=e.target,coin=coins.get(row.dataset.coin);
     if(coin){paintRow(row,coin);schedule(coin,row)}
    }
-  },{root:null,rootMargin:'250px 0px',threshold:0});
+  },{root:null,rootMargin:'140px 0px',threshold:0});
   rows.forEach(row=>observer.observe(row));
  }else{
   const coins=new Map((api()?.getCoins?.()||[]).map(c=>[c.id,c]));
@@ -325,8 +346,9 @@ function updateButtons(){
 function setFrame(next){
  if(!Object.hasOwn(SPANS,next)||next===frame)return;
  frame=next;
- // Abandon obsolete queued ranges; current on-screen frame always wins.
+ // Cancel obsolete historical requests and prioritize the new range.
  queue.length=0;
+ for(const controller of inflight)controller.abort();
  try{localStorage.setItem(KEY,frame)}catch(_){}
  updateButtons();
  repaint();onRowsRendered();
@@ -343,7 +365,17 @@ document.getElementById('injCryptoChartTimeframe')?.addEventListener('click',eve
  if(button)setFrame(button.dataset.cryptoChartFrame);
 });
 updateButtons();
-setInterval(()=>{if(!document.hidden){repaint();onRowsRendered()}},45000);
+function retryVisible(){
+ const coins=new Map((api()?.getCoins?.()||[]).map(c=>[c.id,c]));
+ let checked=0;
+ for(const row of document.querySelectorAll('#marketProRows .mp-row[data-coin]')){
+  if(checked>=12)break;
+  if(!nearViewport(row))continue;
+  const coin=coins.get(row.dataset.coin);
+  if(coin){checked++;schedule(coin,row)}
+ }
+}
+setInterval(()=>{if(!document.hidden){repaint();retryVisible()}},45000);
 window.addEventListener('pageshow',()=>{repaint();onRowsRendered()});
 window.addEventListener('injnode:binance-pairs-ready',onRowsRendered);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){repaint();onRowsRendered()}});
