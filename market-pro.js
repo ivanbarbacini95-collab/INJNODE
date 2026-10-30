@@ -39,7 +39,7 @@
   const icon=$('detailIcon');if(!icon.firstElementChild||icon.dataset.id!==coin.id){
    icon.dataset.id=coin.id;icon.replaceChildren();
    const img=document.createElement('img');img.src=coin.image||'';img.alt='';
-   img.loading='lazy';img.referrerPolicy='no-referrer';icon.append(img);
+   img.loading='eager';img.decoding='async';img.referrerPolicy='no-referrer';icon.append(img);
   }
   const stats=[
    [tr('Capitalizzazione','Market cap'),helpers.money(coin.market_cap,true)],
@@ -245,7 +245,9 @@
   if(ref.loading&&!force)return;
   ref.loading=true;
   if(!ref.series.length)chart.textContent=tr('Caricamento grafico…','Loading chart…');
-  setStatus(tr('Sincronizzazione dati reali…','Syncing real data…'));
+  setStatus(ref.series.length>=2
+   ?tr('Storico verificato visibile · aggiornamento in corso…','Verified chart visible · refreshing details…')
+   :tr('Sincronizzazione dati reali…','Syncing real data…'));
   const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),13500);
   ref.controller=ctrl;
   try{
