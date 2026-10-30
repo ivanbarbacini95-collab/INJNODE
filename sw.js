@@ -1,10 +1,10 @@
-const CACHE_NAME = 'inj-node-v16.10.30-swipe-latch1';
+const CACHE_NAME = 'inj-node-v16.10.30-swipe-latch2';
 const APP_SHELL = [
   './market-favorites-latched-20261030.css?v=latch1',
   './market-crypto-one-day-20261030.css?v=oneday3',
   './market-crypto-one-day-20261030.js?v=oneday1',
   './market.js?v=20261030oneday1',
-  './market-views.js?v=20261030swipe2',
+  './market-views.js?v=20261030swipe3',
   './home-market-launcher-uniform-20261030.css?v=marketpolish2',
   './navigation.js?v=20261030marketlabel1',
   './market-entry-direct-20261030.css?v=direct6',

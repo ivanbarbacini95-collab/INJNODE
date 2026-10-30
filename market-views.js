@@ -267,7 +267,7 @@
   const coins=sorted(items),template=document.createElement('template'),next=new Map();
   template.innerHTML=coins.length?coins.map(rowHtml).join(''):'<div class="mp-empty">'+
    (section==='favorites'&&favorites.size===0
-    ?tr('Nessuna crypto salvata. Tocca una stella in Global Crypto.','No saved cryptos yet. Tap a star in Global Crypto.')
+    ?tr('Nessuna crypto salvata. Scorri a sinistra una crypto in Global Crypto e tocca la stella.','No saved cryptos yet. Swipe a coin left in Global Crypto and tap the star.')
     :all().length?tr('Nessun risultato o prezzo attualmente disponibile','No matching results or currently available quotes')
     :tr('Caricamento criptovalute…','Loading cryptocurrencies…'))+'</div>';
   rows.replaceChildren(template.content);
@@ -366,7 +366,7 @@
    }
   }else{
    const message=section==='favorites'&&favorites.size===0
-    ?tr('Nessuna crypto salvata. Tocca una stella in Global Crypto.','No saved cryptos yet. Tap a star in Global Crypto.')
+    ?tr('Nessuna crypto salvata. Scorri a sinistra una crypto in Global Crypto e tocca la stella.','No saved cryptos yet. Swipe a coin left in Global Crypto and tap the star.')
     :all().length?tr('Nessuna crypto con dati disponibili per questo periodo','No cryptos with available data for this period')
     :tr('Caricamento dati di mercato…','Loading market data…');
    let empty=grid.querySelector('.heatmap-empty');
