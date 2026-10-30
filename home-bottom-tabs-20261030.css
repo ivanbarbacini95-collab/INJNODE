@@ -203,7 +203,7 @@ html[data-inj-page="index"] body #entryGate#entryGate #entryNote{display:none!im
    No wallet, chart, ticker, first-access shell, settings menu or Home body. */
 html[data-inj-page="index"][data-inj-home-tab]:not([data-inj-home-tab="home"])
  body #entryGate#entryGate .entry-gate-shell:not(.first-access)
- > :not(.entry-actions):not(#injTabHeading){display:none!important}
+ > :not(.entry-actions):not(#injTabHeading):not(#injEtfTabPanel){display:none!important}
 html[data-inj-page="index"][data-inj-home-tab]:not([data-inj-home-tab="home"])
  body #injHomeBrandFooter{display:none!important}
 html[data-inj-page="index"][data-inj-home-tab]:not([data-inj-home-tab="home"])
@@ -384,8 +384,8 @@ html[data-inj-page="index"][data-inj-home-tab="etf"] body #entryGate#entryGate
  max-height:none!important;
  overflow:hidden!important;
 }
-html[data-inj-page="index"][data-inj-home-tab="etf"] body #entryGate#entryGate
- #injEtfTabPanel:not([hidden]){
+html[data-inj-page="index"][data-inj-home-tab="etf"] body #entryGate#entryGate#entryGate
+ .entry-gate-shell:not(.first-access)>#injEtfTabPanel:not([hidden]){
  display:block!important;
  position:relative!important;
  grid-column:1/-1!important;
