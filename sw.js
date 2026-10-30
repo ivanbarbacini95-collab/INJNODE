@@ -1,8 +1,7 @@
-const CACHE_NAME = 'inj-node-v16.10.29-handjet-clear11';
+const CACHE_NAME = 'inj-node-v16.10.30-font-trio1';
 const APP_SHELL = [
-  './assets/fonts/Handjet-Variable.woff2',
-  './inj-font-switcher-20261029.css?v=fontchoice11',
-  './inj-font-switcher-20261029.js?v=fontchoice11',
+  './inj-font-switcher-20261029.css?v=fonttrio1',
+  './inj-font-switcher-20261029.js?v=fonttrio1',
   './inj-fluid-screen-fit.css?v=20261028fullmonitor1',
   './inj-monitor-readability.css?v=20261028readable3',
   './home-desktop-native-scroll.css?v=20261028home-scroll1',
