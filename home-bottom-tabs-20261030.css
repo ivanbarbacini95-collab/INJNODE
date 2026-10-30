@@ -7,8 +7,7 @@ html[data-inj-page="index"] body.entry-gate-open:not(
  .boot-loading,.menu-overlay-open,.drawer-open,.inj-section-open,
  .chart-overlay-open,.focus-display-open,.pulse-view-open,
  .live-charts-open,.entry-live-launch,.inj-freedom-open
-):has(#entryGate.entry-gate.visible[aria-hidden="false"] .entry-gate-shell:not(.first-access))
-:not(:has(#injMarketEventsOverlay:not([hidden]),#injMarketPortal:not([hidden]),#injFreedomOverlay:not([hidden]),#converterView.open,#performanceTimelineView.open,dialog[open],.inj-content-frame))
+):has(#entryGate.entry-gate.visible[aria-hidden="false"] .entry-gate-shell:not(.first-access)):not(:has(#injMarketEventsOverlay:not([hidden]),#injMarketPortal:not([hidden]),#injFreedomOverlay:not([hidden]),#converterView.open,#performanceTimelineView.open,dialog[open],.inj-content-frame))
 > #injPrimaryBottomNav{
  display:grid!important;
 }
