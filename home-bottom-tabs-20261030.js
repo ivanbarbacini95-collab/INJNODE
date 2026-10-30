@@ -41,9 +41,10 @@
     or sit below the Home overlay on iOS. Manual popovers are non-modal, so
     wallet swipes and vertical page scrolling remain fully interactive. */
  const supportsTopLayer=typeof nav.showPopover==='function' && typeof nav.hidePopover==='function';
+ let syncTopLayer=()=>{};
  if(supportsTopLayer){
   nav.setAttribute('popover','manual');
-  const syncTopLayer=()=>{
+  syncTopLayer=()=>{
    const shell=gate.querySelector('.entry-gate-shell');
    const visible=gate.classList.contains('visible') &&
      gate.getAttribute('aria-hidden')==='false' &&
@@ -53,7 +54,8 @@
      !document.body.classList.contains('menu-overlay-open') &&
      !document.body.classList.contains('drawer-open') &&
      !document.body.classList.contains('entry-live-launch') &&
-     !shell?.classList.contains('first-access');
+     !shell?.classList.contains('first-access') &&
+     (root.dataset.injHomeTab!=='home'||root.dataset.injHomeNavVisible==='true');
    if(visible&&!nav.matches(':popover-open')){
     try{nav.showPopover()}catch(_){/* Retry after the Home becomes renderable. */}
    }else if(!visible&&nav.matches(':popover-open')){
@@ -105,6 +107,96 @@
    });
   });
  }
+
+ /* Home ends at the INJ Treasury card. The dock is an earned reveal after
+    downward scrolling, while every other tab displays the dock immediately.
+    Read the active scroll owner: desktop document, iOS document, or legacy
+    fixed #entryGate scroll surface. Never lock document scrolling globally. */
+ let scrollTick=0;
+ let lastOwner=0;
+ const primaryScroller=()=>document.scrollingElement||document.documentElement;
+ const isHomeForeground=()=>root.dataset.injHomeTab==='home' &&
+  gate.classList.contains('visible') && gate.getAttribute('aria-hidden')==='false' &&
+  document.body.classList.contains('entry-gate-open') &&
+  !document.body.classList.contains('boot-loading') &&
+  !document.body.classList.contains('menu-overlay-open') &&
+  !document.body.classList.contains('drawer-open') &&
+  !document.body.classList.contains('inj-section-open') &&
+  !document.body.classList.contains('entry-live-launch') &&
+  !document.body.classList.contains('chart-overlay-open') &&
+  !document.body.classList.contains('focus-display-open') &&
+  !document.body.classList.contains('pulse-view-open') &&
+  !document.body.classList.contains('live-charts-open') &&
+  !document.querySelector('#injMarketEventsOverlay:not([hidden]),#injMarketPortal:not([hidden]),#injFreedomOverlay:not([hidden]),#converterView.open,#performanceTimelineView.open,dialog[open],.inj-content-frame');
+ function currentScrollOwner(preferred){
+  const doc=primaryScroller();
+  if(preferred===gate && gate.scrollHeight>gate.clientHeight+2)return gate;
+  if(preferred==='document')return doc;
+  const docTop=Math.max(window.scrollY||0,doc.scrollTop||0);
+  return gate.scrollTop>docTop+2?gate:doc;
+ }
+ function refreshDockAndHomeBoundary(preferred){
+  if(root.dataset.injHomeTab!=='home'){
+   root.dataset.injHomeNavVisible='true';
+   syncTopLayer();
+   return;
+  }
+  if(!isHomeForeground()){
+   root.dataset.injHomeNavVisible='false';
+   syncTopLayer();
+   return;
+  }
+  const treasury=document.getElementById('entryTreasuryButton');
+  if(!treasury || getComputedStyle(treasury).display==='none'){
+   root.dataset.injHomeNavVisible='false';syncTopLayer();return;
+  }
+  const scroller=currentScrollOwner(preferred);
+  let top=scroller===gate?gate.scrollTop:Math.max(0,window.scrollY||0,scroller.scrollTop||0);
+  // The first screen shows no dock. Scrolling down exposes the nav.
+  const threshold=Math.min(145,Math.max(84,window.innerHeight*.13));
+  let reveal=top>=threshold;
+  root.dataset.injHomeNavVisible=String(reveal);
+  syncTopLayer();
+
+  // The end stop is the Treasury card, with enough air above the dock for
+  // the entire card and its tap target. No extra blank tail on iPhone.
+  if(top>0){
+   const cardRect=treasury.getBoundingClientRect();
+   const screenHeight=window.visualViewport?.height&&window.visualViewport.scale===1
+    ?Math.min(window.innerHeight,window.visualViewport.height)
+    :window.innerHeight;
+   const availableBottom=screenHeight-Math.max(100,nav.getBoundingClientRect().height+28);
+   const minRunway=threshold+6;
+   const maxPosition=Math.max(minRunway,top+cardRect.bottom-availableBottom);
+   if(top>maxPosition+2){
+    const clampTo=Math.max(0,Math.min(maxPosition,scroller.scrollHeight-scroller.clientHeight));
+    if(scroller===gate)gate.scrollTop=clampTo;
+    else{
+     scroller.scrollTop=clampTo;
+     if(Math.abs(window.scrollY-clampTo)>2)window.scrollTo(0,clampTo);
+    }
+    top=clampTo;
+    reveal=top>=threshold-2;
+    root.dataset.injHomeNavVisible=String(reveal);
+    syncTopLayer();
+   }
+  }
+ }
+ function scheduleDockRefresh(preferred){
+  if(preferred)lastOwner=preferred;
+  if(scrollTick)return;
+  scrollTick=requestAnimationFrame(()=>{
+   scrollTick=0;
+   refreshDockAndHomeBoundary(lastOwner);
+   lastOwner=0;
+  });
+ }
+ window.addEventListener('scroll',()=>scheduleDockRefresh('document'),{passive:true});
+ gate.addEventListener('scroll',()=>scheduleDockRefresh(gate),{passive:true});
+ window.addEventListener('resize',()=>scheduleDockRefresh(),{passive:true});
+ window.visualViewport?.addEventListener('resize',()=>scheduleDockRefresh(),{passive:true});
+ window.addEventListener('pageshow',()=>scheduleDockRefresh(),{passive:true});
+
  function applyVisibility(section){
   const shown=new Set(section.ids);
   for(const element of actions.querySelectorAll(':scope > .entry-action')){
@@ -132,6 +224,7 @@
   }
   refreshLanguage();
   if(scroll)scrollHomeTop();
+  scheduleDockRefresh(scroll?'document':undefined);
  }
  // Only re-check direct launchers if other startup scripts append one.
  // Child text mutations from streaming prices do not trigger this observer.
@@ -147,6 +240,7 @@
  });
  observer.observe(actions,{childList:true});
  activate('home',false);
+ requestAnimationFrame(()=>scheduleDockRefresh());
  window.addEventListener('injnode:languagechange',refreshLanguage);
  window.addEventListener('storage',event=>{if(event.key==='inj_node_language_v1')refreshLanguage();});
  window.addEventListener('pageshow',refreshLanguage);

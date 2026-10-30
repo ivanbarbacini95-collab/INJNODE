@@ -3,7 +3,7 @@
 html[data-inj-page="index"] body > #injPrimaryBottomNav{
  display:none!important;
 }
-html[data-inj-page="index"] body.entry-gate-open:not(
+html[data-inj-page="index"]:is(:not([data-inj-home-tab="home"]),[data-inj-home-nav-visible="true"]) body.entry-gate-open:not(
  .boot-loading,.menu-overlay-open,.drawer-open,.inj-section-open,
  .chart-overlay-open,.focus-display-open,.pulse-view-open,
  .live-charts-open,.entry-live-launch,.inj-freedom-open
@@ -286,5 +286,36 @@ html[data-inj-page="index"] body #entryGate{overflow-anchor:none!important}
 @media(min-width:800px){
  #injPrimaryBottomNav:popover-open{
   bottom:19px!important;
+ }
+}
+
+
+/* HOME REVEAL / END CAP
+   The first Home screen has no bottom dock; it fades into the interface
+   as the user scrolls toward Treasury. All other tabs remain persistent. */
+html[data-inj-page="index"][data-inj-home-tab="home"]
+ body #injHomeBrandFooter{display:none!important}
+html[data-inj-page="index"][data-inj-home-tab="home"]
+ body.entry-gate-open #entryGate#entryGate.entry-gate.visible
+ > .entry-gate-shell:not(.first-access){
+ padding-bottom:calc(100px + env(safe-area-inset-bottom,0px))!important;
+}
+html[data-inj-page="index"][data-inj-home-tab="home"]
+ body #injPrimaryBottomNav{
+ transition:opacity .22s ease,transform .22s ease!important;
+}
+html[data-inj-page="index"][data-inj-home-tab="home"]:not([data-inj-home-nav-visible="true"])
+ body > #injPrimaryBottomNav{
+ pointer-events:none!important;
+}
+html[data-inj-page="index"][data-inj-home-tab="home"]{
+ overscroll-behavior-y:none!important;
+}
+html[data-inj-page="index"][data-inj-home-tab="home"] body.entry-gate-open{
+ overscroll-behavior-y:none!important;
+}
+@media(prefers-reduced-motion:reduce){
+ html[data-inj-page="index"][data-inj-home-tab="home"] body #injPrimaryBottomNav{
+  transition:none!important;
  }
 }
