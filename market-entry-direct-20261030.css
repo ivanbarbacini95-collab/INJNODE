@@ -60,3 +60,33 @@ html[data-inj-market-entry="intel"] #injIntelRoot [data-inj-intel-view="world"],
 html[data-inj-market-entry="intel"] #injIntelRoot [data-inj-intel-view="heatmap"]{
  display:none!important;
 }
+
+/* Strict destination isolation (also works before deferred scripts load).
+   The old cross-section Market tab strip is never part of Global Market
+   or Global Crypto. The sector quick-navigation within World stays intact. */
+html[data-inj-market-entry="world"] body #injIntelRoot,
+html[data-inj-market-entry="crypto"] body #injIntelRoot{
+ display:none!important;
+ visibility:hidden!important;
+ height:0!important;
+ min-height:0!important;
+ max-height:0!important;
+ margin:0!important;
+ padding:0!important;
+ overflow:hidden!important;
+ pointer-events:none!important;
+}
+html[data-inj-market-entry="world"] body #injIntelHeaderSuffix,
+html[data-inj-market-entry="crypto"] body #injIntelHeaderSuffix{
+ display:none!important;
+}
+html[data-inj-market-entry="world"] body :is(#injIntelligenceMain,#injGlobalMarket),
+html[data-inj-market-entry="crypto"] body :is(#injIntelligenceMain,#injWorldMarket){
+ display:none!important;
+ visibility:hidden!important;
+}
+html[data-inj-market-entry="world"] body #injWorldMarket:not([hidden]),
+html[data-inj-market-entry="crypto"] body #injGlobalMarket:not([hidden]){
+ display:block!important;
+ visibility:visible!important;
+}

@@ -9,6 +9,27 @@
  if(type)root.dataset.injMarketEntry=type;
  const route=window.INJ_MARKET_NAVIGATE;
  if(typeof route!=='function')return;
+ // The global views are autonomous destinations. Remove the obsolete
+ // five-tab Market hub from the live DOM only on their direct routes;
+ // keep the original nav intact for INJ Intelligence and standalone Market.
+ if(type==='world'||type==='crypto'){
+  document.getElementById('injIntelRoot')?.remove();
+  const unused=type==='world'?'injGlobalMarket':'injWorldMarket';
+  const oldContent=document.getElementById(unused);
+  if(oldContent){
+   oldContent.hidden=true;
+   oldContent.setAttribute('inert','');
+   oldContent.setAttribute('aria-hidden','true');
+  }
+  const intelligence=document.getElementById('injIntelligenceMain');
+  if(intelligence){
+   intelligence.hidden=true;
+   intelligence.setAttribute('inert','');
+   intelligence.setAttribute('aria-hidden','true');
+  }
+  const headingSuffix=document.getElementById('injIntelHeaderSuffix');
+  if(headingSuffix)headingSuffix.hidden=true;
+ }
  const KEY='inj_node_crypto_layout_v1';
  const readMode=()=>{try{return localStorage.getItem(KEY)==='heatmap'?'heatmap':'list'}catch(_){return 'list'}};
  const switcher=document.getElementById('injGlobalCryptoLayoutSwitch');

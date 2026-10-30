@@ -1,10 +1,10 @@
-const CACHE_NAME = 'inj-node-v16.10.30-market-label1';
+const CACHE_NAME = 'inj-node-v16.10.30-market-isolation1';
 const APP_SHELL = [
   './home-market-launcher-uniform-20261030.css?v=marketpolish1',
   './navigation.js?v=20261030marketlabel1',
-  './market-entry-direct-20261030.css?v=direct3',
-  './market-entry-direct-20261030.js?v=direct3',
-  './market-portal.js?v=20261030direct1',
+  './market-entry-direct-20261030.css?v=direct4',
+  './market-entry-direct-20261030.js?v=direct4',
+  './market-portal.js?v=20261030direct4',
   './home-ticker-tight-20261030.css?v=ticker1',
   './home-bottom-tabs-20261030.css?v=bottomnav12',
   './home-card-reorder-20261030.css?v=order1',

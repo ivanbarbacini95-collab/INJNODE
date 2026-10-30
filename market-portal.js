@@ -37,7 +37,7 @@
     frame.title = titleFor();
     // The primary app, wallet selection and Home are untouched underneath.
     const target=['intel','world','crypto'].includes(requestedView)?requestedView:'intel';
-    frame.src = './market.html?v=20261030direct1&entry=' + target +
+    frame.src = './market.html?v=20261030direct4&entry=' + target +
       '&lang=' + (window.INJ_I18N?.getLanguage?.() || localStorage.getItem('inj_node_language_v1') || 'it');
     document.title = 'INJ NODE | ' + titleFor();
     // Keep the parent URL/history stationary: an edge swipe must not close Market.
