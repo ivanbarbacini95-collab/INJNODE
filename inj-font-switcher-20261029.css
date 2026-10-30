@@ -1,5 +1,5 @@
-/* INJ Node · permanent font choices. Local WOFF2 (when bundled) + Google Fonts fallback.
-   Open font families: Geist, Space Grotesk, IBM Plex Mono and Oxanium (SIL OFL).
+/* INJ Node · five font choices. Original restores the previous Supply Mono / IBM Plex fallback stack.
+   Supply Mono is commercial and is NOT bundled. Remaining four faces are SIL OFL.
    This stylesheet loads AFTER historical overrides and intentionally wins them. */
 @import url("https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&family=Oxanium:wght@400;500;600&family=Space+Grotesk:wght@400;500;600&display=swap");
 @font-face{font-family:"INJ Geist";src:url("./assets/fonts/inj-geist.woff2") format("woff2");font-style:normal;font-weight:400 600;font-display:swap}
@@ -7,6 +7,10 @@
 @font-face{font-family:"INJ IBM Plex Mono";src:url("./assets/fonts/inj-ibm-plex-mono-regular.woff2") format("woff2");font-style:normal;font-weight:400;font-display:swap}
 @font-face{font-family:"INJ IBM Plex Mono";src:url("./assets/fonts/inj-ibm-plex-mono-medium.woff2") format("woff2");font-style:normal;font-weight:500 600;font-display:swap}
 @font-face{font-family:"INJ Oxanium";src:url("./assets/fonts/inj-oxanium.woff2") format("woff2");font-style:normal;font-weight:400 600;font-display:swap}
+html[data-inj-font="original"]{
+ --inj-chosen-face:"Supply Mono","PP Supply Mono","INJ IBM Plex Mono","IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,Monaco,Consolas,monospace;
+ --inj-chosen-weight:400;--inj-chosen-emphasis:500;--inj-chosen-heading:500;
+}
 html[data-inj-font="geist"]{
  --inj-chosen-face:"INJ Geist","Geist",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
  --inj-chosen-weight:400;--inj-chosen-emphasis:500;--inj-chosen-heading:600;
