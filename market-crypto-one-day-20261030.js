@@ -317,7 +317,10 @@ function onRowsRendered(){
   rows.forEach(row=>observer.observe(row));
  }else{
   const coins=new Map((api()?.getCoins?.()||[]).map(c=>[c.id,c]));
-  rows.slice(0,12).forEach(row=>schedule(coins.get(row.dataset.coin),row));
+  rows.slice(0,12).forEach(row=>{
+   const coin=coins.get(row.dataset.coin);
+   if(coin){paintRow(row,coin);schedule(coin,row)}
+  });
  }
 }
 function repaint(){
@@ -337,11 +340,26 @@ function repaint(){
 function updateButtons(){
  const panel=document.getElementById('injCryptoChartTimeframe');
  if(!panel)return;
+ const label=document.documentElement.lang==='en'?'Chart timeframe':'Timeframe grafici';
+ const current=document.getElementById('injCryptoFrameCurrent');
+ const trigger=document.getElementById('injCryptoFrameTrigger');
+ const menu=document.getElementById('injCryptoFrameOptions');
+ if(current)current.textContent=frame.toUpperCase();
+ if(trigger)trigger.setAttribute('aria-label',label+': '+frame.toUpperCase());
+ if(menu)menu.setAttribute('aria-label',document.documentElement.lang==='en'?'Select chart timeframe':'Seleziona timeframe grafici');
  panel.querySelectorAll('[data-crypto-chart-frame]').forEach(button=>{
   const selected=button.dataset.cryptoChartFrame===frame;
-  button.setAttribute('aria-pressed',String(selected));
+  button.setAttribute('aria-selected',String(selected));
  });
- panel.setAttribute('aria-label',(document.documentElement.lang==='en'?'Chart timeframe':'Timeframe grafici')+' · '+frame.toUpperCase());
+ panel.setAttribute('aria-label',label+' · '+frame.toUpperCase());
+}
+function setMenuOpen(open){
+ const trigger=document.getElementById('injCryptoFrameTrigger');
+ const menu=document.getElementById('injCryptoFrameOptions');
+ if(!trigger||!menu)return;
+ const state=Boolean(open);
+ menu.hidden=!state;
+ trigger.setAttribute('aria-expanded',String(state));
 }
 function setFrame(next){
  if(!Object.hasOwn(SPANS,next)||next===frame)return;
@@ -359,11 +377,41 @@ function tick(coin,slot){
  const row=slot.closest('.mp-row');
  if(row)paintRow(row,coin);
 }
-window.INJ_DAY_CHART={render,tick,repaint,onRowsRendered,getFrame,setFrame,percentHtml,paintPercent};
-document.getElementById('injCryptoChartTimeframe')?.addEventListener('click',event=>{
- const button=event.target.closest('[data-crypto-chart-frame]');
- if(button)setFrame(button.dataset.cryptoChartFrame);
+window.INJ_DAY_CHART={
+ render,tick,repaint,onRowsRendered,getFrame,setFrame,percentHtml,paintPercent,
+ placeholderChart:()=>'<span class="inj-1d-empty inj-chart-loading" aria-hidden="true">···</span>',
+ placeholderPercent:()=>'<span class="mp-percent mp-period flat">···</span>'
+};
+const timeframePanel=document.getElementById('injCryptoChartTimeframe');
+timeframePanel?.addEventListener('click',event=>{
+ const option=event.target.closest('[data-crypto-chart-frame]');
+ if(option){
+  setFrame(option.dataset.cryptoChartFrame);
+  setMenuOpen(false);
+  document.getElementById('injCryptoFrameTrigger')?.focus();
+  return;
+ }
+ if(event.target.closest('#injCryptoFrameTrigger')){
+  const menu=document.getElementById('injCryptoFrameOptions');
+  setMenuOpen(menu?.hidden);
+ }
 });
+timeframePanel?.addEventListener('keydown',event=>{
+ const menu=document.getElementById('injCryptoFrameOptions');
+ if(event.key==='Escape'&&!menu?.hidden){
+  event.preventDefault();setMenuOpen(false);
+  document.getElementById('injCryptoFrameTrigger')?.focus();return;
+ }
+ if((event.key==='ArrowDown'||event.key==='ArrowUp')&&menu){
+  event.preventDefault();setMenuOpen(true);
+  const buttons=[...menu.querySelectorAll('[data-crypto-chart-frame]')];
+  const index=buttons.indexOf(document.activeElement);
+  buttons[(index+(event.key==='ArrowDown'?1:buttons.length-1))%buttons.length]?.focus();
+ }
+});
+document.addEventListener('pointerdown',event=>{
+ if(timeframePanel&&!timeframePanel.contains(event.target))setMenuOpen(false);
+},{passive:true});
 updateButtons();
 function retryVisible(){
  const coins=new Map((api()?.getCoins?.()||[]).map(c=>[c.id,c]));
