@@ -34,7 +34,10 @@
  }
  function markMissingLogos(){
   grid.querySelectorAll('.heatmap-tile').forEach(tile=>{
-   tile.classList.toggle('heatmap-no-logo',!tile.querySelector('img.hm-icon'));
+   const icon=tile.querySelector('img.hm-icon');
+   // A pending lazy image is not yet a usable logo. Show the coin ticker
+   // immediately instead of a blank logo-only Heatmap square.
+   tile.classList.toggle('heatmap-no-logo',!icon||!icon.complete||icon.naturalWidth===0);
   });
  }
  function sizeFor(value){
@@ -110,6 +113,11 @@
   schedule();
  });
  tilesObserver.observe(grid,{childList:true,subtree:true});
+ grid.addEventListener('load',event=>{
+  if(!event.target?.matches?.('img.hm-icon'))return;
+  const image=event.target,tile=image.closest('.heatmap-tile');
+  if(tile)tile.classList.toggle('heatmap-no-logo',!image.complete||image.naturalWidth===0);
+ },true);
  grid.addEventListener('error',event=>{
   if(event.target?.matches?.('img.hm-icon')){
    const tile=event.composedPath?.().find(el=>el?.classList?.contains('heatmap-tile'));
