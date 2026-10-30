@@ -8,7 +8,7 @@
  const actions=gate?.querySelector('.entry-actions.entry-flat-v44');
  if(!gate||!actions||document.getElementById('injPrimaryBottomNav'))return;
  const sections=[
-  {id:'mercato',it:'Mercato',en:'Market',titleIt:'MERCATO',titleEn:'MARKET',subIt:'Prezzi, analisi e calendario macro',subEn:'Prices, research and macro calendar',ids:['entryMarketButton','entryLiveChartsButton','entryOrderBookButton','entryPerformanceButton','entryComparisonButton','entryMacroCalendarButton'],icon:'<path d="M3 20h18M5 17V6M7 15l4-4 3 2 5-7M16 6h3v3"/>'},
+  {id:'mercato',it:'Mercato',en:'Market',titleIt:'MERCATO',titleEn:'MARKET',subIt:'Prezzi, analisi e calendario macro',subEn:'Prices, research and macro calendar',ids:['entryMarketButton','entryGlobalMarketsButton','entryGlobalCryptoButton','entryLiveChartsButton','entryOrderBookButton','entryPerformanceButton','entryComparisonButton','entryMacroCalendarButton'],icon:'<path d="M3 20h18M5 17V6M7 15l4-4 3 2 5-7M16 6h3v3"/>'},
   {id:'etf',it:'ETF',en:'ETF',titleIt:'',titleEn:'',subIt:'',subEn:'',ids:[],icon:'<rect x="4" y="3" width="16" height="18" rx="2.5"/><path d="M8 8h8M8 12h4m-4 5 3-3 2 2 3-4"/>'},
   {id:'home',it:'Home',en:'Home',titleIt:'',titleEn:'',subIt:'',subEn:'',ids:['entryDashboardButton','entryLiveButton','entryTreasuryButton'],icon:'<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/>'},
   {id:'reward',it:'Reward',en:'Reward',titleIt:'REWARD',titleEn:'REWARD',subIt:'Staking, valore potenziale e obiettivi',subEn:'Staking, potential value and milestones',ids:['entryLiveRewardsButton','entryVisualizeWealthButton','entryRewardLadderButton','entryFreedomButton'],icon:'<path d="M12 2v20M16 6H9a4 4 0 0 0 0 8h6a4 4 0 0 1 0 8H7"/>'},
