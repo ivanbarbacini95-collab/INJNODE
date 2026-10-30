@@ -188,6 +188,7 @@
   updateFavoritesUI();
   if(section==='favorites')requestRender();
   else document.querySelectorAll('[data-favorite-id]').forEach(updateFavoriteButton);
+  window.dispatchEvent(new Event('injnode:crypto-favorites-changed'));
  }
  function setFavoritesEditing(enabled){
   favoritesEditing=Boolean(enabled)&&section==='favorites'&&favoriteLayout==='list'&&favorites.size>0;
@@ -551,7 +552,7 @@
  $('marketFavoriteConfirmRemove')?.addEventListener('click',finishFavoriteRemoval);
  confirmation?.addEventListener('close',()=>{pendingRemovalId=null;});
  window.addEventListener('storage',e=>{
-  if(e.key===favoritesKey){favorites=readFavorites();updateFavoritesUI();requestRender();}
+  if(e.key===favoritesKey){favorites=readFavorites();updateFavoritesUI();requestRender();window.dispatchEvent(new Event('injnode:crypto-favorites-changed'));}
   if(e.key===favoriteModeKey){favoriteLayout=readLocalFavoriteMode();if(section==='favorites')setView('favorites');}
  });
  // Remove broken/empty coin icons instead of exposing black image placeholders.
@@ -682,7 +683,7 @@
   if(tile?.classList?.contains('heatmap-tile'))
    tile.classList.remove('market-flash-up','market-flash-down');
  });
- window.INJ_MARKET_VIEWS={render:requestRender,tick,setView,languageChange,favoriteCount:()=>favorites.size};
+ window.INJ_MARKET_VIEWS={render:requestRender,tick,setView,setFavoriteLayout,languageChange,favoriteCount:()=>favorites.size};
  setRange(range);
  setView('list');
 })();
