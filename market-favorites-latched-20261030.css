@@ -83,3 +83,29 @@ html[data-inj-market-entry="crypto"] #marketProRows .market-favorite-row>.market
 html[data-inj-market-entry="crypto"] #marketProRows .market-favorite-row>.market-favorite-toggle.inj-swipe-ack svg{
  fill:rgba(255,221,88,.82)!important;stroke:#ffdf72!important;
 }
+
+
+/* Swipe fix · 2026-10-30
+   The crypto-row layout has a more specific hidden-state rule. Match its
+   #injGlobalMarket specificity so the action survives pointerup and stays
+   available while the revealed row is latched, including after live rerenders. */
+html[data-inj-market-entry="crypto"] #injGlobalMarket #marketProRows
+ .market-favorite-row:is(.inj-swiping,.inj-swipe-open)>.market-favorite-toggle{
+ display:grid!important;
+ opacity:1!important;
+ visibility:visible!important;
+ z-index:3!important;
+}
+html[data-inj-market-entry="crypto"] #injGlobalMarket #marketProRows
+ .market-favorite-row.inj-swipe-open>.market-favorite-toggle{
+ pointer-events:auto!important;
+}
+html[data-inj-market-entry="crypto"] #injGlobalMarket #marketProRows
+ .market-favorite-row.inj-swiping:not(.inj-swipe-open)>.market-favorite-toggle{
+ pointer-events:none!important;
+}
+html[data-inj-market-entry="crypto"] #injGlobalMarket #marketProRows
+ .market-favorite-row.inj-swipe-open>.mp-row{
+ transform:translate3d(var(--inj-swipe-x,-116px),0,0)!important;
+ -webkit-transform:translate3d(var(--inj-swipe-x,-116px),0,0)!important;
+}
