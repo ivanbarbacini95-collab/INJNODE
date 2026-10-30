@@ -66,7 +66,7 @@
   if(type==='world'&&title)title.textContent='Global Market';
   if(type==='crypto'){
    const meta=document.getElementById('mpMetaTitle');
-   if(meta)meta.innerHTML=(en?'CRYPTO MARKET':'MERCATO CRYPTO')+' <span>· 1D LIVE</span>';
+   if(meta)meta.innerHTML=(en?'CRYPTO MARKET':'MERCATO CRYPTO')+' <span>· LIVE</span>';
    document.getElementById('marketTitle')?.replaceChildren(document.createTextNode('Global Crypto'));
    const head=document.getElementById('marketHeading');
    if(head)head.textContent=viewingFavorites()?(en?'Favorites':'Preferiti'):'Global Crypto';
