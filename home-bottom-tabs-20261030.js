@@ -8,7 +8,7 @@
  const actions=gate?.querySelector('.entry-actions.entry-flat-v44');
  if(!gate||!actions||document.getElementById('injPrimaryBottomNav'))return;
  const sections=[
-  {id:'home',it:'Home',en:'Home',titleIt:'',titleEn:'',subIt:'',subEn:'',ids:['entryDashboardButton','entryLiveButton'],icon:'<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/>'},
+  {id:'home',it:'Home',en:'Home',titleIt:'',titleEn:'',subIt:'',subEn:'',ids:['entryDashboardButton','entryLiveButton','entryTreasuryButton'],icon:'<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/>'},
   {id:'patrimonio',it:'Patrimonio',en:'Wealth',titleIt:'PATRIMONIO',titleEn:'WEALTH',subIt:'Wallet, dashboard e valore del portafoglio',subEn:'Wallets, dashboard and portfolio value',ids:['entryTreasuryButton','entryVisualizeWealthButton'],icon:'<rect x="3" y="6" width="18" height="15" rx="2"/><path d="M3 10h18M7 6V4h10v2M7 15h5"/>'},
   {id:'mercato',it:'Mercato',en:'Market',titleIt:'MERCATO',titleEn:'MARKET',subIt:'Prezzi, analisi e calendario macro',subEn:'Prices, research and macro calendar',ids:['entryMarketButton','entryLiveChartsButton','entryOrderBookButton','entryPerformanceButton','entryComparisonButton','entryMacroCalendarButton'],icon:'<path d="M3 20h18M5 17V6M7 15l4-4 3 2 5-7M16 6h3v3"/>'},
   {id:'reward',it:'Reward',en:'Reward',titleIt:'REWARD',titleEn:'REWARD',subIt:'Staking, ricompense e obiettivi',subEn:'Staking, rewards and milestones',ids:['entryLiveRewardsButton','entryRewardLadderButton','entryFreedomButton'],icon:'<path d="M12 2v20M16 6H9a4 4 0 0 0 0 8h6a4 4 0 0 1 0 8H7"/>'},
@@ -36,6 +36,40 @@
   });
  });
  document.body.append(nav);
+ /* Promote the five-tab dock to the browser top layer. Fixed elements inside
+    a transformed/scroll-locked PWA body can otherwise move with its content
+    or sit below the Home overlay on iOS. Manual popovers are non-modal, so
+    wallet swipes and vertical page scrolling remain fully interactive. */
+ const supportsTopLayer=typeof nav.showPopover==='function' && typeof nav.hidePopover==='function';
+ if(supportsTopLayer){
+  nav.setAttribute('popover','manual');
+  const syncTopLayer=()=>{
+   const shell=gate.querySelector('.entry-gate-shell');
+   const visible=gate.classList.contains('visible') &&
+     gate.getAttribute('aria-hidden')==='false' &&
+     document.body.classList.contains('entry-gate-open') &&
+     !document.body.classList.contains('boot-loading') &&
+     !document.body.classList.contains('inj-section-open') &&
+     !document.body.classList.contains('menu-overlay-open') &&
+     !document.body.classList.contains('drawer-open') &&
+     !document.body.classList.contains('entry-live-launch') &&
+     !shell?.classList.contains('first-access');
+   if(visible&&!nav.matches(':popover-open')){
+    try{nav.showPopover()}catch(_){/* Retry after the Home becomes renderable. */}
+   }else if(!visible&&nav.matches(':popover-open')){
+    try{nav.hidePopover()}catch(_){}
+   }
+  };
+  const visibilityObserver=new MutationObserver(syncTopLayer);
+  visibilityObserver.observe(document.body,{attributes:true,attributeFilter:['class']});
+  visibilityObserver.observe(gate,{attributes:true,attributeFilter:['class','aria-hidden']});
+  visibilityObserver.observe(gate.querySelector('.entry-gate-shell'),{attributes:true,attributeFilter:['class']});
+  window.addEventListener('pageshow',syncTopLayer);
+  requestAnimationFrame(syncTopLayer);
+ }else{
+  /* Older browsers still use the high-z-index fixed CSS fallback. */
+  nav.removeAttribute('popover');
+ }
  const getEnglish=()=>{
   try{return localStorage.getItem('inj_node_language_v1')==='en'||root.lang==='en';}
   catch(_){return root.lang==='en';}

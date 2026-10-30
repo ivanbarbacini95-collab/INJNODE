@@ -13,10 +13,17 @@ html[data-inj-page="index"] body.entry-gate-open:not(
 }
 #injPrimaryBottomNav{
  position:fixed!important;
- z-index:160!important;
+ /* The dock stays above the scrolling Home; fullscreen sections are excluded
+    by the visibility selector, and native popover top-layer lifts it out of
+    transformed Safari stacking contexts when supported. */
+ z-index:2147483500!important;
  left:50%!important;
+ right:auto!important;
+ top:auto!important;
  bottom:max(10px,env(safe-area-inset-bottom,0px))!important;
  transform:translateX(-50%)!important;
+ inset-block-start:auto!important;
+ inset-inline-end:auto!important;
  box-sizing:border-box!important;
  width:min(530px,calc(100% - 24px))!important;
  height:72px!important;
@@ -228,6 +235,12 @@ html[data-inj-page="index"][data-inj-home-tab="home"]
  > :is(#entryDashboardButton,#entryLiveButton){
  grid-column:auto!important;grid-row:auto!important;
 }
+html[data-inj-page="index"][data-inj-home-tab="home"]
+ body #entryGate#entryGate#entryGate .entry-actions.entry-flat-v44
+ > #entryTreasuryButton.entry-action{
+ grid-column:1/-1!important;grid-row:auto!important;
+ width:100%!important;min-height:76px!important;
+}
 html[data-inj-page="index"][data-inj-home-tab="mercato"]
  body #entryGate#entryGate#entryGate .entry-actions.entry-flat-v44
  > #entryMacroCalendarButton.entry-action-macro-calendar{
@@ -259,5 +272,19 @@ html[data-inj-page="index"] body #entryGate{overflow-anchor:none!important}
  html[data-inj-page="index"][data-inj-home-tab]:not([data-inj-home-tab="home"])
  body #entryGate#entryGate .entry-gate-shell:not(.first-access){
   padding-top:clamp(30px,3vw,54px)!important;
+ }
+}
+
+/* A closed manual popover never obstructs the interface. An open one is
+   positioned relative to the visual viewport instead of the scrolling Home. */
+#injPrimaryBottomNav:popover-open{
+ position:fixed!important;
+ inset:auto auto max(10px,env(safe-area-inset-bottom,0px)) 50%!important;
+ margin:0!important;
+ transform:translateX(-50%)!important;
+}
+@media(min-width:800px){
+ #injPrimaryBottomNav:popover-open{
+  bottom:19px!important;
  }
 }
