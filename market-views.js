@@ -221,15 +221,21 @@
   requestRender();
   window.dispatchEvent(new Event('injnode:crypto-favorites-changed'));
  }
- function rowHtml(coin){
-  const chart=spark(coin);
+ function rowHtml(coin,index=0){
+  // Render cached preview immediately for the first screen. Remaining 190+
+  // rows get a tiny placeholder and hydrate only when they enter the viewport.
+  const visibleSoon=index<9;
+  const chart=visibleSoon?spark(coin):(window.INJ_DAY_CHART?.placeholderChart?.()||spark(coin));
+  const periodPercent=visibleSoon
+   ?(window.INJ_DAY_CHART?.percentHtml?.(coin)||pctHtml(coin,'24h'))
+   :(window.INJ_DAY_CHART?.placeholderPercent?.()||pctHtml(coin,'24h'));
   const rank=finite(coin.market_cap_rank)?'#'+num(coin.market_cap_rank):'—';
   const symbol=String(coin.symbol||'').toUpperCase();
   return '<div class="market-favorite-row '+(section==='favorites'?'is-favorites':'is-global')+'"><button type="button" class="mp-row" data-coin="'+escape(coin.id)+'" data-previous-price="'+escape(coin.current_price)+'" aria-label="'+escape(coin.name+' '+symbol)+'">'+
   '<span class="mp-identity"><span class="mp-rank">'+rank+'</span>'+(String(coin.image||'').trim()?'<img loading="lazy" referrerpolicy="no-referrer" src="'+escape(coin.image)+'" alt="">':'')+'<span class="mp-name"><strong>'+escape(coin.name)+'</strong><small>'+escape(symbol)+'</small></span></span>'+
   '<span class="mp-price"><strong class="mp-price-value">'+escape(money(coin.current_price))+'</strong><small class="mp-mobile-label">'+escape(money(coin.market_cap,true))+' Cap</small></span>'+
   '<span class="mp-change mp-hour">'+pctHtml(coin,'1h')+'</span>'+
-  '<span class="mp-change mp-day">'+(window.INJ_DAY_CHART?.percentHtml?.(coin)||pctHtml(coin,'24h'))+'</span>'+
+  '<span class="mp-change mp-day">'+periodPercent+'</span>'+
   '<span class="mp-change mp-week">'+pctHtml(coin,'7d')+'</span>'+
   '<span class="mp-change mp-month">'+pctHtml(coin,'30d')+'</span>'+
   '<span class="mp-stat mp-cap">'+escape(money(coin.market_cap,true))+'</span>'+
@@ -238,7 +244,7 @@
  }
  function renderList(items){
   const coins=sorted(items),template=document.createElement('template'),next=new Map();
-  template.innerHTML=coins.length?coins.map(rowHtml).join(''):'<div class="mp-empty">'+
+  template.innerHTML=coins.length?coins.map((coin,index)=>rowHtml(coin,index)).join(''):'<div class="mp-empty">'+
    (section==='favorites'&&favorites.size===0
     ?tr('Nessuna crypto salvata. Scorri a sinistra una crypto in Global Crypto e tocca la stella.','No saved cryptos yet. Swipe a coin left in Global Crypto and tap the star.')
     :all().length?tr('Nessun risultato o prezzo attualmente disponibile','No matching results or currently available quotes')
