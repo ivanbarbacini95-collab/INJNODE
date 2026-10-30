@@ -1,12 +1,19 @@
-/* INJ Node · six font choices. Original restores the previous Supply Mono / IBM Plex fallback stack.
+/* INJ Node · seven font choices. Official matches the approved Supply Mono / IBM Plex stack and heavier weights.
    Supply Mono is commercial and is NOT bundled. Remaining four faces are SIL OFL.
    This stylesheet loads AFTER historical overrides and intentionally wins them. */
-@import url("https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Inter:wght@300;400;500&family=IBM+Plex+Mono:wght@400;500;600&family=Oxanium:wght@400;500;600&family=Space+Grotesk:wght@400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Inter:wght@300;400;500&family=IBM+Plex+Mono:wght@400;500;600;700&family=Oxanium:wght@400;500;600&family=Space+Grotesk:wght@400;500;600&display=swap");
 @font-face{font-family:"INJ Geist";src:url("./assets/fonts/inj-geist.woff2") format("woff2");font-style:normal;font-weight:400 600;font-display:swap}
 @font-face{font-family:"INJ Space Grotesk";src:url("./assets/fonts/inj-space-grotesk.woff2") format("woff2");font-style:normal;font-weight:400 600;font-display:swap}
 @font-face{font-family:"INJ IBM Plex Mono";src:url("./assets/fonts/inj-ibm-plex-mono-regular.woff2") format("woff2");font-style:normal;font-weight:400;font-display:swap}
 @font-face{font-family:"INJ IBM Plex Mono";src:url("./assets/fonts/inj-ibm-plex-mono-medium.woff2") format("woff2");font-style:normal;font-weight:500 600;font-display:swap}
 @font-face{font-family:"INJ Oxanium";src:url("./assets/fonts/inj-oxanium.woff2") format("woff2");font-style:normal;font-weight:400 600;font-display:swap}
+/* The official edition's supply-mono.css uses this exact family stack.
+   Supply Mono is a separately licensed, locally installed font (not bundled).
+   Its normal web fallback IBM Plex Mono is loaded in the 400–700 range. */
+html[data-inj-font="official"]{
+ --inj-chosen-face:"Supply Mono","PP Supply Mono","IBM Plex Mono","INJ IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,Monaco,Consolas,monospace;
+ --inj-chosen-weight:400;--inj-chosen-emphasis:700;--inj-chosen-heading:700;--inj-chosen-detail:400;
+}
 html[data-inj-font="original"]{
  --inj-chosen-face:"Supply Mono","PP Supply Mono","INJ IBM Plex Mono","IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,Monaco,Consolas,monospace;
  --inj-chosen-weight:400;--inj-chosen-emphasis:500;--inj-chosen-heading:500;
@@ -77,6 +84,33 @@ html[data-inj-font="inter-light"] body :is(*,#__injFace#__injFace#__injFace#__in
  font-family:"INJ IBM Plex Mono","IBM Plex Mono",ui-monospace,monospace!important;
  font-weight:400!important;
 }
+
+/* Restore the full-bodied official hierarchy without changing font sizes,
+   positions, cards, chart geometry, or any functional JS. */
+html[data-inj-font="official"] body :is(*,#__injOfficial#__injOfficial#__injOfficial#__injOfficial#__injOfficial#__injOfficial#__injOfficial):is(
+ #entryMarketPrice,#entryWalletWorth,#entryInsightPnl,#headerLivePrice,#bookLivePrice,
+ #ccLivePrice,#ccNetWorth,#ccTotalInj,#ccTotalPnl,#treasuryTotalMajor,#treasuryTotalDecimals,
+ #treasuryTotalWorth,#rewardsTotal,#rewardsTotalFiat,.hero-number,.hero-secondary,
+ .ws-main-price,.ws-price-main,.ws-hero-price,.market-price,.metric-value,
+ .number-roll-text,.number-roll-static-digit,.number-roll-digit,.number-roll-digit-layer
+){
+ font-weight:700!important;
+}
+html[data-inj-font="official"] body :is(*,#__injOfficial#__injOfficial#__injOfficial#__injOfficial#__injOfficial#__injOfficial#__injOfficial):is(
+ #entryInsightPnl,#treasuryTotalMajor,#rewardsTotal,.entry-price-pnl strong
+){
+ font-weight:800!important;
+}
+html[data-inj-font="official"][data-inj-page="index"] body #entryGate .entry-actions strong.inj-home-tile-title{
+ font-family:var(--inj-chosen-face)!important;
+ font-weight:600!important;
+}
+html[data-inj-font="official"] body :is(*,#__injOfficial#__injOfficial#__injOfficial#__injOfficial#__injOfficial#__injOfficial#__injOfficial):is(
+ .inj-tile-description,.menu-font-description,small,.caption,.subtitle,.description,.hint,.note
+){
+ font-weight:400!important;
+}
+
 /* Change SVG chart text, but never replace SVG icon/path drawing. */
 html[data-inj-font] body svg :is(text,tspan){font-family:var(--inj-chosen-face)!important;font-weight:var(--inj-chosen-weight)!important}
 html[data-inj-page="index"] body #headerMenuPanel .menu-font-control{
