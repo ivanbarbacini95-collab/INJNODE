@@ -5,8 +5,8 @@
  'use strict';
  const root=document.documentElement;
  const query=new URLSearchParams(location.search);
- const type=['world','crypto','intel'].includes(query.get('entry'))?query.get('entry'):'intel';
- root.dataset.injMarketEntry=type;
+ const type=['world','crypto','intel'].includes(query.get('entry'))?query.get('entry'):null;
+ if(type)root.dataset.injMarketEntry=type;
  const route=window.INJ_MARKET_NAVIGATE;
  if(typeof route!=='function')return;
  const KEY='inj_node_crypto_layout_v1';
@@ -45,7 +45,7 @@
  });
  if(type==='world')route('world');
  else if(type==='crypto')route(readMode()==='heatmap'?'heatmap':'global');
- else route('intel');
+ else if(type==='intel')route('intel');
  sync();
  const observer=new MutationObserver(sync);
  observer.observe(root,{attributes:true,attributeFilter:['data-market-section','lang']});
