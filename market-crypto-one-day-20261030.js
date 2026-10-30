@@ -265,7 +265,7 @@ document.getElementById('injCryptoChartTimeframe')?.addEventListener('click',eve
  if(button)setFrame(button.dataset.cryptoChartFrame);
 });
 updateButtons();
-setInterval(()=>{if(!document.hidden)repaint()},45000);
+setInterval(()=>{if(!document.hidden){repaint();onRowsRendered()}},45000);
 window.addEventListener('pageshow',()=>{repaint();onRowsRendered()});
 window.addEventListener('injnode:binance-pairs-ready',onRowsRendered);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){repaint();onRowsRendered()}});
