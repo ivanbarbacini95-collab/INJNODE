@@ -357,3 +357,79 @@ html[data-inj-page="index"][data-inj-home-tab="home"] body
  #entryGate#entryGate.entry-gate.visible > .entry-gate-shell:not(.first-access){
  padding-bottom:calc(102px + env(safe-area-inset-bottom,0px))!important;
 }
+
+
+/* ETF is the actual INJC page embedded directly in its dedicated navigation
+   tab, not a second launcher. The bottom dock stays in the browser top layer. */
+html[data-inj-page="index"] body #entryGate#entryGate
+ .entry-gate-shell:not(.first-access)>#injEtfTabPanel[hidden]{
+ display:none!important;
+}
+html[data-inj-page="index"][data-inj-home-tab="etf"] body #entryGate#entryGate
+ .entry-gate-shell:not(.first-access)>:not(#injEtfTabPanel){
+ display:none!important;
+}
+html[data-inj-page="index"][data-inj-home-tab="etf"] body #entryGate#entryGate
+ .entry-gate-shell:not(.first-access){
+ display:grid!important;
+ grid-template-columns:minmax(0,1fr)!important;
+ grid-template-rows:minmax(0,1fr)!important;
+ align-items:start!important;
+ align-content:start!important;
+ justify-items:stretch!important;
+ padding:0!important;
+ margin-inline:auto!important;
+ height:calc(100dvh - 96px - env(safe-area-inset-bottom,0px))!important;
+ min-height:320px!important;
+ max-height:none!important;
+ overflow:hidden!important;
+}
+html[data-inj-page="index"][data-inj-home-tab="etf"] body #entryGate#entryGate
+ #injEtfTabPanel:not([hidden]){
+ display:block!important;
+ position:relative!important;
+ grid-column:1/-1!important;
+ grid-row:1!important;
+ width:100%!important;
+ max-width:100%!important;
+ height:100%!important;
+ min-height:0!important;
+ padding:0!important;
+ margin:0!important;
+ overflow:hidden!important;
+ border:0!important;
+ border-radius:0!important;
+ background:var(--theme-canvas,var(--bg,#09191a))!important;
+}
+html[data-inj-page="index"] body #injEtfTabPanel>.inj-etf-tab-frame{
+ display:block!important;
+ width:100%!important;height:100%!important;
+ border:0!important;outline:0!important;
+ background:var(--theme-canvas,var(--bg,#09191a))!important;
+ overflow:auto!important;
+}
+html[data-inj-page="index"][data-inj-home-tab="etf"] body #entryGate#entryGate.entry-gate.visible{
+ min-height:100dvh!important;
+}
+/* Keep the legacy INJC home tile absent from the new Altro grid.
+   The original element is retained hidden so its src URL and event handler
+   are still available without changing other navigation machinery. */
+html[data-inj-page="index"] body #entryGate#entryGate
+ .entry-actions.entry-flat-v44>#entryInjcEtfButton{display:none!important}
+/* Home scroll ends naturally after Treasury, with only a small viewport
+   clearance above the dock. No JavaScript scrollTop clamping or snapping. */
+html[data-inj-page="index"][data-inj-home-tab="home"] body
+ #entryGate#entryGate.entry-gate.visible>.entry-gate-shell:not(.first-access){
+ padding-bottom:calc(94px + env(safe-area-inset-bottom,0px))!important;
+ min-height:0!important;
+ height:auto!important;
+ grid-auto-rows:min-content!important;
+ align-content:start!important;
+}
+html[data-inj-page="index"][data-inj-home-tab="home"] body
+ #entryGate#entryGate.entry-gate.visible{
+ min-height:0!important;
+ height:auto!important;
+ max-height:none!important;
+}
+html[data-inj-page="index"] body #injHomeBrandFooter{display:none!important}

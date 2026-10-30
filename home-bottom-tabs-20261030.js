@@ -8,17 +8,49 @@
  const actions=gate?.querySelector('.entry-actions.entry-flat-v44');
  if(!gate||!actions||document.getElementById('injPrimaryBottomNav'))return;
  const sections=[
-  {id:'home',it:'Home',en:'Home',titleIt:'',titleEn:'',subIt:'',subEn:'',ids:['entryDashboardButton','entryLiveButton','entryTreasuryButton'],icon:'<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/>'},
-  {id:'patrimonio',it:'Patrimonio',en:'Wealth',titleIt:'PATRIMONIO',titleEn:'WEALTH',subIt:'Wallet, dashboard e valore del portafoglio',subEn:'Wallets, dashboard and portfolio value',ids:['entryTreasuryButton','entryVisualizeWealthButton'],icon:'<rect x="3" y="6" width="18" height="15" rx="2"/><path d="M3 10h18M7 6V4h10v2M7 15h5"/>'},
   {id:'mercato',it:'Mercato',en:'Market',titleIt:'MERCATO',titleEn:'MARKET',subIt:'Prezzi, analisi e calendario macro',subEn:'Prices, research and macro calendar',ids:['entryMarketButton','entryLiveChartsButton','entryOrderBookButton','entryPerformanceButton','entryComparisonButton','entryMacroCalendarButton'],icon:'<path d="M3 20h18M5 17V6M7 15l4-4 3 2 5-7M16 6h3v3"/>'},
-  {id:'reward',it:'Reward',en:'Reward',titleIt:'REWARD',titleEn:'REWARD',subIt:'Staking, ricompense e obiettivi',subEn:'Staking, rewards and milestones',ids:['entryLiveRewardsButton','entryRewardLadderButton','entryFreedomButton'],icon:'<path d="M12 2v20M16 6H9a4 4 0 0 0 0 8h6a4 4 0 0 1 0 8H7"/>'},
-  {id:'altro',it:'Altro',en:'More',titleIt:'ALTRO',titleEn:'MORE',subIt:'Strumenti e funzionalità aggiuntive',subEn:'Additional tools and features',ids:['entryInjcEtfButton','entryWorkspaceButton','entryConverterButton','entryCommandCenterButton'],icon:'<circle cx="5" cy="12" r="1.25" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.25" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.25" fill="currentColor" stroke="none"/>'}
+  {id:'etf',it:'ETF',en:'ETF',titleIt:'',titleEn:'',subIt:'',subEn:'',ids:[],icon:'<rect x="4" y="3" width="16" height="18" rx="2.5"/><path d="M8 8h8M8 12h4m-4 5 3-3 2 2 3-4"/>'},
+  {id:'home',it:'Home',en:'Home',titleIt:'',titleEn:'',subIt:'',subEn:'',ids:['entryDashboardButton','entryLiveButton','entryTreasuryButton'],icon:'<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/>'},
+  {id:'reward',it:'Reward',en:'Reward',titleIt:'REWARD',titleEn:'REWARD',subIt:'Staking, valore potenziale e obiettivi',subEn:'Staking, potential value and milestones',ids:['entryLiveRewardsButton','entryVisualizeWealthButton','entryRewardLadderButton','entryFreedomButton'],icon:'<path d="M12 2v20M16 6H9a4 4 0 0 0 0 8h6a4 4 0 0 1 0 8H7"/>'},
+  {id:'altro',it:'Altro',en:'More',titleIt:'ALTRO',titleEn:'MORE',subIt:'Strumenti e funzionalità aggiuntive',subEn:'Additional tools and features',ids:['entryWorkspaceButton','entryConverterButton','entryCommandCenterButton'],icon:'<circle cx="5" cy="12" r="1.25" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.25" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.25" fill="currentColor" stroke="none"/>'}
  ];
  const originalDisplay=new WeakMap();
  const heading=document.createElement('header');
  heading.id='injTabHeading';heading.className='inj-tab-heading';heading.hidden=true;
  heading.innerHTML='<div><span class="inj-tab-eyebrow">INJ NODE / EXPLORE</span><h2 id="injTabHeadingTitle"></h2><p id="injTabHeadingSubtitle"></p></div>';
  actions.before(heading);
+ // ETF is a direct, dedicated tab — no intermediate INJC ETF launcher.
+ // Embed the existing stand-alone INJC page to preserve its live data and code.
+ const etfPanel=document.createElement('section');
+ etfPanel.id='injEtfTabPanel';
+ etfPanel.className='inj-etf-tab-panel';
+ etfPanel.hidden=true;
+ etfPanel.setAttribute('aria-label','INJC ETF');
+ const etfFrame=document.createElement('iframe');
+ etfFrame.className='inj-etf-tab-frame';
+ etfFrame.title='INJC ETF';
+ etfFrame.setAttribute('loading','eager');
+ etfFrame.setAttribute('referrerpolicy','same-origin');
+ etfPanel.appendChild(etfFrame);
+ actions.after(etfPanel);
+ let etfLoaded=false;
+ function loadEtfTab(){
+  if(etfLoaded)return;
+  etfLoaded=true;
+  const source=document.getElementById('entryInjcEtfButton')?.getAttribute('href')||'./injc-etf.html';
+  etfFrame.src=source;
+ }
+ etfFrame.addEventListener('load',()=>{
+  try{
+   const language=localStorage.getItem('inj_node_language_v1')==='en'?'en':'it';
+   etfFrame.contentWindow?.postMessage({type:'injnode:languagechange',language},location.origin);
+  }catch(_){}
+ });
+ // Existing INJC back-home button posts this message from navigation.js.
+ window.addEventListener('message',event=>{
+  if(event.origin!==location.origin||event.source!==etfFrame.contentWindow)return;
+  if(event.data?.type==='injnode:section:home')activate('home',true);
+ });
 
  const nav=document.createElement('nav');
  nav.id='injPrimaryBottomNav';
@@ -176,7 +208,9 @@
   else root.dataset.injHomeNavVisible='true';
   // The original launcher elements remain direct children in their original order.
   applyVisibility(section);
-  heading.hidden=section.id==='home';
+  heading.hidden=section.id==='home'||section.id==='etf';
+  etfPanel.hidden=section.id!=='etf';
+  if(section.id==='etf')loadEtfTab();
   for(const [key,button] of buttons){
    const selected=key===section.id;
    button.classList.toggle('is-active',selected);
