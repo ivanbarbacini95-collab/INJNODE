@@ -278,6 +278,11 @@ function schedule(coin,row){
  if(!eligible(row,coin)||!nearViewport(row))return;
  checkCurrency();
  const key=currentKey(coin),now=Date.now(),pair=pairFor(coin);
+ // The CoinGecko Top 200 response already brings the REAL 7-day sparkline.
+ // Use it instantly for 1D/1W where it adequately covers that window.
+ // Request extra precision only for a verified Binance pair. Otherwise
+ // hundreds of individual CoinGecko calls would delay every later chart.
+ if(!pair&&(frame==='1d'||frame==='1w')&&history(coin,now)?.points?.length>=MIN_POINTS[frame])return;
  let cached=prices.get(key);
  if(!cached){cached=readDisk(key);if(cached)prices.set(key,cached)}
  if(cached&&now<cached.until&&cached.pair===pair)return;
