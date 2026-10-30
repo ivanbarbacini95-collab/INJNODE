@@ -4,7 +4,8 @@
   const launcher = document.getElementById('entryMarketButton');
   const marketLaunchers = [launcher,
     document.getElementById('entryGlobalMarketsButton'),
-    document.getElementById('entryGlobalCryptoButton')].filter(Boolean);
+    document.getElementById('entryGlobalCryptoButton'),
+    document.getElementById('entryMarketFavoritesButton')].filter(Boolean);
   const portal = document.getElementById('injMarketPortal');
   const frame = document.getElementById('injMarketFrame');
   if (!launcher || !portal || !frame) return;
@@ -36,8 +37,8 @@
     portal.setAttribute('aria-label', titleFor());
     frame.title = titleFor();
     // The primary app, wallet selection and Home are untouched underneath.
-    const target=['intel','world','crypto'].includes(requestedView)?requestedView:'intel';
-    frame.src = './market.html?v=20261030direct4&entry=' + target +
+    const target=['intel','world','crypto','favorites'].includes(requestedView)?requestedView:'intel';
+    frame.src = './market.html?v=20261030favorites1&entry=' + target +
       '&lang=' + (window.INJ_I18N?.getLanguage?.() || localStorage.getItem('inj_node_language_v1') || 'it');
     document.title = 'INJ NODE | ' + titleFor();
     // Keep the parent URL/history stationary: an edge swipe must not close Market.

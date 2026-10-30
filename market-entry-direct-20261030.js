@@ -5,7 +5,7 @@
  'use strict';
  const root=document.documentElement;
  const query=new URLSearchParams(location.search);
- const type=['world','crypto','intel'].includes(query.get('entry'))?query.get('entry'):null;
+ const type=['world','crypto','intel','favorites'].includes(query.get('entry'))?query.get('entry'):null;
  if(type)root.dataset.injMarketEntry=type;
  const route=window.INJ_MARKET_NAVIGATE;
  if(typeof route!=='function')return;
@@ -14,8 +14,9 @@
  if(type){
   document.getElementById('injIntelRoot')?.remove();
   const panels={intel:'injIntelligenceMain',world:'injWorldMarket',crypto:'injGlobalMarket'};
+  const keep=type==='favorites'?'crypto':type;
   for(const [kind,id] of Object.entries(panels)){
-   if(kind===type)continue;
+   if(kind===keep)continue;
    const panel=document.getElementById(id);
    if(panel){panel.hidden=true;panel.inert=true;panel.setAttribute('aria-hidden','true')}
   }
@@ -38,6 +39,11 @@
   }
   const title=document.getElementById('marketTitle');
   if(type==='intel'&&title)title.textContent='INJ Intelligence';
+  if(type==='favorites'&&title)title.textContent=en?'Favorites':'Preferiti';
+  if(type==='favorites'){
+   const label=document.getElementById('marketHeading');
+   if(label)label.textContent=en?'Favorites':'Preferiti';
+  }
   if(type==='world'&&title)title.textContent='Global Market';
   if(type==='crypto'){
    const meta=document.getElementById('mpMetaTitle');
@@ -57,6 +63,7 @@
  if(type==='world')route('world');
  else if(type==='crypto')route(readMode()==='heatmap'?'heatmap':'global');
  else if(type==='intel')route('intel');
+ else if(type==='favorites')route('favorites');
  sync();
  const observer=new MutationObserver(sync);
  observer.observe(root,{attributes:true,attributeFilter:['data-market-section','lang']});

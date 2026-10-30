@@ -9,7 +9,7 @@
  if(!actions)return;
  const groups={
   home:['entryDashboardButton','entryLiveButton','entryTreasuryButton'],
-  mercato:['entryMarketButton','entryGlobalMarketsButton','entryGlobalCryptoButton','entryLiveChartsButton','entryOrderBookButton','entryPerformanceButton','entryComparisonButton','entryMacroCalendarButton'],
+  mercato:['entryMarketButton','entryGlobalMarketsButton','entryGlobalCryptoButton','entryMarketFavoritesButton','entryLiveChartsButton','entryOrderBookButton','entryPerformanceButton','entryComparisonButton','entryMacroCalendarButton'],
   reward:['entryLiveRewardsButton','entryVisualizeWealthButton','entryRewardLadderButton','entryFreedomButton'],
   altro:['entryWorkspaceButton','entryConverterButton','entryCommandCenterButton']
  };

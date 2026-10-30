@@ -95,3 +95,9 @@ html[data-inj-market-entry="crypto"] body #injGlobalMarket:not([hidden]){
 html[data-inj-market-entry="intel"] :is(#injIntelRoot,#injWorldMarket,#injGlobalMarket,#injIntelHeaderSuffix){display:none!important}
 /* Crypto uses the one-button switch inside the header, not the old full bar. */
 html[data-inj-market-entry="crypto"] #injGlobalCryptoLayoutSwitch[hidden]{display:none!important}
+
+/* Dedicated favorites route reuses Global Crypto's native saved List/Heatmap. */
+html[data-inj-market-entry="favorites"] body #injIntelRoot,
+html[data-inj-market-entry="favorites"] body :is(#injIntelligenceMain,#injWorldMarket,#injIntelHeaderSuffix){display:none!important}
+html[data-inj-market-entry="favorites"] body #injGlobalMarket:not([hidden]){display:block!important;visibility:visible!important}
+html[data-inj-market-entry="favorites"] body #marketFavoritesControls:not([hidden]){display:flex!important}
