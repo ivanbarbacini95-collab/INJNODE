@@ -414,3 +414,106 @@ html:is([data-inj-market-entry="crypto"],[data-inj-market-entry="favorites"])
  html:is([data-inj-market-entry="crypto"],[data-inj-market-entry="favorites"])
   #injGlobalMarket #marketProRows .inj-chart-loading{animation:none!important;opacity:.6!important}
 }
+
+/* Compact single-trigger chart period picker.
+   Menu overlays content without reflowing the 200 market rows. */
+html[data-inj-market] #injGlobalMarket .mp-meta{overflow:visible!important}
+html[data-inj-market] #injGlobalMarket #injCryptoChartTimeframe.inj-timeframe-select{
+ position:relative!important;
+ display:inline-flex!important;
+ z-index:20!important;
+ isolation:auto!important;
+ align-items:center!important;
+ width:auto!important;
+ min-width:0!important;
+ padding:3px!important;
+ margin:0!important;
+ border-radius:11px!important;
+ overflow:visible!important;
+ flex:0 0 auto!important;
+}
+html[data-inj-market] #injGlobalMarket #injCryptoFrameTrigger{
+ display:inline-flex!important;
+ align-items:center!important;
+ justify-content:space-between!important;
+ gap:10px!important;
+ min-width:64px!important;
+ min-height:30px!important;
+ padding:6px 9px!important;
+ background:transparent!important;
+ border:0!important;
+ color:var(--text,#f4f8f7)!important;
+ font:inherit!important;
+ font-size:11px!important;
+ font-weight:650!important;
+ letter-spacing:.04em!important;
+ line-height:1!important;
+ white-space:nowrap!important;
+ box-shadow:none!important;
+ cursor:pointer!important;
+ touch-action:manipulation!important;
+ -webkit-tap-highlight-color:transparent!important;
+}
+html[data-inj-market] #injGlobalMarket #injCryptoFrameTrigger svg{
+ width:14px!important;
+ height:14px!important;
+ flex:0 0 14px!important;
+ opacity:.7!important;
+ transition:transform .2s ease!important;
+}
+html[data-inj-market] #injGlobalMarket #injCryptoFrameTrigger[aria-expanded="true"] svg{
+ transform:rotate(180deg)!important;
+}
+html[data-inj-market] #injGlobalMarket #injCryptoFrameOptions[hidden]{
+ display:none!important;
+}
+html[data-inj-market] #injGlobalMarket #injCryptoFrameOptions:not([hidden]){
+ display:grid!important;
+ grid-template-columns:1fr!important;
+ gap:3px!important;
+ position:absolute!important;
+ z-index:50!important;
+ top:calc(100% + 6px)!important;
+ right:0!important;
+ width:92px!important;
+ max-width:calc(100vw - 24px)!important;
+ box-sizing:border-box!important;
+ padding:5px!important;
+ border-radius:12px!important;
+ border:1px solid color-mix(in srgb,var(--line,#364e50) 85%,transparent)!important;
+ background:var(--panel,#0d1920)!important;
+ box-shadow:0 12px 32px rgba(0,0,0,.3)!important;
+}
+html[data-inj-market] #injGlobalMarket #injCryptoFrameOptions>button{
+ display:flex!important;
+ align-items:center!important;
+ justify-content:center!important;
+ width:100%!important;
+ min-width:0!important;
+ min-height:38px!important;
+ padding:8px!important;
+ margin:0!important;
+ border-radius:8px!important;
+ border:1px solid transparent!important;
+ background:transparent!important;
+ color:var(--muted,#96a8ae)!important;
+ font:inherit!important;
+ font-size:11px!important;
+ font-weight:650!important;
+ letter-spacing:.03em!important;
+ cursor:pointer!important;
+ touch-action:manipulation!important;
+}
+html[data-inj-market] #injGlobalMarket #injCryptoFrameOptions>button[aria-selected="true"]{
+ color:var(--text,#effbf8)!important;
+ border-color:color-mix(in srgb,var(--accent,#8bdaca) 26%,transparent)!important;
+ background:color-mix(in srgb,var(--accent,#8bdaca) 15%,var(--panel,#0d1920))!important;
+}
+html[data-inj-market] #injGlobalMarket #injCryptoFrameTrigger:focus-visible,
+html[data-inj-market] #injGlobalMarket #injCryptoFrameOptions>button:focus-visible{
+ outline:2px solid var(--accent,#8bdaca)!important;
+ outline-offset:2px!important;
+}
+@media(prefers-reduced-motion:reduce){
+ html[data-inj-market] #injGlobalMarket #injCryptoFrameTrigger svg{transition:none!important}
+}
