@@ -265,7 +265,7 @@
   }
   $('mpMetaCount').textContent=tr('Crypto visualizzate: ','Displayed assets: ')+coins.length;
  }
- function tile(coin){
+ function tile(coin,index=99){
   const v=change(coin,range),node=document.createElement('button');
   const symbol=String(coin.symbol||'').toUpperCase();
   node.type='button';node.className='heatmap-tile';node.dataset.coin=coin.id;
@@ -276,7 +276,11 @@
   if(/^https:\/\//i.test(imageUrl)){
    const icon=document.createElement('img');
    icon.className='hm-icon';icon.src=imageUrl;icon.alt='';
-   icon.loading='lazy';icon.decoding='async';icon.referrerPolicy='no-referrer';
+   // The first visible Heatmap row should have its logos available at first
+   // paint; offscreen logos remain lazy to avoid unnecessary network work.
+   icon.loading=index<12?'eager':'lazy';
+   icon.decoding='async';icon.referrerPolicy='no-referrer';
+   if(index<8)icon.setAttribute('fetchpriority','high');
    identity.append(icon);
   }
   const labels=document.createElement('span');labels.className='hm-labels';
@@ -322,8 +326,9 @@
   const sameOrder=coins.length>0&&grid.children.length===coins.length
    &&coins.every((coin,i)=>grid.children[i]?.dataset.coin===coin.id);
   if(coins.length){
-   for(const coin of coins){
-    const el=mapTiles.get(coin.id)||tile(coin);
+   for(let i=0;i<coins.length;i++){
+    const coin=coins[i];
+    const el=mapTiles.get(coin.id)||tile(coin,i);
     recolor(el,coin);
     el.dataset.previousPrice=String(coin.current_price);
     const symbol=el.querySelector('.hm-symbol'),name=el.querySelector('.hm-name'),rank=el.querySelector('.hm-rank');
