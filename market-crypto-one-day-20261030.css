@@ -387,3 +387,30 @@ html:is([data-inj-market-entry="crypto"],[data-inj-market-entry="favorites"])
  html:is([data-inj-market-entry="crypto"],[data-inj-market-entry="favorites"])
   #injGlobalMarket .inj-chart-timeframe>button{transition:none!important}
 }
+
+/* Precise timeframe loader: do not substitute a false straight line while
+   waiting for genuine historical samples. */
+html:is([data-inj-market-entry="crypto"],[data-inj-market-entry="favorites"])
+ #injGlobalMarket #marketProRows .inj-1d-empty{
+ display:flex!important;
+ width:100%!important;
+ min-height:38px!important;
+ align-items:center!important;
+ justify-content:center!important;
+ background:transparent!important;
+ color:var(--muted,#829698)!important;
+ font-size:12px!important;
+}
+html:is([data-inj-market-entry="crypto"],[data-inj-market-entry="favorites"])
+ #injGlobalMarket #marketProRows .inj-chart-loading{
+ letter-spacing:.2em!important;
+ opacity:.55!important;
+ animation:injChartHistoryPulse 1.6s ease-in-out infinite alternate;
+}
+@keyframes injChartHistoryPulse{
+ from{opacity:.26}to{opacity:.75}
+}
+@media(prefers-reduced-motion:reduce){
+ html:is([data-inj-market-entry="crypto"],[data-inj-market-entry="favorites"])
+  #injGlobalMarket #marketProRows .inj-chart-loading{animation:none!important;opacity:.6!important}
+}
