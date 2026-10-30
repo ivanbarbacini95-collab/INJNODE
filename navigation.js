@@ -180,7 +180,12 @@ if(main){
  },true);
  document.addEventListener('keydown',event=>{if(event.key==='Escape' && !document.querySelector('dialog[open]'))home();});
 }
-function language(){const en=localStorage.getItem('inj_node_language_v1')==='en';const el=document.querySelector('#entryMarketButton strong');if(el)el.textContent=en?'Market':'Mercato';}
+function language(){
+ // This launcher is INJ Intelligence, not the old generic Market hub.
+ // The shared i18n module owns the actual IT/EN label and subtitle.
+ const el=document.querySelector('#entryMarketButton .inj-home-tile-title');
+ if(el)el.textContent=el.getAttribute('data-it')||'INJ Intelligence';
+}
 window.addEventListener('injnode:languagechange',event=>{
  language();
  if(section?.contentWindow){
