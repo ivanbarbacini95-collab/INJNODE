@@ -1,9 +1,13 @@
-const CACHE_NAME = 'inj-node-v16.10.30-market-isolation1';
+const CACHE_NAME = 'inj-node-v16.10.30-crypto-1d1';
 const APP_SHELL = [
+  './market-crypto-one-day-20261030.css?v=oneday1',
+  './market-crypto-one-day-20261030.js?v=oneday1',
+  './market.js?v=20261030oneday1',
+  './market-views.js?v=20261030oneday1',
   './home-market-launcher-uniform-20261030.css?v=marketpolish1',
   './navigation.js?v=20261030marketlabel1',
-  './market-entry-direct-20261030.css?v=direct4',
-  './market-entry-direct-20261030.js?v=direct4',
+  './market-entry-direct-20261030.css?v=direct5',
+  './market-entry-direct-20261030.js?v=direct5',
   './market-portal.js?v=20261030direct4',
   './home-ticker-tight-20261030.css?v=ticker1',
   './home-bottom-tabs-20261030.css?v=bottomnav12',

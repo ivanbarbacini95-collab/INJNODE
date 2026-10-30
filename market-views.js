@@ -98,6 +98,7 @@
   });
  }
  function spark(coin){
+  if(document.documentElement.dataset.injMarketEntry==='crypto'&&window.INJ_DAY_CHART)return window.INJ_DAY_CHART.render(coin);
   const source=coin.sparkline_in_7d?.price;
   if(!Array.isArray(source)||source.length<2)return '—';
   const data=source.map(num).filter(Number.isFinite);
@@ -496,6 +497,7 @@
      if(prior>0)priceFlash(price,current.current_price>prior?'up':'down');
     }
     element.dataset.previousPrice=String(current.current_price);
+    if(document.documentElement.dataset.injMarketEntry==='crypto')window.INJ_DAY_CHART?.tick?.(current,element.querySelector('.mp-chart'));
     for(const k of ['1h','24h','7d','30d']){
      const span=element.querySelector('.mp-'+k);
      if(!span)continue;

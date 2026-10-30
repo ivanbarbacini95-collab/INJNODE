@@ -90,3 +90,8 @@ html[data-inj-market-entry="crypto"] body #injGlobalMarket:not([hidden]){
  display:block!important;
  visibility:visible!important;
 }
+
+/* INJ Intelligence is a destination, not the former Market hub. */
+html[data-inj-market-entry="intel"] :is(#injIntelRoot,#injWorldMarket,#injGlobalMarket,#injIntelHeaderSuffix){display:none!important}
+/* Crypto uses the one-button switch inside the header, not the old full bar. */
+html[data-inj-market-entry="crypto"] #injGlobalCryptoLayoutSwitch[hidden]{display:none!important}
