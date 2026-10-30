@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.10.30-four-fonts3';
+const CACHE_NAME = 'inj-node-v16.10.30-five-fonts-original1';
 const APP_SHELL = [
   './inj-font-switcher-20261029.css?v=fontquad3',
   './inj-font-switcher-20261029.js?v=fontquad3',
