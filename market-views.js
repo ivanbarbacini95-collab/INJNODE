@@ -158,7 +158,7 @@
   $('marketFavoritesHeading').textContent=tr('I tuoi preferiti','Your favorites');
   $('marketFavoritesStatus').textContent=size
    ?size+' '+tr(size===1?'crypto salvata':'crypto salvate',size===1?'saved crypto':'saved cryptos')+' · '+tr('su questo dispositivo','on this device')
-   :tr('Tocca la stella accanto a una crypto in Global Crypto','Tap a star beside any coin in Global Crypto');
+   :tr('Scorri una crypto a sinistra per salvarla nei preferiti','Swipe a coin left to save it as a favorite');
   $('marketFavoritesList').textContent=tr('Lista','List');
   $('marketFavoritesMap').textContent='Heatmap';
   favModes.setAttribute('aria-label',tr('Visualizzazione preferiti','Favorites view'));
@@ -559,6 +559,60 @@
   if(asset)api()?.open?.(asset.dataset.coin);
  }
  rows.addEventListener('click',onAssetClick);
+
+ // A single horizontal swipe reveals the previously persistent star.
+ // Release after 70px to toggle; the coin always slides back to zero.
+ let pendingSwipe=null,swipeBlockId='',swipeBlockUntil=0;
+ const swipeEnabled=()=>document.documentElement.dataset.injMarketEntry==='crypto'
+   &&section==='global'&&mode==='list';
+ function settleSwipe(apply=false){
+  const s=pendingSwipe;if(!s)return;pendingSwipe=null;
+  const {row,wrap,id}=s;
+  if(s.axis==='x'){swipeBlockId=id;swipeBlockUntil=Date.now()+600}
+  row.style.removeProperty('--inj-swipe-x');
+  wrap.classList.remove('inj-swiping');
+  if(apply&&wrap.isConnected){
+   const coin=all().find(c=>c.id===id);
+   if(coin){
+    toggleFavorite(coin.id,coin.name,coin.symbol);
+    const note=$('injCryptoSwipeStatus');
+    if(note)note.textContent=tr(favorites.has(id)?'Aggiunta ai preferiti: ':'Rimossa dai preferiti: ',
+      favorites.has(id)?'Added to favorites: ':'Removed from favorites: ')+coin.name;
+    try{navigator.vibrate?.(10)}catch(_){}
+   }
+  }
+ }
+ rows.addEventListener('pointerdown',e=>{
+  if(!swipeEnabled()||pendingSwipe||!e.isPrimary||e.pointerType==='mouse'||e.button!==0)return;
+  const row=e.target.closest('.mp-row[data-coin]'),wrap=row?.closest('.market-favorite-row');
+  if(!wrap||!rows.contains(wrap))return;
+  pendingSwipe={row,wrap,id:row.dataset.coin,pid:e.pointerId,x:e.clientX,y:e.clientY,axis:null,dx:0};
+ },{passive:true});
+ window.addEventListener('pointermove',e=>{
+  const s=pendingSwipe;
+  if(!s||s.pid!==e.pointerId)return;
+  if(!s.row.isConnected||!swipeEnabled()){settleSwipe();return}
+  const dx=e.clientX-s.x,dy=e.clientY-s.y;
+  if(!s.axis&&Math.max(Math.abs(dx),Math.abs(dy))>9)
+   s.axis=Math.abs(dx)>Math.abs(dy)*1.25?'x':'y';
+  if(s.axis!=='x')return;
+  if(e.cancelable)e.preventDefault();
+  s.dx=Math.max(-95,Math.min(0,dx));
+  s.wrap.classList.toggle('inj-swiping',s.dx< -5);
+  s.row.style.setProperty('--inj-swipe-x',s.dx+'px');
+ },{capture:true,passive:false});
+ window.addEventListener('pointerup',e=>{
+  if(pendingSwipe?.pid===e.pointerId)
+   settleSwipe(pendingSwipe.axis==='x'&&pendingSwipe.dx<=-70);
+ },{capture:true,passive:true});
+ window.addEventListener('pointercancel',()=>settleSwipe(),{capture:true,passive:true});
+ window.addEventListener('blur',()=>settleSwipe());
+ rows.addEventListener('click',e=>{
+  if(Date.now()>=swipeBlockUntil)return;
+  const id=e.target.closest('.market-favorite-row')?.querySelector('.mp-row[data-coin]')?.dataset.coin;
+  if(id===swipeBlockId){e.preventDefault();e.stopImmediatePropagation();swipeBlockUntil=0}
+ },true);
+
  // A missing provider logo simply disappears; no broken-image rectangle on the card.
  grid.addEventListener('error',event=>{
   const image=event.target;
