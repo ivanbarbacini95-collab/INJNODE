@@ -1,8 +1,9 @@
-/* INJ Node · 4 typefaces, instant cross-page settings. No ZIP import required. */
+/* INJ Node · 5 selectable typefaces including the original fallback stack. */
 (function(){
 'use strict';
 const STORE='inj_node_font_v1',root=document.documentElement;
 const fonts=[
+ {id:'original',name:'INJ Original',font:'"Supply Mono","PP Supply Mono","INJ IBM Plex Mono","IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace',subtitleIt:'Tipografia storica di INJ Node',subtitleEn:'Original INJ Node typography',weight:400},
  {id:'geist',name:'Geist',font:'"INJ Geist","Geist",-apple-system,BlinkMacSystemFont,sans-serif',subtitleIt:'Minimal premium',subtitleEn:'Minimal premium',weight:400},
  {id:'space',name:'Space Grotesk',font:'"INJ Space Grotesk","Space Grotesk",-apple-system,BlinkMacSystemFont,sans-serif',subtitleIt:'Tech luxury',subtitleEn:'Tech luxury',weight:500},
  {id:'plex',name:'IBM Plex Mono',font:'"INJ IBM Plex Mono","IBM Plex Mono",ui-monospace,monospace',subtitleIt:'Terminale finanziario',subtitleEn:'Financial terminal',weight:400},
@@ -26,8 +27,8 @@ function refresh(){
  if(caption)caption.textContent=(en?'Selected: ':'Selezionato: ')+byId[active].name;
  const note=holder.querySelector('.menu-font-note');
  if(note)note.textContent=en?
-  'Four ready-to-use typefaces. Changes apply to the whole app and are saved on this device. No file import required.':
-  'Quattro font già disponibili. La scelta vale in tutta l’app e viene salvata sul dispositivo. Nessuna importazione necessaria.';
+  'Five ready-to-use choices, including INJ Original (Supply Mono if installed, otherwise IBM Plex Mono). Changes apply across the app and are saved on this device.':
+  'Cinque scelte disponibili, incluso INJ Original (Supply Mono se installato, altrimenti IBM Plex Mono). La scelta vale in tutta l’app e viene salvata sul dispositivo.';
  holder.setAttribute('aria-label',en?'Interface font':'Font interfaccia');
  holder.querySelectorAll('[data-inj-font-choice]').forEach(button=>{
   const f=byId[button.getAttribute('data-inj-font-choice')];
