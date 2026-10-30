@@ -19,7 +19,7 @@ html[data-inj-market-entry="crypto"] #injGlobalCryptoLayoutSwitch:not([hidden]){
  padding:0 12px!important;border-radius:11px!important;
  border:1px solid color-mix(in srgb,var(--accent,#8ce6d2) 36%,var(--line,#354c49))!important;
  background:color-mix(in srgb,var(--accent,#8ce6d2) 10%,var(--surface-strong,#112523))!important;
- color:var(--text,#eef8f6)!important;font:600 11px/1.2 inherit!important;
+ color:var(--text,#eef8f6)!important;font-family:inherit!important;font-size:11px!important;font-weight:600!important;line-height:1.2!important;
  cursor:pointer!important;touch-action:manipulation;
 }
 html[data-inj-market-entry="crypto"] #injGlobalCryptoLayoutSwitch[hidden]{display:none!important}
@@ -93,4 +93,11 @@ html[data-inj-market-entry="crypto"] #injGlobalMarket .mp-chart .inj-1d-empty{di
 }
 @media(prefers-reduced-motion:reduce){
  html[data-inj-market-entry="crypto"] #injGlobalCryptoLayoutSwitch{transition:none!important}
+}
+/* Very small or sub-cent prices may wrap rather than disappear beyond the row. */
+@media(max-width:740px){
+ html[data-inj-market-entry="crypto"] #injGlobalMarket .mp-price-value{
+  white-space:normal!important;overflow:visible!important;
+  overflow-wrap:anywhere!important;line-height:1.12!important;
+ }
 }
