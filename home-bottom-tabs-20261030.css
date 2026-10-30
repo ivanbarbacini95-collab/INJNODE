@@ -319,3 +319,16 @@ html[data-inj-page="index"][data-inj-home-tab="home"] body.entry-gate-open{
   transition:none!important;
  }
 }
+
+/* Screenshot follow-up: end the Home content cleanly at Treasury.
+   Do not expose the secondary branding/footer beneath the dock. */
+html[data-inj-page="index"][data-inj-home-tab="home"] body
+ #injHomeBrandFooter,
+html[data-inj-page="index"][data-inj-home-tab="home"] body
+ #entryGate#entryGate > .inj-home-signature{
+ display:none!important;
+}
+html[data-inj-page="index"][data-inj-home-tab="home"] body
+ #entryGate#entryGate.entry-gate.visible > .entry-gate-shell:not(.first-access){
+ padding-bottom:calc(94px + env(safe-area-inset-bottom,0px))!important;
+}

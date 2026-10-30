@@ -135,6 +135,26 @@
   const docTop=Math.max(window.scrollY||0,doc.scrollTop||0);
   return gate.scrollTop>docTop+2?gate:doc;
  }
+ function treasuryBoundary(){
+  const treasury=document.getElementById('entryTreasuryButton');
+  if(!treasury||getComputedStyle(treasury).display==='none')return null;
+  const visual=window.visualViewport;
+  const viewportHeight=visual&&Math.abs(visual.scale-1)<.02
+   ?Math.min(window.innerHeight,visual.height):window.innerHeight;
+  const dockBox=nav.getBoundingClientRect();
+  const safeDockTop=dockBox.top>0 && dockBox.top<viewportHeight
+   ?dockBox.top-12:viewportHeight-112;
+  const visibleEnd=Math.min(viewportHeight-100,safeDockTop);
+  const owner=currentScrollOwner();
+  const currentTop=owner===gate?gate.scrollTop
+   :Math.max(0,window.scrollY||0,owner.scrollTop||0);
+  const cardEnd=treasury.getBoundingClientRect().bottom;
+  return {
+   owner,top:currentTop,
+   max:Math.max(0,currentTop+cardEnd-visibleEnd),
+   cardEnd,visibleEnd
+  };
+ }
  function refreshDockAndHomeBoundary(preferred){
   if(root.dataset.injHomeTab!=='home'){
    root.dataset.injHomeNavVisible='true';
@@ -158,22 +178,17 @@
   root.dataset.injHomeNavVisible=String(reveal);
   syncTopLayer();
 
-  // The end stop is the Treasury card, with enough air above the dock for
-  // the entire card and its tap target. No extra blank tail on iPhone.
+  // End at Treasury, using the actual dock top as the stopping line.
+  // The old minimum-scroll runway could expose the dashboard/footer beneath
+  // Home on iPhone when native momentum continued after the card was visible.
   if(top>0){
-   const cardRect=treasury.getBoundingClientRect();
-   const screenHeight=window.visualViewport?.height&&window.visualViewport.scale===1
-    ?Math.min(window.innerHeight,window.visualViewport.height)
-    :window.innerHeight;
-   const availableBottom=screenHeight-Math.max(100,nav.getBoundingClientRect().height+28);
-   const minRunway=threshold+6;
-   const maxPosition=Math.max(minRunway,top+cardRect.bottom-availableBottom);
-   if(top>maxPosition+2){
-    const clampTo=Math.max(0,Math.min(maxPosition,scroller.scrollHeight-scroller.clientHeight));
-    if(scroller===gate)gate.scrollTop=clampTo;
+   const end=treasuryBoundary();
+   if(end && end.top>end.max+1){
+    const clampTo=Math.max(0,Math.min(end.max,end.owner.scrollHeight-end.owner.clientHeight));
+    if(end.owner===gate)gate.scrollTop=clampTo;
     else{
-     scroller.scrollTop=clampTo;
-     if(Math.abs(window.scrollY-clampTo)>2)window.scrollTo(0,clampTo);
+     end.owner.scrollTop=clampTo;
+     if(Math.abs(window.scrollY-clampTo)>1)window.scrollTo(0,clampTo);
     }
     top=clampTo;
     reveal=top>=threshold-2;
@@ -182,6 +197,30 @@
    }
   }
  }
+ let touchOrigin=null;
+ document.addEventListener('touchstart',event=>{
+  if(!isHomeForeground()||event.touches.length!==1){touchOrigin=null;return;}
+  const p=event.touches[0];
+  touchOrigin={x:p.clientX,y:p.clientY,axis:null};
+ },{capture:true,passive:true});
+ document.addEventListener('touchmove',event=>{
+  if(!touchOrigin||!isHomeForeground()||event.touches.length!==1||!event.cancelable)return;
+  const p=event.touches[0],dx=p.clientX-touchOrigin.x,dy=p.clientY-touchOrigin.y;
+  if(!touchOrigin.axis&&Math.max(Math.abs(dx),Math.abs(dy))>9)
+   touchOrigin.axis=Math.abs(dy)>Math.abs(dx)*1.3?'vertical':'horizontal';
+  if(touchOrigin.axis!=='vertical'||dy>=0)return; // Allow scrolling back upward.
+  if(event.target.closest?.('input,textarea,select,[contenteditable="true"],canvas,[role="slider"],.entry-wallets,.entry-pnl-timeline-scroll'))return;
+  const end=treasuryBoundary();
+  if(end&&end.top>=end.max-3)event.preventDefault();
+ },{capture:true,passive:false});
+ for(const type of ['touchend','touchcancel'])
+  document.addEventListener(type,()=>{touchOrigin=null;},{capture:true,passive:true});
+ window.addEventListener('wheel',event=>{
+  if(!isHomeForeground()||event.deltaY<=0||event.ctrlKey||!event.cancelable)return;
+  const end=treasuryBoundary();
+  if(end&&end.top>=end.max-2)event.preventDefault();
+ },{capture:true,passive:false});
+
  function scheduleDockRefresh(preferred){
   if(preferred)lastOwner=preferred;
   if(scrollTick)return;
