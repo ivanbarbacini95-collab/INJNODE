@@ -8,9 +8,9 @@
  const actions=gate?.querySelector('.entry-actions.entry-flat-v44');
  if(!gate||!actions||document.getElementById('injPrimaryBottomNav'))return;
  const sections=[
-  {id:'home',it:'Home',en:'Home',titleIt:'',titleEn:'',subIt:'',subEn:'',ids:['entryMacroCalendarButton'],icon:'<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/>'},
-  {id:'patrimonio',it:'Patrimonio',en:'Wealth',titleIt:'PATRIMONIO',titleEn:'WEALTH',subIt:'Wallet, dashboard e valore del portafoglio',subEn:'Wallets, dashboard and portfolio value',ids:['entryDashboardButton','entryLiveButton','entryTreasuryButton','entryVisualizeWealthButton'],icon:'<rect x="3" y="6" width="18" height="15" rx="2"/><path d="M3 10h18M7 6V4h10v2M7 15h5"/>'},
-  {id:'mercato',it:'Mercato',en:'Market',titleIt:'MERCATO',titleEn:'MARKET',subIt:'Prezzi, analisi e calendario macro',subEn:'Prices, research and macro calendar',ids:['entryMarketButton','entryLiveChartsButton','entryOrderBookButton','entryPerformanceButton','entryComparisonButton','injTabMarketEventsShortcut'],icon:'<path d="M3 20h18M5 17V6M7 15l4-4 3 2 5-7M16 6h3v3"/>'},
+  {id:'home',it:'Home',en:'Home',titleIt:'',titleEn:'',subIt:'',subEn:'',ids:['entryDashboardButton','entryLiveButton'],icon:'<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/>'},
+  {id:'patrimonio',it:'Patrimonio',en:'Wealth',titleIt:'PATRIMONIO',titleEn:'WEALTH',subIt:'Wallet, dashboard e valore del portafoglio',subEn:'Wallets, dashboard and portfolio value',ids:['entryTreasuryButton','entryVisualizeWealthButton'],icon:'<rect x="3" y="6" width="18" height="15" rx="2"/><path d="M3 10h18M7 6V4h10v2M7 15h5"/>'},
+  {id:'mercato',it:'Mercato',en:'Market',titleIt:'MERCATO',titleEn:'MARKET',subIt:'Prezzi, analisi e calendario macro',subEn:'Prices, research and macro calendar',ids:['entryMarketButton','entryLiveChartsButton','entryOrderBookButton','entryPerformanceButton','entryComparisonButton','entryMacroCalendarButton'],icon:'<path d="M3 20h18M5 17V6M7 15l4-4 3 2 5-7M16 6h3v3"/>'},
   {id:'reward',it:'Reward',en:'Reward',titleIt:'REWARD',titleEn:'REWARD',subIt:'Staking, ricompense e obiettivi',subEn:'Staking, rewards and milestones',ids:['entryLiveRewardsButton','entryRewardLadderButton','entryFreedomButton'],icon:'<path d="M12 2v20M16 6H9a4 4 0 0 0 0 8h6a4 4 0 0 1 0 8H7"/>'},
   {id:'altro',it:'Altro',en:'More',titleIt:'ALTRO',titleEn:'MORE',subIt:'Strumenti e funzionalità aggiuntive',subEn:'Additional tools and features',ids:['entryInjcEtfButton','entryWorkspaceButton','entryConverterButton','entryCommandCenterButton'],icon:'<circle cx="5" cy="12" r="1.25" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.25" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.25" fill="currentColor" stroke="none"/>'}
  ];
@@ -19,13 +19,7 @@
  heading.id='injTabHeading';heading.className='inj-tab-heading';heading.hidden=true;
  heading.innerHTML='<div><span class="inj-tab-eyebrow">INJ NODE / EXPLORE</span><h2 id="injTabHeadingTitle"></h2><p id="injTabHeadingSubtitle"></p></div>';
  actions.before(heading);
- const shortcut=document.createElement('button');
- shortcut.type='button';shortcut.id='injTabMarketEventsShortcut';
- shortcut.className='entry-action inj-market-events-shortcut';
- shortcut.setAttribute('aria-label','Apri calendario economico');
- shortcut.innerHTML='<span aria-hidden="true" class="entry-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18M7 14h4M7 17h8"/></svg></span><span><strong class="inj-home-tile-title" data-it="Market Events" data-en="Market Events">Market Events</strong><small class="inj-tile-description" data-it="Calendario macro ★★★" data-en="★★★ macro calendar">Calendario macro ★★★</small></span><svg class="entry-action-arrow" aria-hidden="true" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>';
- shortcut.addEventListener('click',()=>document.getElementById('entryMacroCalendarButton')?.click());
- actions.append(shortcut);
+
  const nav=document.createElement('nav');
  nav.id='injPrimaryBottomNav';
  nav.className='inj-primary-bottom-nav';
@@ -57,15 +51,25 @@
   const section=sections.find(item=>item.id===root.dataset.injHomeTab)||sections[0];
   document.getElementById('injTabHeadingTitle').textContent=en?section.titleEn:section.titleIt;
   document.getElementById('injTabHeadingSubtitle').textContent=en?section.subEn:section.subIt;
-  shortcut.setAttribute('aria-label',en?'Open economic calendar':'Apri calendario economico');
+ }
+ let tabScrollRevision=0;
+ function resetTabScroll(){
+  const s=document.scrollingElement||document.documentElement;
+  for(const el of [s,document.documentElement,document.body,gate]){
+   if(el && el.scrollTop>0)el.scrollTop=0;
+  }
+  if(window.scrollY>0)window.scrollTo(0,0);
  }
  function scrollHomeTop(){
-  try{
-   if(gate.scrollTop>0)gate.scrollTop=0;
-   const documentScroller=document.scrollingElement||document.documentElement;
-   if(documentScroller.scrollTop>0)documentScroller.scrollTop=0;
-   if(window.scrollY>0)window.scrollTo(0,0);
-  }catch(_){}
+  const current=++tabScrollRevision;
+  resetTabScroll();
+  requestAnimationFrame(()=>{
+   if(current!==tabScrollRevision)return;
+   resetTabScroll();
+   requestAnimationFrame(()=>{
+    if(current===tabScrollRevision)resetTabScroll();
+   });
+  });
  }
  function applyVisibility(section){
   const shown=new Set(section.ids);
