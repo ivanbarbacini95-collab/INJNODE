@@ -9,14 +9,26 @@ const api=()=>window.INJ_MARKET_VIEW_API;
 const SPANS={ '1h':3600000,'1d':86400000,'1w':604800000,'1m':2592000000 };
 const CG_FRAMES={ '1h':'1h','1d':'24h','1w':'7d','1m':'30d' };
 const SETTINGS={
- '1h':{interval:'1m',limit:66,ttl:180000},
- '1d':{interval:'5m',limit:300,ttl:600000},
- '1w':{interval:'30m',limit:350,ttl:1800000},
- '1m':{interval:'4h',limit:190,ttl:3600000}
+ '1h':{interval:'1m',step:60000,limit:66,ttl:150000},
+ '1d':{interval:'5m',step:300000,limit:296,ttl:480000},
+ '1w':{interval:'1h',step:3600000,limit:174,ttl:1200000},
+ '1m':{interval:'4h',step:14400000,limit:186,ttl:2400000}
 };
 const KEY='inj_node_crypto_chart_frame_v1';
-const prices=new Map(),fallback=new Map(),observed=new Map(),queue=[],pending=new Set();
-let frame='1d',currencyKey='',active=0,observer=null,queuedPaint=false,cgAfter=0,cgBlockedUntil=0;
+const MIN_POINTS={'1h':9,'1d':22,'1w':28,'1m':32};
+const MIN_COVER={'1h':.75,'1d':.82,'1w':.84,'1m':.86};
+const MAX_AGE={'1h':12*60000,'1d':3*3600000,'1w':20*3600000,'1m':48*3600000};
+const DIRECT_PAIRS={
+ bitcoin:['btc','BTCUSDT'],ethereum:['eth','ETHUSDT'],binancecoin:['bnb','BNBUSDT'],
+ ripple:['xrp','XRPUSDT'],solana:['sol','SOLUSDT'],'usd-coin':['usdc','USDCUSDT'],
+ dogecoin:['doge','DOGEUSDT'],cardano:['ada','ADAUSDT'],tron:['trx','TRXUSDT'],
+ chainlink:['link','LINKUSDT'],'avalanche-2':['avax','AVAXUSDT'],
+ polkadot:['dot','DOTUSDT'],litecoin:['ltc','LTCUSDT'],
+ 'bitcoin-cash':['bch','BCHUSDT']
+};
+const prices=new Map(),observed=new Map(),queue=[],pending=new Set();
+const DISK_KEY='inj_node_crypto_chart_history_v3';
+let frame='1d',currencyKey='',active=0,observer=null,cgAfter=0,cgBlockedUntil=0,disk=null;
 try{const stored=localStorage.getItem(KEY);if(SPANS[stored])frame=stored}catch(_){}
 const good=n=>Number.isFinite(Number(n))&&Number(n)>0;
 const fmt=()=>api()?.formatPercent;
@@ -25,7 +37,7 @@ const currentKey=coin=>String(api()?.getCurrency?.()||'usd')+':'+coin.id+':'+fra
 function checkCurrency(){
  const cur=String(api()?.getCurrency?.()||'usd');
  if(cur===currencyKey)return;
- currencyKey=cur;prices.clear();fallback.clear();observed.clear();
+ currencyKey=cur;prices.clear();observed.clear();
  queue.length=0;pending.clear();cgAfter=0;
 }
 function sample(coin,now=Date.now()){
@@ -39,80 +51,122 @@ function sample(coin,now=Date.now()){
  if(arr.length>2200)arr.splice(0,arr.length-2200);
  observed.set(coin.id,arr);
 }
+
 function sevenDay(coin,now){
  const src=coin?.sparkline_in_7d?.price;
  if(!Array.isArray(src)||src.length<2)return [];
- const updated=Number(api()?.getMarketUpdatedAt?.())||now;
- // CoinGecko's markets sparkline has no timestamps, so evenly spaced
- // points are an approximation within its published seven-day range.
+ const updated=Number(api()?.getMarketUpdatedAt?.())||0;
+ if(!updated||now-updated>MAX_AGE[frame])return [];
  const end=Math.min(now,updated),duration=SPANS['1w'];
  return src.map((v,i)=>({t:end-duration*(src.length-1-i)/(src.length-1),v:Number(v)}))
   .filter(p=>good(p.v)&&p.t<=now);
 }
-function inWindow(points,now){
- const start=now-SPANS[frame],filtered=points.filter(p=>good(p.v)&&p.t>=start-60000&&p.t<=now+60000);
- filtered.sort((a,b)=>a.t-b.t);
- // Keep newest real observation for duplicate timestamps.
+function inWindow(points,now,period=frame){
+ const start=now-SPANS[period],filter=Array.isArray(points)?points:[];
+ const result=filter.filter(p=>Number.isFinite(p?.t)&&good(p.v)&&p.t>=start-SETTINGS[period].step&&p.t<=now+1000)
+  .map(p=>({t:Math.min(now,Number(p.t)),v:Number(p.v)})).sort((a,b)=>a.t-b.t);
  const unique=[];
- for(const p of filtered){if(unique.length&&unique[unique.length-1].t===p.t)unique[unique.length-1]=p;else unique.push(p)}
- return unique;
+ for(const p of result){if(unique.length&&unique[unique.length-1].t===p.t)unique[unique.length-1]=p;else unique.push(p)}
+ return unique.filter(p=>p.t>=start-1000);
+}
+function validSeries(points,now,period=frame){
+ const data=inWindow(points,now,period);
+ if(data.length<MIN_POINTS[period])return null;
+ const first=data[0],last=data.at(-1),coverage=(last.t-first.t)/SPANS[period];
+ if(coverage<MIN_COVER[period]||now-last.t>MAX_AGE[period])return null;
+ return data;
 }
 function shrink(data){
- if(data.length<=220)return data;
- const result=[data[0]],step=Math.ceil((data.length-2)/108);
+ if(data.length<=235)return data;
+ const result=[data[0]],step=Math.ceil((data.length-2)/112);
  for(let i=1;i<data.length-1;i+=step){
   const batch=data.slice(i,Math.min(data.length-1,i+step));
-  if(!batch.length)continue;
   let lo=batch[0],hi=batch[0];
   for(const p of batch){if(p.v<lo.v)lo=p;if(p.v>hi.v)hi=p}
   if(lo.t===hi.t)result.push(lo);
-  else if(lo.t<hi.t)result.push(lo,hi);
-  else result.push(hi,lo);
+  else result.push(...(lo.t<hi.t?[lo,hi]:[hi,lo]));
  }
- result.push(data[data.length-1]);return result;
+ result.push(data.at(-1));return result;
 }
-function history(coin,now){
+function readDisk(key){
+ try{
+  if(!disk)disk=JSON.parse(localStorage.getItem(DISK_KEY)||'{}')||{};
+  const saved=disk[key];
+  if(saved&&Array.isArray(saved.values)&&saved.until>Date.now())
+   return {values:saved.values,until:saved.until,source:saved.source,pair:saved.pair||''};
+ }catch(_){disk={}}
+ return null;
+}
+function writeDisk(key,item){
+ if(!item.values||item.values.length<MIN_POINTS[frame])return;
+ try{
+  if(!disk)disk=JSON.parse(localStorage.getItem(DISK_KEY)||'{}')||{};
+  disk[key]={values:item.values,until:item.until,source:item.source,pair:item.pair};
+  const keys=Object.keys(disk).sort((a,b)=>(disk[a]?.until||0)-(disk[b]?.until||0));
+  while(keys.length>72)delete disk[keys.shift()];
+  localStorage.setItem(DISK_KEY,JSON.stringify(disk));
+ }catch(_){/* storage quota/private mode: memory cache still works */}
+}
+function history(coin,now=Date.now()){
  checkCurrency();
- const cached=prices.get(currentKey(coin));
- let values=[];
- if(cached?.values?.length>=2)values=cached.values;
- else if(frame==='1d'||frame==='1w'||frame==='1h')values=sevenDay(coin,now);
- // Never extrapolate the 7-day history to a month.
- values=inWindow(values,now);
- const live=(observed.get(coin.id)||[]).filter(p=>p.t>=now-SPANS[frame]&&p.t<=now&&good(p.v));
- if(values.length>=2){
-  // Align a single trading-pair price line to the quote displayed by
-  // CoinGecko; its shape is from real candles and never invented points.
-  const end=values[values.length-1].v;
-  const ratio=good(end)&&good(coin.current_price)?Number(coin.current_price)/end:1;
-  if(ratio>.03&&ratio<30)values=values.map(p=>({t:p.t,v:p.v*ratio}));
+ const key=currentKey(coin);
+ let cached=prices.get(key);
+ if(!cached){cached=readDisk(key);if(cached)prices.set(key,cached)}
+ let data=cached?.values?.length?validSeries(cached.values,now):null;
+ let source=cached?.source||'';
+ // Only one-day or one-week feed previews: never turn 7d samples into 1h or 1m.
+ if(!data&&(frame==='1d'||frame==='1w')){
+  data=validSeries(sevenDay(coin,now),now);
+  source='feed';
  }
- return inWindow([...values,...live],now);
+ if(!data)return null;
+ let points=data;
+ const last=points.at(-1),current=Number(coin.current_price);
+ const marketFresh=!api()?.isCached?.()&&now-(Number(api()?.getMarketUpdatedAt?.())||0)<12*60000;
+ // A constant normalization only when the quote is fresh keeps the
+ // exchange line and displayed USD/EUR price on compatible scales.
+ if(marketFresh&&good(current)&&good(last.v)){
+  const ratio=current/last.v;
+  if(ratio>.45&&ratio<2.2){
+   points=points.map(p=>({t:p.t,v:p.v*ratio}));
+   if(now-last.t>12000)points.push({t:now,v:current});
+  }
+ }
+ return {points:inWindow(points,now),source};
 }
-function chart(coin,now){
+function percentFrom(coin,now=Date.now()){
+ const series=history(coin,now)?.points;
+ if(!series?.length||!good(series[0].v))return NaN;
+ return (series.at(-1).v/series[0].v-1)*100;
+}
+
+function chart(coin,now=Date.now()){
  sample(coin,now);
- const values=shrink(history(coin,now));
- if(values.length<2){
-  const label=document.documentElement.lang==='en'?'History unavailable for '+frame.toUpperCase():'Storico '+frame.toUpperCase()+' non disponibile';
-  return '<span class="inj-1d-empty" aria-label="'+label+'">—</span>';
+ const state=history(coin,now),points=state?.points;
+ if(!points||points.length<MIN_POINTS[frame]){
+  const key=currentKey(coin),wasTried=prices.get(key)?.values?.length===0;
+  const label=wasTried
+    ?(document.documentElement.lang==='en'?'Historical data temporarily unavailable':'Storico temporaneamente non disponibile')
+    :(document.documentElement.lang==='en'?'Loading real historical prices':'Caricamento dello storico reale');
+  return '<span class="inj-1d-empty '+(wasTried?'inj-chart-unavailable':'inj-chart-loading')+'" aria-label="'+label+'">'+(wasTried?'—':'···')+'</span>';
  }
- const low=Math.min(...values.map(p=>p.v)),high=Math.max(...values.map(p=>p.v));
- const start=now-SPANS[frame],span=SPANS[frame],w=240,h=64;
+ const data=shrink(points),low=Math.min(...data.map(p=>p.v)),high=Math.max(...data.map(p=>p.v));
+ const start=now-SPANS[frame],span=SPANS[frame],w=320,h=76,margin=7;
+ const extra=(high-low)*.07||Math.abs(high)*.0005||.0000001,lo=low-extra,hi=high+extra;
  const px=t=>Math.max(0,Math.min(w,(t-start)/span*w));
- const py=v=>high>low?h-5-(v-low)/(high-low)*(h-10):h/2;
- const path=values.map((p,i)=>(i?'L':'M')+px(p.t).toFixed(2)+' '+py(p.v).toFixed(2)).join(' ');
- const p=Number(api()?.getChange?.(coin,CG_FRAMES[frame]));
- const up=Number.isFinite(p)?p>=0:values.at(-1).v>=values[0].v;
- const label=(document.documentElement.lang==='en'?'Available market samples':'Campioni di mercato disponibili')+' · '+frame.toUpperCase();
- return '<svg class="inj-1d-chart '+(up?'up':'down')+'" viewBox="0 0 240 64" preserveAspectRatio="none" role="img" aria-label="'+label+'"><path d="'+path+'"/></svg>';
+ const py=v=>h-margin-(v-lo)/(hi-lo)*(h-2*margin);
+ const path=data.map((p,i)=>(i?'L':'M')+px(p.t).toFixed(2)+' '+py(p.v).toFixed(2)).join(' ');
+ const pct=percentFrom(coin,now);
+ const up=Number.isFinite(pct)?pct>=0:data.at(-1).v>=data[0].v;
+ const label=(document.documentElement.lang==='en'?'Real available price samples':'Campioni di prezzo reali disponibili')+' · '+frame.toUpperCase();
+ return '<svg class="inj-1d-chart '+(up?'up':'down')+'" viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none" role="img" aria-label="'+label+'"><path d="'+path+'"/></svg>';
 }
 function render(coin,now=Date.now()){return chart(coin,now)}
-function selectedChange(coin){return Number(api()?.getChange?.(coin,CG_FRAMES[frame]))}
+function selectedChange(coin){return percentFrom(coin)}
 function percentHtml(coin){
  const p=selectedChange(coin);
  const tone=!Number.isFinite(p)?'flat':p>0?'up':p<0?'down':'flat';
- const label=fmt()?.(p)||'—';
- return '<span class="mp-percent mp-period '+tone+'">'+label+'</span>';
+ return '<span class="mp-percent mp-period '+tone+'">'+(Number.isFinite(p)?fmt()?.(p)||'—':'···')+'</span>';
 }
 function paintPercent(coin,row){
  if(!coin||!row)return;
