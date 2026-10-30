@@ -66,10 +66,11 @@
   const cap=num(coin.market_cap),volume=num(coin.total_volume),daily=change(coin,'24h');
   return (Number.isFinite(cap)&&cap>0)||(Number.isFinite(volume)&&volume>0)||Number.isFinite(daily);
  }
- // A Heatmap tile has no meaningful red/green fill without the chosen period.
- // Do not show black "—" tiles for missing or invalid timeframe samples.
+ // Heatmap cards should never disappear merely because the provider
+ // omitted one optional 1H/24H/7D/30D percentage. Keep the verified quote
+ // visible with a neutral tile and a clear "—" performance instead.
  function hasHeatmapData(coin){
-  return hasMarketQuote(coin)&&Number.isFinite(change(coin,range));
+  return hasMarketQuote(coin);
  }
  function filtered(){
   const count=Number($('scope')?.value)||200;
@@ -347,7 +348,7 @@
   }else{
    const message=section==='favorites'&&favorites.size===0
     ?tr('Nessuna crypto salvata. Scorri a sinistra una crypto in Global Crypto e tocca la stella.','No saved cryptos yet. Swipe a coin left in Global Crypto and tap the star.')
-    :all().length?tr('Nessuna crypto con dati disponibili per questo periodo','No cryptos with available data for this period')
+    :all().length?tr('Nessuna crypto corrispondente ai filtri','No cryptos match these filters')
     :tr('Caricamento dati di mercato…','Loading market data…');
    let empty=grid.querySelector('.heatmap-empty');
    if(!empty){empty=document.createElement('div');empty.className='heatmap-empty';grid.replaceChildren(empty);}
