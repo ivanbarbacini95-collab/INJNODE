@@ -1,7 +1,7 @@
-const CACHE_NAME = 'inj-node-v16.10.30-font-trio1';
+const CACHE_NAME = 'inj-node-v16.10.30-local-fonts2';
 const APP_SHELL = [
-  './inj-font-switcher-20261029.css?v=fonttrio1',
-  './inj-font-switcher-20261029.js?v=fonttrio1',
+  './inj-font-switcher-20261029.css?v=fontpack2',
+  './inj-font-switcher-20261029.js?v=fontpack2',
   './inj-fluid-screen-fit.css?v=20261028fullmonitor1',
   './inj-monitor-readability.css?v=20261028readable3',
   './home-desktop-native-scroll.css?v=20261028home-scroll1',
