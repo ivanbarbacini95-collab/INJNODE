@@ -35,7 +35,7 @@
  let favorites=readFavorites();
  const persistFavorites=()=>{try{localStorage.setItem(favoritesKey,JSON.stringify([...favorites.values()]))}catch(_){}};
  let section='global',mode='list',range=rangeChoices.includes(read())?read():'24h',
-     favoriteLayout=readLocalFavoriteMode(),favoritesEditing=false,pendingRemovalId=null,lastRemoved=null,undoTimer=null;
+     favoriteLayout=readLocalFavoriteMode(),lastRemoved=null,undoTimer=null;
  function readLocalFavoriteMode(){
   try{return localStorage.getItem(favoriteModeKey)==='heatmap'?'heatmap':'list'}catch(_){return 'list'}
  }
@@ -115,12 +115,15 @@
  }
  const favoriteIcon='<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m12 2.5 2.9 5.88 6.49.94-4.7 4.58 1.11 6.47L12 17.32l-5.8 3.05 1.1-6.47-4.7-4.58 6.5-.94Z"/></svg>';
  const removeFromFavoritesIcon='<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5.5 5.5 18.5 18.5M18.5 5.5 5.5 18.5"/></svg>';
- const useSwipeRemovalGlyph=()=>document.documentElement.dataset.injMarketEntry==='crypto'
-   &&section==='global'&&mode==='list';
- const favoriteGlyph=(saved,ack=false)=>saved&&useSwipeRemovalGlyph()&&!ack?removeFromFavoritesIcon:favoriteIcon;
+ // Star to save in Global Crypto, X to remove inside Favorites.
+ const favoriteGlyph=()=>section==='favorites'&&mode==='list'?removeFromFavoritesIcon:favoriteIcon;
  function favoriteLabel(coin,saved){
   const symbol=String(coin.symbol||'').toUpperCase(),name=String(coin.name||coin.id);
-  return (saved?tr('Rimuovi dai preferiti: ','Remove from favorites: '):tr('Aggiungi ai preferiti: ','Add to favorites: '))+name+' ('+symbol+')';
+  const action=section==='favorites'
+   ?tr('Rimuovi dai preferiti: ','Remove from favorites: ')
+   :saved?tr('Già nei preferiti: ','Already a favorite: ')
+   :tr('Aggiungi ai preferiti: ','Add to favorites: ');
+  return action+name+' ('+symbol+')';
  }
  function favoriteButtonHtml(coin){
   const saved=favorites.has(coin.id);
@@ -136,7 +139,7 @@
   const coin=all().find(c=>c.id===id)||{id,name:button.dataset.favoriteName,symbol:button.dataset.favoriteSymbol};
   const saved=favorites.has(id),label=favoriteLabel(coin,saved);
   button.classList.toggle('is-saved',saved);
-  const glyph=favoriteGlyph(saved,button.classList.contains('inj-swipe-ack'));
+  const glyph=favoriteGlyph();
   if(button.innerHTML!==glyph)button.innerHTML=glyph;
   button.setAttribute('aria-pressed',String(saved));
   button.setAttribute('aria-label',label);
@@ -145,15 +148,6 @@
  function updateFavoritesUI(){
   const size=favorites.size,count=$('injFavoriteTabCount');
   if(count){count.textContent=String(size);count.hidden=size===0;}
-  if(section!=='favorites'||favoriteLayout!=='list'||size===0)favoritesEditing=false;
-  const manage=$('marketFavoritesManage');
-  if(manage){
-   manage.hidden=section!=='favorites'||favoriteLayout!=='list'||size===0;
-   manage.textContent=favoritesEditing?tr('Fine','Done'):tr('Gestisci','Manage');
-   manage.setAttribute('aria-pressed',String(favoritesEditing));
-  }
-  favControls.classList.toggle('is-editing',favoritesEditing);
-  list.classList.toggle('favorites-readonly',section==='favorites'&&!favoritesEditing);
   const undoButton=$('marketFavoritesUndoButton');
   if(undoButton)undoButton.textContent=tr('Annulla','Undo');
   const confirmTitle=$('marketFavoriteConfirmTitle');
@@ -164,7 +158,7 @@
   if(removeButton)removeButton.textContent=tr('Rimuovi','Remove');
   $('marketFavoritesHeading').textContent=tr('I tuoi preferiti','Your favorites');
   $('marketFavoritesStatus').textContent=size
-   ?size+' '+tr(size===1?'crypto salvata':'crypto salvate',size===1?'saved crypto':'saved cryptos')+' · '+tr('su questo dispositivo','on this device')
+   ?size+' '+tr(size===1?'crypto salvata':'crypto salvate',size===1?'saved crypto':'saved cryptos')+' · '+tr('scorri a sinistra per rimuovere','swipe left to remove')
    :tr('Scorri una crypto a sinistra per salvarla nei preferiti','Swipe a coin left to save it as a favorite');
   $('marketFavoritesList').textContent=tr('Lista','List');
   $('marketFavoritesMap').textContent='Heatmap';
@@ -181,21 +175,25 @@
       +' · '+tr('salvataggio conservato','still saved');
   }
  }
- function toggleFavorite(id,name,symbol){
-  if(favorites.has(id))favorites.delete(id);
-  else favorites.set(id,{id,name:String(name||id).slice(0,90),symbol:String(symbol||'').slice(0,18)});
+ function addFavorite(id,name,symbol){
+  if(favorites.has(id))return;
+  favorites.set(id,{id,name:String(name||id).slice(0,90),symbol:String(symbol||'').slice(0,18)});
   persistFavorites();
   updateFavoritesUI();
-  if(section==='favorites')requestRender();
-  else document.querySelectorAll('[data-favorite-id]').forEach(updateFavoriteButton);
+  document.querySelectorAll('[data-favorite-id]').forEach(updateFavoriteButton);
   window.dispatchEvent(new Event('injnode:crypto-favorites-changed'));
  }
- function setFavoritesEditing(enabled){
-  favoritesEditing=Boolean(enabled)&&section==='favorites'&&favoriteLayout==='list'&&favorites.size>0;
+ function removeFavorite(id){
+  const item=favorites.get(id);if(!item)return;
+  const index=[...favorites.keys()].indexOf(id);
+  closeOpenSwipe();
+  favorites.delete(id);
+  persistFavorites();
   updateFavoritesUI();
   requestRender();
+  showFavoriteUndo(item,index);
+  window.dispatchEvent(new Event('injnode:crypto-favorites-changed'));
  }
- const confirmation=$('marketFavoriteConfirm');
  function hideFavoriteUndo(){
   if(undoTimer){clearTimeout(undoTimer);undoTimer=null;}
   lastRemoved=null;
@@ -221,42 +219,13 @@
   persistFavorites();
   updateFavoritesUI();
   requestRender();
- }
- function finishFavoriteRemoval(){
-  const id=pendingRemovalId;
-  pendingRemovalId=null;
-  if(confirmation?.open)confirmation.close();
-  if(!id||!favorites.has(id))return;
-  const item=favorites.get(id),index=[...favorites.keys()].indexOf(id);
-  favorites.delete(id);
-  persistFavorites();
-  updateFavoritesUI();
-  requestRender();
-  showFavoriteUndo(item,index);
- }
- function requestFavoriteRemoval(id){
-  if(section!=='favorites'||favoriteLayout!=='list'||!favoritesEditing||!favorites.has(id))return;
-  const item=favorites.get(id);
-  pendingRemovalId=id;
-  const description=tr('Vuoi rimuovere ','Do you want to remove ')+item.name+' ('+String(item.symbol).toUpperCase()+')'+tr(' dalla lista dei preferiti?',' from your favorites list?');
-  const target=$('marketFavoriteConfirmText');
-  if(target)target.textContent=description;
-  if(confirmation?.showModal){
-   if(!confirmation.open)confirmation.showModal();
-  }else if(window.confirm(description)){
-   finishFavoriteRemoval();
-  }else pendingRemovalId=null;
- }
- function favoriteRemoveHtml(coin){
-  if(!favoritesEditing)return '';
-  const label=tr('Rimuovi dai preferiti: ','Remove from favorites: ')+coin.name+' ('+String(coin.symbol||'').toUpperCase()+')';
-  return '<button type="button" class="market-favorite-remove" data-favorite-id="'+escape(coin.id)+'" aria-label="'+escape(label)+'" title="'+escape(label)+'"><span aria-hidden="true">−</span></button>';
+  window.dispatchEvent(new Event('injnode:crypto-favorites-changed'));
  }
  function rowHtml(coin){
   const chart=spark(coin);
   const rank=finite(coin.market_cap_rank)?'#'+num(coin.market_cap_rank):'—';
   const symbol=String(coin.symbol||'').toUpperCase();
-  return '<div class="market-favorite-row'+(section==='favorites'&&!favoritesEditing?' is-readonly':'')+'"><button type="button" class="mp-row" data-coin="'+escape(coin.id)+'" data-previous-price="'+escape(coin.current_price)+'" aria-label="'+escape(coin.name+' '+symbol)+'">'+
+  return '<div class="market-favorite-row '+(section==='favorites'?'is-favorites':'is-global')+'"><button type="button" class="mp-row" data-coin="'+escape(coin.id)+'" data-previous-price="'+escape(coin.current_price)+'" aria-label="'+escape(coin.name+' '+symbol)+'">'+
   '<span class="mp-identity"><span class="mp-rank">'+rank+'</span>'+(String(coin.image||'').trim()?'<img loading="lazy" referrerpolicy="no-referrer" src="'+escape(coin.image)+'" alt="">':'')+'<span class="mp-name"><strong>'+escape(coin.name)+'</strong><small>'+escape(symbol)+'</small></span></span>'+
   '<span class="mp-price"><strong class="mp-price-value">'+escape(money(coin.current_price))+'</strong><small class="mp-mobile-label">'+escape(money(coin.market_cap,true))+' Cap</small></span>'+
   '<span class="mp-change mp-hour">'+pctHtml(coin,'1h')+'</span>'+
@@ -265,7 +234,7 @@
   '<span class="mp-change mp-month">'+pctHtml(coin,'30d')+'</span>'+
   '<span class="mp-stat mp-cap">'+escape(money(coin.market_cap,true))+'</span>'+
   '<span class="mp-stat mp-volume">'+escape(money(coin.total_volume,true))+'</span>'+
-  '<span class="mp-chart">'+(chart==='—'?'':chart)+'</span></button>'+(section==='global'?favoriteButtonHtml(coin):favoriteRemoveHtml(coin))+'</div>';
+  '<span class="mp-chart">'+(chart==='—'?'':chart)+'</span></button>'+favoriteButtonHtml(coin)+'</div>';
  }
  function renderList(items){
   const coins=sorted(items),template=document.createElement('template'),next=new Map();
@@ -278,7 +247,7 @@
   rows.querySelectorAll('.mp-row[data-coin]').forEach(el=>next.set(el.dataset.coin,el));
   listTiles=next;
   // Rebuilds from live market refresh must not dismiss an open favorite tray.
-  if(openSwipeId&&section==='global'&&document.documentElement.dataset.injMarketEntry==='crypto'){
+  if(openSwipeId&&swipeEnabled()){
    const active=next.get(openSwipeId);
    if(active){
     active.closest('.market-favorite-row')?.classList.add('inj-swipe-open');
@@ -393,14 +362,17 @@
   requestAnimationFrame(()=>{renderQueued=false;render()});
  }
  function setView(next){
-  section=next==='favorites'?'favorites':next==='heatmap'?'heatmap':'global';
+  const nextSection=next==='favorites'?'favorites':next==='heatmap'?'heatmap':'global';
+  const nextMode=nextSection==='favorites'?favoriteLayout:nextSection==='heatmap'?'heatmap':'list';
+  if(openSwipeId&&(nextSection!==section||nextMode!==mode))closeOpenSwipe();
+  section=nextSection;
   if(section==='favorites'){
    const intel=$('injIntelligenceMain');
    if(intel)intel.hidden=true;
    global.hidden=false;
    document.documentElement.dataset.marketSection='favorites';
   }
-  mode=section==='favorites'?favoriteLayout:section==='heatmap'?'heatmap':'list';
+  mode=nextMode;
   if(timer){clearTimeout(timer);timer=null}
   pending.clear();
   document.documentElement.dataset.marketMode=mode;
@@ -546,11 +518,7 @@
   const b=e.target.closest('[data-favorite-mode]');
   if(b)setFavoriteLayout(b.dataset.favoriteMode);
  });
- $('marketFavoritesManage')?.addEventListener('click',()=>setFavoritesEditing(!favoritesEditing));
  $('marketFavoritesUndoButton')?.addEventListener('click',undoFavoriteRemoval);
- $('marketFavoriteConfirmCancel')?.addEventListener('click',()=>confirmation?.close());
- $('marketFavoriteConfirmRemove')?.addEventListener('click',finishFavoriteRemoval);
- confirmation?.addEventListener('close',()=>{pendingRemovalId=null;});
  window.addEventListener('storage',e=>{
   if(e.key===favoritesKey){favorites=readFavorites();updateFavoritesUI();requestRender();window.dispatchEvent(new Event('injnode:crypto-favorites-changed'));}
   if(e.key===favoriteModeKey){favoriteLayout=readLocalFavoriteMode();if(section==='favorites')setView('favorites');}
@@ -561,27 +529,25 @@
   if(image?.tagName==='IMG'&&image.closest('.mp-identity'))image.remove();
  },true);
  function onAssetClick(e){
-  const remove=e.target.closest('.market-favorite-remove');
-  if(remove){
-   e.preventDefault();
-   requestFavoriteRemoval(remove.dataset.favoriteId);
-   return;
-  }
   const favorite=e.target.closest('.market-favorite-toggle');
   if(favorite){
    e.preventDefault();
    const id=favorite.dataset.favoriteId;
-   const wasSaved=favorites.has(id);
-   // On adding, hold the star in its yellow confirmed state briefly before
-   // the next open presents the removal X. No second on-row close control.
-   if(!wasSaved&&openSwipeId===id)favorite.classList.add('inj-swipe-ack');
-   toggleFavorite(id,favorite.dataset.favoriteName,favorite.dataset.favoriteSymbol);
+   if(section==='favorites'){removeFavorite(id);return}
+   if(section!=='global')return;
+   if(favorites.has(id)){
+    // A saved Global star cannot remove; the X exists only in Favorites.
+    if(openSwipeId===id)closeOpenSwipe();
+    return;
+   }
+   if(openSwipeId===id)favorite.classList.add('inj-swipe-ack');
+   addFavorite(id,favorite.dataset.favoriteName,favorite.dataset.favoriteSymbol);
    if(openSwipeId===id){
     setTimeout(()=>{
      favorite.classList.remove('inj-swipe-ack');
      updateFavoriteButton(favorite);
      if(openSwipeId===id)closeOpenSwipe();
-    },wasSaved?170:290);
+    },290);
    }
    return;
   }
@@ -596,8 +562,7 @@
  // Slide-to-reveal stays latched until star selection or explicit dismissal.
  const REVEAL=-116,OPEN_THRESHOLD=-66,RIGHT_DISMISS=58;
  let touchSwipe=null,swipeClickId='',swipeClickUntil=0;
- const swipeEnabled=()=>document.documentElement.dataset.injMarketEntry==='crypto'
-    &&section==='global'&&mode==='list';
+ const swipeEnabled=()=>mode==='list'&&(section==='global'||section==='favorites');
  function closeOpenSwipe(){
   if(!openSwipeId)return;
   const row=listTiles.get(openSwipeId);
