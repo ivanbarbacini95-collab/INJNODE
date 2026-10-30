@@ -99,7 +99,7 @@
   });
  }
  function spark(coin){
-  if(document.documentElement.dataset.injMarketEntry==='crypto'&&window.INJ_DAY_CHART)return window.INJ_DAY_CHART.render(coin);
+  if(window.INJ_DAY_CHART&&document.getElementById('injCryptoChartTimeframe'))return window.INJ_DAY_CHART.render(coin);
   const source=coin.sparkline_in_7d?.price;
   if(!Array.isArray(source)||source.length<2)return '—';
   const data=source.map(num).filter(Number.isFinite);
@@ -229,7 +229,7 @@
   '<span class="mp-identity"><span class="mp-rank">'+rank+'</span>'+(String(coin.image||'').trim()?'<img loading="lazy" referrerpolicy="no-referrer" src="'+escape(coin.image)+'" alt="">':'')+'<span class="mp-name"><strong>'+escape(coin.name)+'</strong><small>'+escape(symbol)+'</small></span></span>'+
   '<span class="mp-price"><strong class="mp-price-value">'+escape(money(coin.current_price))+'</strong><small class="mp-mobile-label">'+escape(money(coin.market_cap,true))+' Cap</small></span>'+
   '<span class="mp-change mp-hour">'+pctHtml(coin,'1h')+'</span>'+
-  '<span class="mp-change mp-day">'+pctHtml(coin,'24h')+'</span>'+
+  '<span class="mp-change mp-day">'+(window.INJ_DAY_CHART?.percentHtml?.(coin)||pctHtml(coin,'24h'))+'</span>'+
   '<span class="mp-change mp-week">'+pctHtml(coin,'7d')+'</span>'+
   '<span class="mp-change mp-month">'+pctHtml(coin,'30d')+'</span>'+
   '<span class="mp-stat mp-cap">'+escape(money(coin.market_cap,true))+'</span>'+
@@ -246,6 +246,7 @@
   rows.replaceChildren(template.content);
   rows.querySelectorAll('.mp-row[data-coin]').forEach(el=>next.set(el.dataset.coin,el));
   listTiles=next;
+  window.INJ_DAY_CHART?.onRowsRendered?.();
   // Rebuilds from live market refresh must not dismiss an open favorite tray.
   if(openSwipeId&&swipeEnabled()){
    const active=next.get(openSwipeId);
@@ -486,7 +487,8 @@
      if(prior>0)priceFlash(price,current.current_price>prior?'up':'down');
     }
     element.dataset.previousPrice=String(current.current_price);
-    if(document.documentElement.dataset.injMarketEntry==='crypto')window.INJ_DAY_CHART?.tick?.(current,element.querySelector('.mp-chart'));
+    window.INJ_DAY_CHART?.tick?.(current,element.querySelector('.mp-chart'));
+    window.INJ_DAY_CHART?.paintPercent?.(current,element);
     for(const k of ['1h','24h','7d','30d']){
      const span=element.querySelector('.mp-'+k);
      if(!span)continue;
