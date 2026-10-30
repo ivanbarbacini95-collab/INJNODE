@@ -349,6 +349,7 @@ async function startStreams(){
   if(!/^[A-Z0-9]{2,15}$/.test(symbol)||symbolCounts.get(symbol)!==1||!available.has(pair))continue;
   state.pairCoins.set(pair,coin);
  }
+ window.dispatchEvent(new Event('injnode:binance-pairs-ready'));
  const pairs=[...state.pairCoins.keys()];
  for(let i=0;i<pairs.length;i+=70){
   const streams=pairs.slice(i,i+70).map(x=>x.toLowerCase()+'@miniTicker').join('/');
@@ -367,7 +368,7 @@ async function startStreams(){
  updateConnectionStatus();
 }
 // Single data source for list and heatmap: no parallel network feed.
-window.INJ_MARKET_VIEW_API={getCoins:()=>state.coins,getCurrency:()=>state.currency,getMarketUpdatedAt:()=>state.last,isCached:()=>state.cached,formatMoney:money,formatPercent:pct,getChange:change,open:detail,switchCurrency};
+window.INJ_MARKET_VIEW_API={getCoins:()=>state.coins,getCurrency:()=>state.currency,getMarketUpdatedAt:()=>state.last,isCached:()=>state.cached,formatMoney:money,formatPercent:pct,getChange:change,getPairForCoin:id=>{for(const [pair,coin] of state.pairCoins){if(coin.id===id)return pair}return ''},open:detail,switchCurrency};
 // Shared read-only observation: this does not trigger additional network calls.
 window.INJ_MARKET_READONLY_SNAPSHOT=()=>({
  injective:state.coins.find(c=>c.id==='injective-protocol')||null,
