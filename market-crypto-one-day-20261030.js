@@ -216,7 +216,13 @@ async function loadHistory(coin,requestedFrame,pair){
    if(validSeries(arr,now,requestedFrame))return {values:arr,source:'binance'};
   }catch(_){/* Pair unavailable in this region: CoinGecko fallback. */}
  }
- if(Date.now()<cgBlockedUntil||Date.now()<cgAfter)return {values:[],source:'none'};
+ if(Date.now()<cgBlockedUntil)return {values:[],source:'none'};
+ // Respect the shared public API quota without treating throttled requests as
+ // permanent missing history, particularly after rapid timeframe switches.
+ const delay=Math.max(0,cgAfter-Date.now());
+ if(delay)await new Promise(resolve=>setTimeout(resolve,delay));
+ if(requestedFrame!==frame)return {values:[],source:'none'};
+ if(Date.now()<cgBlockedUntil)return {values:[],source:'none'};
  cgAfter=Date.now()+6500;
  const days=requestedFrame==='1h'||requestedFrame==='1d'?1:requestedFrame==='1w'?7:30;
  const url='https://api.coingecko.com/api/v3/coins/'+encodeURIComponent(coin.id)+
@@ -249,7 +255,9 @@ function schedule(coin,row){
 }
 function pump(){
  while(active<2&&queue.length){
-  const job=queue.shift();
+  const currentIndex=queue.findIndex(item=>item.frame===frame&&item.currency===currencyKey);
+  if(currentIndex<0){queue.length=0;break}
+  const job=queue.splice(currentIndex,1)[0];
   if(pending.has(job.key))continue;
   pending.add(job.key);active++;
   loadHistory(job.coin,job.frame,job.pair).then(record=>{
@@ -312,6 +320,8 @@ function updateButtons(){
 function setFrame(next){
  if(!Object.hasOwn(SPANS,next)||next===frame)return;
  frame=next;
+ // Abandon obsolete queued ranges; current on-screen frame always wins.
+ queue.length=0;
  try{localStorage.setItem(KEY,frame)}catch(_){}
  updateButtons();
  repaint();onRowsRendered();
