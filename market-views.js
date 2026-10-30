@@ -63,8 +63,9 @@
   const id=String(coin.id||'').trim(),name=String(coin.name||'').trim(),symbol=String(coin.symbol||'').trim();
   const price=num(coin.current_price);
   if(!id||!name||!symbol||!Number.isFinite(price)||price<=0)return false;
-  const cap=num(coin.market_cap),volume=num(coin.total_volume),daily=change(coin,'24h');
-  return (Number.isFinite(cap)&&cap>0)||(Number.isFinite(volume)&&volume>0)||Number.isFinite(daily);
+  // Market cap, volume, day performance and mini-chart are optional fields.
+  // A verified positive quote is sufficient to keep the asset in both views.
+  return true;
  }
  // Heatmap cards should never disappear merely because the provider
  // omitted one optional 1H/24H/7D/30D percentage. Keep the verified quote
