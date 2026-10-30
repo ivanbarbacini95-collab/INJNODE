@@ -1,84 +1,27 @@
-/* INJ Node: three typography profiles, selected in Settings.
-   Noto Sans Mono Light / PT Mono Regular / Inter SemiBold.
-   They deliberately supersede legacy font resets without modifying layout. */
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+Mono:wght@300;400&family=PT+Mono&display=swap");
-
-html[data-inj-font="noto-light"]{
-  --inj-font-choice:"Noto Sans Mono","SFMono-Regular",Menlo,Consolas,monospace;
-  --inj-font-weight:300;
-  --inj-font-emphasis:400;
-  --inj-font-label-weight:400;
-}
-html[data-inj-font="pt-mono"]{
-  --inj-font-choice:"PT Mono","SFMono-Regular",Menlo,Consolas,monospace;
-  --inj-font-weight:400;
-  --inj-font-emphasis:400;
-  --inj-font-label-weight:400;
-}
-html[data-inj-font="inter-semibold"]{
-  --inj-font-choice:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
-  --inj-font-weight:400;
-  --inj-font-emphasis:600;
-  --inj-font-label-weight:500;
-}
+/* INJ NODE font profiles. Actual font files never enter the public repository. */
+html[data-inj-font="code"]{--inj-user-face:"INJ Code","Inter",system-ui,sans-serif;--inj-user-weight:300;--inj-user-bold:700;--inj-user-label:300}
+html[data-inj-font="fester"]{--inj-user-face:"INJ Fester","Inter",system-ui,sans-serif;--inj-user-weight:200;--inj-user-bold:200;--inj-user-label:200}
+html[data-inj-font="mont"]{--inj-user-face:"INJ Mont","Inter",system-ui,sans-serif;--inj-user-weight:300;--inj-user-bold:900;--inj-user-label:300}
+html[data-inj-font="zag"]{--inj-user-face:"INJ Zag","Inter",system-ui,sans-serif;--inj-user-weight:400;--inj-user-bold:700;--inj-user-label:400}
 html[data-inj-font]{
-  --inj-inter-light-font:var(--inj-font-choice);
-  --inj-minimal-font:var(--inj-font-choice);
-  --inj-minimal-mono:var(--inj-font-choice);
-  --inj-node-terminal-font:var(--inj-font-choice);
-  --inj-home-title-face:var(--inj-font-choice);
-  --inj-home-description-face:var(--inj-font-choice);
-  --inj-editorial-face:var(--inj-font-choice);
-  font-family:var(--inj-font-choice)!important;
-  font-variant-numeric:tabular-nums lining-nums;
+ --inj-inter-light-font:var(--inj-user-face);--inj-minimal-font:var(--inj-user-face);
+ --inj-minimal-mono:var(--inj-user-face);--inj-node-terminal-font:var(--inj-user-face);
+ --inj-home-title-face:var(--inj-user-face);--inj-home-description-face:var(--inj-user-face);
+ --inj-editorial-face:var(--inj-user-face);font-family:var(--inj-user-face)!important;
+ font-variant-numeric:tabular-nums lining-nums;
 }
-/* More specific than the earlier Inter Light !important universal rule,
-   while keeping the icon font glyphs and SVG paths untouched. */
-html[data-inj-font] body :is(*,#__injFont#__injFont#__injFont#__injFont#__injFont):not(svg):not(svg *):not(.material-icons):not(.material-symbols-outlined):not(.material-symbols-rounded):not(.material-symbols-sharp):not(.fa):not(.fas):not(.far):not(.fab):not(.fal):not(.fad):not(.fa-solid):not(.fa-regular):not(.fa-brands):not(.iconfont):not(.icon-font){
-  font-family:var(--inj-font-choice)!important;
-  font-weight:var(--inj-font-weight)!important;
-  font-variant-numeric:tabular-nums lining-nums;
-  font-synthesis:none!important;
-  font-variation-settings:normal!important;
-  -webkit-font-smoothing:antialiased;
+html[data-inj-font] body :is(*,#__injFont9#__injFont9#__injFont9#__injFont9#__injFont9):not(svg):not(svg *):not(.material-icons):not(.material-symbols-outlined):not(.material-symbols-rounded):not(.material-symbols-sharp):not(.fa):not(.fas):not(.far):not(.fab):not(.fal):not(.fad):not(.fa-solid):not(.fa-regular):not(.fa-brands):not(.iconfont):not(.icon-font){
+ font-family:var(--inj-user-face)!important;font-weight:var(--inj-user-weight)!important;
+ font-variant-numeric:tabular-nums lining-nums;-webkit-font-smoothing:antialiased!important;
 }
-html[data-inj-font] body :is(*,#__injFont#__injFont#__injFont#__injFont#__injFont):is(
-  h1,h2,h3,h4,h5,h6,strong,b,th,
-  .menu-action-copy strong,.entry-action strong,
-  .metric-value,.hero-number,.hero-secondary,.number-roll-text,.number-roll-static-digit,
-  .number-roll-digit,.number-roll-digit-layer,.market-price,.price,.amount,.value,
-  .ws-main-price,.ws-price-value,.ws-price-main,.ws-price,.ws-hero-price,
-  .cc-now-price,.cc-price,.cc-primary-value,.wealth-amount,
-  .treasury-total-display,.rewards-total-value,
-  [id$="Price"],[id$="Worth"],[id$="Pnl"],[id$="PnL"],[id$="Value"]
-){
-  font-family:var(--inj-font-choice)!important;
-  font-weight:var(--inj-font-emphasis)!important;
-  font-variation-settings:normal!important;
-  font-variant-numeric:tabular-nums lining-nums;
+html[data-inj-font] body :is(*,#__injFont9#__injFont9#__injFont9#__injFont9#__injFont9):is(h1,h2,h3,h4,h5,h6,strong,b,th,[id$="Price"],[id$="Worth"],[id$="Value"],.metric-value,.hero-number,.hero-secondary,.number-roll-digit,.number-roll-text,.number-roll-static-digit,.number-roll-digit-layer,.market-price,.ws-main-price,.ws-price-main,.ws-hero-price,.cc-now-price,.cc-price,.treasury-total-display,.rewards-total-value){
+ font-family:var(--inj-user-face)!important;font-weight:var(--inj-user-bold)!important;
+ font-variant-numeric:tabular-nums lining-nums;
 }
-html[data-inj-font] body :is(*,#__injFont#__injFont#__injFont#__injFont#__injFont):is(
-  button,input,textarea,select,option,label,small,
-  .menu-font-name,.menu-font-current,.menu-font-note,
-  .caption,.subtitle,.description,.hint,.note
-){
-  font-family:var(--inj-font-choice)!important;
-  font-weight:var(--inj-font-label-weight)!important;
+html[data-inj-font] body :is(*,#__injFont9#__injFont9#__injFont9#__injFont9#__injFont9):is(button,input,textarea,select,option,label,small,.caption,.subtitle,.description,.hint,.note,.market-table,.market-asset-price,.ws-data-value,.ws-section-value,.ws-chart-ticks,.book-meta,code,pre,kbd,samp,.tx-hash,.wallet-address,.address-hash,[data-monospace]){
+ font-family:var(--inj-user-face)!important;font-weight:var(--inj-user-label)!important;
 }
-/* Code, wallet IDs and data ticks also use the selected typeface. */
-html[data-inj-font] body :is(*,#__injFont#__injFont#__injFont#__injFont#__injFont):is(
-  code,pre,kbd,samp,.tx-hash,.wallet-address,.address-hash,[data-monospace],
-  .market-table,.market-asset-price,.ws-data-value,.ws-section-value,.ws-chart-ticks,.book-meta
-){
-  font-family:var(--inj-font-choice)!important;
-  font-weight:var(--inj-font-label-weight)!important;
-  letter-spacing:0!important;
-}
-html[data-inj-font] body svg :is(text,tspan,#__injFont#__injFont#__injFont#__injFont#__injFont){
-  font-family:var(--inj-font-choice)!important;
-  font-weight:var(--inj-font-label-weight)!important;
-}
-/* Font picker within the existing Preferences accordion. */
+html[data-inj-font] body svg :is(text,tspan){font-family:var(--inj-user-face)!important}
 html[data-inj-page="index"] body #headerMenuPanel .menu-font-control{
   width:100%!important;min-width:0!important;grid-column:1/-1!important;
   border:0!important;background:none!important;box-shadow:none!important;
@@ -146,3 +89,14 @@ html[data-inj-page="index"] body #headerMenuPanel .menu-font-option:nth-child(3)
 @media(prefers-reduced-motion:reduce){
   html[data-inj-page="index"] body #headerMenuPanel .menu-font-control *{transition:none!important}
 }
+
+html[data-inj-page="index"] body #headerMenuPanel .menu-font-option:nth-child(3){grid-column:auto!important}
+html[data-inj-page="index"] body #headerMenuPanel .menu-font-description{display:block;font:400 10px/1.3 system-ui,sans-serif!important;color:var(--muted,#a9b9bd)!important}
+html[data-inj-page="index"] body #headerMenuPanel .menu-font-import-area{display:flex;flex-direction:column;gap:5px;margin:9px 0 0}
+html[data-inj-page="index"] body #headerMenuPanel .menu-font-import-button{
+ width:100%;min-height:40px!important;padding:8px 12px!important;border-radius:11px!important;
+ border:1px solid var(--line,#65787c)!important;background:color-mix(in srgb,var(--accent,#92c6bf) 12%,var(--surface,#152229))!important;
+ color:var(--text,#edf4f5)!important;font:500 12px/1.3 system-ui,sans-serif!important;cursor:pointer;
+}
+html[data-inj-page="index"] body #headerMenuPanel .menu-font-import-status{color:var(--muted,#a9b9bd)!important;font:400 10px/1.4 system-ui,sans-serif!important;margin:2px!important;padding:0!important}
+html[data-inj-page="index"] body #headerMenuPanel .menu-font-option{min-height:92px!important}
