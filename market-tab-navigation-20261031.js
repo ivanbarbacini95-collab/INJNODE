@@ -30,13 +30,13 @@
   rail.className='inj-market-tab-rail';
   rail.setAttribute('aria-label','Sezioni Market');
   const buttons=new Map();
-  const english=()=>root.lang==='en'||localStorage.getItem('inj_node_language_v1')==='en';
+  const english=()=>{try{return root.lang==='en'||localStorage.getItem('inj_node_language_v1')==='en'}catch(_){return root.lang==='en'}};
   for(const item of destinations){
     const button=document.createElement('button');
     button.type='button';
     button.className='inj-market-tab-link';
     button.dataset.marketDestination=item.id;
-    button.setAttribute('aria-controls','injMarketTabFrame');
+    if(item.entry)button.setAttribute('aria-controls','injMarketTabFrame');
     button.textContent=english()?item.en:item.it;
     button.addEventListener('click',()=>navigate(item.id,true));
     rail.appendChild(button);
@@ -134,7 +134,7 @@
     if(!currentUrl)return;
     try{
       if(!frame.contentWindow.location.pathname.endsWith('/market.html'))return;
-      if(frame.contentWindow.location.href!==currentUrl)return;
+      if(frame.src!==currentUrl)return;
     }catch(_){return}
     content.classList.add('is-ready');
     refreshLanguage();
