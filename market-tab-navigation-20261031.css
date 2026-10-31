@@ -83,17 +83,17 @@ html[data-inj-page="index"][data-inj-home-tab="mercato"] body>#injMarketTabHead:
 #injMarketTabHead .inj-market-tab-link:focus-visible{
   outline:2px solid var(--accent,#8bdfce)!important;outline-offset:-2px!important;
 }
-#injMarketTabHead .inj-market-tab-content{
+#injMarketTabPanel .inj-market-tab-content{
   display:flex!important;position:relative!important;flex:1 1 auto!important;
   min-height:0!important;width:100%!important;overflow:hidden!important;
   background:var(--theme-canvas,var(--bg,#09191a))!important;
 }
-#injMarketTabHead .inj-market-tab-loading{
+#injMarketTabPanel .inj-market-tab-loading{
   position:absolute;inset:0;display:grid;place-items:center;
   color:var(--muted-strong,var(--muted,#9dadab));font-size:12px;
   letter-spacing:.22em;pointer-events:none;
 }
-#injMarketTabHead .inj-market-tab-frame{
+#injMarketTabPanel .inj-market-tab-frame{
   position:relative!important;display:block!important;
   width:100%!important;height:100%!important;flex:1 1 auto!important;
   min-height:0!important;margin:0!important;padding:0!important;
@@ -101,10 +101,10 @@ html[data-inj-page="index"][data-inj-home-tab="mercato"] body>#injMarketTabHead:
   background:transparent!important;overflow:auto!important;
   visibility:hidden!important;opacity:0!important;pointer-events:none!important;
 }
-#injMarketTabHead .inj-market-tab-content.is-ready>.inj-market-tab-frame{
+#injMarketTabPanel .inj-market-tab-content.is-ready>.inj-market-tab-frame{
   opacity:1!important;visibility:visible!important;pointer-events:auto!important;
 }
-#injMarketTabHead .inj-market-tab-content.is-ready>.inj-market-tab-loading{
+#injMarketTabPanel .inj-market-tab-content.is-ready>.inj-market-tab-loading{
   display:none!important;
 }
 html[data-inj-page="index"][data-inj-home-tab="mercato"] body.inj-section-open>#injMarketTabPanel,
