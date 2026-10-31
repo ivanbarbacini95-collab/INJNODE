@@ -62,6 +62,77 @@
 
   let selected='world',lastMarketEntry='world',currentUrl='',wasMarket=false;
   let modalPending=false,modalWasOpened=false;
+
+  /* Immersive Market chrome: shared across World, Crypto, Events, Charts,
+     Order Book and Performance. Real taps only; live price ticks never reset
+     the timer. Both bars return together after the first interaction. */
+  const IDLE_HIDE_MS=5500;
+  let idleTimer=0,resizeTimer=0;
+  let lastWheelReveal=0;
+  const scheduleLayoutUpdate=()=>{
+    const update=()=>{
+      if(!isMarket())return;
+      window.dispatchEvent(new Event('resize'));
+      try{frame.contentWindow?.dispatchEvent(new Event('resize'))}catch(_){}
+    };
+    requestAnimationFrame(update);
+    clearTimeout(resizeTimer);
+    resizeTimer=window.setTimeout(update,390);
+  };
+  function setChrome(visible){
+    if(!isMarket())return;
+    const desired=visible?'shown':'hidden';
+    if(root.dataset.injMarketChrome===desired)return;
+    root.dataset.injMarketChrome=desired;
+    scheduleLayoutUpdate();
+  }
+  function armIdle(){
+    clearTimeout(idleTimer);
+    if(!isMarket()||document.hidden)return;
+    idleTimer=window.setTimeout(()=>{
+      if(!isMarket()||document.hidden)return;
+      // Keep navigation available while the user is selecting a tab, or when
+      // any modal panel/input is active. Idle otherwise means hands-free view.
+      if(rail.matches(':focus-within') || document.activeElement?.matches('input,textarea,select,[contenteditable="true"]')){
+        armIdle();
+        return;
+      }
+      setChrome(false);
+    },IDLE_HIDE_MS);
+  }
+  function registerActivity(){
+    if(!isMarket())return;
+    setChrome(true);
+    armIdle();
+  }
+  function wheelActivity(){
+    const now=Date.now();
+    if(now-lastWheelReveal<90)return;
+    lastWheelReveal=now;
+    registerActivity();
+  }
+  // The Market panel and native Performance live in this document; standalone
+  // charts/book live in same-origin frames, so attach inside those as well.
+  document.addEventListener('pointerdown',registerActivity,{capture:true,passive:true});
+  document.addEventListener('touchstart',registerActivity,{capture:true,passive:true});
+  document.addEventListener('keydown',registerActivity,{capture:true});
+  document.addEventListener('wheel',wheelActivity,{capture:true,passive:true});
+  function frameActivity(){
+    try{
+      const doc=frame.contentDocument;
+      if(!doc)return;
+      doc.addEventListener('pointerdown',registerActivity,{capture:true,passive:true});
+      doc.addEventListener('touchstart',registerActivity,{capture:true,passive:true});
+      doc.addEventListener('keydown',registerActivity,{capture:true});
+      doc.addEventListener('wheel',wheelActivity,{capture:true,passive:true});
+    }catch(_){}
+  }
+  document.addEventListener('visibilitychange',()=>{
+    if(document.hidden)clearTimeout(idleTimer);
+    else if(isMarket())registerActivity();
+  });
+  window.addEventListener('focus',()=>{if(isMarket())registerActivity()});
+
   const isMarket=()=>root.dataset.injHomeTab==='mercato';
   const modalOpen=()=>document.body.classList.contains('inj-section-open')||
     !document.getElementById('injMarketEventsOverlay')?.hidden||
@@ -131,6 +202,7 @@
       return;
     }
     updateSelection(id,scrollButton);
+    registerActivity();
     if(item.entry||item.page){
       modalPending=false;
       content.hidden=false;
@@ -161,6 +233,8 @@
       if(frame.src!==currentUrl)return;
     }catch(_){return}
     content.classList.add('is-ready');
+    frameActivity();
+    scheduleLayoutUpdate();
     // Standalone charts and book already have a Home control; keep its click
     // inside the parent tab instead of following iframe history/back.
     for(const id of ['liveChartsBack','bookBack']){
@@ -182,11 +256,15 @@
     head.hidden=!now;
     panel.setAttribute('aria-hidden',String(!now));
     if(now&&!wasMarket){
+      root.dataset.injMarketChrome='shown';
+      armIdle();
       lastMarketEntry='world';
       modalPending=false;
       updateSelection('world',false);
       showPage(destinations[0]);
     }else if(!now&&wasMarket){
+      clearTimeout(idleTimer);
+      root.removeAttribute('data-inj-market-chrome');
       modalPending=false;
       content.classList.remove('is-ready');
       currentUrl='';
