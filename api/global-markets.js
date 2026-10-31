@@ -39,11 +39,13 @@ async function request(url,ms=5200){
 const cnbcAliases={
  '^GSPC':'.SPX','^IXIC':'.IXIC','^DJI':'.DJI','^RUT':'.RUT',
  '^STOXX50E':'.STOXX50E','^GDAXI':'.GDAXI','^FCHI':'.FCHI','^FTSE':'.FTSE',
+ '^NDX':'.NDX','^VIX':'.VIX','^IBEX':'.IBEX','^SSMI':'.SSMI','000001.SS':'.SSEC',
  '^N225':'.N225','^HSI':'.HSI','^NSEI':'.NSEI','^AXJO':'.AXJO','^BVSP':'.BVSP',
  'GC=F':'@GC.1','SI=F':'@SI.1','CL=F':'@CL.1','BZ=F':'@BZ.1',
- 'NG=F':'@NG.1','HG=F':'@HG.1','^TNX':'US10Y','^TYX':'US30Y',
+ 'NG=F':'@NG.1','HG=F':'@HG.1','ZC=F':'@ZC.1','PL=F':'@PL.1','PA=F':'@PA.1',
+ 'ZW=F':'@ZW.1','ZS=F':'@ZS.1','SB=F':'@SB.1','^TNX':'US10Y','^TYX':'US30Y','^FVX':'US5Y','^IRX':'US3M',
  'EURUSD=X':'EUR=','GBPUSD=X':'GBP=','JPY=X':'JPY=','CHF=X':'CHF=',
- 'AUDUSD=X':'AUD=','CNY=X':'CNY=','INR=X':'INR='
+ 'AUDUSD=X':'AUD=','CNY=X':'CNY=','INR=X':'INR=','NZDUSD=X':'NZD='
 };
 async function cnbc(symbols){
  const known=new Map();
@@ -75,15 +77,21 @@ async function cnbc(symbols){
  return mapped;
 }
 async function spark(symbols){
- const url='https://query1.finance.yahoo.com/v7/finance/spark?symbols='+encodeURIComponent(symbols.join(','))+'&range=5d&interval=1d';
- const result=await request(url,2200);
  const map=new Map();
- for(const item of result.data?.spark?.result||[]){
-  const symbol=item.symbol,chart=item.response?.[0];
-  const quote=normalizeChart(chart,symbol);
-  if(symbol&&quote)map.set(symbol,quote);
+ let status=0;
+ // Retry only missing symbols on the secondary public Yahoo host.
+ for(const host of ['query1.finance.yahoo.com','query2.finance.yahoo.com']){
+  const remaining=symbols.filter(symbol=>!map.has(symbol));
+  if(!remaining.length)break;
+  const url='https://'+host+'/v7/finance/spark?symbols='+encodeURIComponent(remaining.join(','))+'&range=5d&interval=1d';
+  const result=await request(url,2900);
+  status=result.status||status;
+  for(const item of result.data?.spark?.result||[]){
+   const symbol=item.symbol,quote=normalizeChart(item.response?.[0],symbol);
+   if(symbol&&quote)map.set(symbol,quote);
+  }
  }
- return {quotes:map,status:result.status};
+ return {quotes:map,status};
 }
 function parseNasdaqNumber(v){
  if(typeof v==='number'&&Number.isFinite(v))return v;
@@ -135,7 +143,7 @@ async function getGroup(group){
  const pending=symbols.filter(symbol=>!found.has(symbol));
  let next=0;
  await Promise.all(Array.from({length:Math.min(8,pending.length)},async()=>{
-  while(next<pending.length && Date.now()-started<22000){
+  while(next<pending.length && Date.now()-started<24500){
    const symbol=pending[next++];
    const r=await chart(symbol,group);
    if(r.quote)found.set(symbol,r.quote);
