@@ -549,3 +549,24 @@ html[data-inj-market] #injWorldMarket .inj-wm-pin[data-market-open="true"].neutr
   animation:none!important;filter:none!important;
  }
 }
+
+
+/* Place exchange badge beside the category heading, with provider
+   freshness in its own unobtrusive row beneath. */
+html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-wm-section-head>div:first-child{
+ grid-column:1!important;grid-row:1!important;
+}
+html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-wm-section-head>.inj-wm-exchange-state{
+ grid-column:2!important;grid-row:1!important;
+}
+html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-wm-section-head>.inj-wm-section-status{
+ grid-column:1/-1!important;grid-row:2!important;
+}
+@media(max-width:690px){
+ html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-wm-section-head>.inj-wm-exchange-state{
+  grid-column:1!important;grid-row:2!important;
+ }
+ html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-wm-section-head>.inj-wm-section-status{
+  grid-column:1!important;grid-row:3!important;
+ }
+}
