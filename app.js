@@ -2737,6 +2737,15 @@ function enterPerformanceTimelineFromGate() {
   }
 }
 
+/* Market's user-operated navigation rail can directly launch these existing
+   destinations. Home tile launchers retain their original anti-ghost-touch
+   gesture guard; no synthetic click/pointer events are required. */
+window.INJ_MARKET_OPEN_NATIVE = function(kind) {
+  if (kind === 'charts') return enterLiveChartsFromGate();
+  if (kind === 'book') return enterOrderBookFromGate();
+  if (kind === 'performance') return enterPerformanceTimelineFromGate();
+};
+
 function closePerformanceTimelineToHome() {
   const view = $('performanceTimelineView');
   if (!view || view.hidden) return;
