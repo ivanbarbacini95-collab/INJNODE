@@ -68,7 +68,7 @@ async function cnbc(symbols){
    const change=prev>0?(price/prev-1)*100:percentage;
    const parsed=Date.parse(String(row.last_time||''));
    mapped.set(symbol,{symbol,price,change:Number.isFinite(change)?change:null,previous:prev>0?prev:null,
-    time:Number.isFinite(parsed)?Math.round(parsed/1000):null,currency:String(row.currency||'').slice(0,7),
+    time:Number.isFinite(parsed)&&parsed>0&&parsed<=Date.now()+5*60000?Math.round(parsed/1000):null,currency:String(row.currency||'').slice(0,7),
     source:'CNBC'});
   }
  }));
