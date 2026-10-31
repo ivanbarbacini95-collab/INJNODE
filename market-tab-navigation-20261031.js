@@ -34,6 +34,82 @@
   const buttons=new Map();
   let chartPrice=null;
   let quoteFallbackTimer=0;
+  let dailyQuoteTimer=0,quoteBusy=false,lastQuoteAt=0;
+  let lastApiPrice=NaN,lastLivePrice=NaN,lastLivePriceAt=0,dayChange=NaN;
+  const formatUsd=value=>{
+    if(!(Number.isFinite(value)&&value>0))return '—';
+    const digits=value<10?4:value<100?3:2;
+    return '$'+value.toLocaleString('en-US',{minimumFractionDigits:digits,maximumFractionDigits:digits});
+  };
+  function renderMarketQuote(price,day=dayChange){
+    if(Number.isFinite(day))dayChange=day;
+    if(Number.isFinite(price)&&price>0){
+      quoteValue.textContent=formatUsd(price);
+      if(chartPrice)chartPrice.textContent=formatUsd(price);
+    }
+    if(Number.isFinite(dayChange)){
+      const tone=dayChange>0?'up':dayChange<0?'down':'neutral';
+      const change=(dayChange>0?'+':'')+dayChange.toFixed(2)+'%';
+      quoteDock.dataset.tone=tone;
+      quoteDay.textContent='24H '+change;
+      if(chartPrice)chartPrice.dataset.tone=tone;
+      quoteDock.setAttribute('aria-label','INJ USD '+quoteValue.textContent+' 24H '+change);
+    }
+  }
+  async function getDailySnapshot(){
+    const urls=[
+      'https://data-api.binance.vision/api/v3/ticker/24hr?symbol=INJUSDT',
+      'https://api.binance.com/api/v3/ticker/24hr?symbol=INJUSDT',
+      'https://api.coingecko.com/api/v3/simple/price?ids=injective-protocol&vs_currencies=usd&include_24hr_change=true'
+    ];
+    for(const url of urls){
+      const controller=new AbortController();
+      const timeout=window.setTimeout(()=>controller.abort(),4500);
+      try{
+        const response=await fetch(url,{cache:'no-store',signal:controller.signal});
+        if(!response.ok)continue;
+        const data=await response.json();
+        let value,change;
+        if(url.includes('coingecko')){
+          value=Number(data?.['injective-protocol']?.usd);
+          change=Number(data?.['injective-protocol']?.usd_24h_change);
+        }else{
+          value=Number(data?.lastPrice);
+          change=Number(data?.priceChangePercent);
+        }
+        if(Number.isFinite(value)&&value>0&&Number.isFinite(change))
+          return {price:value,change};
+      }catch(_){}
+      finally{clearTimeout(timeout);}
+    }
+    return null;
+  }
+  async function refreshDailyQuote(){
+    if(!isMarket()||document.hidden||quoteBusy)return;
+    quoteBusy=true;
+    try{
+      const snapshot=await getDailySnapshot();
+      if(!snapshot||!isMarket())return;
+      lastApiPrice=snapshot.price;
+      lastQuoteAt=Date.now();
+      const freshestPrice=selected==='charts'&&Date.now()-lastLivePriceAt<2500?lastLivePrice:lastApiPrice;
+      renderMarketQuote(freshestPrice,snapshot.change);
+      quoteDock.removeAttribute('data-stale');
+    }finally{quoteBusy=false;}
+  }
+  function startDailyQuote(){
+    clearInterval(dailyQuoteTimer);
+    void refreshDailyQuote();
+    dailyQuoteTimer=window.setInterval(()=>{
+      if(!isMarket()||document.hidden)return;
+      if(lastQuoteAt&&Date.now()-lastQuoteAt>120000)quoteDock.dataset.stale='true';
+      void refreshDailyQuote();
+    },15000);
+  }
+  function stopDailyQuote(){
+    clearInterval(dailyQuoteTimer);
+    dailyQuoteTimer=0;
+  }
   const english=()=>{try{return root.lang==='en'||localStorage.getItem('inj_node_language_v1')==='en'}catch(_){return root.lang==='en'}};
   for(const item of destinations){
     const button=document.createElement('button');
@@ -71,7 +147,20 @@
   const topRow=document.createElement('div');
   topRow.className='inj-market-tab-row';
   topRow.append(homeLink,rail);
-  head.append(kicker,topRow);
+  // The quote is pinned above the scrollable rail, so it never scrolls away
+  // when a different Market destination is selected.
+  const kickerRow=document.createElement('div');
+  kickerRow.className='inj-market-kicker-row';
+  const quoteDock=document.createElement('div');
+  quoteDock.id='injMarketPersistentQuote';
+  quoteDock.className='inj-market-persistent-quote';
+  quoteDock.dataset.tone='neutral';
+  quoteDock.setAttribute('aria-label','INJ USD 24H');
+  quoteDock.innerHTML='<span class="inj-quote-symbol">INJ</span><strong class="inj-quote-value">—</strong><span class="inj-quote-day">24H —</span>';
+  const quoteValue=quoteDock.querySelector('.inj-quote-value');
+  const quoteDay=quoteDock.querySelector('.inj-quote-day');
+  kickerRow.append(kicker,quoteDock);
+  head.append(kickerRow,topRow);
   const content=document.createElement('div');
   content.className='inj-market-tab-content';
   const loading=document.createElement('div');
@@ -159,7 +248,7 @@
       currentUrl=source;
       content.classList.remove('is-ready');
       frame.title=en?item.en:item.it;
-      if(item.id==='charts'&&chartPrice)chartPrice.textContent='—';
+      if(item.id==='charts'&&chartPrice&&Number.isFinite(lastApiPrice))renderMarketQuote(lastApiPrice);
       frame.src=source;
     }
   }
@@ -254,9 +343,10 @@
         try{
           const txt=frame.contentDocument?.getElementById('headerLivePrice')?.textContent||'';
           const value=Number(txt.replace(/[^\d.]/g,''));
-          if(value>0&&chartPrice){
-            const digits=value<10?4:value<100?3:2;
-            chartPrice.textContent='$'+value.toLocaleString('en-US',{minimumFractionDigits:digits,maximumFractionDigits:digits});
+          if(value>0){
+            lastLivePrice=value;
+            lastLivePriceAt=Date.now();
+            renderMarketQuote(value);
           }
         }catch(_){}
       };
@@ -278,9 +368,10 @@
     if(event.origin!==location.origin||event.source!==frame.contentWindow)return;
     if(event.data?.type==='injnode:market:chart-price'&&selected==='charts'){
       const value=Number(event.data.value);
-      if(chartPrice&&Number.isFinite(value)&&value>0){
-        const digits=value<10?4:value<100?3:2;
-        chartPrice.textContent='$'+value.toLocaleString('en-US',{minimumFractionDigits:digits,maximumFractionDigits:digits});
+      if(Number.isFinite(value)&&value>0){
+        lastLivePrice=value;
+        lastLivePriceAt=Date.now();
+        renderMarketQuote(value);
       }
       return;
     }
@@ -294,7 +385,7 @@
     panel.setAttribute('aria-hidden',String(!now));
     if(now&&!wasMarket){
       root.dataset.injMarketChrome='shown';
-
+      startDailyQuote();
       lastMarketEntry='world';
       modalPending=false;
       updateSelection('world',false);
@@ -302,7 +393,7 @@
     }else if(!now&&wasMarket){
       clearInterval(quoteFallbackTimer);
       quoteFallbackTimer=0;
-
+      stopDailyQuote();
       root.removeAttribute('data-inj-market-chrome');
       modalPending=false;
       content.classList.remove('is-ready');
@@ -339,6 +430,10 @@
 
     }else if(!modalOpen())navigate('world',false);
   },true);
+  document.addEventListener('visibilitychange',()=>{
+    if(document.hidden)return;
+    if(isMarket())void refreshDailyQuote();
+  });
   window.addEventListener('injnode:languagechange',refreshLanguage);
   window.addEventListener('storage',event=>{if(event.key==='inj_node_language_v1')refreshLanguage()});
   window.addEventListener('pageshow',()=>{refreshLanguage();syncTab()});
