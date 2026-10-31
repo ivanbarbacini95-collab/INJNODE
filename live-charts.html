@@ -66,6 +66,35 @@
 <script src="./inj-font-switcher-20261029.js?v=official-font7"></script>
 <script>try{if(new URLSearchParams(location.search).get('embed')==='market')document.documentElement.dataset.injMarketEmbedded='true'}catch(_){}</script>
 <link rel="stylesheet" href="./market-embedded-compact-20261031.css?v=marketcompact2"/>
+<style id="inj-market-livecharts-compact-guard">
+/* Critical embedded layout lives in the HTML as well as the dedicated stylesheet,
+   protecting the iPhone PWA when an earlier cached CSS asset is returned. */
+html[data-inj-market-embedded="true"][data-inj-page="live-charts"] #livePage {
+  grid-template-rows:auto minmax(0,1fr)!important;
+  padding:0!important;
+}
+html[data-inj-market-embedded="true"][data-inj-page="live-charts"] #livePage>.terminal-header,
+html[data-inj-market-embedded="true"][data-inj-page="live-charts"] #livePage>.live-footer {
+  display:none!important;
+  height:0!important;
+  min-height:0!important;
+  padding:0!important;
+  margin:0!important;
+}
+html[data-inj-market-embedded="true"][data-inj-page="live-charts"] #livePage>.terminal-shell {
+  grid-template-rows:minmax(0,1fr)!important;
+  min-height:0!important;
+  height:100%!important;
+}
+html[data-inj-market-embedded="true"][data-inj-page="live-charts"] #livePage>.terminal-shell>.market-strip{
+  display:none!important;
+}
+html[data-inj-market-embedded="true"][data-inj-page="live-charts"] #livePage>.timeframe-bar {
+  min-height:36px!important;
+  margin:0!important;
+  padding-block:3px 5px!important;
+}
+</style>
 </head>
 <body>
   <main class="live-page" id="livePage">
