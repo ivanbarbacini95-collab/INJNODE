@@ -12,7 +12,7 @@ const S={
  commodities:[['gold','Oro','GC=F'],['silver','Argento','SI=F'],['wti','Petrolio WTI','CL=F'],['brent','Petrolio Brent','BZ=F'],['gas','Gas naturale','NG=F'],['copper','Rame','HG=F'],['corn','Mais','ZC=F'],["platinum","Platino","PL=F"],["palladium","Palladio","PA=F"],["wheat","Grano","ZW=F"],["soybeans","Soia","ZS=F"],["sugar","Zucchero","SB=F"]],
  bonds:[['us10y','USA 10Y rendimento','^TNX'],['us30y','USA 30Y rendimento','^TYX'],['bnd','Bond aggregate ETF','BND'],['ief','Treasury 7-10Y ETF','IEF'],['shy','Treasury 1-3Y ETF','SHY'],['lqd','Corporate IG ETF','LQD'],['hyg','High Yield ETF','HYG'],['tip','Inflation-linked ETF','TIP'],["us5y","USA 5Y rendimento","^FVX"],["us13w","USA 13 settimane","^IRX"],["agg","US Aggregate Bond","AGG"],["emb","Emerging Market Bond","EMB"],["mub","Municipal Bond","MUB"]]
 };
-const MAXAGE=3*60*1000;
+const MAXAGE=90*1000;
 const cache=new Map();
 const UA='Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36';
 const finite=n=>typeof n==='number'&&Number.isFinite(n);
@@ -153,7 +153,7 @@ export default async function handler(req,res){
  const group=String(req.query?.group||'').toLowerCase();
  if(!Object.prototype.hasOwnProperty.call(S,group))return res.status(400).json({error:'Unknown market group'});
  res.setHeader('Content-Type','application/json; charset=utf-8');
- res.setHeader('Cache-Control','public, s-maxage=180, stale-while-revalidate=480');
+ res.setHeader('Cache-Control','public, s-maxage=90, stale-while-revalidate=180');
  res.setHeader('X-Content-Type-Options','nosniff');
  const saved=cache.get(group);
  if(saved&&Date.now()-saved.asOf<MAXAGE)return res.status(200).json(saved);
