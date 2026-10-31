@@ -25,6 +25,11 @@ const titles={
  forex:['Valute globali','Global currencies'],commodities:['Materie prime','Commodities'],
  bonds:['Obbligazioni e tassi','Bonds & rates'],crypto:['Criptovalute','Cryptocurrencies']
 };
+const navNames={
+ indices:['Mondo','World'],sectors:['Settori','Sectors'],stocks:['Azioni','Stocks'],
+ etf:['ETF','ETFs'],forex:['Forex','Forex'],commodities:['Materie','Commodities'],
+ bonds:['Bond','Bonds'],crypto:['Crypto','Crypto']
+};
 const hints={
  indices:['Indici rappresentativi delle principali borse mondiali','Representative indices of major global exchanges'],
  sectors:['11 settori S&P 500 e 5 ETF tematici','11 S&P 500 sectors and 5 thematic ETFs'],
@@ -517,7 +522,7 @@ function localize(){
  $('injWorldHeading').textContent='Global Markets';
  $('injWorldIntro').textContent=tr('La situazione dei mercati mondiali, settore per settore. Scorri in verticale per esplorare.','World financial markets, sector by sector. Scroll vertically to explore.');
  $('injWorldDisclosure').textContent=tr('Le variazioni indicano l’ultima sessione disponibile, non movimenti in tempo reale. Le quotazioni possono essere ritardate. I settori sono rappresentati da ETF, non da indici ufficiali.','Changes reflect the latest available session, not real-time ticks. Quotes may be delayed. Sectors use representative ETFs rather than official sector indices.');
- const n=$('injWorldQuickNav');if(n){n.setAttribute('aria-label',tr('Categorie mercati mondiali','Global market categories'));n.querySelectorAll('[data-world-jump]').forEach(b=>b.textContent=titles[b.dataset.worldJump][en()?1:0]);}
+ const n=$('injWorldQuickNav');if(n){n.setAttribute('aria-label',tr('Categorie mercati mondiali','Global market categories'));n.querySelectorAll('[data-world-jump]').forEach(b=>b.textContent=navNames[b.dataset.worldJump][en()?1:0]);}
  for(const group of ids){
   const title=$('injWorldTitle'+group),hint=$('injWorldHint'+group);
   if(title)title.textContent=titles[group][en()?1:0];
@@ -536,7 +541,7 @@ function ensurePageNavigation(){
   const first=document.createElement('button');
   first.type='button';
   first.dataset.worldJump='indices';
-  first.textContent=titles.indices[en()?1:0];
+  first.textContent=navNames.indices[en()?1:0];
   nav.prepend(first);
  }
  nav.setAttribute('aria-label',tr('Categorie mercati mondiali','Global market categories'));
