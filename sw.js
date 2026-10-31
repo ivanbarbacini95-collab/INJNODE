@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.10.31-world-mosaic-quote1';
+const CACHE_NAME = 'inj-node-v16.10.31-world-mosaic-quote-clean1';
 const APP_SHELL = [
   './market-embedded-compact-20261031.css?v=marketcompact3',
   './market-crypto-scope-20261030.css?v=scope3',
@@ -17,8 +17,8 @@ const APP_SHELL = [
   './home-card-reorder-20261030.css?v=order1',
   './home-card-reorder-20261030.js?v=order4',
   './home-bottom-tabs-20261030.js?v=bottomnav17',
-  './market-tab-navigation-20261031.css?v=marketrail9',
-  './market-tab-navigation-20261031.js?v=marketrail9',
+  './market-tab-navigation-20261031.css?v=marketrail10',
+  './market-tab-navigation-20261031.js?v=marketrail10',
   './app.js?v=20261031worldmosaic1',
   './inj-font-switcher-20261029.css?v=official-font7',
   './inj-font-switcher-20261029.js?v=official-font7',
