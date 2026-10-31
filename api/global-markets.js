@@ -42,8 +42,8 @@ const cnbcAliases={
  '^NDX':'.NDX','^VIX':'.VIX','^IBEX':'.IBEX','^SSMI':'.SSMI','000001.SS':'.SSEC',
  '^N225':'.N225','^HSI':'.HSI','^NSEI':'.NSEI','^AXJO':'.AXJO','^BVSP':'.BVSP',
  'GC=F':'@GC.1','SI=F':'@SI.1','CL=F':'@CL.1','BZ=F':'@BZ.1',
- 'NG=F':'@NG.1','HG=F':'@HG.1','ZC=F':'@ZC.1','PL=F':'@PL.1','PA=F':'@PA.1',
- 'ZW=F':'@ZW.1','ZS=F':'@ZS.1','SB=F':'@SB.1','^TNX':'US10Y','^TYX':'US30Y','^FVX':'US5Y','^IRX':'US3M',
+ 'NG=F':'@NG.1','HG=F':'@HG.1','ZC=F':'@C.1','PL=F':'@PL.1','PA=F':'@PA.1',
+ 'ZW=F':'@W.1','ZS=F':'@S.1','SB=F':'@SB.1','^TNX':'US10Y','^TYX':'US30Y','^FVX':'US5Y','^IRX':'US3M',
  'EURUSD=X':'EUR=','GBPUSD=X':'GBP=','JPY=X':'JPY=','CHF=X':'CHF=',
  'AUDUSD=X':'AUD=','CNY=X':'CNY=','INR=X':'INR=','NZDUSD=X':'NZD='
 };
