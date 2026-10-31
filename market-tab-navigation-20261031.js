@@ -183,11 +183,12 @@
     lastMarketEntry=item.id;
     const en=english();
     const url=new URL(item.entry?'./market.html':item.page,document.baseURI);
+    url.searchParams.set('embed','market');
     if(item.entry){
       url.searchParams.set('entry',item.entry);
       url.searchParams.set('lang',en?'en':'it');
-      url.searchParams.set('v','20261031marketnav2');
-    }else url.searchParams.set('v','16.00.14');
+      url.searchParams.set('v','20261031marketcompact1');
+    }else url.searchParams.set('v','20261031marketcompact1');
     const source=url.href;
     if(source!==currentUrl){
       currentUrl=source;
