@@ -91,6 +91,7 @@ function saveQuotes(){
 }
 restoreQuotes();
 let active=false,initialized=false,observer=null,geometryStarted=false,geoReady=false;
+let worldPage='indices';
 const MAX_AGE=3*60*1000;
 const fmtPercent=n=>Number.isFinite(n)?(n>0?'+':'')+new Intl.NumberFormat(en()?'en-US':'it-IT',{maximumFractionDigits:2,minimumFractionDigits:2}).format(n)+'%':'—';
 const fmtValue=(v,currency)=>{
@@ -516,7 +517,7 @@ function localize(){
  $('injWorldHeading').textContent='Global Markets';
  $('injWorldIntro').textContent=tr('La situazione dei mercati mondiali, settore per settore. Scorri in verticale per esplorare.','World financial markets, sector by sector. Scroll vertically to explore.');
  $('injWorldDisclosure').textContent=tr('Le variazioni indicano l’ultima sessione disponibile, non movimenti in tempo reale. Le quotazioni possono essere ritardate. I settori sono rappresentati da ETF, non da indici ufficiali.','Changes reflect the latest available session, not real-time ticks. Quotes may be delayed. Sectors use representative ETFs rather than official sector indices.');
- const n=$('injWorldQuickNav');if(n)n.querySelectorAll('[data-world-jump]').forEach(b=>b.textContent=titles[b.dataset.worldJump][en()?1:0]);
+ const n=$('injWorldQuickNav');if(n){n.setAttribute('aria-label',tr('Categorie mercati mondiali','Global market categories'));n.querySelectorAll('[data-world-jump]').forEach(b=>b.textContent=titles[b.dataset.worldJump][en()?1:0]);}
  for(const group of ids){
   const title=$('injWorldTitle'+group),hint=$('injWorldHint'+group);
   if(title)title.textContent=titles[group][en()?1:0];
@@ -527,25 +528,62 @@ function localize(){
  $('injWorldMapCaption').textContent=tr('Seleziona un punto per leggere l’indice di riferimento','Tap a point to view its benchmark index');
  const sectorNote=root.querySelector('[data-translation="sector-note"]');if(sectorNote)sectorNote.textContent=tr('11 settori S&P 500 e 5 categorie tematiche, rappresentati da ETF. Le variazioni sono le ultime disponibili.','11 S&P 500 sectors and 5 thematic ETF categories. Changes reflect the latest available session.');
 }
+/* Each market group is a self-contained page with its own mosaic. */
+function ensurePageNavigation(){
+ const nav=$('injWorldQuickNav');
+ if(!nav)return;
+ if(!nav.querySelector('[data-world-jump="indices"]')){
+  const first=document.createElement('button');
+  first.type='button';
+  first.dataset.worldJump='indices';
+  first.textContent=titles.indices[en()?1:0];
+  nav.prepend(first);
+ }
+ nav.setAttribute('aria-label',tr('Categorie mercati mondiali','Global market categories'));
+}
+function selectWorldPage(group,scrollToTop=false){
+ if(!ids.includes(group))return;
+ worldPage=group;
+ root.dataset.worldPage=group;
+ for(const id of ids){
+  const section=$('injWorldSection'+id);
+  if(!section)continue;
+  const selected=id===group;
+  section.hidden=!selected;
+  section.inert=!selected;
+  section.setAttribute('aria-hidden',String(!selected));
+ }
+ const nav=$('injWorldQuickNav');
+ nav?.querySelectorAll('[data-world-jump]').forEach(button=>{
+  const selected=button.dataset.worldJump===group;
+  button.classList.toggle('is-active',selected);
+  button.setAttribute('aria-pressed',String(selected));
+  if(selected)button.setAttribute('aria-current','page');
+  else button.removeAttribute('aria-current');
+ });
+ if(active){
+  observed.add(group);
+  void loadGroup(group);
+ }
+ if(scrollToTop)window.scrollTo({top:0,behavior:'instant'});
+}
 function mount(){
  if(initialized)return;initialized=true;
- const nav=$('injWorldQuickNav');nav?.addEventListener('click',e=>{
+ ensurePageNavigation();
+ const nav=$('injWorldQuickNav');
+ nav?.addEventListener('click',e=>{
   const b=e.target.closest('[data-world-jump]');if(!b)return;
-  $('injWorldSection'+b.dataset.worldJump)?.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
+  selectWorldPage(b.dataset.worldJump,true);
  });
+ selectWorldPage(worldPage,false);
  ensureUsSessionHeader();
  localize();renderPlaceholders();loadWorldGeometry();
  updateUsSessionUI();
- if('IntersectionObserver' in window){
-  observer=new IntersectionObserver(entries=>{
-   entries.forEach(e=>{if(e.isIntersecting&&active){const id=e.target.dataset.worldGroup;observed.add(id);loadGroup(id);observer.unobserve(e.target)}});
-  },{root:null,rootMargin:'400px 0px',threshold:0.01});
-  ids.forEach(id=>observer.observe($('injWorldSection'+id)));
- }else{ids.forEach(id=>loadGroup(id))}
+ // Selected page loads directly; hidden pages never trigger a quote request.
 }
 function activate(show){
  active=!!show;root.hidden=!active;
- if(active){mount();updateUsSessionUI();for(const id of observed)if(!updated.has(id))void loadGroup(id);}
+ if(active){mount();selectWorldPage(worldPage,false);updateUsSessionUI();}
 }
 function languageChange(){if(initialized)localize();}
 window.INJ_WORLD_MARKETS={activate,languageChange};
