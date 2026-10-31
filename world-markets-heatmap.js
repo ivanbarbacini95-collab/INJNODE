@@ -102,7 +102,8 @@ const fmtPercent=n=>Number.isFinite(n)?(n>0?'+':'')+new Intl.NumberFormat(en()?'
 const fmtValue=(v,currency)=>{
  if(!Number.isFinite(v)||v<=0)return '—';
  const precision=v<1?4:2;
- return new Intl.NumberFormat(en()?'en-US':'it-IT',{minimumFractionDigits:precision,maximumFractionDigits:precision}).format(v)+(currency?' '+currency:'');
+ const formatted=new Intl.NumberFormat(en()?'en-US':'it-IT',{minimumFractionDigits:precision,maximumFractionDigits:precision}).format(v);
+ return currency==='USD'?'$'+formatted:currency==='EUR'?'€'+formatted:formatted+(currency?' '+currency:'');
 };
 const byId=(arr)=>new Map((Array.isArray(arr)?arr:[]).map(x=>[x.id,x]));
 const englishNames={
@@ -126,22 +127,15 @@ function quoteTile(q,compact=false){
  const tile=el('article','inj-wm-tile '+state(q)+(compact?' compact':''));
  if(Number.isFinite(q.change))tile.style.setProperty('--inj-wm-strength',Math.max(8,Math.min(55,8+Math.abs(q.change)*8)).toFixed(1)+'%');
  const head=el('div','inj-wm-tile-head');
- const label=el('strong','inj-wm-name',q.name||q.symbol||'—');
- const ticker=el('span','inj-wm-symbol',q.symbol||'');
- head.append(label,ticker);
+ const ticker=el('strong','inj-wm-symbol',q.symbol||q.name||'—');
+ head.append(ticker);
  const value=el('div','inj-wm-tile-values');
  value.append(el('span','inj-wm-price',fmtValue(q.price,q.currency)),el('strong','inj-wm-change',fmtPercent(q.change)));
  tile.append(head,value);
- // A dated provider quote is not a guaranteed live price.
- // Keep the timestamp visible even in the compact view; never synthesize one.
- if(q.time){
-  const last=stamp(q.time);
-  const note=el('small','inj-wm-tile-meta',tr('ULTIMA · ','LAST · ')+last);
-  tile.append(note);
-  tile.title=tr('Ultima quotazione: ','Last quote: ')+last+(q.source?' · '+q.source:'');
- }else if(q.source){
-  tile.title=tr('Fonte: ','Source: ')+q.source;
- }
+ // Full name, source and timestamp remain available on long press.
+ tile.title=[q.name||q.symbol||'',
+  q.time?tr('Ultima quotazione: ','Last quote: ')+stamp(q.time):'',
+  q.source?tr('Fonte: ','Source: ')+q.source:''].filter(Boolean).join(' · ');
  return tile;
 }
 const statsOf=arr=>{
