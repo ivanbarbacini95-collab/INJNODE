@@ -226,6 +226,7 @@ function updateUsSessionUI(){
   region.textContent=label;
   region.dataset.session=us.kind;
  }
+ updateExchangeBadges();
 }
 
 
@@ -598,7 +599,7 @@ function renderPins(items){
  const data=byId(items);layer.replaceChildren();
  for(const [id,lat,lon] of hotspot){
   const q=data.get(id);if(!q)continue;
-  const pin=el('button','inj-wm-pin '+state(q));pin.type='button';
+  const pin=el('button','inj-wm-pin '+state(q));pin.type='button';pin.dataset.marketId=id;
   pin.style.left=((lon+180)/360*100).toFixed(3)+'%';pin.style.top=((90-lat)/180*100).toFixed(3)+'%';
   pin.setAttribute('aria-label',q.name+': '+fmtPercent(q.change));
   pin.title=q.name+' · '+fmtPercent(q.change);
@@ -609,7 +610,65 @@ function renderPins(items){
  }
  const available=items.find(x=>x.id==='sp500'&&Number.isFinite(x.price))||items.find(x=>Number.isFinite(x.price));
  if(available)note.textContent=available.name+' · '+fmtValue(available.price,available.currency)+' · '+fmtPercent(available.change);
+ refreshMapSessions();
 }
+
+/* Day/night veil from the actual UTC date and approximate NOAA solar
+   declination. Lives above the world geography but below market pins. */
+let solarCanvas=null,lastSolarPaint=0;
+function ensureSolarOverlay(){
+ const frame=$('injWorldMapSvg')?.closest('.inj-world-mapframe');
+ if(!frame)return null;
+ if(solarCanvas?.isConnected)return solarCanvas;
+ solarCanvas=document.createElement('canvas');
+ solarCanvas.id='injWorldSolarShade';
+ solarCanvas.className='inj-wm-solar-shade';
+ solarCanvas.width=480;
+ solarCanvas.height=230;
+ solarCanvas.setAttribute('aria-hidden','true');
+ const pins=$('injWorldMapPins');
+ frame.insertBefore(solarCanvas,pins||null);
+ return solarCanvas;
+}
+function paintSolarOverlay(now=Date.now()){
+ const canvas=ensureSolarOverlay();
+ if(!canvas||document.hidden||now-lastSolarPaint<45000)return;
+ lastSolarPaint=now;
+ const date=new Date(now),start=Date.UTC(date.getUTCFullYear(),0,0);
+ const day=Math.floor((Date.UTC(date.getUTCFullYear(),date.getUTCMonth(),date.getUTCDate())-start)/86400000);
+ const hour=date.getUTCHours()+date.getUTCMinutes()/60+date.getUTCSeconds()/3600;
+ const gamma=2*Math.PI/365*(day-1+(hour-12)/24);
+ const eqtime=229.18*(.000075+.001868*Math.cos(gamma)-.032077*Math.sin(gamma)-.014615*Math.cos(2*gamma)-.040849*Math.sin(2*gamma));
+ const decl=.006918-.399912*Math.cos(gamma)+.070257*Math.sin(gamma)-.006758*Math.cos(2*gamma)+.000907*Math.sin(2*gamma)-.002697*Math.cos(3*gamma)+.00148*Math.sin(3*gamma);
+ const sinDecl=Math.sin(decl),cosDecl=Math.cos(decl);
+ const w=canvas.width,h=canvas.height,hourCos=new Float32Array(w);
+ for(let x=0;x<w;x++){
+  const longitude=-180+(x+.5)*360/w;
+  const hourAngle=(hour*60+eqtime+4*longitude)/4-180;
+  hourCos[x]=Math.cos(hourAngle*Math.PI/180);
+ }
+ const ctx=canvas.getContext('2d',{alpha:true});
+ if(!ctx)return;
+ const buffer=ctx.createImageData(w,h),pixels=buffer.data;
+ const twilight=Math.sin(-10*Math.PI/180),daylight=Math.sin(2*Math.PI/180);
+ for(let y=0;y<h;y++){
+  const latitude=(90-(y+.5)*180/h)*Math.PI/180;
+  const sinLat=Math.sin(latitude)*sinDecl,cosLat=Math.cos(latitude)*cosDecl;
+  for(let x=0;x<w;x++){
+   const solarSin=sinLat+cosLat*hourCos[x];
+   const t=Math.max(0,Math.min(1,(daylight-solarSin)/(daylight-twilight)));
+   const darkness=t*t*(3-2*t);
+   const i=(y*w+x)*4;
+   pixels[i]=1;pixels[i+1]=5;pixels[i+2]=18;
+   pixels[i+3]=Math.round(darkness*205);
+  }
+ }
+ ctx.putImageData(buffer,0,0);
+ const solarLon=((720-hour*60-eqtime)/4+540)%360-180;
+ canvas.parentElement?.style.setProperty('--inj-wm-sun-x',((solarLon+180)/360*100).toFixed(2)+'%');
+ canvas.parentElement?.style.setProperty('--inj-wm-sun-y',((90-decl*180/Math.PI)/180*100).toFixed(2)+'%');
+}
+
 function fallbackMap(){
  const svg=$('injWorldMapSvg');if(!svg)return;
  svg.innerHTML='<g class="inj-wm-land"><path d="M75 110 L120 60 200 38 248 80 230 125 192 145 181 199 146 218 134 181 95 163Z"/><path d="M210 230 L278 244 309 292 291 343 265 421 226 386 204 306Z"/><path d="M392 104 L448 76 502 90 527 123 521 178 490 191 475 235 435 233 413 168Z"/><path d="M510 83 L620 49 757 57 861 103 845 160 786 191 747 167 703 214 650 213 621 174 566 195 538 150Z"/><path d="M754 307 L812 295 866 339 834 382 768 370Z"/><path d="M904 392 L920 385 930 408 911 425Z"/></g>';
@@ -725,6 +784,7 @@ function mount(){
  selectWorldPage(worldPage,false);
  ensureUsSessionHeader();
  localize();renderPlaceholders();loadWorldGeometry();
+ paintSolarOverlay();
  updateUsSessionUI();
  // Selected page loads directly; hidden pages never trigger a quote request.
 }
@@ -738,9 +798,11 @@ window.addEventListener('storage',e=>{if(e.key==='inj_node_language_v1'&&active)
 document.addEventListener('visibilitychange',()=>{
  if(!document.hidden&&active){
   updateUsSessionUI();
+  paintSolarOverlay();
   for(const id of observed)if(!updated.has(id)||Date.now()-updated.get(id)>MAX_AGE)void loadGroup(id,true);
  }
 });
 setInterval(()=>{if(active&&!document.hidden)for(const id of observed)if(Date.now()-(updated.get(id)||0)>MAX_AGE)void loadGroup(id,true)},180000);
 setInterval(()=>{if(active&&!document.hidden)updateUsSessionUI()},25000);
+setInterval(()=>{if(active&&!document.hidden)paintSolarOverlay()},60000);
 })();
