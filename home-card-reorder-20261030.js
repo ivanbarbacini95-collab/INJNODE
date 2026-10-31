@@ -9,8 +9,8 @@
  if(!actions)return;
  const groups={
   home:['entryDashboardButton','entryLiveButton','entryTreasuryButton'],
-  mercato:['entryMarketButton','entryGlobalMarketsButton','entryGlobalCryptoButton','entryMarketFavoritesButton','entryLiveChartsButton','entryOrderBookButton','entryPerformanceButton','entryComparisonButton','entryMacroCalendarButton'],
-  reward:['entryLiveRewardsButton','entryVisualizeWealthButton','entryRewardLadderButton','entryFreedomButton'],
+  mercato:['entryGlobalMarketsButton','entryGlobalCryptoButton','entryMacroCalendarButton','entryLiveChartsButton','entryOrderBookButton','entryPerformanceButton'],
+  reward:['entryLiveRewardsButton','entryComparisonButton','entryVisualizeWealthButton','entryRewardLadderButton','entryFreedomButton'],
   altro:['entryWorkspaceButton','entryConverterButton','entryCommandCenterButton']
  };
  const prefix='inj_node_launcher_order_v1_';
