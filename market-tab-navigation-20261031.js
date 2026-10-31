@@ -32,6 +32,7 @@
   rail.className='inj-market-tab-rail';
   rail.setAttribute('aria-label','Sezioni Market');
   const buttons=new Map();
+  let chartPrice=null;
   const english=()=>{try{return root.lang==='en'||localStorage.getItem('inj_node_language_v1')==='en'}catch(_){return root.lang==='en'}};
   for(const item of destinations){
     const button=document.createElement('button');
@@ -39,7 +40,17 @@
     button.className='inj-market-tab-link';
     button.dataset.marketDestination=item.id;
     if(item.entry||item.page)button.setAttribute('aria-controls','injMarketTabFrame');
-    button.textContent=english()?item.en:item.it;
+    const label=document.createElement('span');
+    label.className='inj-market-tab-label';
+    label.textContent=english()?item.en:item.it;
+    button.appendChild(label);
+    if(item.id==='charts'){
+      chartPrice=document.createElement('span');
+      chartPrice.className='inj-market-tab-price';
+      chartPrice.textContent='—';
+      chartPrice.setAttribute('aria-hidden','true');
+      button.appendChild(chartPrice);
+    }
     button.addEventListener('click',()=>navigate(item.id,true));
     rail.appendChild(button);
     buttons.set(item.id,button);
@@ -106,7 +117,10 @@
     homeLink.setAttribute('aria-label',en?'Return to Home':'Torna alla Home');
     homeLink.setAttribute('title',en?'Home':'Home');
     panel.setAttribute('aria-label',en?'Market':'Mercato');
-    for(const item of destinations)buttons.get(item.id).textContent=en?item.en:item.it;
+    for(const item of destinations){
+      const label=buttons.get(item.id)?.querySelector('.inj-market-tab-label');
+      if(label)label.textContent=en?item.en:item.it;
+    }
     if(currentUrl && frame.contentWindow){
       try{
         frame.contentWindow.postMessage({type:'injnode:market:language',language:en?'en':'it'},location.origin);
@@ -142,6 +156,7 @@
       currentUrl=source;
       content.classList.remove('is-ready');
       frame.title=en?item.en:item.it;
+      if(item.id==='charts'&&chartPrice)chartPrice.textContent='—';
       frame.src=source;
     }
   }
@@ -210,6 +225,22 @@
       }
     }catch(_){}
     content.classList.add('is-ready');
+    // Preserve controls without keeping a second, redundant chart header.
+    try{
+      const inner=frame.contentDocument;
+      if(inner?.documentElement.dataset.injPage==='live-charts'){
+        const bar=inner.getElementById('timeframeBar');
+        if(bar&&!bar.querySelector('.market-embedded-chart-actions')){
+          const actions=inner.createElement('span');
+          actions.className='market-embedded-chart-actions';
+          for(const id of ['indicatorToggle','focusToggle']){
+            const control=inner.getElementById(id);
+            if(control)actions.appendChild(control);
+          }
+          bar.appendChild(actions);
+        }
+      }
+    }catch(_){}
     scheduleLayoutUpdate();
     // Standalone charts and book already have a Home control; keep its click
     // inside the parent tab instead of following iframe history/back.
@@ -223,6 +254,73 @@
   });
   window.addEventListener('message',event=>{
     if(event.origin!==location.origin||event.source!==frame.contentWindow)return;
+    if(event.data?.type==='injnode:market:chart-price'&&selected==='charts'){
+      const value=Number(event.data.value);
+      if(chartPrice&&Number.isFinite(value)&&value>0){
+        const digits=value<10?4:value<100?3:2;
+        chartPrice.textContent='
+      window.INJ_BOTTOM_NAV?.select('home');
+  });
+  function syncTab(){
+    const now=isMarket();
+    panel.hidden=!now;
+    head.hidden=!now;
+    panel.setAttribute('aria-hidden',String(!now));
+    if(now&&!wasMarket){
+      root.dataset.injMarketChrome='shown';
+
+      lastMarketEntry='world';
+      modalPending=false;
+      updateSelection('world',false);
+      showPage(destinations[0]);
+    }else if(!now&&wasMarket){
+
+      root.removeAttribute('data-inj-market-chrome');
+      modalPending=false;
+      content.classList.remove('is-ready');
+      currentUrl='';
+      frame.removeAttribute('src'); // release market polling while outside Market
+    }
+    wasMarket=now;
+  }
+  // Switching bottom destinations changes only the tab and not browser
+  // history. Re-entering Market opens the first destination every time.
+  const rootObserver=new MutationObserver(syncTab);
+  rootObserver.observe(root,{attributes:true,attributeFilter:['data-inj-home-tab']});
+  const modalObserver=new MutationObserver(()=>{
+    if(!modalPending)return;
+    if(modalOpen()){modalWasOpened=true;return}
+    if(modalWasOpened){
+      modalPending=false;
+      modalWasOpened=false;
+      updateSelection(lastMarketEntry,false);
+    }
+  });
+  modalObserver.observe(document.body,{attributes:true,attributeFilter:['class']});
+  for(const id of ['injMarketEventsOverlay','performanceTimelineView']){
+    const element=document.getElementById(id);
+    if(element)modalObserver.observe(element,{attributes:true,attributeFilter:['hidden','class']});
+  }
+  // Changing one of the five primary destinations must also close native
+  // Market overlays, otherwise Performance could remain painted above Home.
+  dock.addEventListener('click',event=>{
+    const tab=event.target.closest('[data-inj-tab]');
+    if(!tab||!isMarket())return;
+    if(tab.dataset.injTab!=='mercato'){
+      if(modalOpen())dismissNativeView();
+
+    }else if(!modalOpen())navigate('world',false);
+  },true);
+  window.addEventListener('injnode:languagechange',refreshLanguage);
+  window.addEventListener('storage',event=>{if(event.key==='inj_node_language_v1')refreshLanguage()});
+  window.addEventListener('pageshow',()=>{refreshLanguage();syncTab()});
+  window.INJ_MARKET_TAB={select:navigate,active:()=>selected};
+  refreshLanguage();
+  syncTab();
+})();+value.toLocaleString('en-US',{minimumFractionDigits:digits,maximumFractionDigits:digits});
+      }
+      return;
+    }
     if(['injnode:market:home','injnode:section:home'].includes(event.data?.type))
       window.INJ_BOTTOM_NAV?.select('home');
   });
