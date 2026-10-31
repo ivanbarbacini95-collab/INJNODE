@@ -1,6 +1,6 @@
-const CACHE_NAME = 'inj-node-v16.10.31-market-rail-price2';
+const CACHE_NAME = 'inj-node-v16.10.31-market-rail-price3';
 const APP_SHELL = [
-  './market-embedded-compact-20261031.css?v=marketcompact2',
+  './market-embedded-compact-20261031.css?v=marketcompact3',
   './market-crypto-scope-20261030.css?v=scope3',
   './market-favorites-latched-20261030.css?v=latch4',
   './market-crypto-one-day-20261030.css?v=dropdown6',
@@ -17,8 +17,8 @@ const APP_SHELL = [
   './home-card-reorder-20261030.css?v=order1',
   './home-card-reorder-20261030.js?v=order4',
   './home-bottom-tabs-20261030.js?v=bottomnav17',
-  './market-tab-navigation-20261031.css?v=marketrail7',
-  './market-tab-navigation-20261031.js?v=marketrail7',
+  './market-tab-navigation-20261031.css?v=marketrail8',
+  './market-tab-navigation-20261031.js?v=marketrail8',
   './app.js?v=20261031marketrail1',
   './inj-font-switcher-20261029.css?v=official-font7',
   './inj-font-switcher-20261029.js?v=official-font7',
@@ -250,7 +250,7 @@ const APP_SHELL = [
   './scroll-guard.js?v=160525',
   './live-charts.html',
   './live-charts.css?v=16.00.39',
-  './live-charts.js?v=20261031priceinrail2',
+  './live-charts.js?v=20261031priceinrail3',
   './live-charts-timeframe-rail.css?v=20261026tf1',
   './live-rewards.html',
   './live-rewards.css?v=16.05.02',
@@ -305,7 +305,7 @@ self.addEventListener('fetch', (event) => {
   if (url.pathname.startsWith('/api/')) {event.respondWith(fetch(request));return;}
   // Always prefer the current Market Events assets after a Git deploy. Keep an
   // offline copy, but never trap users on a stale pre-update CSS/JS pair.
-  if (url.pathname.endsWith('/inj-font-switcher-20261029.css') || url.pathname.endsWith('/inj-font-switcher-20261029.js') || url.pathname.endsWith('/i18n.js') || url.pathname.endsWith('/navigation.js') || url.pathname.endsWith('/inj-fluid-screen-fit.css') || url.pathname.endsWith('/inj-monitor-readability.css') || url.pathname.endsWith('/home-desktop-native-scroll.css') || url.pathname.endsWith('/home-more-section.css') || url.pathname.endsWith('/workspace-pro.js') || url.pathname.endsWith('/workspace-pro.css') || url.pathname.endsWith('/home-market-events.css') || url.pathname.endsWith('/home-market-events.js') || url.pathname.endsWith('/inj-top-seamless.css') || url.pathname.endsWith('/financial-freedom.html') || url.pathname.endsWith('/financial-freedom.css') || url.pathname.endsWith('/financial-freedom.js') || url.pathname.endsWith('/financial-freedom-home.css') || url.pathname.endsWith('/financial-freedom-overlay.js') || url.pathname.endsWith('/market-events-layout-pro.css') || url.pathname.endsWith('/home-focused-cards.css') || url.pathname.endsWith('/ambient-wallet-reward-glow.css') || url.pathname.endsWith('/world-markets-heatmap.js') || url.pathname.endsWith('/world-markets-heatmap.css') || url.pathname.endsWith('/market-data/global-markets.json')) {
+  if (url.pathname.endsWith('/market-tab-navigation-20261031.js') || url.pathname.endsWith('/market-tab-navigation-20261031.css') || url.pathname.endsWith('/market-embedded-compact-20261031.css') || url.pathname.endsWith('/live-charts.js') || url.pathname.endsWith('/live-charts.css') || url.pathname.endsWith('/live-charts-timeframe-rail.css') || url.pathname.endsWith('/inj-font-switcher-20261029.css') || url.pathname.endsWith('/inj-font-switcher-20261029.js') || url.pathname.endsWith('/i18n.js') || url.pathname.endsWith('/navigation.js') || url.pathname.endsWith('/inj-fluid-screen-fit.css') || url.pathname.endsWith('/inj-monitor-readability.css') || url.pathname.endsWith('/home-desktop-native-scroll.css') || url.pathname.endsWith('/home-more-section.css') || url.pathname.endsWith('/workspace-pro.js') || url.pathname.endsWith('/workspace-pro.css') || url.pathname.endsWith('/home-market-events.css') || url.pathname.endsWith('/home-market-events.js') || url.pathname.endsWith('/inj-top-seamless.css') || url.pathname.endsWith('/financial-freedom.html') || url.pathname.endsWith('/financial-freedom.css') || url.pathname.endsWith('/financial-freedom.js') || url.pathname.endsWith('/financial-freedom-home.css') || url.pathname.endsWith('/financial-freedom-overlay.js') || url.pathname.endsWith('/market-events-layout-pro.css') || url.pathname.endsWith('/home-focused-cards.css') || url.pathname.endsWith('/ambient-wallet-reward-glow.css') || url.pathname.endsWith('/world-markets-heatmap.js') || url.pathname.endsWith('/world-markets-heatmap.css') || url.pathname.endsWith('/market-data/global-markets.json')) {
     event.respondWith(
       fetch(request,{cache:'no-store'}).then(response=>{
         if(response.ok){
