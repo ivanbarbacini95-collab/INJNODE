@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.10.31-ios-android1';
+const CACHE_NAME = 'inj-node-v16.10.31-ios-android2';
 const APP_SHELL = [
   './market-embedded-compact-20261031.css?v=marketcompact3',
   './market-crypto-scope-20261030.css?v=scope3',
