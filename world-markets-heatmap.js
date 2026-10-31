@@ -254,7 +254,7 @@ const supportedHolidays={
  uk:new Set(['2026-12-25','2026-12-28','2027-01-01','2027-03-26','2027-03-29','2027-12-27','2027-12-28']),
  ch:new Set(['2026-12-25','2026-12-31','2027-01-01','2027-03-26','2027-03-29','2027-12-24','2027-12-31']),
  hk:new Set(['2026-12-25','2027-01-01','2027-02-08','2027-02-09','2027-02-10','2027-12-27']),
- cn:new Set(['2026-12-25','2027-01-01','2027-02-08','2027-02-09','2027-02-10']),
+ cn:new Set(['2027-01-01','2027-02-08','2027-02-09','2027-02-10']),
  au:new Set(['2026-12-25','2026-12-28','2027-01-01','2027-01-26','2027-03-26','2027-03-29','2027-12-27','2027-12-28']),
  in:new Set(['2026-12-25','2027-01-26','2027-08-15','2027-10-02']),
  br:new Set(['2026-12-25','2027-01-01','2027-04-21','2027-05-01','2027-09-07','2027-10-12','2027-11-02','2027-11-15','2027-12-25'])
@@ -367,9 +367,13 @@ function refreshMapSessions(){
   const id=pin.dataset.marketId,key=marketForAsset('indices',id),session=nextSessionChange(key,now),q=data.get(id);
   pin.dataset.marketOpen=String(!!session?.open);
   const open=!!session?.open;
-  pin.classList.toggle('up',open&&Number.isFinite(q?.change)&&q.change>0);
-  pin.classList.toggle('down',open&&Number.isFinite(q?.change)&&q.change<0);
-  pin.classList.toggle('neutral',open&&!(Number.isFinite(q?.change)&&q.change!==0));
+  // Do not pulse on a previous-session or unverified percentage.
+  const quoteAge=Number.isFinite(Number(q?.time))&&Number(q?.time)>0?
+   now-Number(q.time)*1000:Infinity;
+  const verified=Number.isFinite(q?.change)&&quoteAge>=-60000&&quoteAge<2*3600000;
+  pin.classList.toggle('up',open&&verified&&q.change>0);
+  pin.classList.toggle('down',open&&verified&&q.change<0);
+  pin.classList.toggle('neutral',open&&(!verified||q.change===0));
   pin.title=(q?.name||id)+' · '+(open?tr('APERTO','OPEN'):tr('CHIUSO','CLOSED'))+
    (!open&&session?.next?' · '+tr('Riapre ','Reopens ')+nextClockLabel(session.next):'')+
    ' · '+fmtPercent(q?.change);
