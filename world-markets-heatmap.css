@@ -874,3 +874,13 @@ html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-wm-
     grid-template-columns:repeat(2,minmax(0,1fr))!important;
   }
 }
+
+/* Stock subsectors have their own narrower grid: preserve legible thirds. */
+html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-wm-stock-sector .inj-wm-grid{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+}
+@media(max-width:350px){
+  html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-wm-stock-sector .inj-wm-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+}
