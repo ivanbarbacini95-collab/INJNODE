@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.10.31-shade-allthemes2';
+const CACHE_NAME = 'inj-node-v16.10.31-compact-cards1';
 const APP_SHELL = [
   './market-embedded-compact-20261031.css?v=marketcompact3',
   './market-crypto-scope-20261030.css?v=scope3',
@@ -194,9 +194,9 @@ const APP_SHELL = [
   './treasury-ownership.css?v=16102501',
   './treasury-ownership-theme.css?v=160702',
   './market.html',
-  './world-markets-heatmap.js?v=20261031solar1',
+  './world-markets-heatmap.js?v=20261031compactcards1',
   './market-data/global-markets.json',
-  './world-markets-heatmap.css?v=20261031shade2',
+  './world-markets-heatmap.css?v=20261031compactcards1',
   './market-intelligence-summary.js?v=20261029world1',
   './market-intelligence.css?v=160421',
   './market-intelligence-summary.js?v=160708',
