@@ -294,7 +294,7 @@ function marketForAsset(group,id){
  return indexExchange[id]||'us';
 }
 function nextSessionChange(key,now=Date.now()){
- if(key==='crypto')return null;
+ if(key==='crypto')return {open:true,next:null};
  const cache=sessionCache.get(key);
  if(cache&&now-cache.at<45000)return cache.result;
  const open=exchangeOpenAt(key,now);
