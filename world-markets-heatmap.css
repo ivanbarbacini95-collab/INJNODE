@@ -255,3 +255,147 @@ html[data-inj-page="market"] .inj-wm-region > .inj-wm-session-chip{
   font-size:10px;
  }
 }
+
+
+/* WORLD MARKET · focused full-screen financial mosaics · 2026-10-31
+   Each category is an independent view; the 8 destinations stay within
+   thumb reach across the bottom of the Market iframe. */
+html[data-inj-market][data-market-section="world"] body #injWorldMarket{
+  padding-bottom:calc(110px + env(safe-area-inset-bottom,0px))!important;
+  min-width:0!important;
+}
+html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-world-section[hidden]{
+  display:none!important;
+}
+html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-world-section:not([hidden]){
+  display:block!important;
+  width:100%!important;
+  margin:5px 0 0!important;
+  padding:clamp(7px,1vw,12px)!important;
+  border-radius:12px!important;
+}
+html[data-inj-market][data-market-section="world"] body #injWorldMarket #injWorldQuickNav.inj-wm-quick-nav{
+  position:fixed!important;
+  inset:auto 0 0 0!important;
+  width:100vw!important;max-width:none!important;
+  display:grid!important;grid-template-columns:repeat(8,minmax(0,1fr))!important;
+  gap:5px!important;
+  margin:0!important;
+  padding:8px max(9px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(9px,env(safe-area-inset-left,0px))!important;
+  overflow-x:hidden!important;overflow-y:hidden!important;
+  height:auto!important;
+  border:0!important;border-top:1px solid color-mix(in srgb,var(--line) 75%,transparent)!important;
+  border-radius:0!important;
+  background:color-mix(in srgb,var(--panel,#0b1525) 97%,var(--bg,#07111f))!important;
+  box-shadow:0 -5px 24px rgba(0,0,0,.15)!important;
+  z-index:950!important;
+  touch-action:manipulation!important;
+}
+html[data-inj-market][data-market-section="world"] body #injWorldMarket #injWorldQuickNav > button[data-world-jump]{
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  width:100%!important;min-width:0!important;max-width:none!important;
+  min-height:37px!important;height:auto!important;
+  margin:0!important;padding:7px 3px!important;
+  white-space:normal!important;overflow-wrap:anywhere!important;
+  text-align:center!important;
+  font-family:inherit!important;font-weight:560!important;
+  font-size:clamp(10px,1vw,12px)!important;line-height:1.2!important;
+  border:1px solid transparent!important;border-radius:9px!important;
+  background:transparent!important;color:var(--muted,var(--text))!important;
+}
+html[data-inj-market][data-market-section="world"] body #injWorldMarket #injWorldQuickNav > button.is-active{
+  color:var(--text,#fff)!important;
+  font-weight:670!important;
+  border-color:color-mix(in srgb,var(--accent) 35%,var(--line))!important;
+  background:color-mix(in srgb,var(--accent) 13%,var(--panel))!important;
+}
+html[data-inj-market][data-market-section="world"] body #injWorldMarket #injWorldQuickNav > button:focus-visible{
+  outline:2px solid var(--accent)!important;outline-offset:-2px!important;
+}
+html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-wm-grid,
+html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-wm-grid.sectors,
+html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-wm-grid.indices{
+  display:grid!important;grid-template-columns:repeat(auto-fit,minmax(min(100%,165px),1fr))!important;
+  gap:clamp(5px,.7vw,9px)!important;
+}
+html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-wm-stock-sector .inj-wm-grid{
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+}
+html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-wm-stocks{
+  display:grid!important;
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,265px),1fr))!important;
+  gap:12px!important;
+}
+html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-wm-tile{
+  min-height:88px!important;
+  padding:10px!important;
+  gap:5px!important;
+  border-radius:10px!important;
+}
+html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-wm-sector-card{
+  min-height:92px!important;
+}
+html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-wm-section-head{
+  margin-bottom:9px!important;padding-bottom:8px!important;
+}
+html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-wm-section-head h3{
+  font-size:clamp(16px,2vw,21px)!important;line-height:1.16!important;
+}
+html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-wm-name{
+  font-size:clamp(11px,.9vw,13px)!important;line-height:1.25!important;
+}
+html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-wm-price,
+html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-wm-change{
+  font-size:clamp(11px,1.05vw,14px)!important;
+  overflow-wrap:anywhere!important;
+}
+html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-wm-regions{
+  gap:9px!important;margin-top:9px!important;
+}
+html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-world-mapframe{
+  min-height:170px!important;
+  aspect-ratio:2.25!important;
+}
+html[data-inj-market][data-inj-market-embedded="true"][data-market-section="world"] body #injWorldMarket .inj-wm-hero{
+  margin:0!important;padding:4px 2px 9px!important;
+}
+html[data-inj-market][data-inj-market-embedded="true"][data-market-section="world"] body #injWorldMarket .inj-wm-hero > .inj-world-eyebrow,
+html[data-inj-market][data-inj-market-embedded="true"][data-market-section="world"] body #injWorldMarket .inj-wm-hero > h2,
+html[data-inj-market][data-inj-market-embedded="true"][data-market-section="world"] body #injWorldMarket .inj-wm-hero > p{
+  display:none!important;
+}
+/* Make the constantly moving financial overview use the complete iframe
+   viewport width instead of inheriting the inner page's side gutters. */
+html[data-inj-market][data-market-section="world"] body #marketTicker.market-ticker{
+  width:100vw!important;max-width:none!important;
+  margin-inline:0!important;
+  left:50%!important;
+  transform:translateX(-50%)!important;
+  border-left:0!important;border-right:0!important;
+  border-radius:0!important;
+}
+@media(max-width:900px){
+ html[data-inj-market][data-market-section="world"] body #injWorldMarket #injWorldQuickNav.inj-wm-quick-nav{
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:4px!important;
+ }
+ html[data-inj-market][data-market-section="world"] body #injWorldMarket #injWorldQuickNav > button[data-world-jump]{
+  min-height:37px!important;padding:5px 2px!important;font-size:10.5px!important;
+ }
+}
+@media(max-width:690px){
+ html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-wm-grid,
+ html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-wm-grid.sectors,
+ html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-wm-grid.indices{
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important;
+ }
+ html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-wm-tile{
+  min-height:90px!important;padding:9px 8px!important;
+ }
+ html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-world-mapframe{
+  min-height:165px!important;aspect-ratio:1.85!important;
+ }
+ html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-wm-section-status{
+  font-size:9px!important;
+ }
+}
