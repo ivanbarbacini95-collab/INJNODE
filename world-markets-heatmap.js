@@ -228,6 +228,154 @@ function updateUsSessionUI(){
  }
 }
 
+
+/* Trading hours: exchange-local regular sessions, independent of quote age
+   or solar lighting. Local holidays outside the explicit calendars may vary. */
+const exchangeSettings={
+ us:{tz:'America/New_York',slots:[[570,960]]},
+ eu:{tz:'Europe/Paris',slots:[[540,1050]]},
+ uk:{tz:'Europe/London',slots:[[480,990]]},
+ ch:{tz:'Europe/Zurich',slots:[[540,1050]]},
+ br:{tz:'America/Sao_Paulo',slots:[[600,1020]]},
+ in:{tz:'Asia/Kolkata',slots:[[555,930]]},
+ hk:{tz:'Asia/Hong_Kong',slots:[[570,720],[780,960]]},
+ jp:{tz:'Asia/Tokyo',slots:[[540,690],[750,930]]},
+ au:{tz:'Australia/Sydney',slots:[[600,960]]},
+ cn:{tz:'Asia/Shanghai',slots:[[570,690],[780,900]]},
+ fx:{tz:'America/New_York',slots:[]},
+ futures:{tz:'America/New_York',slots:[]},
+ crypto:{tz:'Etc/UTC',slots:[]}
+};
+const sessionFmt=new Map(),sessionCache=new Map();
+const supportedHolidays={
+ jp:new Set(['2026-11-03','2026-11-23','2026-12-31','2027-01-01','2027-01-11','2027-02-11','2027-02-23','2027-04-29','2027-05-03','2027-05-04','2027-05-05','2027-11-03','2027-11-23','2027-12-31']),
+ eu:new Set(['2026-12-25','2027-01-01','2027-03-26','2027-03-29','2027-12-25']),
+ uk:new Set(['2026-12-25','2026-12-28','2027-01-01','2027-03-26','2027-03-29','2027-12-27','2027-12-28']),
+ ch:new Set(['2026-12-25','2026-12-31','2027-01-01','2027-03-26','2027-03-29','2027-12-24','2027-12-31']),
+ hk:new Set(['2026-12-25','2027-01-01','2027-02-08','2027-02-09','2027-02-10','2027-12-27']),
+ cn:new Set(['2026-12-25','2027-01-01','2027-02-08','2027-02-09','2027-02-10']),
+ au:new Set(['2026-12-25','2026-12-28','2027-01-01','2027-01-26','2027-03-26','2027-03-29','2027-12-27','2027-12-28']),
+ in:new Set(['2026-12-25','2027-01-26','2027-08-15','2027-10-02']),
+ br:new Set(['2026-12-25','2027-01-01','2027-04-21','2027-05-01','2027-09-07','2027-10-12','2027-11-02','2027-11-15','2027-12-25'])
+};
+function localSessionClock(key,at){
+ const cfg=exchangeSettings[key]||exchangeSettings.us;
+ if(!sessionFmt.has(cfg.tz)){
+  sessionFmt.set(cfg.tz,new Intl.DateTimeFormat('en-US',{
+   timeZone:cfg.tz,year:'numeric',month:'2-digit',day:'2-digit',
+   weekday:'short',hour:'2-digit',minute:'2-digit',hourCycle:'h23'
+  }));
+ }
+ const x=Object.fromEntries(sessionFmt.get(cfg.tz).formatToParts(new Date(at)).filter(v=>v.type!=='literal').map(v=>[v.type,v.value]));
+ return {date:x.year+'-'+x.month+'-'+x.day,weekday:x.weekday,minutes:Number(x.hour)*60+Number(x.minute)};
+}
+function exchangeOpenAt(key,at){
+ if(key==='crypto')return true;
+ const local=localSessionClock(key,at),dow=local.weekday,m=local.minutes;
+ if(key==='fx')return dow==='Sun'?m>=1020:dow==='Fri'?m<1020:dow!=='Sat';
+ if(key==='futures')return dow==='Sun'?m>=1080:dow==='Fri'?m<1020:dow!=='Sat'&&(m<1020||m>=1080);
+ if(dow==='Sat'||dow==='Sun')return false;
+ if(key==='us'&&(usFullHolidays.has(local.date)))return false;
+ if(supportedHolidays[key]?.has(local.date))return false;
+ const end=key==='us'&&usEarlyClose.has(local.date)?780:null;
+ return (exchangeSettings[key]?.slots||[]).some(([start,finish])=>m>=start&&m<(end??finish));
+}
+function marketForAsset(group,id){
+ if(group==='crypto')return 'crypto';
+ if(group==='forex')return 'fx';
+ if(group==='commodities')return 'futures';
+ if(group!=='indices')return 'us'; // listed sector proxies, equities, US ETFs and bond ETFs
+ const indexExchange={
+  sp500:'us',nasdaq:'us',dow:'us',russell:'us',vix:'us',ndx:'us',
+  stoxx:'eu',dax:'eu',cac:'eu',ftse:'uk',ibex:'eu',smi:'ch',
+  bovespa:'br',nifty:'in',hangseng:'hk',nikkei:'jp',asx:'au',shanghai:'cn'
+ };
+ return indexExchange[id]||'us';
+}
+function nextSessionChange(key,now=Date.now()){
+ if(key==='crypto')return null;
+ const cache=sessionCache.get(key);
+ if(cache&&now-cache.at<45000)return cache.result;
+ const open=exchangeOpenAt(key,now);
+ let future=null;
+ const STEP=15*60000;
+ for(let d=STEP;d<=10*86400000;d+=STEP){
+  const time=now+d;
+  if(exchangeOpenAt(key,time)!==open){
+   let low=time-STEP,high=time;
+   while(high-low>60000){
+    const mid=Math.floor((low+high)/120000)*60000;
+    if(mid<=low)break;
+    if(exchangeOpenAt(key,mid)===open)low=mid;else high=mid;
+   }
+   future=high;
+   break;
+  }
+ }
+ const result={open,next:future};
+ sessionCache.set(key,{at:now,result});
+ return result;
+}
+function nextClockLabel(at){
+ if(!at)return '—';
+ return new Intl.DateTimeFormat(en()?'en-GB':'it-IT',{
+  timeZone:'Europe/Rome',weekday:'short',hour:'2-digit',minute:'2-digit',hourCycle:'h23'
+ }).format(new Date(at));
+}
+function ensureExchangeBadge(group){
+ const section=$('injWorldSection'+group);
+ const head=section?.querySelector('.inj-wm-section-head');
+ if(!head)return null;
+ let badge=head.querySelector('.inj-wm-exchange-state');
+ if(!badge){
+  badge=el('div','inj-wm-exchange-state');
+  badge.setAttribute('aria-live','off');
+  head.append(badge);
+ }
+ return badge;
+}
+function updateExchangeBadges(){
+ if(!initialized||!active)return;
+ const now=Date.now();
+ for(const group of ids){
+  const badge=ensureExchangeBadge(group);
+  if(!badge)continue;
+  const keys=[...new Set(definitions(group).map(q=>marketForAsset(group,q.id)))];
+  const states=keys.map(key=>nextSessionChange(key,now));
+  const opened=states.filter(x=>x?.open).length;
+  const allOpen=opened===keys.length,noneOpen=opened===0;
+  const future=states.map(x=>x?.next).filter(Number.isFinite).sort((a,b)=>a-b)[0]||null;
+  const stateLabel=allOpen?tr('APERTO','OPEN'):noneOpen?tr('CHIUSO','CLOSED'):
+   tr('APERTI ','OPEN ')+opened+'/'+keys.length;
+  badge.dataset.session=allOpen?'open':noneOpen?'closed':'mixed';
+  let detail;
+  if(group==='crypto')detail=tr('24 ORE SU 24','24/7');
+  else if(!noneOpen)detail=tr('Prossimo cambio ','Next change ')+nextClockLabel(future);
+  else detail=tr('Riapre ','Reopens ')+nextClockLabel(future);
+  badge.replaceChildren(el('span','inj-wm-session-main',stateLabel),el('small','inj-wm-session-next',detail));
+  badge.title=tr('Orari regolari delle borse · festività e chiusure straordinarie possono variare · orari in Italia',
+   'Regular exchange hours · holidays and exceptional closures may vary · times in Italy');
+ }
+ refreshMapSessions();
+}
+function refreshMapSessions(){
+ const now=Date.now(),data=byId(quotes.get('indices')||[]);
+ const layer=$('injWorldMapPins');
+ if(!layer)return;
+ layer.querySelectorAll('[data-market-id]').forEach(pin=>{
+  const id=pin.dataset.marketId,key=marketForAsset('indices',id),session=nextSessionChange(key,now),q=data.get(id);
+  pin.dataset.marketOpen=String(!!session?.open);
+  const open=!!session?.open;
+  pin.classList.toggle('up',open&&Number.isFinite(q?.change)&&q.change>0);
+  pin.classList.toggle('down',open&&Number.isFinite(q?.change)&&q.change<0);
+  pin.classList.toggle('neutral',open&&!(Number.isFinite(q?.change)&&q.change!==0));
+  pin.title=(q?.name||id)+' · '+(open?tr('APERTO','OPEN'):tr('CHIUSO','CLOSED'))+
+   (!open&&session?.next?' · '+tr('Riapre ','Reopens ')+nextClockLabel(session.next):'')+
+   ' · '+fmtPercent(q?.change);
+  pin.setAttribute('aria-label',pin.title);
+ });
+}
+
 function renderIndices(items){
  const idx=byId(items);const list=$('injWorldIndexRegions');if(!list)return;
  list.replaceChildren();
