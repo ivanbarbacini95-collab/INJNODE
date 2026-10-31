@@ -119,7 +119,8 @@
     modalPending=true;
     modalWasOpened=false;
     const launcher=document.getElementById(item.launcher);
-    if(launcher)launcher.click();
+    if(item.id==='events')launcher?.click();
+    else window.INJ_MARKET_OPEN_NATIVE?.(item.id);
     requestAnimationFrame(()=>{
       if(!modalPending)return;
       if(modalOpen())modalWasOpened=true;
