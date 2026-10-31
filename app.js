@@ -8173,7 +8173,7 @@ function updateInstallUi() {
 
 function registerPwa() {
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js?v=20261031shade2',{updateViaCache:'none'}).then(registration=>registration.update()).catch(() => {}), { once: true });
+    window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js?v=20261031compactcards1',{updateViaCache:'none'}).then(registration=>registration.update()).catch(() => {}), { once: true });
   }
   updateInstallUi();
 }
