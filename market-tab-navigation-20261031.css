@@ -363,3 +363,54 @@ html[data-inj-page="index"][data-inj-home-tab="mercato"] body
 #injMarketTabHead .inj-market-tab-link.is-active .inj-market-tab-price{
   display:inline-block!important;
 }
+
+
+/* Always-on INJ USD quote, anchored above the horizontally swipeable Market
+   destinations so the price remains readable on every page. */
+#injMarketTabHead .inj-market-kicker-row{
+  display:flex!important;align-items:center!important;justify-content:space-between!important;
+  box-sizing:border-box!important;
+  width:100%!important;min-width:0!important;
+  padding:0 max(13px,calc((100vw - 1400px)/2)) 9px!important;
+  gap:6px!important;
+}
+#injMarketTabHead .inj-market-kicker-row .inj-market-tab-kicker{
+  flex:0 1 auto!important;min-width:0!important;
+  display:block!important;padding:0!important;margin:0!important;
+  white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
+  font-size:clamp(8px,2vw,10px)!important;letter-spacing:.12em!important;
+}
+#injMarketTabHead .inj-market-persistent-quote{
+  display:inline-flex!important;align-items:baseline!important;justify-content:flex-end!important;
+  flex:0 0 auto!important;max-width:63%!important;
+  gap:clamp(4px,1vw,8px)!important;
+  white-space:nowrap!important;font-variant-numeric:tabular-nums!important;
+  font-family:var(--inj-chosen-face,var(--inj-node-terminal-font,system-ui,sans-serif))!important;
+  font-size:clamp(10px,2.6vw,13px)!important;
+  color:var(--text,#e8f5f2)!important;
+}
+#injMarketTabHead .inj-market-persistent-quote .inj-quote-symbol{
+  font-size:9px!important;color:var(--muted,#a5bbb7)!important;
+  letter-spacing:.05em!important;
+}
+#injMarketTabHead .inj-market-persistent-quote .inj-quote-value{
+  font-weight:700!important;color:inherit!important;
+  font-size:clamp(12px,3vw,16px)!important;letter-spacing:-.018em!important;
+}
+#injMarketTabHead .inj-market-persistent-quote .inj-quote-day{
+  color:inherit!important;font-size:clamp(9px,2.3vw,11px)!important;
+  font-weight:600!important;
+}
+#injMarketTabHead .inj-market-persistent-quote[data-tone="up"],
+#injMarketTabHead .inj-market-tab-price[data-tone="up"]{color:var(--positive,#35d69b)!important}
+#injMarketTabHead .inj-market-persistent-quote[data-tone="down"],
+#injMarketTabHead .inj-market-tab-price[data-tone="down"]{color:var(--negative,#ff738b)!important}
+#injMarketTabHead .inj-market-persistent-quote[data-tone="neutral"],
+#injMarketTabHead .inj-market-tab-price[data-tone="neutral"]{color:var(--muted-strong,var(--text,#e8f5f2))!important}
+#injMarketTabHead .inj-market-persistent-quote[data-stale="true"]{opacity:.63!important}
+@media(max-width:370px){
+ #injMarketTabHead .inj-market-kicker-row{padding-inline:10px!important}
+ #injMarketTabHead .inj-market-persistent-quote{gap:4px!important}
+ #injMarketTabHead .inj-market-persistent-quote .inj-quote-symbol{display:none!important}
+ #injMarketTabHead .inj-market-kicker-row .inj-market-tab-kicker{letter-spacing:.06em!important}
+}
