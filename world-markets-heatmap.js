@@ -659,7 +659,8 @@ function paintSolarOverlay(now=Date.now()){
    const darkness=t*t*(3-2*t);
    const i=(y*w+x)*4;
    pixels[i]=1;pixels[i+1]=5;pixels[i+2]=18;
-   pixels[i+3]=Math.round(darkness*205);
+   // Keep the solar night layer readable on all themes (formerly 205/255 opacity).
+    pixels[i+3]=Math.round(darkness*108);
   }
  }
  ctx.putImageData(buffer,0,0);
