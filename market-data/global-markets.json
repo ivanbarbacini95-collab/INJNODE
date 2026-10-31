@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "generatedAt": "2026-10-30T22:37:32.721Z",
+  "generatedAt": "2026-10-31T01:46:39.867Z",
   "type": "static-snapshot",
   "groups": {
     "sectors": {
@@ -184,7 +184,7 @@
       ],
       "available": 16,
       "fresh": 16,
-      "updatedAt": "2026-10-30T22:37:33.090Z",
+      "updatedAt": "2026-10-31T01:46:40.095Z",
       "source": "CNBC",
       "status": "complete"
     },
@@ -567,7 +567,7 @@
       ],
       "available": 34,
       "fresh": 34,
-      "updatedAt": "2026-10-30T22:37:33.095Z",
+      "updatedAt": "2026-10-31T01:46:40.217Z",
       "source": "CNBC",
       "status": "complete"
     },
@@ -611,8 +611,8 @@
           "name": "Russell 2000",
           "symbol": "^RUT",
           "price": 2811.844,
-          "change": -1.6568522081395032,
-          "previous": 2859.217,
+          "change": 0,
+          "previous": 2811.844,
           "time": 1793392200,
           "currency": "",
           "source": "CNBC"
@@ -774,7 +774,7 @@
       ],
       "available": 13,
       "fresh": 13,
-      "updatedAt": "2026-10-30T22:37:33.430Z",
+      "updatedAt": "2026-10-31T01:46:40.488Z",
       "source": "CNBC",
       "status": "partial"
     },
@@ -937,150 +937,9 @@
       ],
       "available": 14,
       "fresh": 14,
-      "updatedAt": "2026-10-30T22:37:33.699Z",
+      "updatedAt": "2026-10-31T01:46:40.624Z",
       "source": "CNBC",
       "status": "complete"
-    },
-    "commodities": {
-      "quotes": [
-        {
-          "id": "gold",
-          "name": "Oro",
-          "symbol": "GC=F",
-          "price": 3884.9,
-          "change": -3.6339733095202664,
-          "previous": 4031.4,
-          "time": 1793398054,
-          "currency": "",
-          "source": "CNBC"
-        },
-        {
-          "id": "silver",
-          "name": "Argento",
-          "symbol": "SI=F",
-          "price": 49.135,
-          "change": -6.195112638411615,
-          "previous": 52.38,
-          "time": 1793398029,
-          "currency": "",
-          "source": "CNBC"
-        },
-        {
-          "id": "wti",
-          "name": "Petrolio WTI",
-          "symbol": "CL=F",
-          "price": 102.95,
-          "change": 0.9313725490196045,
-          "previous": 102,
-          "time": 1793398062,
-          "currency": "",
-          "source": "CNBC"
-        },
-        {
-          "id": "brent",
-          "name": "Petrolio Brent",
-          "symbol": "BZ=F",
-          "price": 117.77,
-          "change": 2.515668523676884,
-          "previous": 114.88,
-          "time": 1793384101,
-          "currency": "",
-          "source": "CNBC"
-        },
-        {
-          "id": "gas",
-          "name": "Gas naturale",
-          "symbol": "NG=F",
-          "price": 2.883,
-          "change": -2.3373983739837345,
-          "previous": 2.952,
-          "time": 1793398062,
-          "currency": "",
-          "source": "CNBC"
-        },
-        {
-          "id": "copper",
-          "name": "Rame",
-          "symbol": "HG=F",
-          "price": 6.5095,
-          "change": -1.4085573646346106,
-          "previous": 6.6025,
-          "time": 1793398051,
-          "currency": "",
-          "source": "CNBC"
-        },
-        {
-          "id": "corn",
-          "name": "Mais",
-          "symbol": "ZC=F",
-          "price": null,
-          "change": null,
-          "previous": null,
-          "time": null,
-          "currency": null,
-          "source": "Yahoo Finance"
-        },
-        {
-          "id": "platinum",
-          "name": "Platino",
-          "symbol": "PL=F",
-          "price": null,
-          "change": null,
-          "previous": null,
-          "time": null,
-          "currency": null,
-          "source": "Yahoo Finance"
-        },
-        {
-          "id": "palladium",
-          "name": "Palladio",
-          "symbol": "PA=F",
-          "price": null,
-          "change": null,
-          "previous": null,
-          "time": null,
-          "currency": null,
-          "source": "Yahoo Finance"
-        },
-        {
-          "id": "wheat",
-          "name": "Grano",
-          "symbol": "ZW=F",
-          "price": null,
-          "change": null,
-          "previous": null,
-          "time": null,
-          "currency": null,
-          "source": "Yahoo Finance"
-        },
-        {
-          "id": "soybeans",
-          "name": "Soia",
-          "symbol": "ZS=F",
-          "price": null,
-          "change": null,
-          "previous": null,
-          "time": null,
-          "currency": null,
-          "source": "Yahoo Finance"
-        },
-        {
-          "id": "sugar",
-          "name": "Zucchero",
-          "symbol": "SB=F",
-          "price": null,
-          "change": null,
-          "previous": null,
-          "time": null,
-          "currency": null,
-          "source": "Yahoo Finance"
-        }
-      ],
-      "available": 6,
-      "fresh": 5,
-      "updatedAt": "2026-10-30T22:37:33.822Z",
-      "source": "CNBC",
-      "status": "partial"
     },
     "forex": {
       "quotes": [
@@ -1219,7 +1078,148 @@
       ],
       "available": 11,
       "fresh": 11,
-      "updatedAt": "2026-10-30T22:37:33.866Z",
+      "updatedAt": "2026-10-31T01:46:40.877Z",
+      "source": "CNBC",
+      "status": "partial"
+    },
+    "commodities": {
+      "quotes": [
+        {
+          "id": "gold",
+          "name": "Oro",
+          "symbol": "GC=F",
+          "price": 3884.9,
+          "change": -3.6339733095202664,
+          "previous": 4031.4,
+          "time": 1793400057,
+          "currency": "",
+          "source": "CNBC"
+        },
+        {
+          "id": "silver",
+          "name": "Argento",
+          "symbol": "SI=F",
+          "price": 49.135,
+          "change": -6.195112638411615,
+          "previous": 52.38,
+          "time": 1793400058,
+          "currency": "",
+          "source": "CNBC"
+        },
+        {
+          "id": "wti",
+          "name": "Petrolio WTI",
+          "symbol": "CL=F",
+          "price": 102.95,
+          "change": 0.9313725490196045,
+          "previous": 102,
+          "time": 1793400058,
+          "currency": "",
+          "source": "CNBC"
+        },
+        {
+          "id": "brent",
+          "name": "Petrolio Brent",
+          "symbol": "BZ=F",
+          "price": 117.7,
+          "change": 2.45473537604457,
+          "previous": 114.88,
+          "time": 1793400058,
+          "currency": "",
+          "source": "CNBC"
+        },
+        {
+          "id": "gas",
+          "name": "Gas naturale",
+          "symbol": "NG=F",
+          "price": 2.883,
+          "change": -2.3373983739837345,
+          "previous": 2.952,
+          "time": 1793400059,
+          "currency": "",
+          "source": "CNBC"
+        },
+        {
+          "id": "copper",
+          "name": "Rame",
+          "symbol": "HG=F",
+          "price": 6.5095,
+          "change": -1.4085573646346106,
+          "previous": 6.6025,
+          "time": 1793400057,
+          "currency": "",
+          "source": "CNBC"
+        },
+        {
+          "id": "corn",
+          "name": "Mais",
+          "symbol": "ZC=F",
+          "price": null,
+          "change": null,
+          "previous": null,
+          "time": null,
+          "currency": null,
+          "source": "Yahoo Finance"
+        },
+        {
+          "id": "platinum",
+          "name": "Platino",
+          "symbol": "PL=F",
+          "price": null,
+          "change": null,
+          "previous": null,
+          "time": null,
+          "currency": null,
+          "source": "Yahoo Finance"
+        },
+        {
+          "id": "palladium",
+          "name": "Palladio",
+          "symbol": "PA=F",
+          "price": null,
+          "change": null,
+          "previous": null,
+          "time": null,
+          "currency": null,
+          "source": "Yahoo Finance"
+        },
+        {
+          "id": "wheat",
+          "name": "Grano",
+          "symbol": "ZW=F",
+          "price": null,
+          "change": null,
+          "previous": null,
+          "time": null,
+          "currency": null,
+          "source": "Yahoo Finance"
+        },
+        {
+          "id": "soybeans",
+          "name": "Soia",
+          "symbol": "ZS=F",
+          "price": null,
+          "change": null,
+          "previous": null,
+          "time": null,
+          "currency": null,
+          "source": "Yahoo Finance"
+        },
+        {
+          "id": "sugar",
+          "name": "Zucchero",
+          "symbol": "SB=F",
+          "price": null,
+          "change": null,
+          "previous": null,
+          "time": null,
+          "currency": null,
+          "source": "Yahoo Finance"
+        }
+      ],
+      "available": 6,
+      "fresh": 6,
+      "updatedAt": "2026-10-31T01:46:40.965Z",
       "source": "CNBC",
       "status": "partial"
     },
@@ -1371,7 +1371,7 @@
       ],
       "available": 11,
       "fresh": 11,
-      "updatedAt": "2026-10-30T22:37:34.090Z",
+      "updatedAt": "2026-10-31T01:46:41.217Z",
       "source": "CNBC",
       "status": "partial"
     }
