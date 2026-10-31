@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.10.31-world-mosaic-quote-clean1';
+const CACHE_NAME = 'inj-node-v16.10.31-solar-market-sessions1';
 const APP_SHELL = [
   './market-embedded-compact-20261031.css?v=marketcompact3',
   './market-crypto-scope-20261030.css?v=scope3',
@@ -17,9 +17,9 @@ const APP_SHELL = [
   './home-card-reorder-20261030.css?v=order1',
   './home-card-reorder-20261030.js?v=order4',
   './home-bottom-tabs-20261030.js?v=bottomnav17',
-  './market-tab-navigation-20261031.css?v=marketrail10',
-  './market-tab-navigation-20261031.js?v=marketrail10',
-  './app.js?v=20261031worldmosaic1',
+  './market-tab-navigation-20261031.css?v=marketrail11',
+  './market-tab-navigation-20261031.js?v=marketrail11',
+  './app.js?v=20261031solar1',
   './inj-font-switcher-20261029.css?v=official-font7',
   './inj-font-switcher-20261029.js?v=official-font7',
   './inj-fluid-screen-fit.css?v=20261028fullmonitor1',
@@ -194,9 +194,9 @@ const APP_SHELL = [
   './treasury-ownership.css?v=16102501',
   './treasury-ownership-theme.css?v=160702',
   './market.html',
-  './world-markets-heatmap.js?v=20261031pages1',
+  './world-markets-heatmap.js?v=20261031solar1',
   './market-data/global-markets.json',
-  './world-markets-heatmap.css?v=20261031mosaic1',
+  './world-markets-heatmap.css?v=20261031solar1',
   './market-intelligence-summary.js?v=20261029world1',
   './market-intelligence.css?v=160421',
   './market-intelligence-summary.js?v=160708',
