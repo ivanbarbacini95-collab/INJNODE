@@ -12,8 +12,8 @@
     {id:'world',it:'Global Market',en:'Global Market',entry:'world'},
     {id:'crypto',it:'Global Crypto',en:'Global Crypto',entry:'crypto'},
     {id:'events',it:'Market Event',en:'Market Events',launcher:'entryMacroCalendarButton'},
-    {id:'charts',it:'Live Charts',en:'Live Charts',launcher:'entryLiveChartsButton'},
-    {id:'book',it:'Order Book',en:'Order Book',launcher:'entryOrderBookButton'},
+    {id:'charts',it:'Live Charts',en:'Live Charts',page:'./live-charts.html'},
+    {id:'book',it:'Order Book',en:'Order Book',page:'./order-book.html'},
     {id:'performance',it:'Performance',en:'Performance',launcher:'entryPerformanceButton'}
   ];
   const panel=document.createElement('section');
@@ -23,6 +23,8 @@
   panel.setAttribute('aria-label','Market');
   const head=document.createElement('header');
   head.className='inj-market-tab-head';
+  head.id='injMarketTabHead';
+  head.hidden=true;
   const kicker=document.createElement('span');
   kicker.className='inj-market-tab-kicker';
   kicker.textContent='INJ NODE / MARKET';
@@ -36,7 +38,7 @@
     button.type='button';
     button.className='inj-market-tab-link';
     button.dataset.marketDestination=item.id;
-    if(item.entry)button.setAttribute('aria-controls','injMarketTabFrame');
+    if(item.entry||item.page)button.setAttribute('aria-controls','injMarketTabFrame');
     button.textContent=english()?item.en:item.it;
     button.addEventListener('click',()=>navigate(item.id,true));
     rail.appendChild(button);
@@ -55,8 +57,8 @@
   frame.setAttribute('loading','eager');
   frame.setAttribute('referrerpolicy','same-origin');
   content.append(loading,frame);
-  panel.append(head,content);
-  document.body.appendChild(panel);
+  panel.append(content);
+  document.body.append(head,panel);
 
   let selected='world',lastMarketEntry='world',currentUrl='',wasMarket=false;
   let modalPending=false,modalWasOpened=false;
@@ -70,7 +72,10 @@
     panel.setAttribute('aria-label',en?'Market':'Mercato');
     for(const item of destinations)buttons.get(item.id).textContent=en?item.en:item.it;
     if(currentUrl && frame.contentWindow){
-      try{frame.contentWindow.postMessage({type:'injnode:market:language',language:en?'en':'it'},location.origin)}catch(_){}
+      try{
+        frame.contentWindow.postMessage({type:'injnode:market:language',language:en?'en':'it'},location.origin);
+        frame.contentWindow.postMessage({type:'injnode:languagechange',language:en?'en':'it'},location.origin);
+      }catch(_){}
     }
   }
   function updateSelection(id,scrollButton){
@@ -86,31 +91,50 @@
       buttons.get(id)?.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'nearest',inline:'center'});
     }
   }
-  function showMarket(entry){
-    lastMarketEntry=entry;
+  function showPage(item){
+    lastMarketEntry=item.id;
     const en=english();
-    const url=new URL('./market.html',document.baseURI);
-    url.searchParams.set('entry',entry);
-    url.searchParams.set('lang',en?'en':'it');
-    url.searchParams.set('v','20261031marketnav1');
+    const url=new URL(item.entry?'./market.html':item.page,document.baseURI);
+    if(item.entry){
+      url.searchParams.set('entry',item.entry);
+      url.searchParams.set('lang',en?'en':'it');
+      url.searchParams.set('v','20261031marketnav2');
+    }else url.searchParams.set('v','16.00.14');
     const source=url.href;
     if(source!==currentUrl){
       currentUrl=source;
       content.classList.remove('is-ready');
-      frame.title=entry==='crypto'?'Global Crypto':'Global Market';
+      frame.title=en?item.en:item.it;
       frame.src=source;
     }
+  }
+  function dismissNativeView(){
+    const events=document.getElementById('injMarketEventsOverlay');
+    if(events&&!events.hidden){
+      if(!document.getElementById('injEventsResultBackdrop')?.hidden)
+        document.getElementById('injEventsResultClose')?.click();
+      document.getElementById('injEventsClose')?.click();
+    }
+    const performance=document.getElementById('performanceTimelineView');
+    if(performance&&!performance.hidden)
+      document.getElementById('closePerformanceTimelineButton')?.click();
   }
   function navigate(id,scrollButton=false){
     if(!isMarket())return;
     const item=destinations.find(x=>x.id===id);
     if(!item)return;
-    if(modalPending&&modalOpen())return;
+    if(modalPending&&modalOpen()){
+      if(id!==selected){
+        dismissNativeView();
+        window.setTimeout(()=>{if(isMarket())navigate(id,scrollButton)},240);
+      }
+      return;
+    }
     updateSelection(id,scrollButton);
-    if(item.entry){
+    if(item.entry||item.page){
       modalPending=false;
       content.hidden=false;
-      showMarket(item.entry);
+      showPage(item);
       return;
     }
     // Use the original launchers, keeping all wallet, market and event logic.
@@ -133,25 +157,35 @@
   frame.addEventListener('load',()=>{
     if(!currentUrl)return;
     try{
-      if(!frame.contentWindow.location.pathname.endsWith('/market.html'))return;
+      if(frame.contentWindow.location.pathname!==new URL(currentUrl).pathname)return;
       if(frame.src!==currentUrl)return;
     }catch(_){return}
     content.classList.add('is-ready');
+    // Standalone charts and book already have a Home control; keep its click
+    // inside the parent tab instead of following iframe history/back.
+    for(const id of ['liveChartsBack','bookBack']){
+      frame.contentDocument?.getElementById(id)?.addEventListener('click',event=>{
+        event.preventDefault();event.stopImmediatePropagation();
+        window.INJ_BOTTOM_NAV?.select('home');
+      },true);
+    }
     refreshLanguage();
   });
   window.addEventListener('message',event=>{
     if(event.origin!==location.origin||event.source!==frame.contentWindow)return;
-    if(event.data?.type==='injnode:market:home')window.INJ_BOTTOM_NAV?.select('home');
+    if(['injnode:market:home','injnode:section:home'].includes(event.data?.type))
+      window.INJ_BOTTOM_NAV?.select('home');
   });
   function syncTab(){
     const now=isMarket();
     panel.hidden=!now;
+    head.hidden=!now;
     panel.setAttribute('aria-hidden',String(!now));
     if(now&&!wasMarket){
       lastMarketEntry='world';
       modalPending=false;
       updateSelection('world',false);
-      showMarket('world');
+      showPage(destinations[0]);
     }else if(!now&&wasMarket){
       modalPending=false;
       content.classList.remove('is-ready');
