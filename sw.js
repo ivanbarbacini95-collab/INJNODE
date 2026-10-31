@@ -1,6 +1,6 @@
-const CACHE_NAME = 'inj-node-v16.10.31-market-compact1';
+const CACHE_NAME = 'inj-node-v16.10.31-market-rail-price2';
 const APP_SHELL = [
-  './market-embedded-compact-20261031.css?v=marketcompact1',
+  './market-embedded-compact-20261031.css?v=marketcompact2',
   './market-crypto-scope-20261030.css?v=scope3',
   './market-favorites-latched-20261030.css?v=latch4',
   './market-crypto-one-day-20261030.css?v=dropdown6',
@@ -17,8 +17,8 @@ const APP_SHELL = [
   './home-card-reorder-20261030.css?v=order1',
   './home-card-reorder-20261030.js?v=order4',
   './home-bottom-tabs-20261030.js?v=bottomnav17',
-  './market-tab-navigation-20261031.css?v=marketrail6',
-  './market-tab-navigation-20261031.js?v=marketrail6',
+  './market-tab-navigation-20261031.css?v=marketrail7',
+  './market-tab-navigation-20261031.js?v=marketrail7',
   './app.js?v=20261031marketrail1',
   './inj-font-switcher-20261029.css?v=official-font7',
   './inj-font-switcher-20261029.js?v=official-font7',
@@ -250,7 +250,7 @@ const APP_SHELL = [
   './scroll-guard.js?v=160525',
   './live-charts.html',
   './live-charts.css?v=16.00.39',
-  './live-charts.js?v=20261026tf1',
+  './live-charts.js?v=20261031priceinrail2',
   './live-charts-timeframe-rail.css?v=20261026tf1',
   './live-rewards.html',
   './live-rewards.css?v=16.05.02',
