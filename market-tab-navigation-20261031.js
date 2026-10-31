@@ -44,7 +44,22 @@
     rail.appendChild(button);
     buttons.set(item.id,button);
   }
-  head.append(kicker,rail);
+  // The only route back to Home while Market is open. Keep it pinned
+  // beside the horizontal destination rail, not inside its scroll surface.
+  const homeLink=document.createElement('button');
+  homeLink.type='button';
+  homeLink.id='injMarketHomeLink';
+  homeLink.className='inj-market-home-link';
+  homeLink.innerHTML='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><path d="m3.5 10 8.5-7 8.5 7v10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V10"/><path d="M9 21v-8h6v8"/></svg>';
+  homeLink.addEventListener('click',()=>{
+    if(!isMarket())return;
+    if(modalOpen())dismissNativeView();
+    window.INJ_BOTTOM_NAV?.select('home');
+  });
+  const topRow=document.createElement('div');
+  topRow.className='inj-market-tab-row';
+  topRow.append(homeLink,rail);
+  head.append(kicker,topRow);
   const content=document.createElement('div');
   content.className='inj-market-tab-content';
   const loading=document.createElement('div');
@@ -140,6 +155,8 @@
   function refreshLanguage(){
     const en=english();
     rail.setAttribute('aria-label',en?'Market sections':'Sezioni Market');
+    homeLink.setAttribute('aria-label',en?'Return to Home':'Torna alla Home');
+    homeLink.setAttribute('title',en?'Home':'Home');
     panel.setAttribute('aria-label',en?'Market':'Mercato');
     for(const item of destinations)buttons.get(item.id).textContent=en?item.en:item.it;
     if(currentUrl && frame.contentWindow){
@@ -232,6 +249,17 @@
       if(frame.contentWindow.location.pathname!==new URL(currentUrl).pathname)return;
       if(frame.src!==currentUrl)return;
     }catch(_){return}
+    // These are embedded destinations inside Market, not independent
+    // standalone screens: remove only their legacy Home/Back button.
+    try{
+      const inner=frame.contentDocument;
+      if(inner&&!inner.getElementById('injMarketEmbeddedNoBack')){
+        const style=inner.createElement('style');
+        style.id='injMarketEmbeddedNoBack';
+        style.textContent='#marketBack,#liveChartsBack,#bookBack{display:none!important;visibility:hidden!important;pointer-events:none!important}';
+        (inner.head||inner.documentElement).appendChild(style);
+      }
+    }catch(_){}
     content.classList.add('is-ready');
     frameActivity();
     scheduleLayoutUpdate();
