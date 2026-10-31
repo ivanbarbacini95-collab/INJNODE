@@ -140,22 +140,20 @@ function quoteTile(q,compact=false){
   q.source?tr('Fonte: ','Source: ')+q.source:''].filter(Boolean).join(' · ');
  return tile;
 }
+const validQuote=q=>Number.isFinite(q?.price)&&q.price>0;
 const statsOf=arr=>{
  const available=arr.filter(x=>Number.isFinite(x.change));
  const up=available.filter(x=>x.change>0).length;
  return {total:available.length,up,down:available.filter(x=>x.change<0).length};
 };
 function renderSummary(group,arr){
- const status=$('injWorld'+group+'Status');
- if(!status)return;
- const n=statsOf(arr);
- if(!n.total){
-  const hasPrice=arr.some(q=>Number.isFinite(q.price));
-  status.textContent=hasPrice?tr('Prezzi disponibili · variazione non comunicata','Prices available · change unavailable'):tr('Quotazioni ancora non disponibili','Quotes not yet available');
-  return;
- }
- const latest=Math.max(...arr.map(x=>Number(x.time)||0));
- status.textContent=n.up+' '+tr('in rialzo','up')+' · '+n.down+' '+tr('in ribasso','down')+' · '+tr('ultima quotazione ','last quote ')+(latest?stamp(latest):'—');
+ const status=$('injWorld'+group+'Status');if(!status)return;
+ const good=arr.filter(validQuote),missing=arr.filter(q=>!validQuote(q)).map(q=>q.symbol||q.name||q.id);
+ const n=statsOf(good),count=good.length+'/'+arr.length+' '+tr('quotazioni','quotes');
+ const latest=Math.max(0,...good.map(q=>Number(q.time)||0));
+ status.title=missing.length?tr('Non disponibili: ','Unavailable: ')+missing.join(', '):'';
+ status.textContent=count+' · '+n.up+' '+tr('in rialzo','up')+' · '+n.down+' '+tr('in ribasso','down')+
+  ' · '+tr('ultimo dato ','last quote ')+(latest?stamp(latest):tr('in attesa','pending'));
 }
 /* The U.S. trading-session clock is independent of last-quote timestamps.
    America/New_York handles the 1-2 week U.S./European DST mismatches. */
@@ -394,7 +392,7 @@ function renderIndices(items){
    group.append(chip);
   }
   const cards=el('div','inj-wm-grid indices');
-  assetIds.forEach(id=>{const q=idx.get(id);if(q)cards.append(quoteTile({...q,name:quotedName('indices',q)},true))});
+  assetIds.forEach(id=>{const q=idx.get(id);if(validQuote(q))cards.append(quoteTile({...q,name:quotedName('indices',q)},true))});
   group.append(cards);list.append(group);
  });
  renderPins(items);
@@ -406,6 +404,7 @@ function renderSectors(items){
  rootGrid.replaceChildren();
  sectors.forEach(([id,it,english])=>{
   const q=data.get(id)||{id,name:tr(it,english),symbol:''};
+  if(!validQuote(q))return;
   const card=quoteTile({...q,name:tr(it,english),symbol:q.symbol},false);
   card.classList.add('inj-wm-sector-card');
   const tag=el('small','inj-wm-proxy',tr('ETF settoriale','Sector ETF'));
@@ -415,9 +414,10 @@ function renderSectors(items){
  // These are thematic ETF proxies, separate from the eleven official S&P sectors.
  if(thematicSectors.length){
   const title=el('div','inj-wm-subgroup-title',tr('TEMI DI MERCATO · ETF','MARKET THEMES · ETFs'));
-  rootGrid.append(title);
+  if(thematicSectors.some(([id])=>validQuote(data.get(id))))rootGrid.append(title);
   thematicSectors.forEach(([id,it,english])=>{
    const q=data.get(id)||{id,name:tr(it,english),symbol:''};
+   if(!validQuote(q))return;
    const card=quoteTile({...q,name:tr(it,english),symbol:q.symbol},true);
    card.classList.add('inj-wm-theme-card');
    rootGrid.append(card);
@@ -431,14 +431,14 @@ function renderStocks(items){
   const group=el('section','inj-wm-stock-sector');
   group.append(el('h4','inj-wm-stock-heading',tr(it,english)));
   const grid=el('div','inj-wm-grid stocks');
-  stocks.forEach(stock=>{const q=data.get(stock);if(q)grid.append(quoteTile(q,true))});
-  group.append(grid);out.append(group);
+  stocks.forEach(stock=>{const q=data.get(stock);if(validQuote(q))grid.append(quoteTile(q,true))});
+  if(grid.childElementCount){group.append(grid);out.append(group);}
  });
  renderSummary('stocks',items);
 }
 function renderPlain(group,items){
  const grid=$('injWorld'+group+'Grid');if(!grid)return;
- grid.replaceChildren();items.forEach(item=>grid.append(quoteTile({...item,name:quotedName(group,item)},true)));
+ grid.replaceChildren();items.filter(validQuote).forEach(item=>grid.append(quoteTile({...item,name:quotedName(group,item)},true)));
  if(group==='bonds'){
   const first=grid.querySelector('.inj-wm-tile');
   if(first){const note=el('small','inj-wm-proxy',tr('Rendimento mostrato come indice ×10','Yield displayed as index ×10'));first.append(note)}
