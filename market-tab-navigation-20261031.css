@@ -241,3 +241,83 @@ html[data-inj-page="index"][data-inj-home-tab="mercato"][data-inj-market-chrome=
   transition:none!important;
  }
 }
+
+
+/* MARKET · TOP-ONLY NAVIGATION · 31 Oct 2026
+   The primary five-tab dock disappears completely inside Market.
+   A dedicated Home icon is the first control, pinned to the left of the
+   horizontal rail; the six market destinations remain swipeable. */
+html[data-inj-page="index"][data-inj-home-tab="mercato"] body.entry-gate-open
+ > #injPrimaryBottomNav#injPrimaryBottomNav#injPrimaryBottomNav,
+html[data-inj-page="index"][data-inj-home-tab="mercato"] body
+ > #injPrimaryBottomNav#injPrimaryBottomNav#injPrimaryBottomNav:popover-open{
+ display:none!important;opacity:0!important;visibility:hidden!important;
+ pointer-events:none!important;
+}
+#injMarketTabHead .inj-market-tab-row{
+ display:flex!important;align-items:center!important;gap:7px!important;
+ width:100%!important;min-width:0!important;box-sizing:border-box!important;
+ padding:0 max(12px,calc((100vw - 1400px)/2))!important;
+}
+#injMarketTabHead #injMarketHomeLink{
+ display:inline-flex!important;position:relative!important;
+ align-items:center!important;justify-content:center!important;
+ flex:0 0 41px!important;width:41px!important;height:39px!important;
+ min-width:41px!important;min-height:39px!important;
+ margin:0 0 8px!important;padding:0!important;
+ color:var(--text,#e8f5f2)!important;
+ border:1px solid color-mix(in srgb,var(--accent,#8bdfce) 22%,var(--line,#48615c))!important;
+ border-radius:12px!important;
+ background:color-mix(in srgb,var(--accent,#8bdfce) 10%,var(--surface,#0a2528))!important;
+ box-shadow:none!important;
+ cursor:pointer!important;touch-action:manipulation!important;
+ -webkit-tap-highlight-color:transparent!important;
+ transition:background .2s ease,color .2s ease,border-color .2s ease!important;
+}
+#injMarketTabHead #injMarketHomeLink svg{
+ display:block!important;width:20px!important;height:20px!important;
+ flex:none!important;stroke:currentColor!important;fill:none!important;
+}
+#injMarketTabHead #injMarketHomeLink:active{
+ background:color-mix(in srgb,var(--accent,#8bdfce) 20%,var(--surface,#0a2528))!important;
+}
+#injMarketTabHead #injMarketHomeLink:focus-visible{
+ outline:2px solid var(--accent,#8bdfce)!important;outline-offset:2px!important;
+}
+#injMarketTabHead .inj-market-tab-row > .inj-market-tab-rail{
+ flex:1 1 auto!important;width:auto!important;min-width:0!important;
+ padding:0 0 8px 0!important;
+}
+/* Every Market subpage can use the entire screen below the top rail;
+   no phantom gap is reserved for the now-absent bottom navigation. */
+html[data-inj-page="index"][data-inj-home-tab="mercato"] body
+ > #injMarketTabPanel:not([hidden]){
+ bottom:0!important;
+}
+html[data-inj-page="index"][data-inj-home-tab="mercato"] body
+ #performanceTimelineView.open:not([hidden]){
+ bottom:0!important;
+}
+html[data-inj-page="index"][data-inj-home-tab="mercato"] body
+ #injMarketEventsOverlay:not([hidden]){
+ padding-bottom:calc(14px + env(safe-area-inset-bottom,0px))!important;
+}
+/* Single Home icon in Market's main rail replaces the old close/back glyphs
+   on native Performance and the macro-event calendar. */
+html[data-inj-page="index"][data-inj-home-tab="mercato"] body
+ #performanceTimelineView #closePerformanceTimelineButton,
+html[data-inj-page="index"][data-inj-home-tab="mercato"] body
+ #injMarketEventsOverlay #injEventsClose{
+ display:none!important;visibility:hidden!important;pointer-events:none!important;
+}
+@media(min-width:800px){
+ html[data-inj-page="index"][data-inj-home-tab="mercato"] body
+  >#injMarketTabPanel:not([hidden]),
+ html[data-inj-page="index"][data-inj-home-tab="mercato"] body
+  #performanceTimelineView.open:not([hidden]){
+  bottom:0!important;
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ #injMarketTabHead #injMarketHomeLink{transition:none!important}
+}
