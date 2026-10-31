@@ -186,7 +186,7 @@ html[data-inj-page="index"][data-inj-home-tab="mercato"] body
   width:100%!important;height:auto!important;min-height:0!important;
   max-height:none!important;margin:0!important;
   opacity:1!important;visibility:visible!important;
-  z-index:2147483520!important;
+  z-index:2147483480!important;
   overflow:hidden!important;
   background:var(--theme-canvas,var(--bg,#09191a))!important;
   transition:top .34s ease,bottom .34s ease!important;
