@@ -8146,6 +8146,22 @@ async function installPwa() {
     toast('INJ Node è già installata');
     return;
   }
+  // Android installs can use one of four icon-specific manifests. The
+  // primary Home manifest is Minimal; route other selections to their own
+  // installation entry before triggering Chrome's native prompt.
+  if (/Android/i.test(navigator.userAgent||'')) {
+    const path = location.pathname || '';
+    const onIconRoute = /\/install-icon-(minimal|classic|aurora|pulse)\.html$/.test(path);
+    let chosen = 'minimal';
+    try {
+      const stored = localStorage.getItem('inj_node_app_icon_v1');
+      if (['minimal','classic','aurora','pulse'].includes(stored)) chosen = stored;
+    } catch (_) {}
+    if (!onIconRoute && chosen !== 'minimal') {
+      location.assign('./install-icon-' + chosen + '.html');
+      return;
+    }
+  }
   const promptEvent = state.deferredInstallPrompt;
   if (promptEvent) {
     promptEvent.prompt();
