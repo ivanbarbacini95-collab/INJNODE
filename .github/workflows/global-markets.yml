@@ -10,6 +10,7 @@ on:
       - '.github/workflows/global-markets.yml'
       - 'scripts/update-global-markets.mjs'
       - 'api/global-markets.js'
+      - 'world-markets-heatmap.js'
 
 permissions:
   contents: write
@@ -21,7 +22,7 @@ concurrency:
 jobs:
   market-snapshot:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - name: Checkout INJNODE
         uses: actions/checkout@v4
