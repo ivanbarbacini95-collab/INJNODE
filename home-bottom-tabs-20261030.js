@@ -84,6 +84,7 @@
    const visible=gate.classList.contains('visible') &&
      (gate.getAttribute('aria-hidden')==='false'||marketPerformance) &&
      document.body.classList.contains('entry-gate-open') &&
+     root.dataset.injHomeTab!=='mercato' &&
      !document.body.classList.contains('boot-loading') &&
      !document.body.classList.contains('inj-section-open') &&
      !document.body.classList.contains('menu-overlay-open') &&
