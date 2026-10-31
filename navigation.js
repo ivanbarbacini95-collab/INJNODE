@@ -7,6 +7,10 @@ const main=!!document.getElementById('entryGate');
    vertical scrolling, wallet/timeline rails, sliders and chart interactions. */
 (function installInjGestureShield() {
  const root=document.documentElement;
+ const ua=navigator.userAgent||'';
+ const isAndroid=/Android/i.test(ua);
+ const isIOS=/iPad|iPhone|iPod/i.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+ root.dataset.injPlatform=isAndroid?'android':isIOS?'ios':'web';
  // WebKit exposes an independent page-pinch gesture. Prevent its default
  // viewport scaling, not the custom gestures consumed by chart components.
  const preventViewportPinch=e=>{if(e.cancelable)e.preventDefault();};
@@ -66,7 +70,7 @@ const main=!!document.getElementById('entryGate');
  for(const type of ['touchend','touchcancel'])document.addEventListener(type,()=>{start=null;},{capture:true,passive:true});
  // A native browser history swipe may bypass DOM touchmove completely on iOS.
  // Keep a same-document history buffer while the main app is mounted.
- if(!document.getElementById('entryGate')||window.parent!==window)return;
+ if(!isIOS||!document.getElementById('entryGate')||window.parent!==window)return;
  try{
    const current=history.state||{};
    const cleanUrl=(location.hash==='#section'||location.hash==='#market')
@@ -117,8 +121,15 @@ function home(){
 }
 // Retain the parent app while isolated sections run in their own document.
 let section=null,sectionLauncher=null,sectionCover=null;
+const androidStandalone=/Android/i.test(navigator.userAgent||'') &&
+  Boolean(window.matchMedia?.('(display-mode: standalone)')?.matches ||
+    window.matchMedia?.('(display-mode: fullscreen)')?.matches);
+let androidSectionHistoryActive=false;
 function closeSection(fromHistory=false){
  if(!section)return;
+ const undoAndroidHistory=androidStandalone&&androidSectionHistoryActive&&!fromHistory&&
+   history.state?.injAndroidSection===true;
+ androidSectionHistoryActive=false;
  section.remove();section=null;
  sectionCover?.remove();sectionCover=null;
  document.body.classList.remove('inj-section-open');
@@ -127,6 +138,9 @@ function closeSection(fromHistory=false){
  // Section iframe is gone: hand the native scroll surface back to Home.
  window.INJ_SCROLL_GUARD?.refresh();
  window.INJ_HOME_SCROLL?.restore();
+ // Back from a visible Android PWA section returns to Home. An explicit
+ // in-app close also removes the temporary history entry.
+ if(undoAndroidHistory)history.back();
 }
 window.INJ_OPEN_SECTION=function(url){
  if(!main || section)return;
@@ -158,7 +172,15 @@ window.INJ_OPEN_SECTION=function(url){
  document.body.append(sectionCover,section);
  document.body.classList.add('inj-section-open');
  section.src=url;
- // Opening a section no longer adds a swipe-back history entry.
+ // Android's native system Back gesture/button closes an embedded section
+ // instead of leaving the installed app. iOS keeps its gesture shield.
+ if(androidStandalone){
+   try{
+     history.pushState({...history.state,injAndroidSection:true},'',location.href);
+     androidSectionHistoryActive=true;
+   }catch(_){androidSectionHistoryActive=false;}
+ }
+ // iOS section opens intentionally do not create a swipe-back history entry.
 };
 if(main){
  document.addEventListener('click',event=>{
