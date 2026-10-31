@@ -149,8 +149,8 @@
     if(item.entry){
       url.searchParams.set('entry',item.entry);
       url.searchParams.set('lang',en?'en':'it');
-      url.searchParams.set('v','20261031marketcompact1');
-    }else url.searchParams.set('v','20261031marketcompact1');
+      url.searchParams.set('v','20261031marketcompact2');
+    }else url.searchParams.set('v','20261031marketcompact2');
     const source=url.href;
     if(source!==currentUrl){
       currentUrl=source;
