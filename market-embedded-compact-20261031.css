@@ -109,3 +109,36 @@ html[data-inj-market-embedded="true"][data-inj-page="order-book"] .book-page>.bo
   grid-column:2!important;grid-row:1!important;
   justify-self:end!important;margin:0!important;
 }
+
+
+/* Embedded Live Charts · one timeframe row + maximum chart area.
+   The INJ quote is now next to Live Charts on Market's fixed top rail.
+   Standalone Live Charts retain their own price/header. */
+html[data-inj-market-embedded="true"][data-inj-page="live-charts"] #livePage{
+  grid-template-rows:auto minmax(0,1fr)!important;
+  padding:0!important;row-gap:0!important;
+}
+html[data-inj-market-embedded="true"][data-inj-page="live-charts"] #livePage>.terminal-header,
+html[data-inj-market-embedded="true"][data-inj-page="live-charts"] #livePage>.live-footer{
+  display:none!important;height:0!important;min-height:0!important;
+  max-height:0!important;margin:0!important;padding:0!important;
+}
+html[data-inj-market-embedded="true"][data-inj-page="live-charts"] #livePage>.terminal-shell{
+  grid-template-rows:minmax(0,1fr)!important;min-height:0!important;
+  height:100%!important;
+}
+html[data-inj-market-embedded="true"][data-inj-page="live-charts"] #livePage>.terminal-shell>.market-strip{
+  display:none!important;
+}
+html[data-inj-market-embedded="true"][data-inj-page="live-charts"] #livePage>.timeframe-bar{
+  min-height:37px!important;padding-block:3px 5px!important;
+}
+html[data-inj-market-embedded="true"][data-inj-page="live-charts"] .market-embedded-chart-actions{
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  flex:0 0 auto!important;gap:5px!important;
+  margin-left:9px!important;padding:0!important;
+}
+html[data-inj-market-embedded="true"][data-inj-page="live-charts"] .market-embedded-chart-actions .focus-button{
+  flex:0 0 auto!important;min-height:27px!important;font-size:10px!important;
+  padding-inline:10px!important;border-radius:8px!important;
+}
