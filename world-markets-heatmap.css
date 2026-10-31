@@ -399,3 +399,153 @@ html[data-inj-market][data-market-section="world"] body #marketTicker.market-tic
   font-size:9px!important;
  }
 }
+
+
+/* GLOBAL MARKET · minimal dense mosaics + exchange sessions · 31 Oct 2026 */
+html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-wm-tile{
+ display:grid!important;grid-template-rows:auto 1fr!important;
+ align-content:space-between!important;justify-content:stretch!important;
+ min-height:72px!important;gap:8px!important;padding:9px 10px!important;
+ border-radius:10px!important;
+}
+html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-wm-sector-card{
+ min-height:72px!important;
+}
+html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-wm-tile-head{
+ display:flex!important;align-items:flex-start!important;justify-content:flex-start!important;
+ min-width:0!important;
+}
+html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-wm-tile .inj-wm-symbol{
+ display:block!important;min-width:0!important;max-width:100%!important;
+ color:var(--text,#f2f8ff)!important;
+ font-size:clamp(11.5px,1.25vw,14px)!important;
+ font-weight:700!important;letter-spacing:.012em!important;line-height:1.24!important;
+ white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
+}
+html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-wm-tile-values{
+ display:flex!important;flex-direction:row!important;flex-wrap:wrap!important;
+ justify-content:space-between!important;align-items:flex-end!important;
+ gap:5px 6px!important;min-width:0!important;
+}
+html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-wm-tile .inj-wm-price{
+ font-size:clamp(10px,1.05vw,13px)!important;font-weight:540!important;
+ overflow-wrap:anywhere!important;line-height:1.3!important;
+}
+html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-wm-tile .inj-wm-change{
+ font-size:clamp(11px,1.2vw,14px)!important;font-weight:690!important;
+ line-height:1.25!important;
+}
+html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-wm-tile :is(.inj-wm-name,.inj-wm-tile-meta,.inj-wm-proxy){
+ display:none!important;
+}
+html[data-inj-market][data-market-section="world"] body #injWorldMarket :is(.inj-wm-subgroup-title,.inj-wm-explainer){
+ display:none!important;
+}
+html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-wm-section-head{
+ display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;
+ align-items:center!important;gap:5px 8px!important;
+}
+html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-wm-section-head>.inj-wm-section-status{
+ grid-column:1/-1!important;max-width:100%!important;
+ color:var(--muted)!important;font-size:9px!important;
+}
+html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-wm-exchange-state{
+ display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;
+ gap:3px 9px;min-width:0;max-width:100%;
+ line-height:1.25;font-variant-numeric:tabular-nums;
+ white-space:normal;text-align:right;
+}
+html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-wm-exchange-state .inj-wm-session-main{
+ display:inline-flex;align-items:center;gap:7px;
+ font-size:clamp(9px,2.4vw,11px);font-weight:660;
+ letter-spacing:.018em;white-space:nowrap;color:var(--muted);
+}
+html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-wm-exchange-state .inj-wm-session-main::before{
+ content:"";width:7px;height:7px;flex:none;border-radius:50%;
+ background:currentColor;box-shadow:0 0 0 3px color-mix(in srgb,currentColor 12%,transparent);
+}
+html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-wm-exchange-state[data-session="open"] .inj-wm-session-main{
+ color:var(--positive,#36d59d);
+}
+html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-wm-exchange-state[data-session="closed"] .inj-wm-session-main{
+ color:var(--muted-strong,#9aa6b7);
+}
+html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-wm-exchange-state[data-session="mixed"] .inj-wm-session-main{
+ color:var(--accent,#82b5e6);
+}
+html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-wm-exchange-state .inj-wm-session-next{
+ display:inline-flex;font-size:clamp(8px,2.1vw,10px);font-weight:450;
+ white-space:nowrap;color:var(--muted,#a3aebc);
+}
+/* The existing world map keeps its geometry, but gains a continuous
+   dawn/day/twilight/night veil as in an aircraft moving map. */
+html[data-inj-market] #injWorldMarket .inj-world-mapframe{
+ isolation:isolate!important;
+ background:
+  radial-gradient(circle at var(--inj-wm-sun-x,55%) var(--inj-wm-sun-y,35%),rgba(96,164,240,.15),transparent 52%),
+  radial-gradient(circle at 50% 45%,color-mix(in srgb,var(--accent) 9%,transparent),transparent 75%),
+  color-mix(in srgb,var(--panel,#0a1625) 72%,transparent)!important;
+}
+html[data-inj-market] #injWorldMarket #injWorldMapSvg{
+ z-index:0!important;
+}
+html[data-inj-market] #injWorldMarket #injWorldSolarShade.inj-wm-solar-shade{
+ display:block;position:absolute;inset:0;
+ width:100%;height:100%;z-index:2;
+ pointer-events:none;opacity:1;
+ image-rendering:auto;
+}
+html[data-inj-market] #injWorldMarket #injWorldMapPins{
+ z-index:4!important;pointer-events:none!important;
+}
+html[data-inj-market] #injWorldMarket #injWorldMapPins .inj-wm-pin{
+ pointer-events:auto!important;
+}
+html[data-inj-market] #injWorldMarket .inj-wm-pin[data-market-open="false"]{
+ background:#7d8694!important;
+ border-color:color-mix(in srgb,#a1aab7 55%,var(--bg,#081221))!important;
+ box-shadow:0 0 0 3px rgba(132,144,156,.17)!important;
+ animation:none!important;
+}
+html[data-inj-market] #injWorldMarket .inj-wm-pin[data-market-open="true"].up{
+ background:var(--positive,#38e4a0)!important;
+ box-shadow:0 0 0 3px rgba(53,225,156,.24),0 0 10px rgba(53,225,156,.4)!important;
+ animation:injWmPinPositive 2.2s ease-in-out infinite!important;
+}
+html[data-inj-market] #injWorldMarket .inj-wm-pin[data-market-open="true"].down{
+ background:var(--negative,#fb738d)!important;
+ box-shadow:0 0 0 3px rgba(251,104,134,.24),0 0 10px rgba(251,104,134,.4)!important;
+ animation:injWmPinNegative 2.2s ease-in-out infinite!important;
+}
+html[data-inj-market] #injWorldMarket .inj-wm-pin[data-market-open="true"].neutral{
+ background:#a0abb7!important;
+ animation:none!important;
+}
+@keyframes injWmPinPositive{
+ 0%,100%{filter:brightness(.87);box-shadow:0 0 0 2px rgba(53,225,156,.18),0 0 5px rgba(53,225,156,.25)}
+ 50%{filter:brightness(1.2);box-shadow:0 0 0 6px rgba(53,225,156,.12),0 0 15px rgba(53,225,156,.54)}
+}
+@keyframes injWmPinNegative{
+ 0%,100%{filter:brightness(.87);box-shadow:0 0 0 2px rgba(251,104,134,.18),0 0 5px rgba(251,104,134,.25)}
+ 50%{filter:brightness(1.2);box-shadow:0 0 0 6px rgba(251,104,134,.12),0 0 15px rgba(251,104,134,.54)}
+}
+@media(max-width:690px){
+ html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-wm-tile{
+  min-height:70px!important;padding:8px!important;gap:5px!important;
+ }
+ html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-wm-section-head{
+  grid-template-columns:minmax(0,1fr)!important;gap:6px!important;
+ }
+ html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-wm-exchange-state{
+  grid-column:1!important;justify-content:flex-start!important;text-align:left!important;
+ }
+ html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-wm-section-head>.inj-wm-section-status{
+  grid-column:1!important;
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ html[data-inj-market] #injWorldMarket .inj-wm-pin[data-market-open="true"].up,
+ html[data-inj-market] #injWorldMarket .inj-wm-pin[data-market-open="true"].down{
+  animation:none!important;filter:none!important;
+ }
+}
