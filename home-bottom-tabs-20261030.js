@@ -78,14 +78,17 @@
   nav.setAttribute('popover','manual');
   syncTopLayer=()=>{
    const shell=gate.querySelector('.entry-gate-shell');
+   const performanceView=document.getElementById('performanceTimelineView');
+   const marketPerformance=root.dataset.injHomeTab==='mercato' &&
+     performanceView && !performanceView.hidden;
    const visible=gate.classList.contains('visible') &&
-     gate.getAttribute('aria-hidden')==='false' &&
+     (gate.getAttribute('aria-hidden')==='false'||marketPerformance) &&
      document.body.classList.contains('entry-gate-open') &&
      !document.body.classList.contains('boot-loading') &&
      !document.body.classList.contains('inj-section-open') &&
      !document.body.classList.contains('menu-overlay-open') &&
      !document.body.classList.contains('drawer-open') &&
-     !document.body.classList.contains('entry-live-launch') &&
+     (!document.body.classList.contains('entry-live-launch')||marketPerformance) &&
      !shell?.classList.contains('first-access');
    if(visible&&!nav.matches(':popover-open')){
     try{nav.showPopover()}catch(_){/* Retry after the Home becomes renderable. */}
@@ -97,6 +100,9 @@
   visibilityObserver.observe(document.body,{attributes:true,attributeFilter:['class']});
   visibilityObserver.observe(gate,{attributes:true,attributeFilter:['class','aria-hidden']});
   visibilityObserver.observe(gate.querySelector('.entry-gate-shell'),{attributes:true,attributeFilter:['class']});
+  visibilityObserver.observe(root,{attributes:true,attributeFilter:['data-inj-home-tab']});
+  const performanceView=document.getElementById('performanceTimelineView');
+  if(performanceView)visibilityObserver.observe(performanceView,{attributes:true,attributeFilter:['hidden','class']});
   window.addEventListener('pageshow',syncTopLayer);
   requestAnimationFrame(syncTopLayer);
  }else{
