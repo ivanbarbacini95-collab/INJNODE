@@ -97,7 +97,7 @@ function saveQuotes(){
 restoreQuotes();
 let active=false,initialized=false,observer=null,geometryStarted=false,geoReady=false;
 let worldPage='indices';
-const MAX_AGE=3*60*1000;
+const MAX_AGE=90*1000;
 const fmtPercent=n=>Number.isFinite(n)?(n>0?'+':'')+new Intl.NumberFormat(en()?'en-US':'it-IT',{maximumFractionDigits:2,minimumFractionDigits:2}).format(n)+'%':'—';
 const fmtValue=(v,currency)=>{
  if(!Number.isFinite(v)||v<=0)return '—';
@@ -466,9 +466,9 @@ let directQuoteGateway='unknown';
 async function getCurrentMarketQuotes(group){
  if(directQuoteGateway==='unsupported')return null;
  const ctrl=new AbortController();
- const timeout=setTimeout(()=>ctrl.abort(),16500);
+ const timeout=setTimeout(()=>ctrl.abort(),25500);
  try{
-  const url='./api/global-markets?group='+encodeURIComponent(group)+'&t='+Math.floor(Date.now()/120000);
+  const url='./api/global-markets?group='+encodeURIComponent(group)+'&t='+Math.floor(Date.now()/90000);
   const response=await fetch(url,{cache:'no-store',headers:{Accept:'application/json'},signal:ctrl.signal});
   const type=response.headers.get('content-type')||'';
   if(response.status===404||response.status===405||type.indexOf('json')<0){
@@ -490,7 +490,7 @@ async function getStaticMarketSnapshot(force=false){
  if(sharedSnapshotPromise)return sharedSnapshotPromise;
  sharedSnapshotPromise=(async()=>{
   try{
-   const version=Math.floor(Date.now()/120000);
+   const version=Math.floor(Date.now()/90000);
    const response=await fetch('./market-data/global-markets.json?v='+version,{
     cache:'no-store',headers:{Accept:'application/json'}
    });
@@ -817,7 +817,7 @@ document.addEventListener('visibilitychange',()=>{
   for(const id of observed)if(!updated.has(id)||Date.now()-updated.get(id)>MAX_AGE)void loadGroup(id,true);
  }
 });
-setInterval(()=>{if(active&&!document.hidden)for(const id of observed)if(Date.now()-(updated.get(id)||0)>MAX_AGE)void loadGroup(id,true)},180000);
+setInterval(()=>{if(active&&!document.hidden&&Date.now()-(updated.get(worldPage)||0)>MAX_AGE)void loadGroup(worldPage,true)},90000);
 setInterval(()=>{if(active&&!document.hidden)updateUsSessionUI()},25000);
 setInterval(()=>{if(active&&!document.hidden)paintSolarOverlay()},60000);
 })();
