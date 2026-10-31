@@ -93,7 +93,7 @@
       if(!isMarket()||document.hidden)return;
       // Keep navigation available while the user is selecting a tab, or when
       // any modal panel/input is active. Idle otherwise means hands-free view.
-      if(rail.matches(':focus-within') || document.activeElement?.matches('input,textarea,select,[contenteditable="true"]')){
+      if(document.activeElement?.matches('input,textarea,select,[contenteditable="true"]')){
         armIdle();
         return;
       }
@@ -290,9 +290,16 @@
     const element=document.getElementById(id);
     if(element)modalObserver.observe(element,{attributes:true,attributeFilter:['hidden','class']});
   }
-  dock.querySelector('[data-inj-tab="mercato"]')?.addEventListener('click',()=>{
-    if(isMarket())navigate('world',false);
-  });
+  // Changing one of the five primary destinations must also close native
+  // Market overlays, otherwise Performance could remain painted above Home.
+  dock.addEventListener('click',event=>{
+    const tab=event.target.closest('[data-inj-tab]');
+    if(!tab||!isMarket())return;
+    if(tab.dataset.injTab!=='mercato'){
+      if(modalOpen())dismissNativeView();
+      clearTimeout(idleTimer);
+    }else if(!modalOpen())navigate('world',false);
+  },true);
   window.addEventListener('injnode:languagechange',refreshLanguage);
   window.addEventListener('storage',event=>{if(event.key==='inj_node_language_v1')refreshLanguage()});
   window.addEventListener('pageshow',()=>{refreshLanguage();syncTab()});
