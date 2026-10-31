@@ -602,7 +602,7 @@ function updateMapColors(items){
 function renderPins(items){
  updateMapColors(items);
  const layer=$('injWorldMapPins');const note=$('injWorldMapSpotlight');if(!layer||!note)return;
- const data=byId(items);layer.replaceChildren();
+ const data=byId(items);layer.replaceChildren();note.hidden=true;
  for(const [id,lat,lon] of hotspot){
   const q=data.get(id);if(!q)continue;
   const pin=el('button','inj-wm-pin '+state(q));pin.type='button';pin.dataset.marketId=id;
@@ -611,11 +611,10 @@ function renderPins(items){
   pin.title=q.name+' · '+fmtPercent(q.change);
   pin.addEventListener('click',()=>{
    note.textContent=q.name+' · '+fmtValue(q.price,q.currency)+' · '+fmtPercent(q.change);
+   note.hidden=false;
   });
   layer.append(pin);
  }
- const available=items.find(x=>x.id==='sp500'&&Number.isFinite(x.price))||items.find(x=>Number.isFinite(x.price));
- if(available)note.textContent=available.name+' · '+fmtValue(available.price,available.currency)+' · '+fmtPercent(available.change);
  refreshMapSessions();
 }
 
@@ -704,7 +703,7 @@ function shapePath(feature){
 }
 async function loadWorldGeometry(){
  if(geometryStarted)return;geometryStarted=true;
- fallbackMap();
+ const frame=$('injWorldMapSvg')?.closest('.inj-world-mapframe');
  try{
   const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),6500);
   let response;
@@ -718,12 +717,14 @@ async function loadWorldGeometry(){
    const d=shapePath(feature);if(!d)continue;
    const path=document.createElementNS(ns,'path');path.setAttribute('d',d);
    const country=String(feature?.properties?.name||feature?.properties?.ADMIN||feature?.id||'');
+   if(/antarct|southern ocean/i.test(country))continue;
    const match=countryIds.find(([,re])=>re.test(country));
    if(match)path.setAttribute('data-market-country',match[0]);
    group.append(path);
   }
   if(group.childNodes.length>80){svg.replaceChildren(group);geoReady=true;const indices=quotes.get('indices');if(indices)updateMapColors(indices);}
- }catch(_){/* Keep the built-in map outline, never block the page. */}
+ }catch(_){/* Retain bundled fallback geography. */}
+ finally{frame?.classList.add('is-world-ready');}
 }
 function localize(){
  $('injWorldHeading').textContent='Global Markets';
@@ -773,6 +774,11 @@ function selectWorldPage(group,scrollToTop=false){
   if(selected)button.setAttribute('aria-current','page');
   else button.removeAttribute('aria-current');
  });
+ const activeTab=nav?.querySelector('[data-world-jump="'+group+'"]');
+ if(activeTab&&nav?.scrollWidth>nav.clientWidth){
+  const desired=activeTab.offsetLeft+activeTab.offsetWidth/2-nav.clientWidth/2;
+  nav.scrollTo({left:Math.max(0,desired),behavior:scrollToTop?'smooth':'instant'});
+ }
  if(active){
   observed.add(group);
   void loadGroup(group);
@@ -789,6 +795,9 @@ function mount(){
  });
  selectWorldPage(worldPage,false);
  ensureUsSessionHeader();
+ const mapFrame=$('injWorldMapSvg')?.closest('.inj-world-mapframe');
+ const info=$('injWorldMapSpotlight');
+ if(mapFrame&&info){mapFrame.appendChild(info);info.hidden=true;}
  localize();renderPlaceholders();loadWorldGeometry();
  paintSolarOverlay();
  updateUsSessionUI();
