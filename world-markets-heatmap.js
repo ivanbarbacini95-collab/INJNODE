@@ -527,50 +527,44 @@ async function loadGroup(group,force=false){
  pending.add(group);section.classList.add('is-loading');
  if(label)label.textContent=tr('Aggiornamento quotazioni…','Updating market quotes…');
  try{
-  let body;
-  if(group==='crypto')body=await cryptoSnapshot();
+  let direct=null,archived=null;
+  if(group==='crypto')direct=await cryptoSnapshot();
   else{
-   // On Vercel try the actual provider gateway first. The scheduled
-   // snapshot is an honest fallback if the API is absent, delayed or down.
-   body=await getCurrentMarketQuotes(group);
-   if(!body){
-    const snapshot=await getStaticMarketSnapshot(force);
-    body=snapshot?.groups?.[group];
+   direct=await getCurrentMarketQuotes(group);
+   // If the live gateway returns a partial list, fill its holes from the
+   // timestamped scheduled archive. Never replace a newer quote with an older one.
+   if(!direct||direct.quotes.filter(validQuote).length<definitions(group).length){
+    try{
+     const snapshot=await getStaticMarketSnapshot(force);
+     archived=snapshot?.groups?.[group]||null;
+    }catch(err){if(!direct)throw err;}
    }
-   if(!Array.isArray(body?.quotes)||!body.quotes.length)
-    throw Object.assign(new Error('Waiting for first market snapshot'),{code:503});
   }
-  if(!Array.isArray(body?.quotes))throw Object.assign(new Error('Invalid data'),{code:502});
+  if(!Array.isArray(direct?.quotes)&&!Array.isArray(archived?.quotes))
+   throw Object.assign(new Error('No verified quote source'),{code:503});
+  const current=byId(direct?.quotes||[]),backup=byId(archived?.quotes||[]);
   const old=byId(quotes.get(group)||[]);
-  const arr=body.quotes.map(q=>{
-   const prev=old.get(q.id);
-   const newAt=Number(q.time)||0,oldAt=Number(prev?.time)||0;
-   // A provider returning yesterday's quote must never overwrite a newer
-   // verified tick held in this device's last cached snapshot.
-   if(prev&&Number.isFinite(prev.price)&&(!Number.isFinite(q.price)||oldAt>newAt&&newAt>0))return prev;
-   return q;
+  const arr=definitions(group).map(base=>{
+   const candidates=[current.get(base.id),backup.get(base.id),old.get(base.id)]
+    .map((quote,index)=>({quote,index}))
+    .filter(x=>validQuote(x.quote))
+    .sort((x,y)=>(Number(y.quote.time)||0)-(Number(x.quote.time)||0)||x.index-y.index);
+   const chosen=candidates[0]?.quote;
+   return chosen?{...base,...chosen}:{...base,price:null,change:null,time:null};
   });
-  // The static GitHub snapshot may briefly predate an expanded watchlist.
-  // Show every configured instrument immediately as unavailable (—) until
-  // the next real provider snapshot arrives; never manufacture market data.
-  const present=new Set(arr.map(q=>q.id));
-  for(const item of definitions(group)){
-   if(!present.has(item.id)){
-    const prior=old.get(item.id);
-    arr.push(prior&&Number.isFinite(prior.price)?prior:item);
-    present.add(item.id);
-   }
-  }
   quotes.set(group,arr);
-  if(body.quotes.some(q=>Number.isFinite(q.price))){updated.set(group,Date.now());saveQuotes();}
+  const available=arr.filter(validQuote).length;
+  if(available){updated.set(group,Date.now());saveQuotes();}
   renderGroup(group,arr);
   updateUsSessionUI();
-  if(!body.quotes.some(q=>Number.isFinite(q.price)))statusWithRetry(group,
-   body.status==='unavailable'?tr('Prossimo aggiornamento GitHub in attesa · nessun dato inventato','Waiting for next GitHub refresh · no estimated data'):tr('Fonte prezzi non disponibile · valori non simulati','Price feed unavailable · no estimated values'));
-  else if(body.available<arr.length&&label)label.textContent+=' · '+tr('quotazioni parziali','partial quotes');
+  if(!available){
+   statusWithRetry(group,tr('Fonte temporaneamente non disponibile · nessuna quotazione inventata',
+    'Source temporarily unavailable · no invented quotes'));
+  }
  }catch(err){
   renderGroup(group,quotes.get(group)||definitions(group));
-  statusWithRetry(group,errorDescription(Number(err.code)||0)+(quotes.has(group)?tr(' · ultimo dato salvato',' · last saved quotes'):''));
+  statusWithRetry(group,errorDescription(Number(err.code)||0)+(quotes.has(group)?
+   tr(' · ultimi dati salvati',' · last saved quotes'):''));
  }finally{pending.delete(group);section.classList.remove('is-loading');}
 }
 async function cryptoSnapshot(){
