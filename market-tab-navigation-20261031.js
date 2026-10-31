@@ -225,7 +225,7 @@
       }
     }catch(_){}
     content.classList.add('is-ready');
-    // Preserve controls without keeping a second, redundant chart header.
+    // Embedded charts keep the indicator/focus actions inside the timeframe rail.
     try{
       const inner=frame.contentDocument;
       if(inner?.documentElement.dataset.injPage==='live-charts'){
@@ -258,66 +258,7 @@
       const value=Number(event.data.value);
       if(chartPrice&&Number.isFinite(value)&&value>0){
         const digits=value<10?4:value<100?3:2;
-        chartPrice.textContent='
-      window.INJ_BOTTOM_NAV?.select('home');
-  });
-  function syncTab(){
-    const now=isMarket();
-    panel.hidden=!now;
-    head.hidden=!now;
-    panel.setAttribute('aria-hidden',String(!now));
-    if(now&&!wasMarket){
-      root.dataset.injMarketChrome='shown';
-
-      lastMarketEntry='world';
-      modalPending=false;
-      updateSelection('world',false);
-      showPage(destinations[0]);
-    }else if(!now&&wasMarket){
-
-      root.removeAttribute('data-inj-market-chrome');
-      modalPending=false;
-      content.classList.remove('is-ready');
-      currentUrl='';
-      frame.removeAttribute('src'); // release market polling while outside Market
-    }
-    wasMarket=now;
-  }
-  // Switching bottom destinations changes only the tab and not browser
-  // history. Re-entering Market opens the first destination every time.
-  const rootObserver=new MutationObserver(syncTab);
-  rootObserver.observe(root,{attributes:true,attributeFilter:['data-inj-home-tab']});
-  const modalObserver=new MutationObserver(()=>{
-    if(!modalPending)return;
-    if(modalOpen()){modalWasOpened=true;return}
-    if(modalWasOpened){
-      modalPending=false;
-      modalWasOpened=false;
-      updateSelection(lastMarketEntry,false);
-    }
-  });
-  modalObserver.observe(document.body,{attributes:true,attributeFilter:['class']});
-  for(const id of ['injMarketEventsOverlay','performanceTimelineView']){
-    const element=document.getElementById(id);
-    if(element)modalObserver.observe(element,{attributes:true,attributeFilter:['hidden','class']});
-  }
-  // Changing one of the five primary destinations must also close native
-  // Market overlays, otherwise Performance could remain painted above Home.
-  dock.addEventListener('click',event=>{
-    const tab=event.target.closest('[data-inj-tab]');
-    if(!tab||!isMarket())return;
-    if(tab.dataset.injTab!=='mercato'){
-      if(modalOpen())dismissNativeView();
-
-    }else if(!modalOpen())navigate('world',false);
-  },true);
-  window.addEventListener('injnode:languagechange',refreshLanguage);
-  window.addEventListener('storage',event=>{if(event.key==='inj_node_language_v1')refreshLanguage()});
-  window.addEventListener('pageshow',()=>{refreshLanguage();syncTab()});
-  window.INJ_MARKET_TAB={select:navigate,active:()=>selected};
-  refreshLanguage();
-  syncTab();
-})();+value.toLocaleString('en-US',{minimumFractionDigits:digits,maximumFractionDigits:digits});
+        chartPrice.textContent='$'+value.toLocaleString('en-US',{minimumFractionDigits:digits,maximumFractionDigits:digits});
       }
       return;
     }
