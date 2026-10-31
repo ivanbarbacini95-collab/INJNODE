@@ -12,7 +12,7 @@ const ids=['indices','sectors','stocks','etf','forex','commodities','bonds','cry
 const fallbackCatalog={
  indices:[['sp500','S&P 500','^GSPC'],['nasdaq','NASDAQ','^IXIC'],['dow','Dow Jones','^DJI'],['russell','Russell 2000','^RUT'],['stoxx','Euro Stoxx 50','^STOXX50E'],['dax','DAX','^GDAXI'],['cac','CAC 40','^FCHI'],['ftse','FTSE 100','^FTSE'],['nikkei','Nikkei 225','^N225'],['hangseng','Hang Seng','^HSI'],['nifty','Nifty 50','^NSEI'],['asx','ASX 200','^AXJO'],['bovespa','Ibovespa','^BVSP'],["ndx","Nasdaq 100","^NDX"],["vix","VIX Volatilità","^VIX"],["ibex","IBEX 35","^IBEX"],["smi","Swiss Market Index","^SSMI"],["shanghai","Shanghai Composite","000001.SS"]],
  sectors:[['technology','Tecnologia','XLK'],['finance','Finanza','XLF'],['energy','Energia','XLE'],['healthcare','Sanità','XLV'],['industrial','Industria','XLI'],['consumer','Consumi discrezionali','XLY'],['staples','Beni essenziali','XLP'],['utilities','Utilities','XLU'],['realestate','Immobiliare','XLRE'],['materials','Materiali','XLB'],['communications','Comunicazioni','XLC'],["semis","Semiconduttori","SMH"],["biotech","Biotecnologie","XBI"],["cleanenergy","Energia pulita","ICLN"],["aerospace","Difesa e aerospazio","ITA"],["banks","Banche regionali","KRE"]],
- stocks:[['aapl','Apple','AAPL'],['msft','Microsoft','MSFT'],['nvda','NVIDIA','NVDA'],['jpm','JPMorgan','JPM'],['bac','Bank of America','BAC'],['xom','ExxonMobil','XOM'],['cvx','Chevron','CVX'],['lly','Eli Lilly','LLY'],['jnj','Johnson & Johnson','JNJ'],['cat','Caterpillar','CAT'],['ge','GE Aerospace','GE'],['amzn','Amazon','AMZN'],['tsla','Tesla','TSLA'],['wmt','Walmart','WMT'],['cost','Costco','COST'],['nee','NextEra Energy','NEE'],['duk','Duke Energy','DUK'],['googl','Alphabet','GOOGL'],['meta','Meta','META'],['amt','American Tower','AMT'],['lin','Linde','LIN'],['fcx','Freeport-McMoRan','FCX'],["adbe","Adobe","ADBE"],["crm","Salesforce","CRM"],["gs","Goldman Sachs","GS"],["v","Visa","V"],["slb","SLB","SLB"],["abbv","AbbVie","ABBV"],["de","Deere","DE"],["hd","Home Depot","HD"],["pg","Procter & Gamble","PG"],["pld","Prologis","PLD"],["nue","Nucor","NUE"],["nflx","Netflix","NFLX"]],
+ stocks:[['aapl','Apple','AAPL'],['msft','Microsoft','MSFT'],['nvda','NVIDIA','NVDA'],['jpm','JPMorgan','JPM'],['bac','Bank of America','BAC'],['xom','ExxonMobil','XOM'],['cvx','Chevron','CVX'],['lly','Eli Lilly','LLY'],['jnj','Johnson & Johnson','JNJ'],['cat','Caterpillar','CAT'],['ge','GE Aerospace','GE'],['amzn','Amazon','AMZN'],['tsla','Tesla','TSLA'],['wmt','Walmart','WMT'],['cost','Costco','COST'],['nee','NextEra Energy','NEE'],['duk','Duke Energy','DUK'],['googl','Alphabet','GOOGL'],['meta','Meta','META'],['amt','American Tower','AMT'],['lin','Linde','LIN'],['fcx','Freeport-McMoRan','FCX'],["adbe","Adobe","ADBE"],["crm","Salesforce","CRM"],["gs","Goldman Sachs","GS"],["v","Visa","V"],["slb","SLB","SLB"],["abbv","AbbVie","ABBV"],["de","Deere","DE"],["hd","Home Depot","HD"],["pg","Procter & Gamble","PG"],["pld","Prologis","PLD"],["nue","Nucor","NUE"],["nflx","Netflix","NFLX"],["orcl","Oracle","ORCL"],["avgo","Broadcom","AVGO"],["ms","Morgan Stanley","MS"],["blk","BlackRock","BLK"],["cop","ConocoPhillips","COP"],["eog","EOG Resources","EOG"],["mrk","Merck","MRK"],["unh","UnitedHealth","UNH"],["hon","Honeywell","HON"],["ups","UPS","UPS"],["mcd","McDonald's","MCD"],["nke","Nike","NKE"],["ko","Coca-Cola","KO"],["pep","PepsiCo","PEP"],["so","Southern Company","SO"],["exc","Exelon","EXC"],["eqix","Equinix","EQIX"],["o","Realty Income","O"],["shw","Sherwin-Williams","SHW"],["apd","Air Products","APD"],["dis","Walt Disney","DIS"],["t","AT&T","T"],["tmus","T-Mobile US","TMUS"]],
  etf:[['spy','S&P 500 ETF','SPY'],['qqq','Nasdaq 100 ETF','QQQ'],['iwm','Small Caps ETF','IWM'],['efa','Developed Markets','EFA'],['eem','Emerging Markets','EEM'],['tlt','Long Treasury','TLT'],['gld','Gold ETF','GLD'],['vnq','Real Estate ETF','VNQ'],["voo","S&P 500 Vanguard","VOO"],["vti","Total Stock Market","VTI"],["dia","Dow Jones ETF","DIA"],["schd","Dividend Equity","SCHD"],["hyg","High Yield ETF","HYG"],["iau","Gold Trust","IAU"]],
  forex:[['eurusd','EUR / USD','EURUSD=X'],['gbpusd','GBP / USD','GBPUSD=X'],['usdjpy','USD / JPY','JPY=X'],['usdchf','USD / CHF','CHF=X'],['audusd','AUD / USD','AUDUSD=X'],['usdcny','USD / CNY','CNY=X'],['usdinr','USD / INR','INR=X'],["eurgbp","EUR / GBP","EURGBP=X"],["eurjpy","EUR / JPY","EURJPY=X"],["nzdusd","NZD / USD","NZDUSD=X"],["usdcad","USD / CAD","CAD=X"],["usdsek","USD / SEK","SEK=X"]],
  commodities:[['gold','Oro','GC=F'],['silver','Argento','SI=F'],['wti','Petrolio WTI','CL=F'],['brent','Petrolio Brent','BZ=F'],['gas','Gas naturale','NG=F'],['copper','Rame','HG=F'],['corn','Mais','ZC=F'],["platinum","Platino","PL=F"],["palladium","Palladio","PA=F"],["wheat","Grano","ZW=F"],["soybeans","Soia","ZS=F"],["sugar","Zucchero","SB=F"]],
@@ -41,17 +41,17 @@ const hints={
  crypto:['Prezzi dal mercato crypto già utilizzato da INJ Node','Prices from INJ Node’s existing crypto market feed']
 };
 const sectors=[
- ['technology','Tecnologia','Technology',['aapl','msft','nvda','adbe','crm']],
- ['finance','Finanza','Financials',['jpm','bac','gs','v']],
- ['energy','Energia','Energy',['xom','cvx','slb']],
- ['healthcare','Sanità','Healthcare',['lly','jnj','abbv']],
- ['industrial','Industria','Industrials',['cat','ge','de']],
- ['consumer','Consumi discrezionali','Consumer discretionary',['amzn','tsla','hd']],
- ['staples','Beni essenziali','Consumer staples',['wmt','cost','pg']],
- ['utilities','Servizi pubblici','Utilities',['nee','duk']],
- ['realestate','Immobiliare','Real estate',['amt','pld']],
- ['materials','Materiali','Materials',['lin','fcx','nue']],
- ['communications','Comunicazioni','Communication services',['googl','meta','nflx']]
+ ['technology','Tecnologia','Technology',['aapl','msft','nvda','adbe','crm','orcl','avgo']],
+ ['finance','Finanza','Financials',['jpm','bac','gs','v','ms','blk']],
+ ['energy','Energia','Energy',['xom','cvx','slb','cop','eog']],
+ ['healthcare','Sanità','Healthcare',['lly','jnj','abbv','mrk','unh']],
+ ['industrial','Industria','Industrials',['cat','ge','de','hon','ups']],
+ ['consumer','Consumi discrezionali','Consumer discretionary',['amzn','tsla','hd','mcd','nke']],
+ ['staples','Beni essenziali','Consumer staples',['wmt','cost','pg','ko','pep']],
+ ['utilities','Servizi pubblici','Utilities',['nee','duk','so','exc']],
+ ['realestate','Immobiliare','Real estate',['amt','pld','eqix','o']],
+ ['materials','Materiali','Materials',['lin','fcx','nue','shw','apd']],
+ ['communications','Comunicazioni','Communication services',['googl','meta','nflx','dis','t','tmus']]
 ];
 const thematicSectors=[
  ['semis','Semiconduttori','Semiconductors'],
