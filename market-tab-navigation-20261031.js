@@ -32,7 +32,6 @@
   rail.className='inj-market-tab-rail';
   rail.setAttribute('aria-label','Sezioni Market');
   const buttons=new Map();
-  let chartPrice=null;
   let quoteFallbackTimer=0;
   let dailyQuoteTimer=0,quoteBusy=false,lastQuoteAt=0;
   let lastApiPrice=NaN,lastLivePrice=NaN,lastLivePriceAt=0,dayChange=NaN;
@@ -45,14 +44,12 @@
     if(Number.isFinite(day))dayChange=day;
     if(Number.isFinite(price)&&price>0){
       quoteValue.textContent=formatUsd(price);
-      if(chartPrice)chartPrice.textContent=formatUsd(price);
     }
     if(Number.isFinite(dayChange)){
       const tone=dayChange>0?'up':dayChange<0?'down':'neutral';
       const change=(dayChange>0?'+':'')+dayChange.toFixed(2)+'%';
       quoteDock.dataset.tone=tone;
       quoteDay.textContent='24H '+change;
-      if(chartPrice)chartPrice.dataset.tone=tone;
       quoteDock.setAttribute('aria-label','INJ USD '+quoteValue.textContent+' 24H '+change);
     }
   }
@@ -121,13 +118,6 @@
     label.className='inj-market-tab-label';
     label.textContent=english()?item.en:item.it;
     button.appendChild(label);
-    if(item.id==='charts'){
-      chartPrice=document.createElement('span');
-      chartPrice.className='inj-market-tab-price';
-      chartPrice.textContent='—';
-      chartPrice.setAttribute('aria-hidden','true');
-      button.appendChild(chartPrice);
-    }
     button.addEventListener('click',()=>navigate(item.id,true));
     rail.appendChild(button);
     buttons.set(item.id,button);
@@ -248,7 +238,6 @@
       currentUrl=source;
       content.classList.remove('is-ready');
       frame.title=en?item.en:item.it;
-      if(item.id==='charts'&&chartPrice&&Number.isFinite(lastApiPrice))renderMarketQuote(lastApiPrice);
       frame.src=source;
     }
   }
