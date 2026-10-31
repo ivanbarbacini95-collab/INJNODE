@@ -33,6 +33,7 @@
   rail.setAttribute('aria-label','Sezioni Market');
   const buttons=new Map();
   let chartPrice=null;
+  let quoteFallbackTimer=0;
   const english=()=>{try{return root.lang==='en'||localStorage.getItem('inj_node_language_v1')==='en'}catch(_){return root.lang==='en'}};
   for(const item of destinations){
     const button=document.createElement('button');
@@ -142,6 +143,8 @@
     }
   }
   function showPage(item){
+    clearInterval(quoteFallbackTimer);
+    quoteFallbackTimer=0;
     lastMarketEntry=item.id;
     const en=english();
     const url=new URL(item.entry?'./market.html':item.page,document.baseURI);
@@ -229,6 +232,7 @@
     try{
       const inner=frame.contentDocument;
       if(inner?.documentElement.dataset.injPage==='live-charts'){
+        inner.documentElement.dataset.injMarketEmbedded='true';
         const bar=inner.getElementById('timeframeBar');
         if(bar&&!bar.querySelector('.market-embedded-chart-actions')){
           const actions=inner.createElement('span');
@@ -241,6 +245,24 @@
         }
       }
     }catch(_){}
+    // Fallback for suspended iOS WebViews that temporarily miss quote events.
+    clearInterval(quoteFallbackTimer);
+    quoteFallbackTimer=0;
+    if(selected==='charts'){
+      const syncQuote=()=>{
+        if(!isMarket()||selected!=='charts'||frame.contentDocument?.documentElement.dataset.injPage!=='live-charts')return;
+        try{
+          const txt=frame.contentDocument?.getElementById('headerLivePrice')?.textContent||'';
+          const value=Number(txt.replace(/[^\d.]/g,''));
+          if(value>0&&chartPrice){
+            const digits=value<10?4:value<100?3:2;
+            chartPrice.textContent='$'+value.toLocaleString('en-US',{minimumFractionDigits:digits,maximumFractionDigits:digits});
+          }
+        }catch(_){}
+      };
+      syncQuote();
+      quoteFallbackTimer=window.setInterval(syncQuote,1500);
+    }
     scheduleLayoutUpdate();
     // Standalone charts and book already have a Home control; keep its click
     // inside the parent tab instead of following iframe history/back.
@@ -278,6 +300,8 @@
       updateSelection('world',false);
       showPage(destinations[0]);
     }else if(!now&&wasMarket){
+      clearInterval(quoteFallbackTimer);
+      quoteFallbackTimer=0;
 
       root.removeAttribute('data-inj-market-chrome');
       modalPending=false;
