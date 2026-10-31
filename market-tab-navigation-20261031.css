@@ -321,3 +321,30 @@ html[data-inj-page="index"][data-inj-home-tab="mercato"] body
 @media(prefers-reduced-motion:reduce){
  #injMarketTabHead #injMarketHomeLink{transition:none!important}
 }
+
+
+/* MARKET · SINGLE SECTION HEADING · 31 Oct 2026
+   The persistent swipeable rail is the section title. The embedded pages
+   hide only their redundant header; these two native views follow suit. */
+html[data-inj-page="index"][data-inj-home-tab="mercato"] body
+ #injMarketEventsOverlay:not([hidden]) .inj-events-header{
+ display:none!important;
+ height:0!important;min-height:0!important;
+ margin:0!important;padding:0!important;
+}
+html[data-inj-page="index"][data-inj-home-tab="mercato"] body
+ #performanceTimelineView.open:not([hidden]) .performance-timeline-header{
+ display:none!important;
+ height:0!important;min-height:0!important;
+ margin:0!important;padding:0!important;
+}
+html[data-inj-page="index"][data-inj-home-tab="mercato"] body
+ #performanceTimelineView.open:not([hidden]) .entry-pnl-heading-copy>span{
+ display:none!important;
+}
+/* Old side-navigation shell applied a separate top gap inside Performance:
+   that gap is no longer needed with the unified Market rail. */
+html[data-inj-page="index"][data-inj-home-tab="mercato"] body
+ #performanceTimelineView.open:not([hidden]) >.performance-timeline-shell{
+ padding-top:0!important;
+}
