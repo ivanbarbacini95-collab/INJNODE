@@ -128,9 +128,11 @@ function quoteTile(q,compact=false){
  if(Number.isFinite(q.change))tile.style.setProperty('--inj-wm-strength',Math.max(8,Math.min(55,8+Math.abs(q.change)*8)).toFixed(1)+'%');
  const head=el('div','inj-wm-tile-head');
  const ticker=el('strong','inj-wm-symbol',q.symbol||q.name||'—');
- head.append(ticker);
+ const change=el('strong','inj-wm-change',fmtPercent(q.change));
+ // Keep the 24H percent beside the ticker rather than at the far edge.
+ head.append(ticker,change);
  const value=el('div','inj-wm-tile-values');
- value.append(el('span','inj-wm-price',fmtValue(q.price,q.currency)),el('strong','inj-wm-change',fmtPercent(q.change)));
+ value.append(el('span','inj-wm-price',fmtValue(q.price,q.currency)));
  tile.append(head,value);
  // Full name, source and timestamp remain available on long press.
  tile.title=[q.name||q.symbol||'',
