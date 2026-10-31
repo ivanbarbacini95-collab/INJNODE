@@ -348,3 +348,18 @@ html[data-inj-page="index"][data-inj-home-tab="mercato"] body
  #performanceTimelineView.open:not([hidden]) >.performance-timeline-shell{
  padding-top:0!important;
 }
+
+
+/* Market · live chart price shares the same always-visible tab label. */
+#injMarketTabHead .inj-market-tab-link[data-market-destination="charts"]{
+  gap:8px!important;
+}
+#injMarketTabHead .inj-market-tab-link .inj-market-tab-price{
+  display:none!important;white-space:nowrap!important;flex:0 0 auto!important;
+  font-size:clamp(10px,2.5vw,12px)!important;line-height:1.1!important;
+  font-weight:650!important;font-variant-numeric:tabular-nums!important;
+  letter-spacing:-.02em!important;color:var(--accent,#8bdfce)!important;
+}
+#injMarketTabHead .inj-market-tab-link.is-active .inj-market-tab-price{
+  display:inline-block!important;
+}
