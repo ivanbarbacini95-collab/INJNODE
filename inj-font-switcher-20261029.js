@@ -1,4 +1,4 @@
-/* INJ Node · 7 typefaces, including the actual typography of the official edition. */
+/* INJ Node · 8 typefaces, including Geist Bold and the official edition. */
 (function(){
 'use strict';
 const STORE='inj_node_font_v1',MIGRATION='inj_node_official_font_rollout_v1',root=document.documentElement;
@@ -7,6 +7,7 @@ const fonts=[
  {id:'original',name:'INJ Original',font:'"Supply Mono","PP Supply Mono","INJ IBM Plex Mono","IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace',subtitleIt:'Tipografia storica di INJ Node',subtitleEn:'Original INJ Node typography',weight:400},
  {id:'inter-light',name:'Inter Light · Classico',font:'"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif',subtitleIt:'Alternativa essenziale a tratto sottile',subtitleEn:'Lightweight minimalist alternative',weight:300},
  {id:'geist',name:'Geist',font:'"INJ Geist","Geist",-apple-system,BlinkMacSystemFont,sans-serif',subtitleIt:'Minimal premium',subtitleEn:'Minimal premium',weight:400},
+ {id:'geist-bold',name:'Geist Bold',font:'"INJ Geist","Geist",-apple-system,BlinkMacSystemFont,sans-serif',subtitleIt:'Bold moderno per tutta INJ Node',subtitleEn:'Modern bold throughout INJ Node',weight:700},
  {id:'space',name:'Space Grotesk',font:'"INJ Space Grotesk","Space Grotesk",-apple-system,BlinkMacSystemFont,sans-serif',subtitleIt:'Tech luxury',subtitleEn:'Tech luxury',weight:500},
  {id:'plex',name:'IBM Plex Mono',font:'"INJ IBM Plex Mono","IBM Plex Mono",ui-monospace,monospace',subtitleIt:'Terminale finanziario',subtitleEn:'Financial terminal',weight:400},
  {id:'oxanium',name:'Oxanium',font:'"INJ Oxanium","Oxanium",sans-serif',subtitleIt:'Future terminal',subtitleEn:'Future terminal',weight:500}
@@ -43,8 +44,8 @@ function refresh(){
  if(caption)caption.textContent=(en?'Selected: ':'Selezionato: ')+byId[active].name;
  const note=holder.querySelector('.menu-font-note');
  if(note)note.textContent=en?
-  'Seven selectable fonts. Official Edition recreates the Supply Mono / IBM Plex Mono family and stronger weights used on the official site. Supply Mono is used only if installed. Your choice is saved on this device.':
-  'Sette font selezionabili. Versione Ufficiale riprende Supply Mono / IBM Plex Mono e i pesi più corposi del sito ufficiale. Supply Mono viene usato solo se installato. La scelta viene salvata sul dispositivo.';
+  'Eight selectable fonts, including Geist Bold. Official Edition recreates the Supply Mono / IBM Plex Mono family. Supply Mono is used only if installed. Your choice is saved on this device.':
+  'Otto font selezionabili, incluso Geist Bold. Versione Ufficiale riprende Supply Mono / IBM Plex Mono. Supply Mono viene usato solo se installato. La scelta viene salvata sul dispositivo.';
  holder.setAttribute('aria-label',en?'Interface font':'Font interfaccia');
  holder.querySelectorAll('[data-inj-font-choice]').forEach(button=>{
   const f=byId[button.getAttribute('data-inj-font-choice')];

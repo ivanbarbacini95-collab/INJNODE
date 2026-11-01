@@ -1,4 +1,4 @@
-/* INJ NODE / Global Market — quiet quote typography, 2026-11-01.
+/* INJ NODE / Global Market — centered Geist Bold quote typography, 2026-11-01.
    Only individual market quote cards. Keep the app-wide font selector,
    price feeds, market map, category navigation and 3-up mobile grid intact. */
 
@@ -58,17 +58,17 @@ html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-wm-
 }
 html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-wm-tile :is(*,#__injFace#__injFace#__injFace#__injFace#__injFace#__injFace).inj-wm-symbol{
   font-size:clamp(11px,1.02vw,12.5px)!important;
-  font-weight:650!important;
+  font-weight:700!important;
   line-height:1.22!important;
 }
 html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-wm-tile :is(*,#__injFace#__injFace#__injFace#__injFace#__injFace#__injFace).inj-wm-change{
   font-size:clamp(10.4px,.96vw,12px)!important;
-  font-weight:550!important;
+  font-weight:700!important;
   line-height:1.22!important;
 }
 html[data-inj-market][data-market-section="world"] body #injWorldMarket .inj-wm-tile :is(*,#__injFace#__injFace#__injFace#__injFace#__injFace#__injFace).inj-wm-price{
   font-size:clamp(12px,1.1vw,13.6px)!important;
-  font-weight:600!important;
+  font-weight:700!important;
   line-height:1.25!important;
 }
 @media(max-width:690px){
