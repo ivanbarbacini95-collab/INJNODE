@@ -13,6 +13,7 @@ try {
   document.documentElement.lang=localStorage.getItem('inj_node_language_v1')==='en'?'en':'it';
 } catch (_) {}
 </script>
+<script>if(window.self!==window.top)document.documentElement.dataset.injEtfEmbedded='1';</script>
 <link rel="stylesheet" href="./navigation.css?v=160090">
 <script defer src="./navigation.js?v=20261029theme6"></script>
 <link rel="stylesheet" href="./supply-mono.css?v=20261024">
@@ -130,6 +131,14 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--etf-accent);outline
  }
 }
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+/* Leave enough room to read the last ETF block above the floating tab dock.
+   Applies only when the terminal is embedded in INJ Node. */
+html[data-inj-etf-embedded="1"] .etf-shell{
+ padding-bottom:calc(110px + env(safe-area-inset-bottom,0px));
+}
+html[data-inj-etf-embedded="1"],html[data-inj-etf-embedded="1"] body{
+ overscroll-behavior-y:contain;
+}
 </style>
 <script defer src="./inj-node-insights-config.js?v=1"></script>
 <script defer src="./inj-node-telemetry.js?v=1"></script>

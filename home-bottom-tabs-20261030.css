@@ -530,3 +530,52 @@ html[data-inj-page="index"][data-inj-home-tab="etf"] body #entryGate.entry-gate.
   grid-row:2!important;
  }
 }
+
+
+/* ETF viewport isolation · 2026-11-01
+   The ETF iframe used to end 83–102px above the bottom edge. On overscroll,
+   that exposed the still-mounted Home/Dashboard below. Keep the entire viewport
+   opaque; the ETF document itself remains the sole vertical scroll surface.
+   The floating dock retains its own browser top layer. */
+html[data-inj-page="index"][data-inj-home-tab="etf"]{
+ height:100%!important;
+ overflow:hidden!important;
+ overscroll-behavior-y:none!important;
+}
+html[data-inj-page="index"][data-inj-home-tab="etf"] body{
+ height:100dvh!important;
+ max-height:100dvh!important;
+ overflow:hidden!important;
+ overscroll-behavior-y:none!important;
+}
+html[data-inj-page="index"][data-inj-home-tab="etf"] body>#entryGate,
+html[data-inj-page="index"][data-inj-home-tab="etf"] body>.app-shell{
+ visibility:hidden!important;
+ pointer-events:none!important;
+}
+html[data-inj-page="index"][data-inj-home-tab="etf"] body>#injEtfTabPanel:not([hidden]){
+ position:fixed!important;
+ inset:0!important;
+ inset-block-end:0!important;
+ bottom:0!important;
+ width:100%!important;
+ height:100dvh!important;
+ min-height:100dvh!important;
+ max-height:100dvh!important;
+ overflow:hidden!important;
+ contain:layout paint!important;
+ background:var(--theme-canvas,var(--bg,#07121b))!important;
+}
+html[data-inj-page="index"][data-inj-home-tab="etf"] body>#injEtfTabPanel:not([hidden])>.inj-etf-tab-frame{
+ position:absolute!important;
+ inset:0!important;
+ width:100%!important;
+ height:100%!important;
+ max-height:100%!important;
+ display:block!important;
+ border:0!important;
+ overflow:auto!important;
+ -webkit-overflow-scrolling:touch!important;
+ touch-action:pan-y!important;
+ background:var(--theme-canvas,var(--bg,#07121b))!important;
+}
