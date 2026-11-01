@@ -1,5 +1,4 @@
-/* INJ Node · Premium dock / balanced cells / subtle rotating perimeter light.
-   The SVG perimeter is measured by JS for accurate corners on all screens. */
+/* INJ Node · comet-tail border, fitted exactly to the dock's rounded outline. */
 html[data-inj-page="index"] body>#injPrimaryBottomNav{
  isolation:isolate!important;
  overflow:hidden!important;
@@ -18,39 +17,48 @@ html[data-inj-page="index"] body>#injPrimaryBottomNav>.inj-nav-border-track{
  position:absolute!important;
  inset:0!important;
  width:100%!important;height:100%!important;
- display:block!important;
- overflow:visible!important;
- z-index:3!important;
- pointer-events:none!important;
+ display:block!important;overflow:visible!important;
+ z-index:3!important;pointer-events:none!important;
 }
-html[data-inj-page="index"] body>#injPrimaryBottomNav>.inj-nav-border-track rect{
+html[data-inj-page="index"] body>#injPrimaryBottomNav>.inj-comet-track rect{
  fill:none!important;
- vector-effect:non-scaling-stroke!important;
+ stroke-linecap:butt!important;
  stroke-linejoin:round!important;
- stroke-linecap:round!important;
- animation:inj-nav-light-run 13.2s linear infinite;
+ vector-effect:non-scaling-stroke!important;
+ animation:inj-comet-orbit 12.5s linear infinite!important;
 }
-/* Single hairline of light, rather than the former 66px + 135px double bars. */
-html[data-inj-page="index"] body>#injPrimaryBottomNav>.inj-nav-border-track .inj-nav-border-beam{
- stroke:color-mix(in srgb,var(--accent,#e9c4a6) 65%,white)!important;
- stroke-width:1.55px!important;
- opacity:.86!important;
- filter:drop-shadow(0 0 1.7px color-mix(in srgb,var(--accent,#e9c4a6) 58%,white))!important;
+html[data-inj-page="index"] body>#injPrimaryBottomNav>.inj-comet-track .inj-comet-piece{
+ stroke:color-mix(in srgb,var(--accent,#e9bb9c) 72%,#fff)!important;
+ stroke-width:var(--inj-comet-width,1.5px)!important;
+ opacity:var(--inj-comet-opacity,.25)!important;
 }
-@keyframes inj-nav-light-run{
- from{stroke-dashoffset:0}
- to{stroke-dashoffset:var(--inj-nav-loop-distance,-760px)}
+html[data-inj-page="index"] body>#injPrimaryBottomNav>.inj-comet-track .inj-comet-front{
+ stroke:color-mix(in srgb,var(--accent,#f1c6a6) 48%,white)!important;
 }
+html[data-inj-page="index"] body>#injPrimaryBottomNav>.inj-comet-track .inj-comet-head-halo{
+ stroke:color-mix(in srgb,var(--accent,#ffddb6) 40%,white)!important;
+ stroke-width:6px!important;
+ opacity:.3!important;
+ filter:blur(2px)!important;
+}
+html[data-inj-page="index"] body>#injPrimaryBottomNav>.inj-comet-track .inj-comet-head-core{
+ stroke:color-mix(in srgb,var(--accent,#ffddb6) 24%,white)!important;
+ stroke-width:2.6px!important;
+ opacity:1!important;
+ filter:drop-shadow(0 0 2.4px color-mix(in srgb,var(--accent,#ffddb6) 52%,white))!important;
+}
+@keyframes inj-comet-orbit{
+ from{stroke-dashoffset:var(--inj-comet-shift,0px)}
+ to{stroke-dashoffset:calc(var(--inj-comet-shift,0px) + var(--inj-comet-loop,-800px))}
+}
+/* Retain the balanced five-column menu from the previous design. */
 html[data-inj-page="index"] body>#injPrimaryBottomNav>.inj-bottom-tab{
- position:relative!important;
- z-index:1!important;
+ position:relative!important;z-index:1!important;
  display:flex!important;
- width:100%!important;max-width:100%!important;height:100%!important;
- min-width:0!important;
+ width:100%!important;max-width:100%!important;height:100%!important;min-width:0!important;
  flex-direction:column!important;
  align-items:center!important;justify-content:center!important;
- gap:5px!important;
- padding:5px 2px!important;
+ gap:5px!important;padding:5px 2px!important;
  border-radius:clamp(12px,3.8vw,17px)!important;
  text-align:center!important;
 }
@@ -59,43 +67,27 @@ html[data-inj-page="index"] body>#injPrimaryBottomNav>.inj-bottom-tab.is-active{
  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent,#e8beab) 11%,transparent)!important;
 }
 html[data-inj-page="index"] body>#injPrimaryBottomNav .inj-bottom-tab-icon{
- display:flex!important;
- align-items:center!important;justify-content:center!important;
- flex:0 0 24px!important;
- width:24px!important;height:24px!important;min-height:24px!important;
- margin:0 auto!important;
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ flex:0 0 24px!important;width:24px!important;height:24px!important;min-height:24px!important;margin:0 auto!important;
 }
 html[data-inj-page="index"] body>#injPrimaryBottomNav .inj-bottom-tab-icon svg{
- display:block!important;
- width:23px!important;height:23px!important;
- margin:auto!important;
+ display:block!important;width:23px!important;height:23px!important;margin:auto!important;
 }
 html[data-inj-page="index"] body>#injPrimaryBottomNav .inj-bottom-tab-label{
- display:flex!important;
- align-items:center!important;justify-content:center!important;
- width:100%!important;max-width:100%!important;
- min-height:23px!important;
- flex:0 0 23px!important;
- margin:0 auto!important;
- text-align:center!important;
- white-space:normal!important;
- overflow:visible!important;
- text-overflow:clip!important;
- overflow-wrap:normal!important;
- word-break:normal!important;
- text-wrap:balance!important;
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ width:100%!important;max-width:100%!important;min-height:23px!important;flex:0 0 23px!important;
+ margin:0 auto!important;text-align:center!important;
+ white-space:normal!important;overflow:visible!important;text-overflow:clip!important;
+ overflow-wrap:normal!important;word-break:normal!important;text-wrap:balance!important;
  font-family:var(--inj-chosen-face,var(--inj-node-terminal-font,system-ui,sans-serif))!important;
- font-weight:700!important;
- font-size:clamp(9px,2.6vw,11.5px)!important;
- line-height:1.12!important;
- letter-spacing:-.012em!important;
+ font-weight:700!important;font-size:clamp(9px,2.6vw,11.5px)!important;line-height:1.12!important;letter-spacing:-.012em!important;
 }
 html[data-inj-page="index"] body>#injPrimaryBottomNav .inj-bottom-tab[data-inj-tab="reward"] .inj-bottom-tab-label{
  font-weight:800!important;
 }
-html[data-inj-page="index"][data-inj-dock-idle="true"] body>#injPrimaryBottomNav .inj-nav-border-track rect,
-html[data-inj-page="index"][data-inj-home-tab="reward"] body>#injPrimaryBottomNav .inj-nav-border-track rect,
-html[data-inj-page="index"][data-inj-home-tab="mercato"] body>#injPrimaryBottomNav .inj-nav-border-track rect{
+html[data-inj-page="index"][data-inj-dock-idle="true"] body>#injPrimaryBottomNav .inj-comet-track rect,
+html[data-inj-page="index"][data-inj-home-tab="reward"] body>#injPrimaryBottomNav .inj-comet-track rect,
+html[data-inj-page="index"][data-inj-home-tab="mercato"] body>#injPrimaryBottomNav .inj-comet-track rect{
  animation-play-state:paused!important;
 }
 @media(max-width:365px){
@@ -105,9 +97,11 @@ html[data-inj-page="index"][data-inj-home-tab="mercato"] body>#injPrimaryBottomN
  html[data-inj-page="index"] body>#injPrimaryBottomNav .inj-bottom-tab-label{font-size:9px!important;line-height:1.1!important}
 }
 @media(prefers-reduced-motion:reduce){
- html[data-inj-page="index"] body>#injPrimaryBottomNav .inj-nav-border-track rect{
-  animation:none!important;stroke-dashoffset:0!important;
+ html[data-inj-page="index"] body>#injPrimaryBottomNav>.inj-comet-track rect{
+  animation:none!important;
+  stroke-dashoffset:var(--inj-comet-shift,0px)!important;
  }
- html[data-inj-page="index"] body>#injPrimaryBottomNav .inj-nav-border-track .inj-nav-border-beam{opacity:.32!important;filter:none!important}
- 
+ html[data-inj-page="index"] body>#injPrimaryBottomNav>.inj-comet-track .inj-comet-head-halo{
+  filter:none!important;opacity:.15!important;
+ }
 }
