@@ -432,7 +432,9 @@ function renderStocks(items){
   group.append(el('h4','inj-wm-stock-heading',tr(it,english)));
   const grid=el('div','inj-wm-grid stocks');
   stocks.forEach(stock=>{const q=data.get(stock);if(validQuote(q))grid.append(quoteTile(q,true))});
-  if(grid.childElementCount){group.append(grid);out.append(group);}
+   if(grid.childElementCount)group.append(grid);
+   else group.append(el('p','inj-wm-sector-empty',tr('Quotazioni temporaneamente non disponibili per questo settore.','Quotes temporarily unavailable for this sector.')));
+   out.append(group);
  });
  renderSummary('stocks',items);
 }
