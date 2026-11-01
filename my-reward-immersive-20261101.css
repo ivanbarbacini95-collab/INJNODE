@@ -109,3 +109,14 @@ html[data-inj-page="index"] body #injPrimaryBottomNav#injPrimaryBottomNav
  color:#43e69b!important;
  font-weight:800!important;
 }
+
+/* The Live Reward destination is the consolidated reward treasury. */
+#injMyRewardPanel #injMyRewardPages button[data-myreward-page="live"]{
+ display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:center!important;
+ gap:3px!important;min-height:47px!important;line-height:1.05!important;
+}
+#injMyRewardPanel #injMyRewardPages button[data-myreward-page="live"]::after{
+ content:"TREASURY";display:block;color:#43e69b;font-size:8px;font-weight:900;
+ letter-spacing:.16em;line-height:1.1;
+}
+@media(max-width:520px){#injMyRewardPanel #injMyRewardPages button[data-myreward-page="live"]{min-height:44px!important;gap:2px!important}}

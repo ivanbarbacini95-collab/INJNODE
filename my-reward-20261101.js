@@ -32,7 +32,7 @@ function updateLabels(){
  if(picker)picker.setAttribute('aria-label',tr('Wallet in osservazione','Selected wallet'));
  panel.querySelectorAll('[data-myreward-page]').forEach(btn=>{
   const tab=tabs.find(x=>x.id===btn.dataset.myrewardPage);
-  if(tab)btn.setAttribute('aria-label',isEn()?tab.en:tab.it);
+  if(tab)btn.setAttribute('aria-label',(isEn()?tab.en:tab.it)+(tab.id==='live'?' · Treasury':''));
  });
 }
 function renderPicker(rows,selected){

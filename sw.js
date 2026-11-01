@@ -1,10 +1,10 @@
-const CACHE_NAME = 'inj-node-v16.11.01-myreward-menu-v3';
+const CACHE_NAME = 'inj-node-v16.11.01-reward-treasury-v4';
 const APP_SHELL = [
-  './my-reward-immersive-20261101.css?v=3',
+  './my-reward-immersive-20261101.css?v=4',
   './my-reward-immersive-20261101.js?v=2',
 
   './my-reward-20261101.css?v=1',
-  './my-reward-20261101.js?v=3',
+  './my-reward-20261101.js?v=4',
   './inj-ux-refinement-20261101.css?v=1',
   './inj-ux-refinement-20261101.js?v=1',
   './inj-local-access-lock-20261101.css?v=1',
@@ -295,11 +295,11 @@ self.addEventListener('install', (event) => {
     // legacy CSS/JS downloads before the worker can activate. Cache the
     // actual boot path first; runtime requests populate the rest on demand.
     const essential=new Set([
-  './my-reward-immersive-20261101.css?v=3',
+  './my-reward-immersive-20261101.css?v=4',
   './my-reward-immersive-20261101.js?v=2',
 
       './my-reward-20261101.css?v=1',
-      './my-reward-20261101.js?v=3',
+      './my-reward-20261101.js?v=4',
   './inj-ux-refinement-20261101.css?v=1',
   './inj-ux-refinement-20261101.js?v=1',
   './inj-local-access-lock-20261101.css?v=1',
