@@ -487,10 +487,7 @@ html[data-inj-page="index"][data-inj-home-tab="etf"] body #entryGate.entry-gate.
    Inner Market pages still use their separate top rail and suppress this dock. */
 @media (min-width:900px){
  html[data-inj-page="index"][data-inj-home-tab="home"]
- body.entry-gate-open:not(.boot-loading):not(.menu-overlay-open):not(.drawer-open)
- :not(.inj-section-open):not(.entry-live-launch):not(.chart-overlay-open)
- :not(.focus-display-open):not(.pulse-view-open):not(.live-charts-open)
- > #injPrimaryBottomNav{
+ body.entry-gate-open:not(.boot-loading):not(.menu-overlay-open):not(.drawer-open):not(.inj-section-open):not(.entry-live-launch):not(.chart-overlay-open):not(.focus-display-open):not(.pulse-view-open):not(.live-charts-open) > #injPrimaryBottomNav{
   opacity:1!important;
   visibility:visible!important;
   transform:translate(-50%,0)!important;
