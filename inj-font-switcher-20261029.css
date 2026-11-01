@@ -375,3 +375,38 @@ html[data-inj-page="index"] body .app-shell #yieldCard .reward-rate-grid > div >
   html[data-inj-page="index"] body .app-shell #yieldCard .reward-rate-grid > div > strong {font-size:24px!important}
   html[data-inj-page="index"] body .app-shell #yieldCard .reward-rate-grid > div > small {font-size:24px!important}
 }
+
+
+/* Production Rate: make fiat countervalue glyphs exactly the same size as INJ.
+   Countervalues are rendered inside a number-roll wrapper whose nested spans
+   may retain legacy reduced font sizes. Set one shared size for both fields. */
+html[data-inj-page="index"] body .app-shell #yieldCard .reward-rate-grid > div {
+  --inj-production-amount-size:clamp(17px,1.45vw,24px);
+}
+html[data-inj-page="index"] body .app-shell #yieldCard .reward-rate-grid > div > :is(strong,small) {
+  font-size:var(--inj-production-amount-size)!important;
+  line-height:1.2!important;
+  font-family:var(--inj-chosen-face,var(--inj-node-terminal-font,monospace))!important;
+  font-weight:var(--inj-chosen-emphasis,600)!important;
+  font-variant-numeric:tabular-nums lining-nums!important;
+}
+/* Override any reduced size assigned to the USD rolling digits/number span. */
+html[data-inj-page="index"] body .app-shell #yieldCard .reward-rate-grid > div > small,
+html[data-inj-page="index"] body .app-shell #yieldCard .reward-rate-grid > div > small *,
+html[data-inj-page="index"] body .app-shell #yieldCard .reward-rate-grid > div > strong.reward-estimate-value > :is(.reward-estimate-number,.reward-estimate-unit) {
+  font-size:var(--inj-production-amount-size)!important;
+  line-height:1.2!important;
+  font-family:var(--inj-chosen-face,var(--inj-node-terminal-font,monospace))!important;
+  font-weight:var(--inj-chosen-emphasis,600)!important;
+  font-style:normal!important;
+}
+@media(max-width:599px) {
+  html[data-inj-page="index"] body .app-shell #yieldCard .reward-rate-grid > div {
+    --inj-production-amount-size:clamp(14px,3.8vw,18px);
+  }
+}
+@media(min-width:1600px) {
+  html[data-inj-page="index"] body .app-shell #yieldCard .reward-rate-grid > div {
+    --inj-production-amount-size:24px;
+  }
+}
