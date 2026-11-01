@@ -1,7 +1,7 @@
-const CACHE_NAME = 'inj-node-v16.11.01-comet-gradient-trail-v3';
+const CACHE_NAME = 'inj-node-v16.11.01-comet-hd-canvas-v4';
 const APP_SHELL = [
-  './nav-premium-loop-20261101.css?v=3',
-  './nav-premium-loop-20261101.js?v=3',
+  './nav-premium-loop-20261101.css?v=4',
+  './nav-premium-loop-20261101.js?v=4',
   './my-reward-immersive-20261101.css?v=4',
   './my-reward-immersive-20261101.js?v=2',
 
@@ -297,8 +297,8 @@ self.addEventListener('install', (event) => {
     // legacy CSS/JS downloads before the worker can activate. Cache the
     // actual boot path first; runtime requests populate the rest on demand.
     const essential=new Set([
-  './nav-premium-loop-20261101.css?v=3',
-  './nav-premium-loop-20261101.js?v=3',
+  './nav-premium-loop-20261101.css?v=4',
+  './nav-premium-loop-20261101.js?v=4',
   './my-reward-immersive-20261101.css?v=4',
   './my-reward-immersive-20261101.js?v=2',
 
