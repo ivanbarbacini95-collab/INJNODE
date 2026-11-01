@@ -179,3 +179,44 @@ html[data-inj-page="index"] body #headerMenuPanel .menu-font-note{
 @media(prefers-reduced-motion:reduce){
  html[data-inj-page="index"] body #headerMenuPanel .menu-font-control *{transition:none!important}
 }
+
+/* INJ Node · selected-font consistency bridge (2026-11-01) */
+/* Text semantics are shared by Dashboard, Home, Market, all standalone pages
+   and the same-origin Market iframe. Respect the selected Settings font; don't
+   hardcode a second typeface on nested tracker titles or native inputs. */
+html[data-inj-font] body :is(
+  h1,h2,h3,h4,h5,h6,[role="heading"],
+  .section-heading,.section-heading h2,.section-heading .card-label,
+  .tracker-collapse-trigger,.tracker-collapse-trigger h2,.tracker-collapse-trigger .card-label,
+  .card-heading,.card-title,.card-label,.metric-label,.section-label,
+  .tracker-panel,.tracker-panel :is(strong,span,small,p),
+  .entry-action,.inj-home-tile-title,.inj-tile-description,
+  .menu-action,.menu-action-copy,.menu-font-title,
+  .reward-heading-tools,.target-input-label,
+  .market-table,.market-ticker,.market-asset-price,.market-price,
+  .heatmap-card,.ws-card-heading,.ws-section-title,
+  button,input,textarea,select,option,label
+){
+ font-family:var(--inj-chosen-face)!important;
+ font-stretch:normal;
+}
+/* Production rate, Next INJ target and Validator now use the same heading
+   face, weight, kerning and tracking, without changing card geometry. */
+html[data-inj-font] body .analytics-grid .section-heading h2,
+html[data-inj-font] body .app-shell .section-heading :is(h2,h3){
+ font-family:var(--inj-chosen-face)!important;
+ font-weight:var(--inj-chosen-heading,var(--inj-chosen-weight,400))!important;
+ font-stretch:normal!important;
+ font-kerning:normal;
+ letter-spacing:.015em!important;
+}
+/* Preserve a separate label hierarchy without introducing another font. */
+html[data-inj-font] body .app-shell .section-heading .card-label,
+html[data-inj-font] body .app-shell .tracker-collapse-trigger .card-label{
+ font-family:var(--inj-chosen-face)!important;
+ font-weight:var(--inj-chosen-detail,var(--inj-chosen-weight,400))!important;
+}
+/* Text drawn by SVG remains readable; do not change SVG icons or paths. */
+html[data-inj-font] body svg :is(text,tspan,textPath){
+ font-family:var(--inj-chosen-face)!important;
+}
