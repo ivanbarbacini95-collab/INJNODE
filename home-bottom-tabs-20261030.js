@@ -174,6 +174,12 @@
    if(root.dataset.injHomeNavVisible!=='false')root.dataset.injHomeNavVisible='false';
    return;
   }
+  // Desktop has room for a persistent dock, even before the user scrolls.
+  // Mobile retains the scroll-to-reveal effect.
+  if(window.matchMedia('(min-width: 900px)').matches){
+   if(root.dataset.injHomeNavVisible!=='true')root.dataset.injHomeNavVisible='true';
+   return;
+  }
   const doc=primaryScroller();
   const y=Math.max(0,window.scrollY||0,doc.scrollTop||0,gate.scrollTop||0);
   const shown=root.dataset.injHomeNavVisible==='true';
