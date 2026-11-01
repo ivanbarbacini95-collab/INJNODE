@@ -381,7 +381,7 @@ html[data-inj-page="index"] body .app-shell #yieldCard .reward-rate-grid > div >
    Countervalues are rendered inside a number-roll wrapper whose nested spans
    may retain legacy reduced font sizes. Set one shared size for both fields. */
 html[data-inj-page="index"] body .app-shell #yieldCard .reward-rate-grid > div {
-  --inj-production-amount-size:clamp(17px,1.45vw,24px);
+  --inj-production-amount-size:clamp(15px,1.3vw,21px);
 }
 html[data-inj-page="index"] body .app-shell #yieldCard .reward-rate-grid > div > :is(strong,small) {
   font-size:var(--inj-production-amount-size)!important;
@@ -402,11 +402,11 @@ html[data-inj-page="index"] body .app-shell #yieldCard .reward-rate-grid > div >
 }
 @media(max-width:599px) {
   html[data-inj-page="index"] body .app-shell #yieldCard .reward-rate-grid > div {
-    --inj-production-amount-size:clamp(14px,3.8vw,18px);
+    --inj-production-amount-size:clamp(13px,3.4vw,16px);
   }
 }
 @media(min-width:1600px) {
   html[data-inj-page="index"] body .app-shell #yieldCard .reward-rate-grid > div {
-    --inj-production-amount-size:24px;
+    --inj-production-amount-size:21px;
   }
 }
