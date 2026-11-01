@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.11.01-heatmap-vivid1';
+const CACHE_NAME = 'inj-node-v16.11.01-heatmap-vivid2';
 const APP_SHELL = [
   './market-embedded-compact-20261031.css?v=marketcompact3',
   './world-market-ticker-center-20261101.css?v=20261101bold2',
@@ -9,7 +9,7 @@ const APP_SHELL = [
   './market-crypto-one-day-20261030.js?v=instant7',
   './market.js?v=20261030precision5',
   './market-views.js?v=20261101tileflash1',
-  './market-heatmap-signals-20261101.css?v=vivid1',
+  './market-heatmap-signals-20261101.css?v=vivid2',
   './home-market-launcher-uniform-20261030.css?v=marketpolish2',
   './navigation.js?v=20261030marketlabel1',
   './market-entry-direct-20261030.css?v=direct6',

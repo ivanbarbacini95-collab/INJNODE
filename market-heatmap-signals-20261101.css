@@ -56,7 +56,7 @@ html[data-inj-market] #marketHeatmap .heatmap-grid > .heatmap-tile:nth-child(n):
       color-mix(in srgb,var(--heat-flash-tone,var(--arctic-tone)) 89%,transparent),
       color-mix(in srgb,var(--heat-flash-tone,var(--arctic-tone)) 61%,transparent))!important;
   box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--heat-flash-tone,var(--arctic-tone)) 80%,transparent)!important;
-  opacity:0!important;
+  opacity:0;
   transform:none!important;
   filter:none!important;
   animation:none!important;
