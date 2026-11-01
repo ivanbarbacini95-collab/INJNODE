@@ -11,10 +11,11 @@ function init(){
  svg.setAttribute('aria-hidden','true');
  svg.setAttribute('focusable','false');
  svg.setAttribute('preserveAspectRatio','none');
- for(const className of ['inj-nav-border-tail','inj-nav-border-beam']){
+ // Only ONE glint. The previous two long dashes formed unwanted bars on iOS.
+ for(const className of ['inj-nav-border-beam']){
   const rect=document.createElementNS(ns,'rect');
   rect.setAttribute('class',className);
-  rect.setAttribute('pathLength','1000');
+  // Use actual SVG units instead of pathLength normalization (inconsistent on iOS Safari).
   rect.setAttribute('fill','none');
   svg.append(rect);
  }
@@ -27,7 +28,15 @@ function init(){
   try{radius=parseFloat(getComputedStyle(nav).borderTopLeftRadius)||radius}catch(_){}
   radius=Math.max(8,Math.min(radius,(h-edge*2)/2,(w-edge*2)/2));
   svg.setAttribute('viewBox','0 0 '+w+' '+h);
+  // Rounded-rectangle perimeter: 2(w+h-4r) + 2πr.
+  // A 7–10px dash goes around the full border exactly once, at any dock width.
+  const pathWidth=w-edge*2,pathHeight=h-edge*2;
+  const perimeter=2*(pathWidth+pathHeight-4*radius)+2*Math.PI*radius;
+  const beamLength=Math.max(7,Math.min(10,w*.018));
+  svg.style.setProperty('--inj-nav-loop-distance',(-perimeter)+'px');
   for(const rect of svg.children){
+   rect.setAttribute('stroke-dasharray',beamLength+' '+(perimeter-beamLength));
+   rect.setAttribute('stroke-dashoffset','0');
    rect.setAttribute('x',String(edge));
    rect.setAttribute('y',String(edge));
    rect.setAttribute('width',String(w-edge*2));

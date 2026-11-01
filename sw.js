@@ -1,7 +1,7 @@
-const CACHE_NAME = 'inj-node-v16.11.01-premium-menu-loop-v1';
+const CACHE_NAME = 'inj-node-v16.11.01-single-perimeter-glint-v2';
 const APP_SHELL = [
-  './nav-premium-loop-20261101.css?v=1',
-  './nav-premium-loop-20261101.js?v=1',
+  './nav-premium-loop-20261101.css?v=2',
+  './nav-premium-loop-20261101.js?v=2',
   './my-reward-immersive-20261101.css?v=4',
   './my-reward-immersive-20261101.js?v=2',
 
@@ -297,8 +297,8 @@ self.addEventListener('install', (event) => {
     // legacy CSS/JS downloads before the worker can activate. Cache the
     // actual boot path first; runtime requests populate the rest on demand.
     const essential=new Set([
-  './nav-premium-loop-20261101.css?v=1',
-  './nav-premium-loop-20261101.js?v=1',
+  './nav-premium-loop-20261101.css?v=2',
+  './nav-premium-loop-20261101.js?v=2',
   './my-reward-immersive-20261101.css?v=4',
   './my-reward-immersive-20261101.js?v=2',
 

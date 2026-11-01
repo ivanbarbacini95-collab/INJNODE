@@ -28,24 +28,18 @@ html[data-inj-page="index"] body>#injPrimaryBottomNav>.inj-nav-border-track rect
  vector-effect:non-scaling-stroke!important;
  stroke-linejoin:round!important;
  stroke-linecap:round!important;
- animation:inj-nav-light-run 9.6s linear infinite;
+ animation:inj-nav-light-run 13.2s linear infinite;
 }
-html[data-inj-page="index"] body>#injPrimaryBottomNav>.inj-nav-border-track .inj-nav-border-tail{
- stroke:color-mix(in srgb,var(--accent,#e9c4a6) 82%,white)!important;
- stroke-width:4.2px!important;
- stroke-dasharray:135 865!important;
- opacity:.21!important;
-}
+/* Single hairline of light, rather than the former 66px + 135px double bars. */
 html[data-inj-page="index"] body>#injPrimaryBottomNav>.inj-nav-border-track .inj-nav-border-beam{
- stroke:color-mix(in srgb,var(--accent,#e9c4a6) 56%,white)!important;
- stroke-width:1.9px!important;
- stroke-dasharray:66 934!important;
- opacity:.96!important;
- filter:drop-shadow(0 0 3px color-mix(in srgb,var(--accent,#e9c4a6) 75%,white))!important;
+ stroke:color-mix(in srgb,var(--accent,#e9c4a6) 65%,white)!important;
+ stroke-width:1.55px!important;
+ opacity:.86!important;
+ filter:drop-shadow(0 0 1.7px color-mix(in srgb,var(--accent,#e9c4a6) 58%,white))!important;
 }
 @keyframes inj-nav-light-run{
- from{stroke-dashoffset:1000}
- to{stroke-dashoffset:0}
+ from{stroke-dashoffset:0}
+ to{stroke-dashoffset:var(--inj-nav-loop-distance,-760px)}
 }
 html[data-inj-page="index"] body>#injPrimaryBottomNav>.inj-bottom-tab{
  position:relative!important;
@@ -114,6 +108,6 @@ html[data-inj-page="index"][data-inj-home-tab="mercato"] body>#injPrimaryBottomN
  html[data-inj-page="index"] body>#injPrimaryBottomNav .inj-nav-border-track rect{
   animation:none!important;stroke-dashoffset:0!important;
  }
- html[data-inj-page="index"] body>#injPrimaryBottomNav .inj-nav-border-track .inj-nav-border-beam{opacity:.45!important}
- html[data-inj-page="index"] body>#injPrimaryBottomNav .inj-nav-border-track .inj-nav-border-tail{opacity:0!important}
+ html[data-inj-page="index"] body>#injPrimaryBottomNav .inj-nav-border-track .inj-nav-border-beam{opacity:.32!important;filter:none!important}
+ 
 }
