@@ -19,23 +19,36 @@ function init(){
  const motion=window.matchMedia('(prefers-reduced-motion: reduce)');
  let width=0,height=0,radius=0,perimeter=0,scale=1;
  let dTop=0,dSide=0,dArc=0;
- let elapsed=0,lastTick=0,frame=0,active=false,resizeQueued=false;
- let lastRenderedPhase=-1;
+ let lastTick=0,frame=0,active=false;
+ let lastRenderedPhase=-1,renderPalette=[];
  // Smooth chromatic progression from the bright golden head to its icy tail.
+ // Direct RGB interpolation (not HSL hue rotation): the earlier 37°→334°
+ // transition travelled through unwanted green/blue, washing out pink.
  const palette=[
-  [0, 43,97,92],
-  [.10,37,100,77],
-  [.26,334,95,72],
-  [.47,292,91,72],
-  [.72,246,94,74],
-  [1,184,87,68]
+  [0,255,251,230], [.12,255,194,122], [.27,255,120,149],
+  [.43,235,104,198], [.59,165,117,250],
+  [.76,96,166,255], [.91,77,208,242], [1,79,223,192]
  ];
  function colorAt(t,opacity){
   let k=1;
   while(k<palette.length-1 && t>palette[k][0])k++;
   const a=palette[k-1],b=palette[k],u=Math.max(0,Math.min(1,(t-a[0])/(b[0]-a[0])));
-  const h=a[1]+(b[1]-a[1])*u, s=a[2]+(b[2]-a[2])*u,l=a[3]+(b[3]-a[3])*u;
-  return 'hsla('+h.toFixed(1)+','+s.toFixed(1)+'%,'+l.toFixed(1)+'%,'+Math.max(0,opacity).toFixed(3)+')';
+  return 'rgba('+
+   Math.round(a[1]+(b[1]-a[1])*u)+','+
+   Math.round(a[2]+(b[2]-a[2])*u)+','+
+   Math.round(a[3]+(b[3]-a[3])*u)+','+
+   Math.max(0,opacity).toFixed(3)+')';
+ }
+ function rebuildColors(n){
+  // Cache the gradients once per size. Painting frames only changes position.
+  renderPalette=[];
+  for(let i=0;i<n;i++){
+   const t=(i+.5)/n;
+   const sustained=Math.pow(1-t,.67);
+   const taper=t>.77?Math.pow((1-t)/.23,1.28):1;
+   const alpha=.97*sustained*taper;
+   renderPalette.push({color:colorAt(t,alpha),glow:colorAt(t,alpha*.19),width:t<.10?2.48:2.12,show:alpha>.007});
+  }
  }
  function measure(){
   const w=nav.clientWidth,h=nav.clientHeight;
@@ -50,6 +63,9 @@ function init(){
   dArc=Math.PI*radius/2;
   perimeter=2*(dTop+dSide)+4*dArc;
   const dpr=Math.min(window.devicePixelRatio||1,3);
+  // About 3 CSS px per sample. Cached colors and no per-sample shadow blur
+  // drastically reduce main-thread work during the PWA's hide/show transition.
+  rebuildColors(Math.max(145,Math.ceil(perimeter*.58/3)));
   scale=dpr;
   canvas.width=Math.max(1,Math.round(w*dpr));
   canvas.height=Math.max(1,Math.round(h*dpr));
@@ -81,93 +97,82 @@ function init(){
   const a=Math.PI+d/r;
   return [x0+r+r*Math.cos(a),y0+r+r*Math.sin(a)];
  }
- function strokePiece(from,to,style,lineWidth,blur=0){
+ function strokePiece(from,to,color,lineWidth){
   const p=point(from),q=point(to);
   ctx.beginPath();ctx.moveTo(p[0],p[1]);ctx.lineTo(q[0],q[1]);
-  ctx.strokeStyle=style;ctx.lineWidth=lineWidth;ctx.lineCap='round';
-  if(blur){ctx.shadowColor=style;ctx.shadowBlur=blur;}
-  else{ctx.shadowColor='transparent';ctx.shadowBlur=0;}
-  ctx.stroke();
+  ctx.strokeStyle=color;ctx.lineWidth=lineWidth;ctx.stroke();
  }
  function draw(phase){
   if(!width||!perimeter)return;
   ctx.clearRect(0,0,width,height);
-  const head=phase*perimeter,tail=perimeter*.54;
-  // Samples are <= 1.8 CSS px apart. Overlapping round caps prevent dotted
-  // artifacts, while continuous color and alpha transitions remain smooth.
-  const n=Math.max(170,Math.ceil(tail/1.8)),step=tail/n;
-  const passes=[
-   {width:4.4,alpha:.19,blur:3.3},
-   {width:2.25,alpha:.94,blur:0}
-  ];
-  for(const pass of passes){
+  const head=phase*perimeter,tail=perimeter*.58;
+  const n=renderPalette.length,step=tail/n;
+  ctx.lineCap='round';ctx.lineJoin='round';
+  // Fine chromatic line: colors fade evenly from gold to pink to purple to cyan.
+  // A faint base underneath removes the old bright/grey banding.
+  for(let pass=0;pass<2;pass++){
    for(let i=n-1;i>=0;i--){
-    const t=(i+.5)/n;
-    const fade=Math.pow(1-t,1.65);
-    const alpha=pass.alpha*fade*(t>.88?(1-t)/.12:1);
-    if(alpha<.003)continue;
-    // Along the perimeter from the leading head back toward the distant tail.
-    const start=head-(i+1)*step,end=head-i*step;
-    const luminousHead=t<.08;
-    strokePiece(start,end,colorAt(t,alpha),
-     pass.width*(luminousHead?1.08:1),pass.blur&&i<22?pass.blur:0);
+    const brush=renderPalette[i];if(!brush.show)continue;
+    strokePiece(head-(i+1)*step,head-i*step,
+     pass===0?brush.glow:brush.color,pass===0?3.6:brush.width);
    }
   }
   const p=point(head);
-  // Soft glowing head, with a sharply defined warm-white center.
-  const glow=ctx.createRadialGradient(p[0],p[1],0,p[0],p[1],9.5);
-  glow.addColorStop(0,'rgba(255,251,234,.57)');
-  glow.addColorStop(.22,'rgba(255,221,173,.22)');
-  glow.addColorStop(1,'rgba(255,221,173,0)');
-  ctx.fillStyle=glow;ctx.fillRect(p[0]-10,p[1]-10,20,20);
-  ctx.beginPath();ctx.arc(p[0],p[1],1.45,0,Math.PI*2);
-  ctx.fillStyle='rgba(255,253,245,.99)';ctx.fill();
+  const glow=ctx.createRadialGradient(p[0],p[1],0,p[0],p[1],8.5);
+  glow.addColorStop(0,'rgba(255,249,232,.58)');
+  glow.addColorStop(.25,'rgba(255,210,162,.16)');
+  glow.addColorStop(1,'rgba(255,210,162,0)');
+  ctx.fillStyle=glow;ctx.fillRect(p[0]-9,p[1]-9,18,18);
+  ctx.beginPath();ctx.arc(p[0],p[1],1.35,0,Math.PI*2);
+  ctx.fillStyle='rgba(255,255,244,.98)';ctx.fill();
  }
  const reduced=()=>motion.matches;
  function isVisible(){
   if(document.hidden||width===0)return false;
   if(root.dataset.injHomeTab==='reward'||root.dataset.injHomeTab==='mercato')return false;
-  if(root.dataset.injDockIdle==='true')return false;
+  if(root.dataset.injDockIdle==='true'&&root.dataset.injHomeTab!=='home')return false;
   if(root.dataset.injHomeTab==='home'&&root.dataset.injHomeNavVisible!=='true')return false;
   const c=getComputedStyle(nav);
   return c.visibility!=='hidden'&&c.display!=='none'&&Number(c.opacity)>.02;
  }
+ // The position comes from a monotonic clock rather than accumulated frames:
+ // a hidden dock cannot leave an old frame stuck on the next appearance.
+ const period=17000;
+ const phaseAt=now=>((now%period)+period)%period/period;
  function tick(now){
   frame=0;
-  if(!active||reduced()){if(reduced())draw(0);return;}
-  if(!isVisible()){lastTick=now;schedule();return;}
-  // Cap the canvas work at 30 FPS on iOS; account for inactive page time.
-  if(now-lastTick>=32){
-   elapsed+=Math.min(now-lastTick,75);
+  if(!active||reduced())return;
+  if(now-lastTick>=33){
    lastTick=now;
-   const phase=(elapsed%16800)/16800;
+   const phase=phaseAt(now);
    if(phase!==lastRenderedPhase){draw(phase);lastRenderedPhase=phase;}
   }
-  schedule();
+  if(active)frame=requestAnimationFrame(tick);
  }
  function schedule(){if(active&&!frame)frame=requestAnimationFrame(tick);}
+ function stop(){
+  active=false;
+  if(frame){cancelAnimationFrame(frame);frame=0;}
+ }
  function updateState(){
-  const visible=isVisible();
-  if(reduced()){
-   active=false;
-   if(frame){cancelAnimationFrame(frame);frame=0;}
-   draw(0);
-   return;
+  if(reduced()){stop();draw(0);return;}
+  if(!isVisible()){stop();return;}
+  if(!active){
+   active=true;lastTick=0;
+   const phase=phaseAt(performance.now());
+   draw(phase);lastRenderedPhase=phase;
+   schedule();
   }
-  if(!visible){
-   active=false;
-   if(frame){cancelAnimationFrame(frame);frame=0;}
-   return;
-  }
-  if(!active){active=true;lastTick=performance.now();schedule();}
  }
  if(typeof ResizeObserver==='function'){
   new ResizeObserver(()=>{measure();updateState();}).observe(nav);
  }else window.addEventListener('resize',()=>{measure();updateState();},{passive:true});
  const observer=new MutationObserver(updateState);
  observer.observe(root,{attributes:true,attributeFilter:['data-inj-home-tab','data-inj-dock-idle','data-inj-home-nav-visible']});
- observer.observe(nav,{attributes:true,attributeFilter:['style','popover']});
+ observer.observe(document.body,{attributes:true,attributeFilter:['class']});
+ nav.addEventListener('toggle',updateState);
  document.addEventListener('visibilitychange',updateState);
+ window.addEventListener('pagehide',stop);
  window.addEventListener('pageshow',updateState);
  if(typeof motion.addEventListener==='function')motion.addEventListener('change',updateState);
  else if(typeof motion.addListener==='function')motion.addListener(updateState);

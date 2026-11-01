@@ -20,8 +20,8 @@ function init(){
   root.classList.add('inj-ux-ready');
   const gate=document.getElementById('entryGate');
   if(gate){
-    // Bottom dock is visible when Home opens and fades after inactivity;
-    // interaction reveals it without intercepting the user's existing click.
+    // The Home dock remains visible; inactivity affects other destinations only.
+    // Interaction handling never intercepts scrolling or clicks.
     let idleTimer=0;
     const dock=document.getElementById('injPrimaryBottomNav');
     const foreground=()=>gate.classList.contains('visible')&&
@@ -33,7 +33,8 @@ function init(){
       root.dataset.injDockIdle='false';
       root.dataset.injHomeNavVisible='true';
       clearTimeout(idleTimer);
-      idleTimer=setTimeout(()=>{root.dataset.injDockIdle='true';},4300);
+      if(root.dataset.injHomeTab!=='home')
+        idleTimer=setTimeout(()=>{root.dataset.injDockIdle='true';},4300);
     }
     for(const type of ['pointerdown','touchstart','keydown','wheel']){
       document.addEventListener(type,showDock,{passive:true,capture:true});

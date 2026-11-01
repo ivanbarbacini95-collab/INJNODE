@@ -579,3 +579,14 @@ html[data-inj-page="index"][data-inj-home-tab="etf"] body>#injEtfTabPanel:not([h
  touch-action:pan-y!important;
  background:var(--theme-canvas,var(--bg,#07121b))!important;
 }
+
+
+/* Always visible on the active Home screen (even without interaction).
+   Hidden screens and dedicated fullscreen overlays preserve existing guards. */
+html[data-inj-page="index"][data-inj-home-tab="home"][data-inj-home-nav-visible="true"]
+ body.entry-gate-open:not(.boot-loading) > #injPrimaryBottomNav#injPrimaryBottomNav,
+html[data-inj-page="index"][data-inj-home-tab="home"][data-inj-home-nav-visible="true"]
+ body.entry-gate-open:not(.boot-loading) > #injPrimaryBottomNav#injPrimaryBottomNav:popover-open{
+ opacity:1!important;visibility:visible!important;pointer-events:auto!important;
+ transform:translate(-50%,0)!important;
+}

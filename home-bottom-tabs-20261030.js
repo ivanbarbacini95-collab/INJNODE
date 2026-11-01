@@ -166,28 +166,12 @@
   !document.body.classList.contains('pulse-view-open') &&
   !document.body.classList.contains('live-charts-open') &&
   !document.querySelector('#injMarketEventsOverlay:not([hidden]),#injMarketPortal:not([hidden]),#injFreedomOverlay:not([hidden]),#converterView.open,#performanceTimelineView.open,dialog[open],.inj-content-frame');
+ // The Home dock must remain present from the first visible Home screen,
+ // independent of vertical scrolling; fullscreen overlays still hide it.
  function updateDockReveal(){
-  if(root.dataset.injHomeTab!=='home'){
-   if(root.dataset.injHomeNavVisible!=='true')root.dataset.injHomeNavVisible='true';
-   return;
-  }
-  if(!isHomeForeground()){
-   if(root.dataset.injHomeNavVisible!=='false')root.dataset.injHomeNavVisible='false';
-   return;
-  }
-  // Desktop has room for a persistent dock, even before the user scrolls.
-  // Mobile retains the scroll-to-reveal effect.
-  if(window.matchMedia('(min-width: 900px)').matches){
-   if(root.dataset.injHomeNavVisible!=='true')root.dataset.injHomeNavVisible='true';
-   return;
-  }
-  const doc=primaryScroller();
-  const y=Math.max(0,window.scrollY||0,doc.scrollTop||0,gate.scrollTop||0);
-  const shown=root.dataset.injHomeNavVisible==='true';
-  // Hysteresis avoids oscillation when Safari settles around a pixel boundary.
-  const next=shown?y>64:y>=118;
-  const state=String(next);
-  if(root.dataset.injHomeNavVisible!==state)root.dataset.injHomeNavVisible=state;
+  const show=root.dataset.injHomeTab==='home'?isHomeForeground():true;
+  const value=String(show);
+  if(root.dataset.injHomeNavVisible!==value)root.dataset.injHomeNavVisible=value;
  }
  function scheduleDockRefresh(){
   if(revealFrame)return;
@@ -218,7 +202,7 @@
  function activate(id,scroll){
   const section=sections.find(item=>item.id===id)||sections[0];
   root.dataset.injHomeTab=section.id;
-  if(section.id==='home')root.dataset.injHomeNavVisible='false';
+  if(section.id==='home')root.dataset.injHomeNavVisible='true';
   else root.dataset.injHomeNavVisible='true';
   // The original launcher elements remain direct children in their original order.
   applyVisibility(section);
