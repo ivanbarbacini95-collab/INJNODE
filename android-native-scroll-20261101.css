@@ -37,7 +37,6 @@ html[data-inj-page="index"][data-inj-platform="android"]:not([data-inj-home-tab=
 html[data-inj-page="index"][data-inj-platform="android"]:not([data-inj-home-tab="mercato"]):not([data-inj-home-tab="etf"])
   body.entry-gate-open:not(.menu-overlay-open):not(.drawer-open):not(.inj-section-open):not(.entry-live-launch)
   #entryGate#entryGate.entry-gate.visible[aria-hidden="false"]:not(.immersive-underlay):not(.dashboard-underlay) {
-  display:block!important;
   position:relative!important;
   inset:auto!important;
   width:100%!important;
