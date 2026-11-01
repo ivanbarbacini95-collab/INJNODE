@@ -1,7 +1,7 @@
-const CACHE_NAME = 'inj-node-v16.11.01-liveview-clock-under-title-v13';
+const CACHE_NAME = 'inj-node-v16.11.01-ios-theme-top-seam-v14';
 const APP_SHELL = [
   './live-view-clock-below-title-20261101.css?v=1',
-  './home-theme-continuity-20261101.css?v=1',
+  './home-theme-continuity-20261101.css?v=2',
   './nav-premium-loop-20261101.css?v=11',
   './nav-premium-loop-20261101.js?v=12',
   './my-reward-immersive-20261101.css?v=4',
@@ -300,7 +300,7 @@ self.addEventListener('install', (event) => {
     // actual boot path first; runtime requests populate the rest on demand.
     const essential=new Set([
   './live-view-clock-below-title-20261101.css?v=1',
-  './home-theme-continuity-20261101.css?v=1',
+  './home-theme-continuity-20261101.css?v=2',
   './nav-premium-loop-20261101.css?v=11',
   './nav-premium-loop-20261101.js?v=12',
   './my-reward-immersive-20261101.css?v=4',
