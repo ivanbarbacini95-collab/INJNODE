@@ -68,7 +68,7 @@ function renderSummary(){
   selected=rows.find(w=>w.address===snap?.selectedAddress)||rows[0]||null,
   address=selected?.address||'';
  if(address!==lastAddress){
-  lastAddress=address;lastHash='';
+  lastAddress=address;
   for(const id of ['injMyRewardStaked','injMyRewardValue','injMyRewardAccrued','injMyRewardRewardValue'])note(id,'—');
  }
  renderPicker(rows,address);
