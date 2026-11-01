@@ -18,7 +18,7 @@ const tabs=[
 const fmt=(value,digits)=>Number(value).toLocaleString(isEn()?'en-US':'it-IT',{minimumFractionDigits:digits,maximumFractionDigits:digits});
 const money=(value,currency)=>Number(value).toLocaleString(isEn()?'en-US':'it-IT',{style:'currency',currency,minimumFractionDigits:2,maximumFractionDigits:2});
 const numeric=v=>v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v))?Number(v):null;
-let current='overview',panel=null, frames=new Map(),timer=0,wasOpen=false,lastAddress='',lastHash='',boundFrames=new WeakSet(),sourceCooldown=0;
+let current='overview',panel=null, frames=new Map(),timer=0,wasOpen=false,lastAddress='',boundFrames=new WeakSet(),lastEnrichAt=0;
 function source(){
  try{return typeof window.INJ_FINANCIAL_FREEDOM_SOURCE==='function'?window.INJ_FINANCIAL_FREEDOM_SOURCE():null;}
  catch(_){return null;}
@@ -249,6 +249,12 @@ function sync(){
     obj.host.hidden=true;obj.frame.removeAttribute('src');
    }
   }
+ }
+ if(open&&Date.now()-lastEnrichAt>90000&&typeof window.INJ_FINANCIAL_FREEDOM_ENRICH_APR==='function'){
+   lastEnrichAt=Date.now();
+   // Ask the existing verified validator/APR engine for any missing wallet APR.
+   // This is rate limited and never substitutes a global APR for the wallet.
+   void window.INJ_FINANCIAL_FREEDOM_ENRICH_APR().catch(()=>{});
  }
  if(open&&current==='overview')renderSummary();
 }
