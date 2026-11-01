@@ -8,17 +8,36 @@ on:
 
 permissions:
   pages: write
+  deployments: write
   contents: read
 
 jobs:
-  cancel-blocked-pages:
+  inspect-and-clear:
     runs-on: ubuntu-latest
     steps:
-      - name: Cancel orphaned Pages deployment by commit SHA
+      - name: Inspect and clear only orphaned in-progress deployment records
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
-          gh api -X POST "repos/${GH_REPO}/pages/deployments/aa516788f4de9ffee6a4c8e1c2ef0f1994ba85c2/cancel"
-          echo 'Requested cancellation of blocked GitHub Pages deployment.'
+          blocked_sha=aa516788f4de9ffee6a4c8e1c2ef0f1994ba85c2
+          echo "Inspecting deployment records for ${blocked_sha}"
+          ids=$(gh api "repos/${GH_REPO}/deployments?sha=${blocked_sha}&per_page=100" --jq '.[].id')
+          if [ -z "$ids" ]; then
+            echo 'No matching deployment records; Pages backend state may need GitHub Support.'
+            exit 0
+          fi
+          for id in $ids; do
+            environment=$(gh api "repos/${GH_REPO}/deployments/${id}" --jq '.environment')
+            state=$(gh api "repos/${GH_REPO}/deployments/${id}/statuses?per_page=1" --jq '.[0].state // "unknown"')
+            echo "Found deployment id=${id}, environment=${environment}, state=${state}"
+            if [ "$environment" = "github-pages" ] && { [ "$state" = "in_progress" ] || [ "$state" = "pending" ] || [ "$state" = "queued" ]; }; then
+              echo "Marking orphaned GitHub Pages deployment ${id} inactive"
+              gh api -X POST "repos/${GH_REPO}/deployments/${id}/statuses" -f state=inactive -f description='Clearing orphaned Pages deployment lock'
+              gh api -X DELETE "repos/${GH_REPO}/deployments/${id}"
+              echo "Removed orphaned deployment record ${id}"
+            else
+              echo 'Not deleting completed or non-Pages deployment.'
+            fi
+          done
