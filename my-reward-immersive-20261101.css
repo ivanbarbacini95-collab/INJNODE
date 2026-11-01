@@ -92,3 +92,9 @@ html[data-inj-page="index"][data-inj-home-tab="home"] body #entryGate#entryGate 
  #injMyRewardPanel .inj-myreward-frame-host{height:calc(100dvh - 106px)!important}
 }
 @media(prefers-reduced-motion:reduce){#injMyRewardPanel .inj-myreward-nav-row *{scroll-behavior:auto!important;transition:none!important}}
+
+/* Specificity guard: legacy PWA Home dock uses a :has() selector with two IDs. */
+html[data-inj-page="index"][data-inj-home-tab="reward"] body #injPrimaryBottomNav#injPrimaryBottomNav#injPrimaryBottomNav,
+html[data-inj-page="index"][data-inj-home-tab="reward"] body #injPrimaryBottomNav#injPrimaryBottomNav#injPrimaryBottomNav:popover-open{
+ display:none!important;visibility:hidden!important;pointer-events:none!important
+}
