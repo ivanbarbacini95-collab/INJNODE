@@ -1,9 +1,11 @@
-/* INJ Node · native SVG comet v10.
-   No per-frame JS: the browser animates a continuous 94% base stroke
-   with graduated long blue-violet-pink-gold layers. */
+/* INJ Node · feathered chromatic comet v12.
+   Three overlapping full-length/native-animated strokes per color soften
+   the former abrupt cutoffs into progressive blends along the entire dock.
+   No Canvas, timers, frame loops or static menu frame. */
 (()=>{
 'use strict';
 const NS='http://www.w3.org/2000/svg';
+const FEATHER_STEPS=3;
 const layers=[
  [.94,'#66dbe7',.16],
  [.91,'#61d3ee',.16],
@@ -42,7 +44,7 @@ function init(){
  svg.setAttribute('focusable','false');
  svg.setAttribute('preserveAspectRatio','none');
  const shapes=[];
- function shape(cls,color,opacity,coverage,headLen){
+ function shape(cls,color,opacity,coverage,headLen,featherIndex=0){
   const r=document.createElementNS(NS,'rect');
   r.setAttribute('class',cls);
   r.setAttribute('fill','none');
@@ -50,9 +52,17 @@ function init(){
   r.setAttribute('stroke-opacity',String(opacity));
   r.setAttribute('vector-effect','non-scaling-stroke');
   svg.append(r);
-  shapes.push({r,coverage,headLen});
+  shapes.push({r,coverage,headLen,featherIndex});
  }
- for(const [coverage,color,alpha] of layers)shape('inj-comet-layer',color,alpha,coverage,0);
+ // The old single hard-ended colored dashes caused visible color bands.
+ // Each color is now a three-level opacity ramp across its trailing 6–7%
+ // of the perimeter. The composite opacity at the head stays unchanged.
+ for(const [coverage,color,alpha] of layers){
+  const subAlpha=1-Math.pow(1-alpha,1/FEATHER_STEPS);
+  for(let i=0;i<FEATHER_STEPS;i++){
+   shape('inj-comet-layer',color,subAlpha,coverage,0,i);
+  }
+ }
  shape('inj-comet-head-halo','#fff1cb',.27,0,26);
  shape('inj-comet-head-core','#fffdf1',1,0,5.6);
  nav.prepend(svg);
@@ -70,14 +80,21 @@ function init(){
   const perimeter=2*(pw+ph-4*radius)+2*Math.PI*radius;
   svg.setAttribute('viewBox','0 0 '+w+' '+h);
   svg.style.setProperty('--inj-comet-perimeter',perimeter.toFixed(3)+'px');
-  for(const {r,coverage,headLen} of shapes){
+  for(const {r,coverage,headLen,featherIndex} of shapes){
    r.setAttribute('x',edge.toFixed(2));
    r.setAttribute('y',edge.toFixed(2));
    r.setAttribute('width',pw.toFixed(3));
    r.setAttribute('height',ph.toFixed(3));
    r.setAttribute('rx',radius.toFixed(3));
    r.setAttribute('ry',radius.toFixed(3));
-   const length=coverage?perimeter*coverage:Math.min(headLen,perimeter*.03);
+   const fullLength=coverage?perimeter*coverage:Math.min(headLen,perimeter*.03);
+   // Feather only colored layers, never the precise luminous head.
+   // Multiple LONG dashes share the same leading point, avoiding dotted
+   // fragments and retaining native CSS animation for smooth movement.
+   const feather=coverage?Math.min(72,perimeter*.074,fullLength*.72):0;
+   const length=coverage
+    ?fullLength-feather+feather*(featherIndex+1)/FEATHER_STEPS
+    :fullLength;
    r.setAttribute('stroke-dasharray',length.toFixed(3)+' '+(perimeter-length).toFixed(3));
    r.style.setProperty('--inj-comet-start',length.toFixed(3)+'px');
   }
