@@ -9,12 +9,12 @@
   if(!gate||!dock||document.getElementById('injMarketTabPanel'))return;
 
   const destinations=[
-    {id:'world',it:'Global Market',en:'Global Market',entry:'world'},
     {id:'crypto',it:'Global Crypto',en:'Global Crypto',entry:'crypto'},
     {id:'events',it:'Market Event',en:'Market Events',launcher:'entryMacroCalendarButton'},
     {id:'charts',it:'Live Charts',en:'Live Charts',page:'./live-charts.html'},
     {id:'book',it:'Order Book',en:'Order Book',page:'./order-book.html'},
-    {id:'performance',it:'Performance',en:'Performance',launcher:'entryPerformanceButton'}
+    {id:'performance',it:'Performance',en:'Performance',launcher:'entryPerformanceButton'},
+    {id:'world',it:'Global Market',en:'Global Market',entry:'world'}
   ];
   const panel=document.createElement('section');
   panel.id='injMarketTabPanel';
@@ -159,14 +159,14 @@
   const frame=document.createElement('iframe');
   frame.id='injMarketTabFrame';
   frame.className='inj-market-tab-frame';
-  frame.title='Global Market';
+  frame.title='Global Crypto';
   frame.setAttribute('loading','eager');
   frame.setAttribute('referrerpolicy','same-origin');
   content.append(loading,frame);
   panel.append(content);
   document.body.append(head,panel);
 
-  let selected='world',lastMarketEntry='world',currentUrl='',wasMarket=false;
+  let selected='crypto',lastMarketEntry='crypto',currentUrl='',wasMarket=false;
   let modalPending=false,modalWasOpened=false;
 
   /* Market's upper rail remains permanently visible; no idle hide. */
@@ -375,9 +375,9 @@
     if(now&&!wasMarket){
       root.dataset.injMarketChrome='shown';
       startDailyQuote();
-      lastMarketEntry='world';
+      lastMarketEntry='crypto';
       modalPending=false;
-      updateSelection('world',false);
+      updateSelection('crypto',false);
       showPage(destinations[0]);
     }else if(!now&&wasMarket){
       clearInterval(quoteFallbackTimer);
@@ -417,7 +417,7 @@
     if(tab.dataset.injTab!=='mercato'){
       if(modalOpen())dismissNativeView();
 
-    }else if(!modalOpen())navigate('world',false);
+    }else if(!modalOpen())navigate('crypto',false);
   },true);
   document.addEventListener('visibilitychange',()=>{
     if(document.hidden)return;
