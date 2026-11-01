@@ -1,5 +1,12 @@
-const CACHE_NAME = 'inj-node-v16.11.01-android-sections-scroll1';
+const CACHE_NAME = 'inj-node-v16.11.01-tools-lock-world-qr1';
 const APP_SHELL = [
+  './inj-ux-refinement-20261101.css?v=1',
+  './inj-ux-refinement-20261101.js?v=1',
+  './inj-local-access-lock-20261101.css?v=1',
+  './inj-local-access-lock-20261101.js?v=1',
+  './cloud-sync-qr-20261101.css?v=1',
+  './cloud-sync-qr-20261101.js?v=1',
+  './vendor/qrcode.min.js?v=1',
   './market-embedded-compact-20261031.css?v=marketcompact3',
   './world-market-ticker-center-20261101.css?v=20261101bold2',
   './assets/fonts/inj-geist.woff2',
@@ -283,6 +290,13 @@ self.addEventListener('install', (event) => {
     // legacy CSS/JS downloads before the worker can activate. Cache the
     // actual boot path first; runtime requests populate the rest on demand.
     const essential=new Set([
+  './inj-ux-refinement-20261101.css?v=1',
+  './inj-ux-refinement-20261101.js?v=1',
+  './inj-local-access-lock-20261101.css?v=1',
+  './inj-local-access-lock-20261101.js?v=1',
+  './cloud-sync-qr-20261101.css?v=1',
+  './cloud-sync-qr-20261101.js?v=1',
+  './vendor/qrcode.min.js?v=1',
       './','./index.html','./manifest.webmanifest?v=16.06.29',
       './app.js?v=20261101androidpwa1',
       './style.css?v=16.01.44','./viewport.css?v=16.00.74',
@@ -330,7 +344,7 @@ self.addEventListener('fetch', (event) => {
   if (url.pathname.startsWith('/api/')) {event.respondWith(fetch(request));return;}
   // Always prefer the current Market Events assets after a Git deploy. Keep an
   // offline copy, but never trap users on a stale pre-update CSS/JS pair.
-  if (url.pathname.endsWith('/world-markets-heatmap.js') || url.pathname.endsWith('/world-markets-heatmap.css') || url.pathname.endsWith('/market-views.js') || url.pathname.endsWith('/market-heatmap-signals-20261101.css') || url.pathname.endsWith('/android-section-scroll-20261101.css') || url.pathname.endsWith('/android-native-scroll-20261101.css') || url.pathname.endsWith('/home-bottom-tabs-20261030.js') || url.pathname.endsWith('/home-bottom-tabs-20261030.css') || url.pathname.endsWith('/market-tab-navigation-20261031.js') || url.pathname.endsWith('/market-tab-navigation-20261031.css') || url.pathname.endsWith('/market-embedded-compact-20261031.css') || url.pathname.endsWith('/live-charts.js') || url.pathname.endsWith('/live-charts.css') || url.pathname.endsWith('/live-charts-timeframe-rail.css') || url.pathname.endsWith('/world-market-ticker-center-20261101.css') || url.pathname.endsWith('/inj-font-switcher-20261029.css') || url.pathname.endsWith('/inj-font-switcher-20261029.js') || url.pathname.endsWith('/i18n.js') || url.pathname.endsWith('/navigation.js') || url.pathname.endsWith('/inj-fluid-screen-fit.css') || url.pathname.endsWith('/inj-monitor-readability.css') || url.pathname.endsWith('/home-desktop-native-scroll.css') || url.pathname.endsWith('/home-more-section.css') || url.pathname.endsWith('/workspace-pro.js') || url.pathname.endsWith('/workspace-pro.css') || url.pathname.endsWith('/home-market-events.css') || url.pathname.endsWith('/home-market-events.js') || url.pathname.endsWith('/inj-top-seamless.css') || url.pathname.endsWith('/financial-freedom.html') || url.pathname.endsWith('/financial-freedom.css') || url.pathname.endsWith('/financial-freedom.js') || url.pathname.endsWith('/financial-freedom-home.css') || url.pathname.endsWith('/financial-freedom-overlay.js') || url.pathname.endsWith('/market-events-layout-pro.css') || url.pathname.endsWith('/home-focused-cards.css') || url.pathname.endsWith('/ambient-wallet-reward-glow.css') || url.pathname.endsWith('/world-markets-heatmap.js') || url.pathname.endsWith('/world-markets-heatmap.css') || url.pathname.endsWith('/market-data/global-markets.json')) {
+  if (url.pathname.endsWith('/inj-ux-refinement-20261101.js') || url.pathname.endsWith('/inj-ux-refinement-20261101.css') || url.pathname.endsWith('/inj-local-access-lock-20261101.js') || url.pathname.endsWith('/inj-local-access-lock-20261101.css') || url.pathname.endsWith('/cloud-sync-qr-20261101.js') || url.pathname.endsWith('/cloud-sync-qr-20261101.css') || url.pathname.endsWith('/vendor/qrcode.min.js') || url.pathname.endsWith('/world-markets-heatmap.js') || url.pathname.endsWith('/world-markets-heatmap.css') || url.pathname.endsWith('/market-views.js') || url.pathname.endsWith('/market-heatmap-signals-20261101.css') || url.pathname.endsWith('/android-section-scroll-20261101.css') || url.pathname.endsWith('/android-native-scroll-20261101.css') || url.pathname.endsWith('/home-bottom-tabs-20261030.js') || url.pathname.endsWith('/home-bottom-tabs-20261030.css') || url.pathname.endsWith('/market-tab-navigation-20261031.js') || url.pathname.endsWith('/market-tab-navigation-20261031.css') || url.pathname.endsWith('/market-embedded-compact-20261031.css') || url.pathname.endsWith('/live-charts.js') || url.pathname.endsWith('/live-charts.css') || url.pathname.endsWith('/live-charts-timeframe-rail.css') || url.pathname.endsWith('/world-market-ticker-center-20261101.css') || url.pathname.endsWith('/inj-font-switcher-20261029.css') || url.pathname.endsWith('/inj-font-switcher-20261029.js') || url.pathname.endsWith('/i18n.js') || url.pathname.endsWith('/navigation.js') || url.pathname.endsWith('/inj-fluid-screen-fit.css') || url.pathname.endsWith('/inj-monitor-readability.css') || url.pathname.endsWith('/home-desktop-native-scroll.css') || url.pathname.endsWith('/home-more-section.css') || url.pathname.endsWith('/workspace-pro.js') || url.pathname.endsWith('/workspace-pro.css') || url.pathname.endsWith('/home-market-events.css') || url.pathname.endsWith('/home-market-events.js') || url.pathname.endsWith('/inj-top-seamless.css') || url.pathname.endsWith('/financial-freedom.html') || url.pathname.endsWith('/financial-freedom.css') || url.pathname.endsWith('/financial-freedom.js') || url.pathname.endsWith('/financial-freedom-home.css') || url.pathname.endsWith('/financial-freedom-overlay.js') || url.pathname.endsWith('/market-events-layout-pro.css') || url.pathname.endsWith('/home-focused-cards.css') || url.pathname.endsWith('/ambient-wallet-reward-glow.css') || url.pathname.endsWith('/world-markets-heatmap.js') || url.pathname.endsWith('/world-markets-heatmap.css') || url.pathname.endsWith('/market-data/global-markets.json')) {
     event.respondWith(
       fetch(request,{cache:'no-store'}).then(response=>{
         if(response.ok){
