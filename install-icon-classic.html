@@ -3,6 +3,18 @@
 <html data-inj-screen="boot" data-inj-page="index" data-inj-viewport="80" data-theme="navy" lang="it">
 <head>
 <meta charset="utf-8"/>
+<script id="inj-android-pwa-canonical-start">
+/* Android standalone uses one maintained Home. The installation route
+   remains available in Chrome to preserve the chosen icon/manifest. */
+(function(){
+  var android=/Android/i.test(navigator.userAgent||'');
+  var standalone=window.matchMedia &&
+    (window.matchMedia('(display-mode: standalone)').matches ||
+     window.matchMedia('(display-mode: fullscreen)').matches);
+  if(android&&standalone)window.location.replace('./index.html');
+})();
+</script>
+
 <meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
 <meta content="#07121b" name="theme-color"/>
 <style id="inj-prepaint-canvas">html,body{background-color:#07121b;color-scheme:dark}html[data-theme="black"],html[data-theme="black"] body{background-color:#000}html[data-theme="light"],html[data-theme="light"] body{background-color:#eef5ff;color-scheme:light}html[data-theme="amber"],html[data-theme="amber"] body{background-color:#05080d}html[data-theme="velvet"],html[data-theme="velvet"] body{background-color:#0a1024}html[data-theme="ocean-x-solar"],html[data-theme="ocean-x-solar"] body{background-color:#1b122c}</style>
@@ -377,16 +389,16 @@
 <link rel="stylesheet" href="./home-signature-accents-20261029.css?v=20261029motion1"/>
 <script defer src="./home-card-height-sync-20261029.js?v=1"></script>
 <link rel="stylesheet" href="./inj-inter-light-20261029.css?v=interlight-global-1"/>
-<link rel="stylesheet" href="./inj-font-switcher-20261029.css?v=official-font7"/>
-<link rel="stylesheet" href="./home-bottom-tabs-20261030.css?v=bottomnav12"/>
-<script defer src="./home-bottom-tabs-20261030.js?v=bottomnav17"></script>
+<link rel="stylesheet" href="./inj-font-switcher-20261029.css?v=geistbold8"/>
+<link rel="stylesheet" href="./home-bottom-tabs-20261030.css?v=20261101-android-nav1"/>
+<script defer src="./home-bottom-tabs-20261030.js?v=20261101-android-nav1"></script>
 <link rel="stylesheet" href="./market-tab-navigation-20261031.css?v=marketrail11"/>
-<script defer src="./market-tab-navigation-20261031.js?v=marketrail13"></script>
+<script defer src="./market-tab-navigation-20261031.js?v=marketrail14"></script>
 <link rel="stylesheet" href="./home-card-reorder-20261030.css?v=order1"/>
 <link rel="stylesheet" href="./home-ticker-tight-20261030.css?v=ticker1"/>
 <link rel="stylesheet" href="./home-market-launcher-uniform-20261030.css?v=marketpolish2"/>
 <script defer src="./home-card-reorder-20261030.js?v=order4"></script>
-<script src="./inj-font-switcher-20261029.js?v=official-font7"></script>
+<script src="./inj-font-switcher-20261029.js?v=geistbold8"></script>
 </head>
 <body class="boot-loading">
 <div aria-label="Avvio INJ Node" aria-live="polite" aria-atomic="true" class="boot-splash node-pulse-splash" id="bootSplash" role="status">
