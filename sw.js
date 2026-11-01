@@ -22,7 +22,7 @@ const APP_SHELL = [
   './home-bottom-tabs-20261030.js?v=20261101-android-nav1',
   './market-tab-navigation-20261031.css?v=marketrail11',
   './market-tab-navigation-20261031.js?v=marketrail14',
-  './app.js?v=20261031quotefix2',
+  './app.js?v=20261101androidpwa1',
   './inj-font-switcher-20261029.css?v=geistbold8',
   './inj-font-switcher-20261029.js?v=geistbold8',
   './inj-fluid-screen-fit.css?v=20261028fullmonitor1',
@@ -282,7 +282,7 @@ self.addEventListener('install', (event) => {
     // actual boot path first; runtime requests populate the rest on demand.
     const essential=new Set([
       './','./index.html','./manifest.webmanifest?v=16.06.29',
-      './app.js?v=20261031quotefix2',
+      './app.js?v=20261101androidpwa1',
       './style.css?v=16.01.44','./viewport.css?v=16.00.74',
       './viewport.js?v=20261028ios27',
       './navigation.css?v=160090',
