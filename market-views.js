@@ -40,6 +40,7 @@
   try{return localStorage.getItem(favoriteModeKey)==='heatmap'?'heatmap':'list'}catch(_){return 'list'}
  }
  let listTiles=new Map(),mapTiles=new Map(),pending=new Set(),renderQueued=false,timer=null;
+ let heatmapHasRendered=false;
  let openSwipeId=null;
  const all=()=>api()?.getCoins?.()||[];
  // Applies exclusively to the Heatmap. Global Crypto preserves the full Top 200.
@@ -313,6 +314,8 @@
   node.style.setProperty('--heat-fill',strength.toFixed(1)+'%');
   node.style.setProperty('--heat-wash',(strength*.61).toFixed(1)+'%');
   node.style.setProperty('--heat-rim',(Math.min(84,Math.max(26,strength+12))).toFixed(1)+'%');
+  node.dataset.heatRange=range;
+  node.dataset.heatPerformance=Number.isFinite(delta)?String(delta):'';
   const label=percent(delta),price=money(coin.current_price);
   const p=node.querySelector('.hm-change'),priceNode=node.querySelector('.hm-price');
   if(p&&p.textContent!==label)p.textContent=label;
@@ -332,7 +335,24 @@
    for(let i=0;i<coins.length;i++){
     const coin=coins[i];
     const el=mapTiles.get(coin.id)||tile(coin,i);
+    // Compare only already-visible tiles on the same timeframe. Opening the
+    // Heatmap, changing timeframe/currency or rearranging ranks is not a tick.
+    const existing=mapTiles.has(coin.id)&&heatmapHasRendered&&el.isConnected
+      &&el.dataset.heatRange===range;
+    const oldPrice=Number(el.dataset.previousPrice);
+    const newPrice=num(coin.current_price);
+    const oldPerformance=Number(el.dataset.heatPerformance);
+    const newPerformance=change(coin,range);
+    const changedPrice=existing&&Number.isFinite(oldPrice)&&oldPrice>0
+      &&Number.isFinite(newPrice)&&newPrice>0&&oldPrice!==newPrice
+      &&el.dataset.displayPrice!==money(newPrice);
+    const changedPerformance=existing&&el.dataset.heatPerformance!==''
+      &&Number.isFinite(oldPerformance)&&Number.isFinite(newPerformance)
+      &&oldPerformance!==newPerformance
+      &&el.querySelector('.hm-change')?.textContent!==percent(newPerformance);
     recolor(el,coin);
+    if(changedPrice||changedPerformance)
+      priceFlash(el,newPrice>oldPrice?'up':'down',true);
     el.dataset.previousPrice=String(coin.current_price);
     const symbol=el.querySelector('.hm-symbol'),name=el.querySelector('.hm-name'),rank=el.querySelector('.hm-rank');
     const newSymbol=String(coin.symbol||'').toUpperCase(),newName=String(coin.name||'');
@@ -363,6 +383,7 @@
    if(empty.textContent!==message)empty.textContent=message;
   }
   mapTiles=next;
+  heatmapHasRendered=coins.length>0;
   $('heatmapCount').textContent=tr('Crypto visualizzate: ','Displayed assets: ')+coins.length;
  }
  function render(){
@@ -381,6 +402,7 @@
   const nextSection=next==='favorites'?'favorites':next==='heatmap'?'heatmap':'global';
   const nextMode=nextSection==='favorites'?favoriteLayout:nextSection==='heatmap'?'heatmap':'list';
   if(openSwipeId&&(nextSection!==section||nextMode!==mode))closeOpenSwipe();
+  if(nextSection!==section||nextMode!==mode)heatmapHasRendered=false;
   section=nextSection;
   if(section==='favorites'){
    const intel=$('injIntelligenceMain');
@@ -447,7 +469,8 @@
    // direction of an unrelated instantaneous market tick.
    if(element.classList.contains('is-up'))direction='up';
    else if(element.classList.contains('is-down'))direction='down';
-   else return;
+   // If the selected period is neutral, show only the actual tick direction.
+   else if(direction!=='up'&&direction!=='down')return;
    // Avoid rearming an ongoing or just-ended pulse when the feed is busy.
    const now=performance.now(),last=Number(element.dataset.lastHeatPulse||0);
    if(last&&now-last<1850)return;
@@ -473,12 +496,12 @@
     const current=byId.get(id),element=active.get(id);
     if(!element||!current)continue;
     if(mode==='heatmap'){
-     // Light the fixed edge ONLY for a true underlying price change.
-     // Percent/date updates or repeated quotes must not fire the bar.
+     // Flash only this tile when its displayed quote or timeframe performance
+     // actually changes. Repeated identical quotes must remain static.
      const previous=Number(element.dataset.previousPrice);
      const currentPrice=num(current.current_price);
      // A quote change must also alter the displayed price: tiny rounding
-     // differences should never produce a seemingly random flashing bar.
+     // differences should never make an unchanged tile flash.
      const previousText=element.dataset.displayPrice||'';
      const nextText=money(currentPrice);
      const priceChanged=Number.isFinite(previous)&&previous>0
@@ -662,7 +685,7 @@
  grid.addEventListener('click',onAssetClick);
  // Remove pulse classes at animation end. A stationary quote has no active signal.
  grid.addEventListener('animationend',event=>{
-  if(event.animationName!=='injAggressiveEdgePulse')return;
+  if(event.animationName!=='injHeatmapTileFlash')return;
   const tile=event.target;
   if(tile?.classList?.contains('heatmap-tile'))
    tile.classList.remove('market-flash-up','market-flash-down');
