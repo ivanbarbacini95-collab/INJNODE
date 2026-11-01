@@ -191,3 +191,30 @@ html[data-inj-market] #injGlobalMarket .overview article small{
   overflow-x:auto!important;touch-action:pan-x!important;
  }
 }
+
+/* INJNODE · Global Crypto ticker edge-to-edge · 2026-11-01 */
+/* The live market ribbon is currently constrained by .shell padding.
+   Break out of that container without expanding the whole page.
+   In embedded Market mode, vw is the iframe's actual full viewport width.
+   Retain sticky placement, untouched content/scrolling and quote refresh. */
+html[data-inj-market]:is([data-inj-market-entry="crypto"],[data-inj-market-entry="favorites"])
+ body > .shell > main > #marketTicker.market-ticker{
+ box-sizing:border-box!important;
+ display:block!important;
+ width:100vw!important;
+ min-width:100vw!important;
+ max-width:none!important;
+ margin-left:calc(50% - 50vw)!important;
+ margin-right:calc(50% - 50vw)!important;
+ border-radius:0!important;
+ border-left:0!important;
+ border-right:0!important;
+}
+/* Ensure the full-bleed viewport remains a single clipping window
+   while the ticker track continues its existing native animation. */
+html[data-inj-market]:is([data-inj-market-entry="crypto"],[data-inj-market-entry="favorites"])
+ #marketTicker > #marketTickerViewport.market-ticker-viewport{
+ width:100%!important;
+ max-width:100%!important;
+ min-width:0!important;
+}
