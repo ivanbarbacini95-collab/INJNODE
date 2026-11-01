@@ -1,8 +1,8 @@
-const CACHE_NAME = 'inj-node-v16.11.01-comet-94-theme-seamless-v6';
+const CACHE_NAME = 'inj-node-v16.11.01-continuous-comet-v7';
 const APP_SHELL = [
   './home-theme-continuity-20261101.css?v=1',
   './nav-premium-loop-20261101.css?v=4',
-  './nav-premium-loop-20261101.js?v=6',
+  './nav-premium-loop-20261101.js?v=7',
   './my-reward-immersive-20261101.css?v=4',
   './my-reward-immersive-20261101.js?v=2',
 
@@ -300,7 +300,7 @@ self.addEventListener('install', (event) => {
     const essential=new Set([
   './home-theme-continuity-20261101.css?v=1',
   './nav-premium-loop-20261101.css?v=4',
-  './nav-premium-loop-20261101.js?v=6',
+  './nav-premium-loop-20261101.js?v=7',
   './my-reward-immersive-20261101.css?v=4',
   './my-reward-immersive-20261101.js?v=2',
 
