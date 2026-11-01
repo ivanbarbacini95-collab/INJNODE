@@ -1,8 +1,8 @@
-const CACHE_NAME = 'inj-node-v16.11.01-native-comet-css-v10';
+const CACHE_NAME = 'inj-node-v16.11.01-comet-smooth-gradient-v11';
 const APP_SHELL = [
   './home-theme-continuity-20261101.css?v=1',
-  './nav-premium-loop-20261101.css?v=10',
-  './nav-premium-loop-20261101.js?v=10',
+  './nav-premium-loop-20261101.css?v=11',
+  './nav-premium-loop-20261101.js?v=11',
   './my-reward-immersive-20261101.css?v=4',
   './my-reward-immersive-20261101.js?v=2',
 
@@ -299,8 +299,8 @@ self.addEventListener('install', (event) => {
     // actual boot path first; runtime requests populate the rest on demand.
     const essential=new Set([
   './home-theme-continuity-20261101.css?v=1',
-  './nav-premium-loop-20261101.css?v=10',
-  './nav-premium-loop-20261101.js?v=10',
+  './nav-premium-loop-20261101.css?v=11',
+  './nav-premium-loop-20261101.js?v=11',
   './my-reward-immersive-20261101.css?v=4',
   './my-reward-immersive-20261101.js?v=2',
 

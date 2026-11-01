@@ -26,17 +26,17 @@ html[data-inj-page="index"] body>#injPrimaryBottomNav>.inj-nav-comet-orbit{
 html[data-inj-page="index"] body>#injPrimaryBottomNav>.inj-nav-comet-orbit rect{
  stroke-linecap:butt!important;
  stroke-linejoin:round!important;
- stroke-width:1.4px!important;
+ stroke-width:1.32px!important;
  vector-effect:non-scaling-stroke!important;
  animation:inj-native-comet-orbit 17s linear infinite!important;
 }
 html[data-inj-page="index"] body>#injPrimaryBottomNav>.inj-nav-comet-orbit .inj-comet-head-halo{
- stroke-width:3.2px!important;stroke-linecap:round!important;
- filter:drop-shadow(0 0 1.5px rgba(255,232,190,.4))!important;
+ stroke-width:2.9px!important;stroke-linecap:round!important;
+ filter:drop-shadow(0 0 1.2px rgba(255,232,190,.32))!important;
 }
 html[data-inj-page="index"] body>#injPrimaryBottomNav>.inj-nav-comet-orbit .inj-comet-head-core{
- stroke-width:1.55px!important;stroke-linecap:round!important;
- filter:drop-shadow(0 0 2px rgba(255,249,226,.55))!important;
+ stroke-width:1.45px!important;stroke-linecap:round!important;
+ filter:drop-shadow(0 0 1.7px rgba(255,249,226,.42))!important;
 }
 @keyframes inj-native-comet-orbit{
  from{stroke-dashoffset:var(--inj-comet-start,0px)}
