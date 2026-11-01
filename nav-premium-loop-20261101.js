@@ -1,4 +1,4 @@
-/* INJ NODE · Continuous comet border v7.
+/* INJ NODE · Continuous comet border v9 · optimized animation.
    One connected rounded-rectangle stroke, not individual dots/line segments.
    A path-calibrated conic gradient paints a long chromatic trail; a second
    connected stroke creates its soft halo. iOS Safari / Android / desktop. */
@@ -14,11 +14,16 @@
   canvas.setAttribute('aria-hidden','true');
   canvas.setAttribute('role','presentation');
   nav.prepend(canvas);
-  const ctx=canvas.getContext('2d',{alpha:true,desynchronized:true});
+  // Let WebKit synchronize Canvas presentation with its display compositor.
+  // Desynchronized mode may cause a painted frame to arrive out of phase.
+  const ctx=canvas.getContext('2d',{alpha:true});
   if(!ctx)return;
   const motion=window.matchMedia('(prefers-reduced-motion: reduce)');
   const TWO_PI=Math.PI*2,COVERAGE=.94,PERIOD=17000;
-  const EDGE=1.35,STOPS=220;
+  // Smooth conic-gradient interpolation needs far fewer than 220 stops.
+  // 96 evenly spaced color samples still produce a continuous stroke, with
+  // considerably less main-thread work per frame on iOS.
+  const EDGE=1.35,STOPS=96;
   const palette=[
    [0,255,251,230], [.12,255,194,122], [.27,255,120,149],
    [.43,235,104,198], [.59,165,117,250],
@@ -198,7 +203,12 @@
   function tick(now){
    frame=0;
    if(!active||motion.matches)return;
-   if(now-lastDraw>=33){lastDraw=now;draw(phaseAt(now));}
+   // At most 60 FPS: draw every 60 Hz frame, and every second frame on
+   // 120 Hz ProMotion displays. The old 33 ms cap produced uneven steps.
+   if(now-lastDraw>=14.5){
+    lastDraw=now;
+    draw(phaseAt(now));
+   }
    if(active)frame=requestAnimationFrame(tick);
   }
   function stop(){active=false;if(frame){cancelAnimationFrame(frame);frame=0;}}
@@ -206,8 +216,10 @@
    if(motion.matches){stop();draw(0);return;}
    if(!isVisible()){stop();return;}
    if(!active){
-    active=true;lastDraw=0;
-    draw(phaseAt(performance.now()));
+    active=true;
+    const now=performance.now();
+    lastDraw=now;
+    draw(phaseAt(now));
     frame=requestAnimationFrame(tick);
    }
   }
