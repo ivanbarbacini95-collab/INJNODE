@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "generatedAt": "2026-11-01T06:23:22.735Z",
+  "generatedAt": "2026-11-01T13:40:20.900Z",
   "type": "static-snapshot",
   "groups": {
     "indices": {
@@ -206,7 +206,7 @@
       ],
       "available": 18,
       "fresh": 18,
-      "updatedAt": "2026-11-01T06:23:22.970Z",
+      "updatedAt": "2026-11-01T13:40:21.155Z",
       "source": "CNBC",
       "status": "complete"
     },
@@ -391,7 +391,7 @@
       ],
       "available": 16,
       "fresh": 16,
-      "updatedAt": "2026-11-01T06:23:22.972Z",
+      "updatedAt": "2026-11-01T13:40:21.196Z",
       "source": "CNBC",
       "status": "complete"
     },
@@ -1027,148 +1027,7 @@
       ],
       "available": 57,
       "fresh": 57,
-      "updatedAt": "2026-11-01T06:23:23.145Z",
-      "source": "CNBC",
-      "status": "complete"
-    },
-    "forex": {
-      "quotes": [
-        {
-          "id": "eurusd",
-          "name": "EUR / USD",
-          "symbol": "EURUSD=X",
-          "price": 1.1158,
-          "change": 0,
-          "previous": 1.1158,
-          "time": 1793393940,
-          "currency": "",
-          "source": "CNBC"
-        },
-        {
-          "id": "gbpusd",
-          "name": "GBP / USD",
-          "symbol": "GBPUSD=X",
-          "price": 1.3391,
-          "change": 0,
-          "previous": 1.3391,
-          "time": 1793394000,
-          "currency": "",
-          "source": "CNBC"
-        },
-        {
-          "id": "usdjpy",
-          "name": "USD / JPY",
-          "symbol": "JPY=X",
-          "price": 157.53,
-          "change": 0,
-          "previous": 157.53,
-          "time": 1793393940,
-          "currency": "",
-          "source": "CNBC"
-        },
-        {
-          "id": "usdchf",
-          "name": "USD / CHF",
-          "symbol": "CHF=X",
-          "price": 0.825,
-          "change": 0,
-          "previous": 0.825,
-          "time": 1793394000,
-          "currency": "",
-          "source": "CNBC"
-        },
-        {
-          "id": "audusd",
-          "name": "AUD / USD",
-          "symbol": "AUDUSD=X",
-          "price": 0.703,
-          "change": 0,
-          "previous": 0.703,
-          "time": 1793393940,
-          "currency": "",
-          "source": "CNBC"
-        },
-        {
-          "id": "usdcny",
-          "name": "USD / CNY",
-          "symbol": "CNY=X",
-          "price": 6.6538,
-          "change": 0,
-          "previous": 6.6538,
-          "time": 1793375820,
-          "currency": "",
-          "source": "CNBC"
-        },
-        {
-          "id": "usdinr",
-          "name": "USD / INR",
-          "symbol": "INR=X",
-          "price": 94.8551,
-          "change": 0,
-          "previous": 94.8551,
-          "time": 1793367240,
-          "currency": "",
-          "source": "CNBC"
-        },
-        {
-          "id": "eurgbp",
-          "name": "EUR / GBP",
-          "symbol": "EURGBP=X",
-          "price": 0.8331,
-          "change": 0,
-          "previous": 0.8331,
-          "time": 1793394000,
-          "currency": "",
-          "source": "CNBC"
-        },
-        {
-          "id": "eurjpy",
-          "name": "EUR / JPY",
-          "symbol": "EURJPY=X",
-          "price": 175.77,
-          "change": 0,
-          "previous": 175.77,
-          "time": 1793393820,
-          "currency": "",
-          "source": "CNBC"
-        },
-        {
-          "id": "nzdusd",
-          "name": "NZD / USD",
-          "symbol": "NZDUSD=X",
-          "price": 0.5628,
-          "change": 0,
-          "previous": 0.5628,
-          "time": 1793393940,
-          "currency": "",
-          "source": "CNBC"
-        },
-        {
-          "id": "usdcad",
-          "name": "USD / CAD",
-          "symbol": "CAD=X",
-          "price": 1.3973,
-          "change": 0,
-          "previous": 1.3973,
-          "time": 1793393940,
-          "currency": "",
-          "source": "CNBC"
-        },
-        {
-          "id": "usdsek",
-          "name": "USD / SEK",
-          "symbol": "SEK=X",
-          "price": 9.8133,
-          "change": 0,
-          "previous": 9.8133,
-          "time": 1793393940,
-          "currency": "",
-          "source": "CNBC"
-        }
-      ],
-      "available": 12,
-      "fresh": 12,
-      "updatedAt": "2026-11-01T06:23:23.247Z",
+      "updatedAt": "2026-11-01T13:40:21.279Z",
       "source": "CNBC",
       "status": "complete"
     },
@@ -1309,7 +1168,148 @@
       ],
       "available": 12,
       "fresh": 12,
-      "updatedAt": "2026-11-01T06:23:23.253Z",
+      "updatedAt": "2026-11-01T13:40:21.359Z",
+      "source": "CNBC",
+      "status": "complete"
+    },
+    "forex": {
+      "quotes": [
+        {
+          "id": "eurusd",
+          "name": "EUR / USD",
+          "symbol": "EURUSD=X",
+          "price": 1.1158,
+          "change": 0,
+          "previous": 1.1158,
+          "time": 1793393940,
+          "currency": "",
+          "source": "CNBC"
+        },
+        {
+          "id": "gbpusd",
+          "name": "GBP / USD",
+          "symbol": "GBPUSD=X",
+          "price": 1.3391,
+          "change": 0,
+          "previous": 1.3391,
+          "time": 1793394000,
+          "currency": "",
+          "source": "CNBC"
+        },
+        {
+          "id": "usdjpy",
+          "name": "USD / JPY",
+          "symbol": "JPY=X",
+          "price": 157.53,
+          "change": 0,
+          "previous": 157.53,
+          "time": 1793393940,
+          "currency": "",
+          "source": "CNBC"
+        },
+        {
+          "id": "usdchf",
+          "name": "USD / CHF",
+          "symbol": "CHF=X",
+          "price": 0.825,
+          "change": 0,
+          "previous": 0.825,
+          "time": 1793394000,
+          "currency": "",
+          "source": "CNBC"
+        },
+        {
+          "id": "audusd",
+          "name": "AUD / USD",
+          "symbol": "AUDUSD=X",
+          "price": 0.703,
+          "change": 0,
+          "previous": 0.703,
+          "time": 1793393940,
+          "currency": "",
+          "source": "CNBC"
+        },
+        {
+          "id": "usdcny",
+          "name": "USD / CNY",
+          "symbol": "CNY=X",
+          "price": 6.6538,
+          "change": 0,
+          "previous": 6.6538,
+          "time": 1793375820,
+          "currency": "",
+          "source": "CNBC"
+        },
+        {
+          "id": "usdinr",
+          "name": "USD / INR",
+          "symbol": "INR=X",
+          "price": 94.8551,
+          "change": 0,
+          "previous": 94.8551,
+          "time": 1793367240,
+          "currency": "",
+          "source": "CNBC"
+        },
+        {
+          "id": "eurgbp",
+          "name": "EUR / GBP",
+          "symbol": "EURGBP=X",
+          "price": 0.8331,
+          "change": 0,
+          "previous": 0.8331,
+          "time": 1793394000,
+          "currency": "",
+          "source": "CNBC"
+        },
+        {
+          "id": "eurjpy",
+          "name": "EUR / JPY",
+          "symbol": "EURJPY=X",
+          "price": 175.77,
+          "change": 0,
+          "previous": 175.77,
+          "time": 1793393820,
+          "currency": "",
+          "source": "CNBC"
+        },
+        {
+          "id": "nzdusd",
+          "name": "NZD / USD",
+          "symbol": "NZDUSD=X",
+          "price": 0.5628,
+          "change": 0,
+          "previous": 0.5628,
+          "time": 1793393940,
+          "currency": "",
+          "source": "CNBC"
+        },
+        {
+          "id": "usdcad",
+          "name": "USD / CAD",
+          "symbol": "CAD=X",
+          "price": 1.3973,
+          "change": 0,
+          "previous": 1.3973,
+          "time": 1793393940,
+          "currency": "",
+          "source": "CNBC"
+        },
+        {
+          "id": "usdsek",
+          "name": "USD / SEK",
+          "symbol": "SEK=X",
+          "price": 9.8133,
+          "change": 0,
+          "previous": 9.8133,
+          "time": 1793393940,
+          "currency": "",
+          "source": "CNBC"
+        }
+      ],
+      "available": 12,
+      "fresh": 12,
+      "updatedAt": "2026-11-01T13:40:21.395Z",
       "source": "CNBC",
       "status": "complete"
     },
@@ -1472,7 +1472,7 @@
       ],
       "available": 14,
       "fresh": 14,
-      "updatedAt": "2026-11-01T06:23:23.264Z",
+      "updatedAt": "2026-11-01T13:40:21.471Z",
       "source": "CNBC",
       "status": "complete"
     },
@@ -1624,7 +1624,7 @@
       ],
       "available": 13,
       "fresh": 13,
-      "updatedAt": "2026-11-01T06:23:23.395Z",
+      "updatedAt": "2026-11-01T13:40:21.564Z",
       "source": "CNBC",
       "status": "complete"
     }
