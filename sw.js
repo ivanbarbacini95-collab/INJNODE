@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v16.11.01-reward-countervalue6';
+const CACHE_NAME = 'inj-node-v16.11.01-reward-smaller7';
 const APP_SHELL = [
   './market-embedded-compact-20261031.css?v=marketcompact3',
   './world-market-ticker-center-20261101.css?v=20261101bold2',
