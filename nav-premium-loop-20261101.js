@@ -18,7 +18,7 @@
   if(!ctx)return;
   const motion=window.matchMedia('(prefers-reduced-motion: reduce)');
   const TWO_PI=Math.PI*2,COVERAGE=.94,PERIOD=17000;
-  const EDGE=2.4,STOPS=220;
+  const EDGE=1.35,STOPS=220;
   const palette=[
    [0,255,251,230], [.12,255,194,122], [.27,255,120,149],
    [.43,235,104,198], [.59,165,117,250],
@@ -107,7 +107,9 @@
    if(w<55||h<30){width=0;return;}
    let r=23;
    try{r=parseFloat(getComputedStyle(nav).borderTopLeftRadius)||r;}catch(_){}
-   r=Math.max(7,Math.min(r,(h-2*EDGE)/2,(w-2*EDGE)/2));
+   // The menu's CSS radius describes its OUTER edge. A centerline at EDGE
+   // must use radius - EDGE or its arcs won't match the rounded corners.
+   r=Math.max(6,Math.min(r-EDGE,(h-2*EDGE)/2,(w-2*EDGE)/2));
    const dpr=Math.min(window.devicePixelRatio||1,3);
    if(w===oldWidth&&h===oldHeight&&r===oldRadius&&dpr===oldDpr)return;
    oldWidth=w;oldHeight=h;oldRadius=r;oldDpr=dpr;
@@ -165,23 +167,23 @@
     ctx.lineCap='round';ctx.lineJoin='round';
     tracePerimeter();
     // Two passes, two CONTINUOUS strokes — no sampled points or dot joins.
-    ctx.globalAlpha=.23;ctx.lineWidth=5.1;ctx.stroke();
-    ctx.globalAlpha=1;ctx.lineWidth=2.25;ctx.stroke();
+    ctx.globalAlpha=.18;ctx.lineWidth=3.1;ctx.stroke();
+    ctx.globalAlpha=1;ctx.lineWidth=1.38;ctx.stroke();
    }else{
     // Older browser fallback is still a single unbroken stroked dash.
     tracePerimeter();
     ctx.setLineDash([perimeter*COVERAGE,perimeter*(1-COVERAGE)]);
     ctx.lineDashOffset=-head;
-    ctx.lineWidth=2.4;ctx.strokeStyle='rgba(171,148,249,.9)';
+    ctx.lineWidth=1.4;ctx.strokeStyle='rgba(171,148,249,.9)';
     ctx.stroke();ctx.setLineDash([]);
    }
    const p=point(head);
-   const glow=ctx.createRadialGradient(p[0],p[1],0,p[0],p[1],8.5);
+   const glow=ctx.createRadialGradient(p[0],p[1],0,p[0],p[1],7.5);
    glow.addColorStop(0,'rgba(255,249,232,.62)');
    glow.addColorStop(.24,'rgba(255,213,169,.20)');
    glow.addColorStop(1,'rgba(255,213,169,0)');
-   ctx.fillStyle=glow;ctx.fillRect(p[0]-9,p[1]-9,18,18);
-   ctx.beginPath();ctx.arc(p[0],p[1],1.4,0,TWO_PI);
+   ctx.fillStyle=glow;ctx.fillRect(p[0]-8,p[1]-8,16,16);
+   ctx.beginPath();ctx.arc(p[0],p[1],1.12,0,TWO_PI);
    ctx.fillStyle='rgba(255,255,245,.99)';ctx.fill();
   }
   const phaseAt=now=>((now%PERIOD)+PERIOD)%PERIOD/PERIOD;

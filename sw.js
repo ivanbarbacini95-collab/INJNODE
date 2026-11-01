@@ -1,8 +1,8 @@
-const CACHE_NAME = 'inj-node-v16.11.01-continuous-comet-v7';
+const CACHE_NAME = 'inj-node-v16.11.01-borderless-comet-v8';
 const APP_SHELL = [
   './home-theme-continuity-20261101.css?v=1',
-  './nav-premium-loop-20261101.css?v=4',
-  './nav-premium-loop-20261101.js?v=7',
+  './nav-premium-loop-20261101.css?v=8',
+  './nav-premium-loop-20261101.js?v=8',
   './my-reward-immersive-20261101.css?v=4',
   './my-reward-immersive-20261101.js?v=2',
 
@@ -299,8 +299,8 @@ self.addEventListener('install', (event) => {
     // actual boot path first; runtime requests populate the rest on demand.
     const essential=new Set([
   './home-theme-continuity-20261101.css?v=1',
-  './nav-premium-loop-20261101.css?v=4',
-  './nav-premium-loop-20261101.js?v=7',
+  './nav-premium-loop-20261101.css?v=8',
+  './nav-premium-loop-20261101.js?v=8',
   './my-reward-immersive-20261101.css?v=4',
   './my-reward-immersive-20261101.js?v=2',
 
