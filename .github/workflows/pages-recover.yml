@@ -1,0 +1,24 @@
+name: Recover blocked GitHub Pages deployment
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/pages-recover.yml'
+
+permissions:
+  pages: write
+  contents: read
+
+jobs:
+  cancel-blocked-pages:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cancel orphaned Pages deployment by commit SHA
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          gh api -X POST "repos/${GH_REPO}/pages/deployments/aa516788f4de9ffee6a4c8e1c2ef0f1994ba85c2/cancel"
+          echo 'Requested cancellation of blocked GitHub Pages deployment.'
