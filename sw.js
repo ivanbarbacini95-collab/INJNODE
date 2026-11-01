@@ -1,10 +1,10 @@
-const CACHE_NAME = 'inj-node-v16.11.01-reward-immersive-green-v2';
+const CACHE_NAME = 'inj-node-v16.11.01-myreward-menu-v3';
 const APP_SHELL = [
-  './my-reward-immersive-20261101.css?v=2',
+  './my-reward-immersive-20261101.css?v=3',
   './my-reward-immersive-20261101.js?v=2',
 
   './my-reward-20261101.css?v=1',
-  './my-reward-20261101.js?v=1',
+  './my-reward-20261101.js?v=3',
   './inj-ux-refinement-20261101.css?v=1',
   './inj-ux-refinement-20261101.js?v=1',
   './inj-local-access-lock-20261101.css?v=1',
@@ -33,7 +33,7 @@ const APP_SHELL = [
   './home-bottom-tabs-20261030.css?v=20261101-android-nav1',
   './home-card-reorder-20261030.css?v=order1',
   './home-card-reorder-20261030.js?v=order4',
-  './home-bottom-tabs-20261030.js?v=20261101-android-nav1',
+  './home-bottom-tabs-20261030.js?v=20261101-myreward-menu3',
   './market-tab-navigation-20261031.css?v=marketrail11',
   './market-tab-navigation-20261031.js?v=marketrail14',
   './app.js?v=20261101androidpwa1',
@@ -295,11 +295,11 @@ self.addEventListener('install', (event) => {
     // legacy CSS/JS downloads before the worker can activate. Cache the
     // actual boot path first; runtime requests populate the rest on demand.
     const essential=new Set([
-  './my-reward-immersive-20261101.css?v=2',
+  './my-reward-immersive-20261101.css?v=3',
   './my-reward-immersive-20261101.js?v=2',
 
       './my-reward-20261101.css?v=1',
-      './my-reward-20261101.js?v=1',
+      './my-reward-20261101.js?v=3',
   './inj-ux-refinement-20261101.css?v=1',
   './inj-ux-refinement-20261101.js?v=1',
   './inj-local-access-lock-20261101.css?v=1',
@@ -316,7 +316,7 @@ self.addEventListener('install', (event) => {
       './android-native-scroll-20261101.css?v=android-scroll1',
   './android-section-scroll-20261101.css?v=android-section-scroll1',
   './home-bottom-tabs-20261030.css?v=20261101-android-nav1',
-      './home-bottom-tabs-20261030.js?v=20261101-android-nav1',
+      './home-bottom-tabs-20261030.js?v=20261101-myreward-menu3',
       './market-tab-navigation-20261031.js?v=marketrail14',
       './market-tab-navigation-20261031.css?v=marketrail11',
       './install-icon-minimal.html','./install-icon-classic.html',

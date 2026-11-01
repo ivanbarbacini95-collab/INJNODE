@@ -98,3 +98,14 @@ html[data-inj-page="index"][data-inj-home-tab="reward"] body #injPrimaryBottomNa
 html[data-inj-page="index"][data-inj-home-tab="reward"] body #injPrimaryBottomNav#injPrimaryBottomNav#injPrimaryBottomNav:popover-open{
  display:none!important;visibility:hidden!important;pointer-events:none!important
 }
+
+/* The green accent belongs to the My Reward navigation destination, not a Home card. */
+html[data-inj-page="index"] body #injPrimaryBottomNav#injPrimaryBottomNav
+ .inj-bottom-tab[data-inj-tab="reward"],
+html[data-inj-page="index"] body #injPrimaryBottomNav#injPrimaryBottomNav
+ .inj-bottom-tab[data-inj-tab="reward"] .inj-bottom-tab-label,
+html[data-inj-page="index"] body #injPrimaryBottomNav#injPrimaryBottomNav
+ .inj-bottom-tab[data-inj-tab="reward"] .inj-bottom-tab-icon {
+ color:#43e69b!important;
+ font-weight:800!important;
+}

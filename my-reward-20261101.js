@@ -35,20 +35,6 @@ function updateLabels(){
   if(tab)btn.setAttribute('aria-label',isEn()?tab.en:tab.it);
  });
 }
-function buildLauncher(){
- const actions=$('entryGate')?.querySelector('.entry-actions.entry-flat-v44');
- const live=$('entryLiveButton');
- if(!actions||!live||$('entryMyRewardButton'))return;
- const btn=document.createElement('button');
- btn.type='button';btn.className='entry-action entry-action-myreward';btn.id='entryMyRewardButton';
- btn.setAttribute('aria-label','My Reward');
- btn.innerHTML='<span class="entry-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M7 7h8a4 4 0 0 1 0 8H8m0-8H6m2 8H6M15 15l2.5 2.5L21 14"/></svg></span>'+
- '<span><strong class="inj-home-tile-title" data-it="My Reward" data-en="My Reward">My Reward</strong>'+
- '<small class="inj-tile-description" data-it="Staking e reward live" data-en="Staking and live rewards">Staking e reward live</small></span>'+
- '<svg class="entry-action-arrow" aria-hidden="true" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>';
- live.after(btn);
- btn.addEventListener('click',()=>{select('overview');window.INJ_BOTTOM_NAV?.select(REWARD);});
-}
 function renderPicker(rows,selected){
  const picker=$('injMyRewardPicker'),wrap=$('injMyRewardPickerWrap');
  if(!picker||!wrap)return;
@@ -261,7 +247,7 @@ function sync(){
 function init(){
  const gate=$('entryGate'),actions=gate?.querySelector('.entry-actions.entry-flat-v44');
  if(!actions||!$('injPrimaryBottomNav'))return;
- buildLauncher();createPanel(actions);
+ createPanel(actions);
  const observer=new MutationObserver(sync);
  observer.observe(root,{attributes:true,attributeFilter:['data-inj-home-tab']});
  window.addEventListener('pageshow',sync);
