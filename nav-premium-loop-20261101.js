@@ -21,6 +21,8 @@ function init(){
  let dTop=0,dSide=0,dArc=0;
  let lastTick=0,frame=0,active=false;
  let lastRenderedPhase=-1,renderPalette=[];
+ // Leave only a narrow unlit gap before the comet's head.
+ const COMET_COVERAGE=.94;
  // Smooth chromatic progression from the bright golden head to its icy tail.
  // Direct RGB interpolation (not HSL hue rotation): the earlier 37°→334°
  // transition travelled through unwanted green/blue, washing out pink.
@@ -44,8 +46,10 @@ function init(){
   renderPalette=[];
   for(let i=0;i<n;i++){
    const t=(i+.5)/n;
-   const sustained=Math.pow(1-t,.67);
-   const taper=t>.77?Math.pow((1-t)/.23,1.28):1;
+   // The hue stays visible over almost the entire loop; the very end
+   // gradually dissolves, rather than creating a wide dark interval.
+   const sustained=Math.pow(1-t,.42);
+   const taper=t>.87?Math.pow((1-t)/.13,1.03):1;
    const alpha=.97*sustained*taper;
    renderPalette.push({color:colorAt(t,alpha),glow:colorAt(t,alpha*.19),width:t<.10?2.48:2.12,show:alpha>.007});
   }
@@ -65,7 +69,8 @@ function init(){
   const dpr=Math.min(window.devicePixelRatio||1,3);
   // About 3 CSS px per sample. Cached colors and no per-sample shadow blur
   // drastically reduce main-thread work during the PWA's hide/show transition.
-  rebuildColors(Math.max(145,Math.ceil(perimeter*.58/3)));
+  // Slightly wider sampling spacing preserves current performance on iPhone.
+  rebuildColors(Math.max(165,Math.ceil(perimeter*COMET_COVERAGE/3.7)));
   scale=dpr;
   canvas.width=Math.max(1,Math.round(w*dpr));
   canvas.height=Math.max(1,Math.round(h*dpr));
@@ -105,7 +110,7 @@ function init(){
  function draw(phase){
   if(!width||!perimeter)return;
   ctx.clearRect(0,0,width,height);
-  const head=phase*perimeter,tail=perimeter*.58;
+  const head=phase*perimeter,tail=perimeter*COMET_COVERAGE;
   const n=renderPalette.length,step=tail/n;
   ctx.lineCap='round';ctx.lineJoin='round';
   // Fine chromatic line: colors fade evenly from gold to pink to purple to cyan.

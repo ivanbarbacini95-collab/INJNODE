@@ -1,0 +1,44 @@
+/* INJ Node · Home theme canvas continuity (1 November 2026)
+   Theme-switch correction: use ONE viewport-wide palette surface. Older
+   independent Home/header fills caused a hard rectangular edge on PWA.
+   Do not touch position, scroll, pointer events, safe-area or real cards. */
+html[data-theme][data-inj-page="index"]{
+ background-color:var(--theme-canvas,var(--bg,#07121b))!important;
+ background-image:var(--page-gradient,none)!important;
+ background-repeat:no-repeat!important;
+ background-position:center center!important;
+ background-size:100% 100%!important;
+ background-attachment:fixed!important;
+}
+html[data-theme][data-inj-page="index"] body,
+html[data-theme][data-inj-page="index"] body.entry-gate-open,
+html[data-theme][data-inj-page="index"] body>#entryGate.entry-gate,
+html[data-theme][data-inj-page="index"] body>#entryGate.entry-gate.visible,
+html[data-theme][data-inj-page="index"] body>#entryGate.entry-gate>.entry-gate-shell:not(.first-access),
+html[data-theme][data-inj-page="index"] body>.app-shell{
+ background:transparent!important;
+ background-color:transparent!important;
+ background-image:none!important;
+ background-attachment:scroll!important;
+}
+html[data-theme][data-inj-page="index"] body #entryGate
+ :is(.entry-home-top,.home-safe-heading.inj-terminal-hero-arranged){
+ background:transparent!important;
+ background-color:transparent!important;
+ background-image:none!important;
+ box-shadow:none!important;
+ -webkit-backdrop-filter:none!important;
+ backdrop-filter:none!important;
+}
+html[data-theme][data-inj-page="index"] body #entryGate
+ :is(.entry-home-top,.home-safe-heading.inj-terminal-hero-arranged)::before,
+html[data-theme][data-inj-page="index"] body #entryGate
+ :is(.entry-home-top,.home-safe-heading.inj-terminal-hero-arranged)::after{
+ background:transparent!important;
+ background-image:none!important;
+ box-shadow:none!important;
+ -webkit-backdrop-filter:none!important;
+ backdrop-filter:none!important;
+}
+/* The moving Velvet/Ocean atmospheres remain untouched, as do the content
+   cards, modals, menu settings and full-screen market/ETF destinations. */
