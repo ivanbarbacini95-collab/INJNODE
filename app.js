@@ -8189,7 +8189,26 @@ function updateInstallUi() {
 
 function registerPwa() {
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js?v=20261031quotefix2',{updateViaCache:'none'}).then(registration=>registration.update()).catch(() => {}), { once: true });
+    // Android standalone must repair a stale worker without waiting for every
+    // chart/font/image request to complete the window load event.
+    const refreshWorker = () => {
+      navigator.serviceWorker.register('./sw.js?v=20261101androidpwa1',{updateViaCache:'none'})
+        .then(registration => registration.update())
+        .catch(() => {});
+    };
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', refreshWorker, { once: true });
+    } else {
+      refreshWorker();
+    }
+    // A resumed Android PWA can live for days without another navigation.
+    // Update its worker when it returns to foreground; no forced reload/data loss.
+    window.addEventListener('pageshow', () => {
+      if (/Android/i.test(navigator.userAgent || '') && document.visibilityState === 'visible')
+        navigator.serviceWorker.getRegistration()
+          .then(registration => registration?.update())
+          .catch(() => {});
+    }, { passive: true });
   }
   updateInstallUi();
 }
