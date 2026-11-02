@@ -1,6 +1,6 @@
-const CACHE_NAME = 'inj-node-v20261102-price-axis-interactive-time7';
+const CACHE_NAME = 'inj-node-v20261102-price-axis-interactive-time8';
 const APP_SHELL = [
-  './inj-home-candles-20261102.css?v=3',
+  './inj-home-candles-20261102.css?v=4',
   './inj-home-candles-20261102.js?v=3',
   './inj-light-home-20261102.css?v=light-candles5',
   './inj-light-home-20261102.js?v=light-candles-times6',
@@ -306,7 +306,7 @@ self.addEventListener('install', (event) => {
     // legacy CSS/JS downloads before the worker can activate. Cache the
     // actual boot path first; runtime requests populate the rest on demand.
     const essential=new Set([
-      './inj-home-candles-20261102.css?v=3',
+      './inj-home-candles-20261102.css?v=4',
       './inj-home-candles-20261102.js?v=3',
       './inj-light-home-20261102.css?v=light-candles5',
       './inj-light-home-20261102.js?v=light-candles-times6',

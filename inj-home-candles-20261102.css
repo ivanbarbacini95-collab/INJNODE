@@ -13,7 +13,7 @@ html[data-inj-page="index"] body #entryGate #entrySparkStage > #injProCandleSvg{
  overflow:hidden!important;pointer-events:none!important;
  opacity:1!important;
 }
-html[data-inj-page="index"] body #injLightHome #injLightChartPlot[data-inj-candles-ready="true"] > svg:not(#injLightCandleSvg){
+html[data-inj-page="index"] body #injLightHome #injLightChartPlot[data-inj-candles-ready="true"] > svg:not(#injLightCandleSvg):not(#injLightCandleMarkerSvg){
  opacity:0!important;
 }
 html[data-inj-page="index"] body #injLightHome #injLightChartPlot > #injLightCandleSvg{
