@@ -117,7 +117,7 @@
  function enforceLightDock(){
    const nav=$('injPrimaryBottomNav');
    if(!nav)return;
-   const isLight=root.dataset.injViewMode==='light';
+   const isLight=root.dataset.injViewMode==='light'||root.dataset.injModeTransition==='leaving';
    if(isLight){
      if(typeof nav.hidePopover==='function'){
        try{if(nav.matches(':popover-open'))nav.hidePopover()}catch(_){}
@@ -135,16 +135,104 @@
      nav.inert=false;
    }
  }
- function refreshVisibility(){
+ // The Light dashboard and Pro Home are already mounted. Crossfade those
+ // existing screens rather than mounting/unmounting either during a toggle.
+ // Keep the original Pro scroll position and suppress the dock until the
+ // final crossfade frame, so switching feels native on iOS/Android.
+ let transitionTimer=0;
+ let transitionFrame=0;
+ let transitionGeneration=0;
+ const TRANSITION_MS=300;
+ const motionReduced=()=>Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches);
+ function stopTransition(){
+   ++transitionGeneration;
+   window.clearTimeout(transitionTimer);
+   transitionTimer=0;
+   window.cancelAnimationFrame(transitionFrame);
+   transitionFrame=0;
+ }
+ function finalizePro(){
+   stopTransition();
+   light.hidden=true;
+   light.classList.remove('inj-light-fade-in-start','inj-light-fade-out');
+   root.dataset.injLightActive='false';
+   delete root.dataset.injModeTransition;
    enforceLightDock();
+   closeSheet();
+   clearQuoteDirection();
+   lastDirectionalQuote=NaN;
+ }
+ function refreshVisibility(){
    const show=isForeground();
-   if(light.hidden===show)light.hidden=!show;
-   root.dataset.injLightActive=show?'true':'false';
-   if(!show){
+   const mode=root.dataset.injViewMode;
+   if(show){
+     if(root.dataset.injModeTransition==='entering'&&!light.hidden)return;
+     if(light.hidden || root.dataset.injModeTransition==='leaving'){
+       stopTransition();
+       root.dataset.injModeTransition='entering';
+       // Apply the initial opacity BEFORE the first layout/paint.
+       light.classList.remove('inj-light-fade-out');
+       light.classList.add('inj-light-fade-in-start');
+       light.hidden=false;
+       root.dataset.injLightActive='true';
+       enforceLightDock();
+       scheduleSync();
+       if(motionReduced()){
+         light.classList.remove('inj-light-fade-in-start');
+         delete root.dataset.injModeTransition;
+       }else{
+         const generation=transitionGeneration;
+         transitionFrame=window.requestAnimationFrame(()=>{
+           if(generation!==transitionGeneration||root.dataset.injViewMode!=='light')return;
+           light.classList.remove('inj-light-fade-in-start');
+           transitionTimer=window.setTimeout(()=>{
+             if(generation===transitionGeneration)delete root.dataset.injModeTransition;
+           },TRANSITION_MS+30);
+         });
+       }
+     }else{
+       root.dataset.injLightActive='true';
+       enforceLightDock();
+       scheduleSync();
+     }
+     return;
+   }
+   if(mode==='pro'&&!light.hidden){
+     if(root.dataset.injModeTransition==='leaving')return;
+     stopTransition();
+     root.dataset.injModeTransition='leaving';
+     root.dataset.injLightActive='false';
      closeSheet();
      clearQuoteDirection();
      lastDirectionalQuote=NaN;
-   }else scheduleSync();
+     // Do not show the native popover navigation above the fading overlay.
+     enforceLightDock();
+     if(motionReduced()){
+       finalizePro();
+     }else{
+       const generation=transitionGeneration;
+       // Keep the Light surface mounted while Pro appears underneath.
+       transitionFrame=window.requestAnimationFrame(()=>{
+         if(generation!==transitionGeneration||root.dataset.injViewMode!=='pro')return;
+         light.classList.add('inj-light-fade-out');
+         transitionTimer=window.setTimeout(()=>{
+           if(generation===transitionGeneration)finalizePro();
+         },TRANSITION_MS+30);
+       });
+     }
+     return;
+   }
+   if(root.dataset.injModeTransition==='leaving')return;
+   // Non-mode navigation (first access, overlay, other tabs) stays immediate.
+   stopTransition();
+   light.hidden=true;
+   light.classList.remove('inj-light-fade-in-start','inj-light-fade-out');
+   root.dataset.injLightActive='false';
+   delete root.dataset.injModeTransition;
+   enforceLightDock();
+   closeSheet();
+   clearQuoteDirection();
+   lastDirectionalQuote=NaN;
  }
  function updateLang(){
    const en=english();

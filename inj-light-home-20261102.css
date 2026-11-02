@@ -2,7 +2,8 @@
    One data pipeline: the existing Home remains mounted and updates price, wallet
    and real UTC-day sparkline. Pro remains unchanged. */
 html[data-inj-page="index"] body > #injLightHome[hidden]{display:none!important}
-html[data-inj-page="index"][data-inj-light-active="true"] body > #injLightHome:not([hidden]){
+html[data-inj-page="index"][data-inj-light-active="true"] body > #injLightHome:not([hidden]),
+html[data-inj-page="index"][data-inj-mode-transition="leaving"] body > #injLightHome:not([hidden]){
  display:flex!important;position:fixed!important;inset:0!important;
  z-index:2147483400!important;overflow-x:hidden!important;overflow-y:auto!important;
  overscroll-behavior-y:contain!important;-webkit-overflow-scrolling:touch!important;
@@ -434,5 +435,38 @@ html[data-inj-page="index"] body #injLightHome #injLightPriceArrow.inj-light-pri
  html[data-inj-page="index"] body #injLightHome
  :is(#injLightPrice.inj-light-price-flash,#injLightPriceArrow.inj-light-price-arrow-settle){
   animation:none!important;
+ }
+}
+
+
+/* Light / Pro crossfade: overlay remains a fixed GPU-composited surface.
+   No layout resizing, scroll resets, or opacity flashes while switching. */
+html[data-inj-page="index"] body > #injLightHome:not([hidden]){
+ opacity:1!important;
+ transform:translate3d(0,0,0)!important;
+ transition:opacity .30s cubic-bezier(.22,.61,.36,1),
+            transform .30s cubic-bezier(.22,.61,.36,1)!important;
+ backface-visibility:hidden!important;
+}
+html[data-inj-page="index"] body > #injLightHome.inj-light-fade-in-start:not([hidden]){
+ opacity:0!important;transform:translate3d(0,6px,0)!important;
+}
+html[data-inj-page="index"] body > #injLightHome.inj-light-fade-out:not([hidden]){
+ opacity:0!important;transform:translate3d(0,5px,0)!important;
+ pointer-events:none!important;
+}
+html[data-inj-page="index"][data-inj-mode-transition="entering"][data-inj-light-active="true"]
+ body > #entryGate{
+ opacity:1!important;visibility:visible!important;pointer-events:none!important;
+}
+html[data-inj-page="index"][data-inj-mode-transition="leaving"]
+ body > #injPrimaryBottomNav,
+html[data-inj-page="index"][data-inj-mode-transition="leaving"]
+ body > #injPrimaryBottomNav:popover-open{
+ display:none!important;visibility:hidden!important;pointer-events:none!important;
+}
+@media(prefers-reduced-motion:reduce){
+ html[data-inj-page="index"] body > #injLightHome:not([hidden]){
+  transition:none!important;transform:none!important;
  }
 }
