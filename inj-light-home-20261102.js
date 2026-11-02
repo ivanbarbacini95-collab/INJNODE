@@ -140,8 +140,11 @@
    const show=isForeground();
    if(light.hidden===show)light.hidden=!show;
    root.dataset.injLightActive=show?'true':'false';
-   if(!show)closeSheet();
-   else scheduleSync();
+   if(!show){
+     closeSheet();
+     clearQuoteDirection();
+     lastDirectionalQuote=NaN;
+   }else scheduleSync();
  }
  function updateLang(){
    const en=english();
@@ -337,45 +340,47 @@
    frame=requestAnimationFrame(()=>{frame=0;if(!light.hidden)syncData()});
  }
 
- // Distinguish the latest *live tick* from 24H performance and 6H chart
- // direction. Retain the last tick's color/arrow until the next price change.
+ // Every actual quote change gets a brief directional indication, then
+ // returns to the theme's neutral price color. Rapid ticks are coalesced:
+ // no persistent red/green state and no continuous strobing.
  let lastDirectionalQuote=NaN;
- let lastPriceBlinkAt=0;
+ let lastPriceBlinkAt=-Infinity;
+ let priceNeutralTimer=0;
  const priceRow=$('injLightPriceRow');
  const priceArrow=$('injLightPriceArrow');
  const priceValue=$('injLightPrice');
- priceValue.addEventListener('animationend',event=>{
-   if(event.animationName==='inj-light-price-tick-glow'){
-     priceValue.classList.remove('inj-light-price-flash');
-   }
- });
- priceArrow.addEventListener('animationend',event=>{
-   if(event.animationName==='inj-light-price-arrow-settle'){
-     priceArrow.classList.remove('inj-light-price-arrow-settle');
-   }
- });
+ function clearQuoteDirection(){
+   window.clearTimeout(priceNeutralTimer);
+   priceNeutralTimer=0;
+   delete priceRow.dataset.direction;
+   priceRow.removeAttribute('title');
+   priceValue.classList.remove('inj-light-price-flash');
+   priceArrow.classList.remove('inj-light-price-arrow-settle');
+ }
  function updateLiveQuoteDirection(next){
    if(!Number.isFinite(next)||next<=0)return;
    if(Number.isFinite(lastDirectionalQuote)){
      const threshold=Math.max(1e-9,Math.abs(lastDirectionalQuote)*1e-12);
      const diff=next-lastDirectionalQuote;
      if(Math.abs(diff)>threshold){
-       const rising=diff>0;
-       const direction=rising?'up':'down';
-       priceRow.dataset.direction=direction;
-       priceRow.title=english()
-         ? rising?'Latest tick: price increased':'Latest tick: price decreased'
-         : rising?'Ultimo aggiornamento: prezzo in salita':'Ultimo aggiornamento: prezzo in discesa';
-       // The arrow and quote are never hidden or rescaled. Restart a subtle
-       // glow no more than once per 850ms even during rapid price bursts.
        const now=performance.now();
-       if(now-lastPriceBlinkAt>=850&&
-          !window.matchMedia?.('(prefers-reduced-motion:reduce)')?.matches){
+       // Allow the previous pulse to FINISH and the price to return to normal
+       // even if the websocket continues delivering ticks continuously.
+       if(now-lastPriceBlinkAt>=950){
+         clearQuoteDirection();
          lastPriceBlinkAt=now;
-         if(!priceValue.classList.contains('inj-light-price-flash'))
+         const rising=diff>0;
+         priceRow.dataset.direction=rising?'up':'down';
+         priceRow.title=english()
+           ? rising?'Latest tick: price increased':'Latest tick: price decreased'
+           : rising?'Ultimo aggiornamento: prezzo in salita':'Ultimo aggiornamento: prezzo in discesa';
+         if(!window.matchMedia?.('(prefers-reduced-motion:reduce)')?.matches){
            priceValue.classList.add('inj-light-price-flash');
-         if(!priceArrow.classList.contains('inj-light-price-arrow-settle'))
            priceArrow.classList.add('inj-light-price-arrow-settle');
+         }
+         // A fixed, non-restarting lifetime: normal color and hidden arrow
+         // after the update, even in very active market conditions.
+         priceNeutralTimer=window.setTimeout(clearQuoteDirection,660);
        }
      }
    }

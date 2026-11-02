@@ -390,11 +390,12 @@ html[data-inj-page="index"] body #injLightHome #injLightPriceArrow.inj-light-pri
  flex:none!important;align-items:center!important;justify-content:center!important;
  display:inline-flex!important;opacity:0!important;visibility:hidden!important;
  color:var(--inj-light-price-direction)!important;
- transition:color .28s ease!important;
+ transition:opacity .18s ease,visibility 0s linear .18s,color .26s ease!important;
 }
 html[data-inj-page="index"] body #injLightHome #injLightPriceRow[data-direction]
  #injLightPriceArrow.inj-light-price-arrow{
  opacity:1!important;visibility:visible!important;
+ transition:opacity .18s ease,color .26s ease!important;
 }
 html[data-inj-page="index"] body #injLightHome #injLightPriceArrow svg{
  display:block!important;width:100%!important;height:100%!important;
