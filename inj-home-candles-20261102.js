@@ -236,11 +236,9 @@
    dot.style.left=percent+'%';
    dot.style.top=(y/150*100)+'%';
    tip.style.left=Math.max(21,Math.min(79,percent))+'%';
-   // OHLC values are real exchange values, never inferred from SVG pixels.
-   const time=clock(c.t);
-   const end=time+' · O '+format(c.o,4)+' · H '+format(c.h,4)+
-            ' · L '+format(c.l,4)+' · C '+format(c.c,4);
-   tip.textContent=end;
+   // Read only the real close price of the candle under the cursor.
+   // Keep the tooltip compact: no time, no OHLC labels.
+   tip.textContent=format(c.c,4)+' USDT';
    v.selected=safe;
    v.layer.classList.add('is-inspecting');
  }
@@ -271,7 +269,7 @@
      layer.className='inj-candle-interaction inj-candle-interaction-'+mode;
      layer.setAttribute('role','group');
      layer.setAttribute('tabindex','0');
-     layer.setAttribute('aria-label','Esplora le candele: scorri, tocca oppure usa le frecce per leggere orario, apertura, massimo, minimo e chiusura');
+     layer.setAttribute('aria-label','Esplora il grafico: tocca, trascina o usa le frecce per leggere il prezzo della candela selezionata');
      layer.innerHTML=selectionMarkup();
      stage.appendChild(layer);
      v.layer=layer;

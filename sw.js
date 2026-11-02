@@ -1,7 +1,7 @@
-const CACHE_NAME = 'inj-node-v20261102-light-mode-crossfade12';
+const CACHE_NAME = 'inj-node-v20261102-price-only-inspection13';
 const APP_SHELL = [
-  './inj-home-candles-20261102.css?v=4',
-  './inj-home-candles-20261102.js?v=3',
+  './inj-home-candles-20261102.css?v=price-only5',
+  './inj-home-candles-20261102.js?v=price-only4',
   './inj-light-home-20261102.css?v=light-mode-crossfade11',
   './inj-light-home-20261102.js?v=light-mode-crossfade11',
   './inj-view-mode-20261102.css?v=light-crossfade12',
@@ -306,8 +306,8 @@ self.addEventListener('install', (event) => {
     // legacy CSS/JS downloads before the worker can activate. Cache the
     // actual boot path first; runtime requests populate the rest on demand.
     const essential=new Set([
-      './inj-home-candles-20261102.css?v=4',
-      './inj-home-candles-20261102.js?v=3',
+      './inj-home-candles-20261102.css?v=price-only5',
+      './inj-home-candles-20261102.js?v=price-only4',
       './inj-light-home-20261102.css?v=light-mode-crossfade11',
       './inj-light-home-20261102.js?v=light-mode-crossfade11',
       './inj-view-mode-20261102.css?v=light-crossfade12',

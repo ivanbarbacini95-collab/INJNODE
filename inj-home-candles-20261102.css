@@ -238,3 +238,17 @@ html[data-inj-page="index"] body #entryGate #entrySparkStage[data-inj-candles-re
 @media(prefers-reduced-motion:reduce){
  html[data-inj-page="index"] body .inj-candle-interaction *{animation:none!important;transition:none!important}
 }
+
+
+/* Price-only inspection bubble: one compact number, no OHLC row. */
+html[data-inj-page="index"] body
+ .inj-candle-interaction .inj-candle-inspect-tooltip{
+ padding:5px 9px!important;
+ min-width:0!important;
+ max-width:calc(100% - 10px)!important;
+ font-size:clamp(11px,2.7vw,13px)!important;
+ font-weight:var(--inj-chosen-emphasis,600)!important;
+ line-height:1.2!important;
+ white-space:nowrap!important;
+ border-radius:7px!important;
+}
