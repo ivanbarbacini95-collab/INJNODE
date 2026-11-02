@@ -29,7 +29,11 @@
       '<p class="inj-light-value private"><span id="injLightHoldings">—</span> <small>INJ</small></p>'+
       '<small class="inj-light-meta" data-light-it="Totale wallet" data-light-en="Wallet total">Totale wallet</small></div>'+
       '<div><span class="inj-light-eyebrow" data-light-it="PREZZO INJ" data-light-en="INJ PRICE">PREZZO INJ</span>'+
-      '<p id="injLightPrice" class="inj-light-value">—</p>'+
+      '<div id="injLightPriceRow" class="inj-light-price-row">'+
+        '<p id="injLightPrice" class="inj-light-value">—</p>'+
+        '<span id="injLightPriceArrow" class="inj-light-price-arrow" aria-hidden="true">'+
+          '<svg viewBox="0 0 20 20" focusable="false"><path d="M10 16V4M5.25 8.75 10 4l4.75 4.75"/></svg>'+
+        '</span></div>'+
       '<small id="injLightChange" class="inj-light-meta">— · 24H</small></div>'+
     '</div>'+
     '<section class="inj-light-chart"><div class="inj-light-chart-head">'+
@@ -332,6 +336,51 @@
    if(frame||light.hidden)return;
    frame=requestAnimationFrame(()=>{frame=0;if(!light.hidden)syncData()});
  }
+
+ // Distinguish the latest *live tick* from 24H performance and 6H chart
+ // direction. Retain the last tick's color/arrow until the next price change.
+ let lastDirectionalQuote=NaN;
+ let lastPriceBlinkAt=0;
+ const priceRow=$('injLightPriceRow');
+ const priceArrow=$('injLightPriceArrow');
+ const priceValue=$('injLightPrice');
+ priceValue.addEventListener('animationend',event=>{
+   if(event.animationName==='inj-light-price-tick-glow'){
+     priceValue.classList.remove('inj-light-price-flash');
+   }
+ });
+ priceArrow.addEventListener('animationend',event=>{
+   if(event.animationName==='inj-light-price-arrow-settle'){
+     priceArrow.classList.remove('inj-light-price-arrow-settle');
+   }
+ });
+ function updateLiveQuoteDirection(next){
+   if(!Number.isFinite(next)||next<=0)return;
+   if(Number.isFinite(lastDirectionalQuote)){
+     const threshold=Math.max(1e-9,Math.abs(lastDirectionalQuote)*1e-12);
+     const diff=next-lastDirectionalQuote;
+     if(Math.abs(diff)>threshold){
+       const rising=diff>0;
+       const direction=rising?'up':'down';
+       priceRow.dataset.direction=direction;
+       priceRow.title=english()
+         ? rising?'Latest tick: price increased':'Latest tick: price decreased'
+         : rising?'Ultimo aggiornamento: prezzo in salita':'Ultimo aggiornamento: prezzo in discesa';
+       // The arrow and quote are never hidden or rescaled. Restart a subtle
+       // glow no more than once per 850ms even during rapid price bursts.
+       const now=performance.now();
+       if(now-lastPriceBlinkAt>=850&&
+          !window.matchMedia?.('(prefers-reduced-motion:reduce)')?.matches){
+         lastPriceBlinkAt=now;
+         if(!priceValue.classList.contains('inj-light-price-flash'))
+           priceValue.classList.add('inj-light-price-flash');
+         if(!priceArrow.classList.contains('inj-light-price-arrow-settle'))
+           priceArrow.classList.add('inj-light-price-arrow-settle');
+       }
+     }
+   }
+   lastDirectionalQuote=next;
+ }
  function syncData(){
    const selected=document.querySelector('#entryWallets .entry-wallet-row.selected');
    const name=selected?.querySelector('.entry-wallet strong')?.textContent||readText('entryOverviewWallet');
@@ -340,6 +389,7 @@
    output('injLightAddress',walletCount>1?name+' · '+address:address);
    output('injLightHoldings',short(readNum('entryWalletTotal')));
    output('injLightPrice',readText('entryMarketPrice'));
+   updateLiveQuoteDirection(readNum('entryMarketPrice'));
    const change=readText('entryMarketChange');
    output('injLightChange',change);
    const changeNode=$('injLightChange');

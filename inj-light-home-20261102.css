@@ -361,3 +361,77 @@ html[data-inj-page="index"] body #injLightHome .inj-light-axis{
 @media(max-width:360px){
  html[data-inj-page="index"] body #injLightHome #injLightChartPlot{--inj-light-axis-width:61px}
 }
+
+
+/* Minimal real-time tick direction next to the Light quote. Keep the 24H
+   percentage and 6H chart performance independent of this latest-tick state. */
+html[data-inj-page="index"] body #injLightHome #injLightPriceRow.inj-light-price-row{
+ display:flex!important;align-items:center!important;justify-content:flex-start!important;
+ gap:clamp(3px,.75vw,7px)!important;min-width:0!important;
+ margin-top:10px!important;
+ --inj-light-price-direction:var(--text,#e9f4f3);
+}
+html[data-inj-page="index"] body #injLightHome #injLightPriceRow[data-direction="up"]{
+ --inj-light-price-direction:#62d5aa;
+}
+html[data-inj-page="index"] body #injLightHome #injLightPriceRow[data-direction="down"]{
+ --inj-light-price-direction:#ed7887;
+}
+html[data-inj-page="index"] body #injLightHome #injLightPriceRow #injLightPrice.inj-light-value{
+ margin:0!important;min-width:0!important;
+ flex:0 1 auto!important;
+ white-space:nowrap!important;
+ color:var(--inj-light-price-direction)!important;
+ transition:color .28s ease!important;
+ font-variant-numeric:tabular-nums!important;
+}
+html[data-inj-page="index"] body #injLightHome #injLightPriceArrow.inj-light-price-arrow{
+ width:clamp(12px,3.2vw,17px)!important;height:clamp(12px,3.2vw,17px)!important;
+ flex:none!important;align-items:center!important;justify-content:center!important;
+ display:inline-flex!important;opacity:0!important;visibility:hidden!important;
+ color:var(--inj-light-price-direction)!important;
+ transition:color .28s ease!important;
+}
+html[data-inj-page="index"] body #injLightHome #injLightPriceRow[data-direction]
+ #injLightPriceArrow.inj-light-price-arrow{
+ opacity:1!important;visibility:visible!important;
+}
+html[data-inj-page="index"] body #injLightHome #injLightPriceArrow svg{
+ display:block!important;width:100%!important;height:100%!important;
+ overflow:visible!important;fill:none!important;stroke:currentColor!important;
+ stroke-width:1.8!important;stroke-linecap:round!important;stroke-linejoin:round!important;
+ transform:rotate(0deg)!important;
+}
+html[data-inj-page="index"] body #injLightHome #injLightPriceRow[data-direction="down"] #injLightPriceArrow svg{
+ transform:rotate(180deg)!important;
+}
+@keyframes inj-light-price-tick-glow{
+ 0%{opacity:1;text-shadow:0 0 0 transparent}
+ 37%{opacity:.82;text-shadow:0 0 11px var(--inj-light-price-direction)}
+ 100%{opacity:1;text-shadow:0 0 0 transparent}
+}
+@keyframes inj-light-price-arrow-settle{
+ 0%{opacity:.72}
+ 45%{opacity:1}
+ 100%{opacity:1}
+}
+html[data-inj-page="index"] body #injLightHome #injLightPrice.inj-light-price-flash{
+ animation:inj-light-price-tick-glow .68s ease-out 1!important;
+}
+html[data-inj-page="index"] body #injLightHome #injLightPriceArrow.inj-light-price-arrow-settle{
+ animation:inj-light-price-arrow-settle .68s ease-out 1!important;
+}
+@media(max-width:375px){
+ html[data-inj-page="index"] body #injLightHome #injLightPriceRow.inj-light-price-row{
+  gap:3px!important;
+ }
+ html[data-inj-page="index"] body #injLightHome #injLightPriceArrow.inj-light-price-arrow{
+  width:12px!important;height:12px!important;
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ html[data-inj-page="index"] body #injLightHome
+ :is(#injLightPrice.inj-light-price-flash,#injLightPriceArrow.inj-light-price-arrow-settle){
+  animation:none!important;
+ }
+}
