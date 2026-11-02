@@ -92,3 +92,27 @@ html[data-inj-page="index"] body #injLightHome #injLightChartPlot[data-inj-candl
 @media(prefers-reduced-motion:reduce){
  html[data-inj-page="index"] body #injLightHome #injLightCandleSvg .inj-candle-last-halo.is-pulsing{animation:none!important}
 }
+
+
+/* Persistent live marker — its halo animation must never be destroyed by
+   repaints of the OHLC candle group (common on websocket bursts). */
+html[data-inj-page="index"] body #injLightHome #injLightChartPlot > #injLightCandleMarkerSvg{
+ position:absolute!important;top:0!important;left:0!important;
+ display:block!important;width:calc(100% - var(--inj-light-axis-width,67px))!important;
+ height:100%!important;pointer-events:none!important;overflow:hidden!important;
+}
+html[data-inj-page="index"] body #injLightHome #injLightCandleMarkerSvg .inj-candle-last-halo{
+ opacity:0;fill:var(--inj-light-performance-color,#62c7a2)!important;
+}
+html[data-inj-page="index"] body #injLightHome #injLightCandleMarkerSvg .inj-candle-last-dot{
+ fill:var(--inj-light-performance-color,#62c7a2)!important;
+ stroke:var(--theme-canvas,var(--bg,#07131a))!important;stroke-width:1.4!important;
+}
+html[data-inj-page="index"] body #injLightHome #injLightCandleMarkerSvg .inj-candle-last-halo.is-pulsing{
+ animation:inj-candle-soft-glow 1.05s ease-out 1!important;
+}
+@media(prefers-reduced-motion:reduce){
+ html[data-inj-page="index"] body #injLightHome #injLightCandleMarkerSvg .inj-candle-last-halo.is-pulsing{
+  animation:none!important;
+ }
+}

@@ -1,7 +1,7 @@
-const CACHE_NAME = 'inj-node-v20261102-home-and-light-ohlc5';
+const CACHE_NAME = 'inj-node-v20261102-home-and-light-ohlc6';
 const APP_SHELL = [
-  './inj-home-candles-20261102.css?v=1',
-  './inj-home-candles-20261102.js?v=1',
+  './inj-home-candles-20261102.css?v=2',
+  './inj-home-candles-20261102.js?v=2',
   './inj-light-home-20261102.css?v=light-candles5',
   './inj-light-home-20261102.js?v=light-candles5',
   './inj-view-mode-20261102.css?v=lightpro2',
@@ -306,8 +306,8 @@ self.addEventListener('install', (event) => {
     // legacy CSS/JS downloads before the worker can activate. Cache the
     // actual boot path first; runtime requests populate the rest on demand.
     const essential=new Set([
-      './inj-home-candles-20261102.css?v=1',
-      './inj-home-candles-20261102.js?v=1',
+      './inj-home-candles-20261102.css?v=2',
+      './inj-home-candles-20261102.js?v=2',
       './inj-light-home-20261102.css?v=light-candles5',
       './inj-light-home-20261102.js?v=light-candles5',
       './inj-view-mode-20261102.css?v=lightpro2',

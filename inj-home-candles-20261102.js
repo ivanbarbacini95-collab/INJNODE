@@ -13,7 +13,7 @@
  const FIVE=300000,SIX_HOURS=21600000,DAY=86400000;
  const source={rows:[],updatedAt:0,lastAttempt:0,loading:false};
  let lastPrice=NaN,lastGlow=0,lightSvg=null,proSvg=null,lastQuoteRead=NaN;
- let candleHalo=null;
+ let candleHalo=null,candleDot=null,markerSvg=null;
  let pending=false;
  const asNumber=x=>Number(x);
  const format=(x,d=4)=>new Intl.NumberFormat('en-US',{minimumFractionDigits:d,maximumFractionDigits:d}).format(x);
@@ -132,14 +132,6 @@
      frag.appendChild(node('line',{x1:x,y1:top,x2:x,y2:bottom,class:cls+' inj-candle-wick'}));
      frag.appendChild(node('rect',{x:x-bw/2,y:bodyTop,width:bw,height:Math.max(.85,bodyBottom-bodyTop),rx:Math.min(.75,bw*.2),class:cls+' inj-candle-body'}));
    }
-   if(light){
-     const last=bars[bars.length-1],x=Math.min(geo.x1,Math.max(geo.x0,geo.center(last)));
-     const y=geo.y(last.c);
-     const halo=node('circle',{cx:x,cy:y,r:8.5,class:'inj-candle-last-halo'});
-     const dot=node('circle',{cx:x,cy:y,r:2.8,class:'inj-candle-last-dot'});
-     frag.appendChild(halo);frag.appendChild(dot);
-     candleHalo=halo;
-   }
    svg.replaceChildren(frag);
    svg.setAttribute('data-inj-bars',String(bars.length));
  }
@@ -195,7 +187,22 @@
    lightSvg=ensureChart(lightStage,'injLightCandleSvg');
    const geo=geometry(lite,now,true);
    svgContent(lightSvg,lite,geo,true);
+   // Keep the live-dot SVG outside the repeatedly redrawn candle scene.
+   // Animations finish naturally even if the quote updates several times.
+   markerSvg=ensureChart(lightStage,'injLightCandleMarkerSvg');
+   if(!candleHalo || candleHalo.ownerSVGElement!==markerSvg){
+     candleHalo=node('circle',{r:8.5,class:'inj-candle-last-halo'});
+     candleDot=node('circle',{r:2.8,class:'inj-candle-last-dot'});
+     markerSvg.replaceChildren(candleHalo,candleDot);
+     candleHalo.addEventListener('animationend',()=>candleHalo.classList.remove('is-pulsing'));
+   }
    const latest=lite[lite.length-1];
+   const latestX=Math.min(geo.x1,Math.max(geo.x0,geo.center(latest)));
+   const latestY=geo.y(latest.c);
+   for(const el of [candleHalo,candleDot]){
+     el.setAttribute('cx',latestX.toFixed(3));
+     el.setAttribute('cy',latestY.toFixed(3));
+   }
    const first=lite[0];
    const perf=first.o>0?(latest.c/first.o-1)*100:0;
    const direction=perf>1e-10?'positive':perf< -1e-10?'negative':'neutral';
@@ -231,7 +238,10 @@
      attributeFilter:['data-entry-numeric-value','data-entry-rendered-value','class']
    });
    const gate=get('entryGate');
-   if(gate)new MutationObserver(schedule).observe(gate,{attributes:true,attributeFilter:['class','aria-hidden']});
+   if(gate)new MutationObserver(()=>{
+     if(isVisible())void refreshCandles();
+     schedule();
+   }).observe(gate,{attributes:true,attributeFilter:['class','aria-hidden']});
    document.addEventListener('visibilitychange',()=>{
      if(document.visibilityState==='visible'){void refreshCandles(true);schedule();}
    });
