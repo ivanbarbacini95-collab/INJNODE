@@ -23,11 +23,11 @@
   toggle.dataset.mode=mode;
   toggle.setAttribute('aria-pressed',String(!isLight));
   toggle.setAttribute('aria-label',en?
-   (isLight?'Light mode active. Switch to Pro':'Pro mode active. Switch to Light'):
-   (isLight?'Modalità Light attiva. Passa a Pro':'Modalità Pro attiva. Passa a Light'));
-  toggle.title=en?(isLight?'Switch to Pro mode':'Switch to Light mode'):
-   (isLight?'Passa alla modalità Pro':'Passa alla modalità Light');
-  toggle.querySelector('.inj-mode-name').textContent=isLight?'Light':'Pro';
+   (isLight?'Lite mode active. Switch to Pro':'Pro mode active. Switch to Lite'):
+   (isLight?'Modalità Lite attiva. Passa a Pro':'Modalità Pro attiva. Passa a Lite'));
+  toggle.title=en?(isLight?'Switch to Pro mode':'Switch to Lite mode'):
+   (isLight?'Passa alla modalità Pro':'Passa alla modalità Lite');
+  toggle.querySelector('.inj-mode-name').textContent=isLight?'Lite':'Pro';
   toggle.querySelector('.inj-mode-symbol').innerHTML=isLight?
    '<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3v3m0 12v3M3 12h3m12 0h3M5.6 5.6l2.1 2.1m8.6 8.6 2.1 2.1M18.4 5.6l-2.1 2.1m-8.6 8.6-2.1 2.1"/><circle cx="12" cy="12" r="3.5"/></svg>':
    '<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M13 2 5.5 13h6l-1 9L19 10h-6l0-8z"/></svg>';

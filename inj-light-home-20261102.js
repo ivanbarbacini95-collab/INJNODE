@@ -11,14 +11,14 @@
  const light=document.createElement('section');
  light.id='injLightHome';
  light.hidden=true;
- light.setAttribute('aria-label','INJ Node Light');
+ light.setAttribute('aria-label','INJ Node Lite');
  light.innerHTML=
   '<div class="inj-light-screen">'+
     '<header class="inj-light-header">'+
       '<div><h1 class="inj-light-brand">INJ <span>Node</span></h1><small class="inj-light-kicker">INJECTIVE PORTFOLIO</small></div>'+
       '<button id="injLightModeToggle" type="button" aria-label="Passa a Pro">'+
         '<svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3M4.9 4.9 7 7m10 10 2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"/></svg>'+
-        '<span>LIGHT</span><span aria-hidden="true">⌄</span></button>'+
+        '<span>LITE</span><span aria-hidden="true">⌄</span></button>'+
     '</header>'+
     '<div class="inj-light-walletbar"><button id="injLightWalletToggle" type="button" aria-haspopup="dialog" aria-controls="injLightWalletSheet">'+
        '<span class="inj-light-wallet-copy"><span class="inj-light-eyebrow" data-light-it="WALLET SELEZIONATO" data-light-en="SELECTED WALLET">WALLET SELEZIONATO</span>'+
@@ -65,7 +65,7 @@
       '<strong id="injLightRewardFiat" class="private">—</strong></div>'+
       '<small class="inj-light-reward-note" data-light-it="Controvalore al prezzo corrente" data-light-en="Value at the current market price">Controvalore al prezzo corrente</small>'+
     '</section>'+
-    '<footer class="inj-light-footer">INJ NODE / LIGHT EXPERIENCE</footer>'+
+    '<footer class="inj-light-footer">INJ NODE / LITE EXPERIENCE</footer>'+
   '</div>'+
   '<div id="injLightWalletSheet" role="dialog" aria-modal="true" aria-label="Seleziona wallet" hidden>'+
     '<div class="inj-light-wallet-panel"><div class="inj-light-wallet-panel-head"><h2 id="injLightWalletHeading">Seleziona wallet</h2>'+
