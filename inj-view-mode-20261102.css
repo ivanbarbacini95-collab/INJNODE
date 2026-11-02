@@ -73,32 +73,32 @@ html[data-inj-page="index"] body > #injPrimaryBottomNav
  font-variant-ligatures:normal!important;
 }
 
-/* Light is an information-density preset, NOT a light color scheme.
+/* Legacy Light density tweaks (disabled because independent Light UI now owns the experience).
    Never hide or rewrite live price data, wallet totals, the daily price graph,
    available navigation tabs or the Treasury entry. */
-html[data-inj-page="index"][data-inj-view-mode="light"][data-inj-home-tab="home"]
+html[data-inj-page="index"][data-inj-view-mode="light"][data-inj-home-tab="home"][data-inj-light-active="legacy"]
  body #entryGate#entryGate .entry-gate-shell:not(.first-access)
  :is(#injMarketTicker,#entryDesktopMetrics){
  display:none!important;
 }
-html[data-inj-page="index"][data-inj-view-mode="light"][data-inj-home-tab="home"]
+html[data-inj-page="index"][data-inj-view-mode="light"][data-inj-home-tab="home"][data-inj-light-active="legacy"]
  body #entryGate#entryGate #entryOverview .entry-overview-stats > div:last-child{
  display:none!important;
 }
-html[data-inj-page="index"][data-inj-view-mode="light"][data-inj-home-tab="home"]
+html[data-inj-page="index"][data-inj-view-mode="light"][data-inj-home-tab="home"][data-inj-light-active="legacy"]
  body #entryGate#entryGate #entryOverview .entry-overview-stats{
  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
 }
-html[data-inj-page="index"][data-inj-view-mode="light"][data-inj-home-tab="home"]
+html[data-inj-page="index"][data-inj-view-mode="light"][data-inj-home-tab="home"][data-inj-light-active="legacy"]
  body #entryGate#entryGate #entryInsights .entry-price-pnl{
  display:none!important;
 }
-html[data-inj-page="index"][data-inj-view-mode="light"][data-inj-home-tab="home"]
+html[data-inj-page="index"][data-inj-view-mode="light"][data-inj-home-tab="home"][data-inj-light-active="legacy"]
  body #entryGate#entryGate #entryInsights .entry-spark-stage{
  height:clamp(88px,19vw,120px)!important;
  min-height:88px!important;
 }
-html[data-inj-page="index"][data-inj-view-mode="light"][data-inj-home-tab="home"]
+html[data-inj-page="index"][data-inj-view-mode="light"][data-inj-home-tab="home"][data-inj-light-active="legacy"]
  body #entryGate#entryGate#entryGate
  .entry-gate-shell:not(.first-access) > .entry-actions.entry-flat-v44{
  display:grid!important;
@@ -109,27 +109,27 @@ html[data-inj-page="index"][data-inj-view-mode="light"][data-inj-home-tab="home"
  min-height:0!important;height:auto!important;
  align-items:stretch!important;
 }
-html[data-inj-page="index"][data-inj-view-mode="light"][data-inj-home-tab="home"]
+html[data-inj-page="index"][data-inj-view-mode="light"][data-inj-home-tab="home"][data-inj-light-active="legacy"]
  body #entryGate#entryGate#entryGate
  .entry-gate-shell:not(.first-access) > .entry-actions.entry-flat-v44
  > :is(#entryDashboardButton,#entryLiveButton).entry-action{
  min-height:106px!important;height:106px!important;max-height:106px!important;
  grid-row:1!important;grid-column:auto!important;
 }
-html[data-inj-page="index"][data-inj-view-mode="light"][data-inj-home-tab="home"]
+html[data-inj-page="index"][data-inj-view-mode="light"][data-inj-home-tab="home"][data-inj-light-active="legacy"]
  body #entryGate#entryGate#entryGate
  .entry-gate-shell:not(.first-access) > .entry-actions.entry-flat-v44
  > #entryTreasuryButton.entry-action{
  grid-column:1/-1!important;grid-row:2!important;
  min-height:90px!important;height:auto!important;max-height:none!important;
 }
-html[data-inj-page="index"][data-inj-view-mode="light"][data-inj-home-tab="home"]
+html[data-inj-page="index"][data-inj-view-mode="light"][data-inj-home-tab="home"][data-inj-light-active="legacy"]
  body #entryGate#entryGate#entryGate
  .entry-gate-shell:not(.first-access) > .entry-actions.entry-flat-v44
  > #entryMacroCalendarButton.entry-action{
  display:none!important;
 }
-html[data-inj-page="index"][data-inj-view-mode="light"][data-inj-home-tab="home"]
+html[data-inj-page="index"][data-inj-view-mode="light"][data-inj-home-tab="home"][data-inj-light-active="legacy"]
  body #entryGate .entry-actions.entry-flat-v44 > .entry-action
  :is(.entry-action-icon,.inj-tile-scene){
  animation:none!important;
