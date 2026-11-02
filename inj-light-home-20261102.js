@@ -1,0 +1,260 @@
+/* INJ Node Light · standalone Home UI bound to the existing Pro data source.
+   No dummy values, duplicate APIs, cloned app state or second chart clock. */
+(()=>{
+ 'use strict';
+ const root=document.documentElement;
+ if(root.dataset.injPage!=='index')return;
+ const gate=document.getElementById('entryGate');
+ const shell=gate&&gate.querySelector('.entry-gate-shell');
+ if(!gate||!shell)return;
+ if(document.getElementById('injLightHome'))return;
+ const light=document.createElement('section');
+ light.id='injLightHome';
+ light.hidden=true;
+ light.setAttribute('aria-label','INJ Node Light');
+ light.innerHTML=
+  '<div class="inj-light-screen">'+
+    '<header class="inj-light-header">'+
+      '<div><h1 class="inj-light-brand">INJ <span>Node</span></h1><small class="inj-light-kicker">INJECTIVE PORTFOLIO</small></div>'+
+      '<button id="injLightModeToggle" type="button" aria-label="Passa a Pro">'+
+        '<svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3M4.9 4.9 7 7m10 10 2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"/></svg>'+
+        '<span>LIGHT</span><span aria-hidden="true">⌄</span></button>'+
+    '</header>'+
+    '<div class="inj-light-walletbar"><button id="injLightWalletToggle" type="button" aria-haspopup="dialog" aria-controls="injLightWalletSheet">'+
+       '<span class="inj-light-wallet-copy"><span class="inj-light-eyebrow" data-light-it="WALLET SELEZIONATO" data-light-en="SELECTED WALLET">WALLET SELEZIONATO</span>'+
+       '<span id="injLightAddress" class="inj-light-address private">—</span></span>'+
+       '<span class="inj-light-wallet-chevron" aria-hidden="true">⌄</span></button><i class="inj-light-status" aria-hidden="true"></i></div>'+
+    '<div class="inj-light-values">'+
+      '<div><span class="inj-light-eyebrow" data-light-it="INJ DETENUTI" data-light-en="INJ HOLDINGS">INJ DETENUTI</span>'+
+      '<p class="inj-light-value private"><span id="injLightHoldings">—</span> <small>INJ</small></p>'+
+      '<small class="inj-light-meta" data-light-it="Totale wallet" data-light-en="Wallet total">Totale wallet</small></div>'+
+      '<div><span class="inj-light-eyebrow" data-light-it="PREZZO INJ" data-light-en="INJ PRICE">PREZZO INJ</span>'+
+      '<p id="injLightPrice" class="inj-light-value">—</p>'+
+      '<small id="injLightChange" class="inj-light-meta">— · 24H</small></div>'+
+    '</div>'+
+    '<section class="inj-light-chart"><div class="inj-light-chart-head">'+
+       '<h2 data-light-it="Andamento INJ" data-light-en="INJ price movement">Andamento INJ</h2>'+
+       '<span class="inj-light-live"><i aria-hidden="true"></i><span id="injLightLive">SYNC</span></span></div>'+
+       '<p class="inj-light-chart-sub" data-light-it="INJ / USDT · GIORNATA CORRENTE (UTC)" data-light-en="INJ / USDT · TODAY (UTC)">INJ / USDT · GIORNATA CORRENTE (UTC)</p>'+
+       '<div id="injLightChartPlot" class="inj-light-chart-plot">'+
+          '<svg viewBox="0 0 320 150" preserveAspectRatio="none" role="img" aria-label="Grafico INJ durante la giornata UTC">'+
+          '<g class="inj-light-grid"><path d="M0 24H320M0 72H320M0 120H320"/></g>'+
+          '<path id="injLightGraphArea" d=""/><path id="injLightGraphLine" d=""/>'+
+          '<circle id="injLightGraphDot" cx="0" cy="0" r="3.5" visibility="hidden"/></svg>'+
+          '<div id="injLightChartPending" class="inj-light-chart-pending">—</div>'+
+       '</div>'+
+       '<div class="inj-light-axis"><span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>24:00 UTC</span></div>'+
+    '</section>'+
+    '<section class="inj-light-reward"><div class="inj-light-reward-head">'+
+      '<span class="inj-light-eyebrow" data-light-it="REWARD MATURATI" data-light-en="ACCRUED REWARDS">REWARD MATURATI</span>'+
+      '<span>STAKING</span></div>'+
+      '<div class="inj-light-reward-values"><strong class="private" id="injLightRewardText"><span id="injLightReward">—</span> <small>INJ</small></strong>'+
+      '<strong id="injLightRewardFiat" class="private">—</strong></div>'+
+      '<small class="inj-light-reward-note" data-light-it="Controvalore al prezzo corrente" data-light-en="Value at the current market price">Controvalore al prezzo corrente</small>'+
+    '</section>'+
+    '<footer class="inj-light-footer">INJ NODE / LIGHT EXPERIENCE</footer>'+
+  '</div>'+
+  '<div id="injLightWalletSheet" role="dialog" aria-modal="true" aria-label="Seleziona wallet" hidden>'+
+    '<div class="inj-light-wallet-panel"><div class="inj-light-wallet-panel-head"><h2 id="injLightWalletHeading">Seleziona wallet</h2>'+
+    '<button id="injLightWalletClose" type="button" aria-label="Chiudi">×</button></div>'+
+    '<div id="injLightWalletOptions"></div></div></div>';
+ document.body.appendChild(light);
+ const $=id=>document.getElementById(id);
+ const source=id=>$(id);
+ const output=(id,val)=>{const el=$(id);if(el&&el.textContent!==val)el.textContent=val};
+ const readText=id=>{
+   const el=source(id);
+   return el ? (el.dataset.entryRenderedValue||el.textContent||'—').trim() : '—';
+ };
+ const readNum=id=>{
+   const raw=source(id)?.dataset.entryNumericValue;
+   const n=raw===undefined?NaN:Number(raw);
+   return Number.isFinite(n)?n:NaN;
+ };
+ const english=()=>{try{return localStorage.getItem('inj_node_language_v1')==='en'||root.lang==='en'}catch(_){return root.lang==='en'}};
+ const locale=()=>english()?'en-US':'it-IT';
+ const short=n=>Number.isFinite(n)?n.toLocaleString(locale(),{minimumFractionDigits:4,maximumFractionDigits:4}):'—';
+ const parseMoney=text=>{
+   const clean=String(text||'').replace(/[^\d,.]/g,'');
+   if(!clean)return NaN;
+   const lastComma=clean.lastIndexOf(','),lastDot=clean.lastIndexOf('.');
+   const decimal=lastComma>lastDot?',':'.';
+   const numeric=decimal===','?clean.replace(/\./g,'').replace(',','.'):clean.replace(/,/g,'');
+   const n=Number(numeric);
+   return Number.isFinite(n)?n:NaN;
+ };
+ function isForeground(){
+   return root.dataset.injViewMode==='light'&&
+     root.dataset.injHomeTab==='home'&&
+     gate.classList.contains('visible')&&
+     gate.getAttribute('aria-hidden')==='false'&&
+     !shell.classList.contains('first-access')&&
+     document.body.classList.contains('entry-gate-open')&&
+     !document.body.classList.contains('boot-loading')&&
+     !document.body.classList.contains('menu-overlay-open')&&
+     !document.body.classList.contains('drawer-open')&&
+     !document.body.classList.contains('inj-section-open')&&
+     !document.body.classList.contains('entry-live-launch');
+ }
+ function refreshVisibility(){
+   const show=isForeground();
+   if(light.hidden===show)light.hidden=!show;
+   root.dataset.injLightActive=show?'true':'false';
+   if(!show)closeSheet();
+   else scheduleSync();
+ }
+ function updateLang(){
+   const en=english();
+   light.querySelectorAll('[data-light-it]').forEach(el=>{
+     const name=en?'lightEn':'lightIt';
+     const value=el.dataset[name];
+     if(el.textContent!==value)el.textContent=value;
+   });
+   $('injLightModeToggle').setAttribute('aria-label',en?'Switch to Pro mode':'Passa alla modalità Pro');
+   $('injLightWalletHeading').textContent=en?'Select wallet':'Seleziona wallet';
+   $('injLightWalletClose').setAttribute('aria-label',en?'Close':'Chiudi');
+   const pending=$('injLightChartPending');
+   if(pending&&!pending.hidden)pending.textContent=en?'Loading chart…':'Caricamento grafico…';
+ }
+ function updateWalletOptions(){
+   const list=$('injLightWalletOptions');
+   const rows=Array.from(document.querySelectorAll('#entryWallets .entry-wallet-row'));
+   const key=rows.map(row=>row.dataset.address).join('|')+'|'+rows.findIndex(row=>row.classList.contains('selected'));
+   if(list.dataset.rendered===key)return;
+   list.dataset.rendered=key;
+   list.replaceChildren();
+   rows.forEach(row=>{
+     const button=document.createElement('button');
+     button.type='button';button.className='inj-light-wallet-option';
+     button.setAttribute('aria-selected',String(row.classList.contains('selected')));
+     const left=document.createElement('span');
+     const name=document.createElement('strong');name.textContent=row.querySelector('.entry-wallet strong')?.textContent||'Wallet';
+     const address=document.createElement('small');address.textContent=row.querySelector('.entry-wallet small')?.textContent||'';
+     left.append(name,address);
+     const check=document.createElement('span');check.textContent=row.classList.contains('selected')?'✓':'';
+     button.append(left,check);
+     button.addEventListener('click',()=>{
+       const original=Array.from(document.querySelectorAll('#entryWallets .entry-wallet-row')).find(el=>el.dataset.address===row.dataset.address);
+       if(original)original.querySelector('.entry-wallet')?.click();
+       closeSheet();
+       scheduleSync();
+     });
+     list.appendChild(button);
+   });
+ }
+ function openSheet(){
+   updateWalletOptions();
+   if(!$('injLightWalletOptions').children.length)return;
+   $('injLightWalletSheet').hidden=false;
+   $('injLightWalletClose').focus({preventScroll:true});
+ }
+ function closeSheet(){
+   if(!$('injLightWalletSheet').hidden)$('injLightWalletSheet').hidden=true;
+ }
+ $('injLightWalletToggle').addEventListener('click',openSheet);
+ $('injLightWalletClose').addEventListener('click',closeSheet);
+ $('injLightWalletSheet').addEventListener('click',e=>{if(e.target===$('injLightWalletSheet'))closeSheet()});
+ $('injLightModeToggle').addEventListener('click',()=>{
+   closeSheet();
+   const original=$('injViewModeToggle');
+   if(original)original.click();
+   else{
+     root.dataset.injViewMode='pro';
+     try{localStorage.setItem('inj_node_view_mode_v1','pro')}catch(_){}
+   }
+   refreshVisibility();
+ });
+ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet()});
+ // Wallet swipe: use the original dots and selection events, no shadow wallet state.
+ let touchStart=null;
+ $('injLightWalletToggle').addEventListener('touchstart',e=>{
+   if(e.touches.length===1)touchStart={x:e.touches[0].clientX,y:e.touches[0].clientY};
+ },{passive:true});
+ $('injLightWalletToggle').addEventListener('touchend',e=>{
+   if(!touchStart||!e.changedTouches.length)return;
+   const dx=e.changedTouches[0].clientX-touchStart.x;
+   const dy=e.changedTouches[0].clientY-touchStart.y;
+   touchStart=null;
+   if(Math.abs(dx)<38||Math.abs(dx)<Math.abs(dy)*1.25)return;
+   e.preventDefault();
+   const dots=Array.from(document.querySelectorAll('#entryWalletDots .entry-wallet-dot'));
+   const selected=dots.findIndex(dot=>dot.classList.contains('active'));
+   const next=selected+(dx<0?1:-1);
+   if(dots[next])dots[next].click();
+   scheduleSync();
+ },{passive:false});
+ let frame=0;
+ function scheduleSync(){
+   if(frame||light.hidden)return;
+   frame=requestAnimationFrame(()=>{frame=0;if(!light.hidden)syncData()});
+ }
+ function syncData(){
+   const selected=document.querySelector('#entryWallets .entry-wallet-row.selected');
+   const name=selected?.querySelector('.entry-wallet strong')?.textContent||readText('entryOverviewWallet');
+   const address=selected?.querySelector('.entry-wallet small')?.textContent||'—';
+   const walletCount=document.querySelectorAll('#entryWallets .entry-wallet-row').length;
+   output('injLightAddress',walletCount>1?name+' · '+address:address);
+   output('injLightHoldings',short(readNum('entryWalletTotal')));
+   output('injLightPrice',readText('entryMarketPrice'));
+   const change=readText('entryMarketChange');
+   output('injLightChange',change);
+   const changeNode=$('injLightChange');
+   changeNode.classList.toggle('positive',source('entryMarketChange')?.classList.contains('positive'));
+   changeNode.classList.toggle('negative',source('entryMarketChange')?.classList.contains('negative'));
+   const rewards=readNum('entryWalletRewards');
+   output('injLightReward',short(rewards));
+   const renderedPrice=readText('entryMarketPrice');
+   const currency=renderedPrice.includes('€')?'EUR':'USD';
+   const displayPrice=parseMoney(renderedPrice);
+   const fiat=Number.isFinite(rewards)&&Number.isFinite(displayPrice)&&displayPrice>0?
+     new Intl.NumberFormat(locale(),{style:'currency',currency,minimumFractionDigits:2,maximumFractionDigits:2}).format(rewards*displayPrice):'—';
+   output('injLightRewardFiat',fiat==='—'?'—':'≈ '+fiat);
+   const current=source('entrySparkPath')?.getAttribute('d')||'';
+   const area=source('entrySparkArea')?.getAttribute('d')||'';
+   const line=$('injLightGraphLine'),fill=$('injLightGraphArea');
+   if(line.getAttribute('d')!==current)line.setAttribute('d',current);
+   if(fill.getAttribute('d')!==area)fill.setAttribute('d',area);
+   const chart=$('injLightChartPlot');
+   chart.classList.toggle('negative',Boolean(source('entryInsights')?.classList.contains('spark-negative')));
+   const dot=$('injLightGraphDot');
+   const sourceDot=source('entrySparkLiveDot');
+   const left=parseFloat(sourceDot?.style.left||'');
+   const top=parseFloat(sourceDot?.style.top||'');
+   if(current&&sourceDot&&!sourceDot.hidden&&Number.isFinite(left)&&Number.isFinite(top)){
+     dot.setAttribute('cx',String(left*3.2));
+     dot.setAttribute('cy',String(top*1.5));
+     dot.setAttribute('visibility','visible');
+   }else dot.setAttribute('visibility','hidden');
+   const waiting=$('injLightChartPending');
+   waiting.hidden=Boolean(current);
+   if(!waiting.hidden)waiting.textContent=english()?'Loading chart…':'Caricamento grafico…';
+   output('injLightLive',current?'LIVE':'SYNC');
+   if(!$('injLightWalletSheet').hidden)updateWalletOptions();
+ }
+ // Observe the actual existing data elements rather than creating a second
+ // websocket or market polling loop. Coalesce all changes into one paint.
+ [
+  'entryWalletTotal','entryWalletRewards','entryMarketPrice','entryMarketChange',
+  'entrySparkPath','entrySparkArea','entrySparkLiveDot','entryInsights',
+  'entryOverviewWallet','entryWallets','entryWalletDots'
+ ].forEach(id=>{
+   const el=source(id);
+   if(!el)return;
+   const mo=new MutationObserver(scheduleSync);
+   mo.observe(el,{subtree:true,childList:true,characterData:true,attributes:true,
+     attributeFilter:['d','style','class','hidden','data-entry-numeric-value','data-entry-rendered-value','aria-selected']});
+ });
+ const visibilityObserver=new MutationObserver(refreshVisibility);
+ visibilityObserver.observe(root,{attributes:true,attributeFilter:['data-inj-view-mode','data-inj-home-tab']});
+ visibilityObserver.observe(document.body,{attributes:true,attributeFilter:['class']});
+ visibilityObserver.observe(gate,{attributes:true,attributeFilter:['class','aria-hidden']});
+ visibilityObserver.observe(shell,{attributes:true,attributeFilter:['class']});
+ window.addEventListener('injnode:viewmodechange',refreshVisibility);
+ window.addEventListener('injnode:languagechange',()=>{updateLang();scheduleSync()});
+ window.addEventListener('injnode:fontchange',scheduleSync);
+ window.addEventListener('pageshow',()=>{refreshVisibility();scheduleSync()});
+ window.addEventListener('online',scheduleSync);
+ window.setInterval(()=>{if(!light.hidden)syncData()},10000);
+ updateLang();
+ refreshVisibility();
+})();
