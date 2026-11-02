@@ -42,7 +42,12 @@
           '<path id="injLightGraphArea" d=""/><path id="injLightGraphLine" d=""/>'+
           '<circle id="injLightGraphHalo" cx="0" cy="0" r="9" visibility="hidden"/>'+ 
           '<circle id="injLightGraphDot" cx="0" cy="0" r="3.5" visibility="hidden"/></svg>'+
-          ''+
+          '<div class="inj-light-price-axis" aria-hidden="true">'+
+            '<span class="inj-light-price-tick" id="injLightPriceHigh" hidden>—</span>'+
+            '<span class="inj-light-price-tick" id="injLightPriceMid" hidden>—</span>'+
+            '<span class="inj-light-price-tick" id="injLightPriceLow" hidden>—</span>'+
+            '<span class="inj-light-price-now" id="injLightPriceNow" hidden>—</span>'+
+          '</div>'+
        '</div>'+
        '<div class="inj-light-axis"><span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>24:00 UTC</span></div>'+
     '</section>'+
@@ -276,6 +281,49 @@
      dotHalo.classList.add('inj-light-quote-pulse');
    }
  }
+
+ function renderLightPriceScale(currentPrice) {
+   const stage=source('entrySparkStage');
+   const plot=$('injLightChartPlot');
+   const now=$('injLightPriceNow');
+   const high=$('injLightPriceHigh');
+   const mid=$('injLightPriceMid');
+   const low=$('injLightPriceLow');
+   const hasDomain=stage?.dataset.priceScaleMin!==undefined;
+   const min=Number(stage?.dataset.priceScaleMin);
+   const max=Number(stage?.dataset.priceScaleMax);
+   const top=Number(stage?.dataset.priceScaleTop);
+   const bottom=Number(stage?.dataset.priceScaleBottom);
+   const valid=hasDomain && Number.isFinite(min)&&Number.isFinite(max)&&max>min &&
+     Number.isFinite(top)&&Number.isFinite(bottom)&&bottom>top;
+   if(!valid||!lastVisualPoint){
+     for(const el of [high,mid,low,now])el.hidden=true;
+     return;
+   }
+   const format=(price,digits=4)=>new Intl.NumberFormat('en-US',{
+     minimumFractionDigits:digits,maximumFractionDigits:digits
+   }).format(price);
+   // Reproduce the real y-domain used by the Pro Home sparkline.
+   const anchor=[{el:high,y:top},{el:mid,y:(top+bottom)/2},{el:low,y:bottom}];
+   anchor.forEach(({el,y})=>{
+     const value=min+(max-min)*(bottom-y)/(bottom-top);
+     output(el.id,format(value,3));
+     el.style.top=(y/150*100)+'%';
+     el.hidden=false;
+   });
+   const y=Math.max(11,Math.min(139,lastVisualPoint.y));
+   const current=Number.isFinite(currentPrice)&&currentPrice>0?currentPrice:NaN;
+   if(!Number.isFinite(current)){now.hidden=true;return;}
+   output('injLightPriceNow',format(current,4));
+   now.style.top=(y/150*100)+'%';
+   now.hidden=false;
+   for(const item of anchor) {
+     // Prevent overlaps between static ticks and current quote.
+     if(Math.abs(y-item.y)<14)item.el.hidden=true;
+   }
+   const svg=plot.querySelector('svg');
+   if(svg)svg.setAttribute('aria-label',(english()?'INJ daily chart. Current price ':'Grafico giornaliero INJ. Prezzo corrente ')+format(current,4)+' USDT');
+ }
  let frame=0;
  function scheduleSync(){
    if(frame||light.hidden)return;
@@ -337,6 +385,7 @@
      }
      lastQuotePrice=tickPrice;
    }
+   renderLightPriceScale(tickPrice);
    output('injLightLive',current?'LIVE':'SYNC');
    if(!$('injLightWalletSheet').hidden)updateWalletOptions();
  }
@@ -344,14 +393,14 @@
  // websocket or market polling loop. Coalesce all changes into one paint.
  [
   'entryWalletTotal','entryWalletRewards','entryMarketPrice','entryMarketChange',
-  'entrySparkPath','entrySparkArea','entrySparkLiveDot','entryInsights',
+  'entrySparkPath','entrySparkArea','entrySparkStage','entrySparkLiveDot','entryInsights',
   'entryOverviewWallet','entryWallets','entryWalletDots'
  ].forEach(id=>{
    const el=source(id);
    if(!el)return;
    const mo=new MutationObserver(scheduleSync);
    mo.observe(el,{subtree:true,childList:true,characterData:true,attributes:true,
-     attributeFilter:['d','style','class','hidden','data-entry-numeric-value','data-entry-rendered-value','aria-selected']});
+     attributeFilter:['d','style','class','hidden','data-entry-numeric-value','data-entry-rendered-value','data-price-scale-min','data-price-scale-max','data-price-scale-top','data-price-scale-bottom','aria-selected']});
  });
  const visibilityObserver=new MutationObserver(refreshVisibility);
  visibilityObserver.observe(root,{attributes:true,attributeFilter:['data-inj-view-mode','data-inj-home-tab']});

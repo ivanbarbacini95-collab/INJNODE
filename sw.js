@@ -1,7 +1,7 @@
-const CACHE_NAME = 'inj-node-v20261102-light-glow3';
+const CACHE_NAME = 'inj-node-v20261102-light-price-axis4';
 const APP_SHELL = [
-  './inj-light-home-20261102.css?v=light-glow3',
-  './inj-light-home-20261102.js?v=light-glow3',
+  './inj-light-home-20261102.css?v=light-price-axis4',
+  './inj-light-home-20261102.js?v=light-price-axis4',
   './inj-view-mode-20261102.css?v=lightpro2',
   './inj-view-mode-20261102.js?v=lightpro2',
   './market-refinement-20261029.css?v=crypto-fullbleed1',
@@ -45,7 +45,7 @@ const APP_SHELL = [
   './home-bottom-tabs-20261030.js?v=20261101-home-fixed5',
   './market-tab-navigation-20261031.css?v=marketrail11',
   './market-tab-navigation-20261031.js?v=marketrail14',
-  './app.js?v=20261101androidpwa1',
+  './app.js?v=20261102-light-price-axis4',
   './inj-font-switcher-20261029.css?v=geistbold8',
   './inj-font-switcher-20261029.js?v=geistbold8',
   './inj-fluid-screen-fit.css?v=20261028fullmonitor1',
@@ -304,8 +304,8 @@ self.addEventListener('install', (event) => {
     // legacy CSS/JS downloads before the worker can activate. Cache the
     // actual boot path first; runtime requests populate the rest on demand.
     const essential=new Set([
-      './inj-light-home-20261102.css?v=light-glow3',
-      './inj-light-home-20261102.js?v=light-glow3',
+      './inj-light-home-20261102.css?v=light-price-axis4',
+      './inj-light-home-20261102.js?v=light-price-axis4',
       './inj-view-mode-20261102.css?v=lightpro2',
       './inj-view-mode-20261102.js?v=lightpro2',
   './market-refinement-20261029.css?v=crypto-fullbleed1',
@@ -326,7 +326,7 @@ self.addEventListener('install', (event) => {
   './cloud-sync-qr-20261101.js?v=1',
   './vendor/qrcode.min.js?v=1',
       './','./index.html','./manifest.webmanifest?v=16.06.29',
-      './app.js?v=20261101androidpwa1',
+      './app.js?v=20261102-light-price-axis4',
       './style.css?v=16.01.44','./viewport.css?v=16.00.74',
       './viewport.js?v=20261028ios27',
       './navigation.css?v=160090',
