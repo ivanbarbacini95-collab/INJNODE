@@ -1,0 +1,94 @@
+/* INJ Node · Home + Light OHLC candlesticks.
+   Pro: 15-minute candles for the UTC session.
+   Light: 5-minute candles on a continuously rolling 6-hour window. */
+html[data-inj-page="index"] body #entryGate #entrySparkStage[data-inj-candles-ready="true"] > svg:not(#injProCandleSvg){
+ opacity:0!important;
+}
+html[data-inj-page="index"] body #entryGate #entrySparkStage[data-inj-candles-ready="true"]
+ :is(#entrySparkLiveDot,#entrySparkLiveLabel){display:none!important}
+html[data-inj-page="index"] body #entryGate #entrySparkStage > #injProCandleSvg{
+ position:absolute!important;inset:0!important;
+ display:block!important;width:100%!important;height:100%!important;
+ max-width:100%!important;max-height:100%!important;
+ overflow:hidden!important;pointer-events:none!important;
+ opacity:1!important;
+}
+html[data-inj-page="index"] body #injLightHome #injLightChartPlot[data-inj-candles-ready="true"] > svg:not(#injLightCandleSvg){
+ opacity:0!important;
+}
+html[data-inj-page="index"] body #injLightHome #injLightChartPlot > #injLightCandleSvg{
+ position:absolute!important;top:0!important;left:0!important;
+ display:block!important;width:calc(100% - var(--inj-light-axis-width,67px))!important;
+ height:100%!important;max-height:100%!important;
+ overflow:hidden!important;pointer-events:none!important;opacity:1!important;
+}
+html[data-inj-page="index"] body #injLightHome .inj-light-chart-plot > #injLightCandleSvg :is(.inj-candle-up,.inj-candle-down),
+html[data-inj-page="index"] body #entryGate #injProCandleSvg :is(.inj-candle-up,.inj-candle-down){
+ stroke-linecap:round;vector-effect:non-scaling-stroke;
+}
+html[data-inj-page="index"] body :is(#injLightCandleSvg,#injProCandleSvg) .inj-candle-up{
+ fill:#62c7a2;stroke:#62c7a2;
+}
+html[data-inj-page="index"] body :is(#injLightCandleSvg,#injProCandleSvg) .inj-candle-down{
+ fill:#dc7483;stroke:#dc7483;
+}
+html[data-inj-page="index"] body :is(#injLightCandleSvg,#injProCandleSvg) .inj-candle-wick{
+ stroke-width:1;opacity:.86;
+}
+html[data-inj-page="index"] body :is(#injLightCandleSvg,#injProCandleSvg) .inj-candle-body{
+ stroke:none;opacity:.95;
+}
+html[data-inj-page="index"] body #injLightHome #injLightCandleSvg .inj-candle-last-halo{
+ opacity:0;fill:var(--inj-light-performance-color,#62c7a2);
+}
+html[data-inj-page="index"] body #injLightHome #injLightCandleSvg .inj-candle-last-dot{
+ fill:var(--inj-light-performance-color,#62c7a2);
+ stroke:var(--theme-canvas,var(--bg,#07131a));
+ stroke-width:1.4;
+}
+html[data-inj-page="index"] body #injLightHome #injLightChartPlot[data-performance="negative"]{
+ --inj-light-performance-color:#dc7483;
+ --inj-light-dot:#dc7483;
+ --inj-light-plot:#dc7483;
+}
+html[data-inj-page="index"] body #injLightHome #injLightChartPlot[data-performance="positive"]{
+ --inj-light-performance-color:#62c7a2;
+ --inj-light-dot:#62c7a2;
+ --inj-light-plot:#62c7a2;
+}
+@keyframes inj-candle-soft-glow{
+ 0%,100%{opacity:0}
+ 38%{opacity:.22}
+ 70%{opacity:.09}
+}
+html[data-inj-page="index"] body #injLightHome #injLightCandleSvg .inj-candle-last-halo.is-pulsing{
+ animation:inj-candle-soft-glow 1.05s ease-out 1!important;
+}
+html[data-inj-page="index"] body #injLightHome #injLightPerf6h{
+ margin-left:auto!important;
+ font-size:clamp(10px,2.5vw,12px)!important;
+ line-height:1!important;
+ white-space:nowrap!important;
+ font-weight:var(--inj-chosen-detail,500)!important;
+ font-variant-numeric:tabular-nums!important;
+ color:var(--muted,#83a3a3)!important;
+ letter-spacing:0!important;
+}
+html[data-inj-page="index"] body #injLightHome #injLightPerf6h.positive{color:#62c7a2!important}
+html[data-inj-page="index"] body #injLightHome #injLightPerf6h.negative{color:#dc7483!important}
+html[data-inj-page="index"] body #injLightHome .inj-light-chart-head .inj-light-live{margin-left:0!important}
+html[data-inj-page="index"] body #injLightHome #injLightChartPlot[data-inj-candles-ready="true"]
+ #injLightPriceNow{
+ color:var(--inj-light-performance-color,#62c7a2)!important;
+ border-color:color-mix(in srgb,var(--inj-light-performance-color,#62c7a2) 28%,transparent)!important;
+ background:color-mix(in srgb,var(--inj-light-performance-color,#62c7a2) 12%,var(--theme-canvas,var(--bg,#07131a)))!important;
+}
+html[data-inj-page="index"] body #injLightHome #injLightChartPlot[data-inj-candles-ready="true"]
+ .inj-light-price-tick{opacity:.72!important}
+html[data-inj-page="index"] body #injLightHome #injLightChartPlot[data-inj-candles-ready="true"]
+ #injLightGraphDot,
+html[data-inj-page="index"] body #injLightHome #injLightChartPlot[data-inj-candles-ready="true"]
+ #injLightGraphHalo{display:none!important}
+@media(prefers-reduced-motion:reduce){
+ html[data-inj-page="index"] body #injLightHome #injLightCandleSvg .inj-candle-last-halo.is-pulsing{animation:none!important}
+}

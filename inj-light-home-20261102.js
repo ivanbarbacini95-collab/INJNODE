@@ -33,9 +33,10 @@
       '<small id="injLightChange" class="inj-light-meta">— · 24H</small></div>'+
     '</div>'+
     '<section class="inj-light-chart"><div class="inj-light-chart-head">'+
-       '<h2 data-light-it="Andamento INJ" data-light-en="INJ price movement">Andamento INJ</h2>'+
+       '<h2 data-light-it="Andamento INJ" data-light-en="INJ price movement">Andamento INJ</h2>'+ 
+       '<span class="inj-light-6h-performance" id="injLightPerf6h" aria-live="off">— · 6H</span>'+
        '<span class="inj-light-live"><i aria-hidden="true"></i><span id="injLightLive">SYNC</span></span></div>'+
-       '<p class="inj-light-chart-sub" data-light-it="INJ / USDT · GIORNATA CORRENTE (UTC)" data-light-en="INJ / USDT · TODAY (UTC)">INJ / USDT · GIORNATA CORRENTE (UTC)</p>'+
+       '<p class="inj-light-chart-sub" data-light-it="INJ / USDT · ULTIME 6 ORE" data-light-en="INJ / USDT · ROLLING 6 HOURS">INJ / USDT · ULTIME 6 ORE</p>'+
        '<div id="injLightChartPlot" class="inj-light-chart-plot">'+
           '<svg viewBox="0 0 320 150" preserveAspectRatio="none" role="img" aria-label="Grafico INJ durante la giornata UTC">'+
           '<g class="inj-light-grid"><path d="M0 24H320M0 72H320M0 120H320"/></g>'+
@@ -49,7 +50,7 @@
             '<span class="inj-light-price-now" id="injLightPriceNow" hidden>—</span>'+
           '</div>'+
        '</div>'+
-       '<div class="inj-light-axis"><span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>24:00 UTC</span></div>'+
+       '<div class="inj-light-axis"><span>−6H</span><span>−4H</span><span>−2H</span><span data-light-it="ORA" data-light-en="NOW">ORA</span></div>'+
     '</section>'+
     '<section class="inj-light-reward"><div class="inj-light-reward-head">'+
       '<span class="inj-light-eyebrow" data-light-it="REWARD MATURATI" data-light-en="ACCRUED REWARDS">REWARD MATURATI</span>'+
@@ -350,43 +351,8 @@
    const fiat=Number.isFinite(rewards)&&Number.isFinite(displayPrice)&&displayPrice>0?
      new Intl.NumberFormat(locale(),{style:'currency',currency,minimumFractionDigits:2,maximumFractionDigits:2}).format(rewards*displayPrice):'—';
    output('injLightRewardFiat',fiat==='—'?'—':'≈ '+fiat);
-   const current=source('entrySparkPath')?.getAttribute('d')||'';
-   const line=$('injLightGraphLine'),fill=$('injLightGraphArea');
-   if(current!==lastSourceGeometry){
-     lastSourceGeometry=current;
-     const smooth=curveFromMarketPath(current);
-     lastVisualPoint=smooth.last;
-     line.setAttribute('d',smooth.path);
-     const filled=smooth.first&&smooth.last&&current.includes('L')
-       ? smooth.path+' L'+smooth.last.x.toFixed(3)+' 150 L'+smooth.first.x.toFixed(3)+' 150 Z'
-       : '';
-     fill.setAttribute('d',filled);
-   }
-   const chart=$('injLightChartPlot');
-   chart.classList.toggle('negative',Boolean(source('entryInsights')?.classList.contains('spark-negative')));
-   const dot=$('injLightGraphDot');
-   const halo=$('injLightGraphHalo');
-   if(lastVisualPoint){
-     for(const node of [dot,halo]){
-       node.setAttribute('cx',String(lastVisualPoint.x));
-       node.setAttribute('cy',String(lastVisualPoint.y));
-       node.setAttribute('visibility','visible');
-     }
-   }else{
-     for(const node of [dot,halo])node.setAttribute('visibility','hidden');
-   }
-   const tickPrice=readNum('entryMarketPrice');
-   if(Number.isFinite(tickPrice)&&tickPrice>0){
-     if(Number.isFinite(lastQuotePrice)&&lastVisualPoint&&
-       Math.abs(tickPrice-lastQuotePrice)>Math.max(1e-9,Math.abs(lastQuotePrice)*1e-12)){
-       pulsePriceDot(tickPrice-lastQuotePrice);
-     }else if(!chart.dataset.tick){
-       chart.dataset.tick=source('entryMarketChange')?.classList.contains('negative')?'down':'up';
-     }
-     lastQuotePrice=tickPrice;
-   }
-   renderLightPriceScale(tickPrice);
-   output('injLightLive',current?'LIVE':'SYNC');
+   // 6H live OHLC view is rendered by inj-home-candles-20261102.js.
+   // Never draw the old UTC-day curve, scale or tick colors over it.
    if(!$('injLightWalletSheet').hidden)updateWalletOptions();
  }
  // Observe the actual existing data elements rather than creating a second
