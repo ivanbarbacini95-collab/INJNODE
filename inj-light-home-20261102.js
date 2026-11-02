@@ -255,17 +255,25 @@
  let lastSourceGeometry='';
  let lastVisualPoint=null;
  let lastQuotePrice=NaN;
+ let lastPulseAt=0;
+ // A constant-size endpoint with an understated glow: no scale jump, forced
+ // reflow or simultaneous animations on each websocket price update.
+ const dotHalo=$('injLightGraphHalo');
+ dotHalo.addEventListener('animationend',event=>{
+   if(event.animationName==='inj-light-quote-soft-glow'){
+     dotHalo.classList.remove('inj-light-quote-pulse');
+   }
+ });
  function pulsePriceDot(direction){
    const plot=$('injLightChartPlot');
-   const dot=$('injLightGraphDot');
-   const halo=$('injLightGraphHalo');
    plot.dataset.tick=direction>0?'up':'down';
-   for(const el of [dot,halo]){
-     el.classList.remove('inj-light-quote-pulse');
-     // Restart the CSS pulse for every genuine price movement, including
-     // consecutive same-direction ticks.
-     void el.getBoundingClientRect().width;
-     el.classList.add('inj-light-quote-pulse');
+   // Direction updates for EVERY tick; coalesce rapid flashes so the user
+   // sees one soft, completed glow instead of an exhausting strobe.
+   const now=performance.now();
+   if(now-lastPulseAt<1000 || dotHalo.classList.contains('inj-light-quote-pulse'))return;
+   lastPulseAt=now;
+   if(!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches){
+     dotHalo.classList.add('inj-light-quote-pulse');
    }
  }
  let frame=0;

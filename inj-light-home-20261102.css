@@ -286,39 +286,31 @@ html[data-inj-page="index"] body #injLightHome #injLightChartPlot[data-tick="up"
 html[data-inj-page="index"] body #injLightHome #injLightChartPlot[data-tick="down"]{
   --inj-light-dot:#eb7386;
 }
+/* The center pixel is always solid and never scales or disappears.
+   Only its surrounding aura fades gently on a genuine quote update. */
 html[data-inj-page="index"] body #injLightHome #injLightGraphDot{
   fill:var(--inj-light-dot,var(--inj-light-plot))!important;
   stroke:var(--theme-canvas,var(--bg,#07131a))!important;
-  stroke-width:1.8!important;
-  transform-box:fill-box;
-  transform-origin:center;
+  stroke-width:1.6!important;
+  transition:fill .38s ease!important;
 }
 html[data-inj-page="index"] body #injLightHome #injLightGraphHalo{
   fill:var(--inj-light-dot,var(--inj-light-plot))!important;
   opacity:0;
-  transform-box:fill-box;
-  transform-origin:center;
   pointer-events:none!important;
 }
-@keyframes inj-light-quote-blink{
-  0%{opacity:1;transform:scale(1)}
-  40%{opacity:.2;transform:scale(.78)}
-  70%{opacity:1;transform:scale(1.18)}
-  100%{opacity:1;transform:scale(1)}
-}
-@keyframes inj-light-quote-halo{
-  0%{opacity:.6;transform:scale(.55)}
-  100%{opacity:0;transform:scale(2.1)}
-}
-html[data-inj-page="index"] body #injLightHome #injLightGraphDot.inj-light-quote-pulse{
-  animation:inj-light-quote-blink .58s ease-out 1;
+@keyframes inj-light-quote-soft-glow{
+  0%{opacity:0}
+  24%{opacity:.28}
+  55%{opacity:.18}
+  100%{opacity:0}
 }
 html[data-inj-page="index"] body #injLightHome #injLightGraphHalo.inj-light-quote-pulse{
-  animation:inj-light-quote-halo .65s ease-out 1;
+  animation:inj-light-quote-soft-glow .95s cubic-bezier(.25,.45,.25,1) 1!important;
 }
 @media(prefers-reduced-motion:reduce){
   html[data-inj-page="index"] body #injLightHome
-    :is(#injLightGraphDot,#injLightGraphHalo).inj-light-quote-pulse{
+    #injLightGraphHalo.inj-light-quote-pulse{
     animation:none!important;
   }
 }
