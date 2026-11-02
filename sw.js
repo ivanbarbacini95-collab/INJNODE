@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v20261102-native-status-palette16';
+const CACHE_NAME = 'inj-node-v20261102-native-status-palette17';
 const APP_SHELL = [
   './inj-ios-statusbar-palette-20261102.css?v=theme-native2',
   './inj-home-candles-20261102.css?v=price-only5',
@@ -246,7 +246,7 @@ const APP_SHELL = [
   './market-heatmap-density.js?v=20261030instant7',
   './market-intelligence-summary.js?v=160724',
   './market-views.js?v=160716',
-  './manifest.webmanifest?v=16.06.29',
+  './manifest.webmanifest?v=20261102nativepalette',
   './app-icon-picker.css?v=160704',
   './app-icon-picker.js?v=160704',
   './install-icon-minimal.html',
@@ -331,7 +331,7 @@ self.addEventListener('install', (event) => {
   './cloud-sync-qr-20261101.css?v=1',
   './cloud-sync-qr-20261101.js?v=1',
   './vendor/qrcode.min.js?v=1',
-      './','./index.html','./manifest.webmanifest?v=16.06.29',
+      './','./index.html','./manifest.webmanifest?v=20261102nativepalette',
       './app.js?v=20261102-light-price-axis4',
       './style.css?v=16.01.44','./viewport.css?v=16.00.74',
       './viewport.js?v=20261102theme-native2',
