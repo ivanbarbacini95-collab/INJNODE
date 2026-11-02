@@ -428,9 +428,9 @@
    frame=requestAnimationFrame(()=>{frame=0;if(!light.hidden)syncData()});
  }
 
- // Every actual quote change gets a brief directional indication, then
- // returns to the theme's neutral price color. Rapid ticks are coalesced:
- // no persistent red/green state and no continuous strobing.
+ // Each quote change briefly highlights its direction with a solid color
+ // and a static arrow. The quote returns to neutral without any glow,
+ // blur or brightness animation; bursts are coalesced for readability.
  let lastDirectionalQuote=NaN;
  let lastPriceBlinkAt=-Infinity;
  let priceNeutralTimer=0;
@@ -442,8 +442,6 @@
    priceNeutralTimer=0;
    delete priceRow.dataset.direction;
    priceRow.removeAttribute('title');
-   priceValue.classList.remove('inj-light-price-flash');
-   priceArrow.classList.remove('inj-light-price-arrow-settle');
  }
  function updateLiveQuoteDirection(next){
    if(!Number.isFinite(next)||next<=0)return;
@@ -452,7 +450,7 @@
      const diff=next-lastDirectionalQuote;
      if(Math.abs(diff)>threshold){
        const now=performance.now();
-       // Allow the previous pulse to FINISH and the price to return to normal
+       // Let the previous directional color finish and return to neutral
        // even if the websocket continues delivering ticks continuously.
        if(now-lastPriceBlinkAt>=950){
          clearQuoteDirection();
@@ -462,10 +460,6 @@
          priceRow.title=english()
            ? rising?'Latest tick: price increased':'Latest tick: price decreased'
            : rising?'Ultimo aggiornamento: prezzo in salita':'Ultimo aggiornamento: prezzo in discesa';
-         if(!window.matchMedia?.('(prefers-reduced-motion:reduce)')?.matches){
-           priceValue.classList.add('inj-light-price-flash');
-           priceArrow.classList.add('inj-light-price-arrow-settle');
-         }
          // A fixed, non-restarting lifetime: normal color and hidden arrow
          // after the update, even in very active market conditions.
          priceNeutralTimer=window.setTimeout(clearQuoteDirection,660);

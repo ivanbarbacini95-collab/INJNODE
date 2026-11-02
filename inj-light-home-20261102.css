@@ -383,7 +383,8 @@ html[data-inj-page="index"] body #injLightHome #injLightPriceRow #injLightPrice.
  flex:0 1 auto!important;
  white-space:nowrap!important;
  color:var(--inj-light-price-direction)!important;
- transition:color .28s ease!important;
+ transition:color .16s ease!important;
+ text-shadow:none!important;filter:none!important;
  font-variant-numeric:tabular-nums!important;
 }
 html[data-inj-page="index"] body #injLightHome #injLightPriceArrow.inj-light-price-arrow{
@@ -391,12 +392,13 @@ html[data-inj-page="index"] body #injLightHome #injLightPriceArrow.inj-light-pri
  flex:none!important;align-items:center!important;justify-content:center!important;
  display:inline-flex!important;opacity:0!important;visibility:hidden!important;
  color:var(--inj-light-price-direction)!important;
- transition:opacity .18s ease,visibility 0s linear .18s,color .26s ease!important;
+ transition:color .16s ease!important;
+ text-shadow:none!important;filter:none!important;
 }
 html[data-inj-page="index"] body #injLightHome #injLightPriceRow[data-direction]
  #injLightPriceArrow.inj-light-price-arrow{
  opacity:1!important;visibility:visible!important;
- transition:opacity .18s ease,color .26s ease!important;
+ transition:color .16s ease!important;
 }
 html[data-inj-page="index"] body #injLightHome #injLightPriceArrow svg{
  display:block!important;width:100%!important;height:100%!important;
@@ -407,22 +409,6 @@ html[data-inj-page="index"] body #injLightHome #injLightPriceArrow svg{
 html[data-inj-page="index"] body #injLightHome #injLightPriceRow[data-direction="down"] #injLightPriceArrow svg{
  transform:rotate(180deg)!important;
 }
-@keyframes inj-light-price-tick-glow{
- 0%{opacity:1;text-shadow:0 0 0 transparent}
- 37%{opacity:.82;text-shadow:0 0 11px var(--inj-light-price-direction)}
- 100%{opacity:1;text-shadow:0 0 0 transparent}
-}
-@keyframes inj-light-price-arrow-settle{
- 0%{opacity:.72}
- 45%{opacity:1}
- 100%{opacity:1}
-}
-html[data-inj-page="index"] body #injLightHome #injLightPrice.inj-light-price-flash{
- animation:inj-light-price-tick-glow .68s ease-out 1!important;
-}
-html[data-inj-page="index"] body #injLightHome #injLightPriceArrow.inj-light-price-arrow-settle{
- animation:inj-light-price-arrow-settle .68s ease-out 1!important;
-}
 @media(max-width:375px){
  html[data-inj-page="index"] body #injLightHome #injLightPriceRow.inj-light-price-row{
   gap:3px!important;
@@ -431,12 +417,7 @@ html[data-inj-page="index"] body #injLightHome #injLightPriceArrow.inj-light-pri
   width:12px!important;height:12px!important;
  }
 }
-@media(prefers-reduced-motion:reduce){
- html[data-inj-page="index"] body #injLightHome
- :is(#injLightPrice.inj-light-price-flash,#injLightPriceArrow.inj-light-price-arrow-settle){
-  animation:none!important;
- }
-}
+
 
 
 /* Light / Pro crossfade: overlay remains a fixed GPU-composited surface.
