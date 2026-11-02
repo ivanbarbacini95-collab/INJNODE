@@ -162,6 +162,159 @@
    const graphic=lightSvg;
    if(graphic)graphic.setAttribute('aria-label','INJ/USDT 6H · '+format(price,4));
  }
+
+ // Keep interactive inspection independent of the automatically refreshed
+ // candles. Pointer/touch events are bound once and never to candle DOM nodes.
+ const views={light:{active:false,bars:[],geo:null,selected:-1,hideTimer:0,layer:null},
+              pro:{active:false,bars:[],geo:null,selected:-1,hideTimer:0,layer:null}};
+ function clock(timestamp){
+   return new Intl.DateTimeFormat('it-IT',{hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(timestamp));
+ }
+ function updateLightTimeline(now,geo){
+   const ids=['injLightTime0','injLightTime1','injLightTime2','injLightTime3'];
+   ids.forEach((id,n)=>{
+     const el=get(id);
+     if(!el)return;
+     const fraction=n/3;
+     const t=now-SIX_HOURS+fraction*SIX_HOURS;
+     put(id,clock(t));
+     const x=geo.x0+fraction*(geo.x1-geo.x0);
+     el.style.left=(x/320*100)+'%';
+   });
+ }
+ function proPriceAxis(stage,geo,price){
+   if(!stage)return;
+   let axis=get('injProPriceAxis');
+   if(!axis){
+     axis=document.createElement('div');
+     axis.id='injProPriceAxis';
+     axis.className='inj-pro-price-axis';
+     axis.setAttribute('aria-hidden','true');
+     axis.innerHTML='<span id="injProPriceHigh" class="inj-pro-price-tick"></span>'+
+       '<span id="injProPriceMid" class="inj-pro-price-tick"></span>'+
+       '<span id="injProPriceLow" class="inj-pro-price-tick"></span>'+
+       '<span id="injProPriceNow" class="inj-pro-price-now"></span>';
+     stage.appendChild(axis);
+   }
+   const levels=[
+    {id:'injProPriceHigh',y:geo.top},
+    {id:'injProPriceMid',y:(geo.top+geo.bottom)/2},
+    {id:'injProPriceLow',y:geo.bottom}
+   ];
+   const y=Math.max(geo.top,Math.min(geo.bottom,geo.y(price)));
+   for(const item of levels){
+     const el=get(item.id);
+     put(item.id,format(geo.min+(geo.max-geo.min)*(geo.bottom-item.y)/(geo.bottom-geo.top),3));
+     el.style.top=(item.y/150*100)+'%';
+     el.hidden=Math.abs(y-item.y)<14;
+   }
+   const current=get('injProPriceNow');
+   put('injProPriceNow',format(price,4));
+   current.style.top=(y/150*100)+'%';
+   current.hidden=false;
+ }
+ function clearProAxis(){
+   const axis=get('injProPriceAxis');
+   if(axis)axis.hidden=true;
+ }
+ function selectionMarkup(){
+   return '<span class="inj-candle-inspect-line" aria-hidden="true"></span>'+
+          '<span class="inj-candle-inspect-point" aria-hidden="true"></span>'+
+          '<span class="inj-candle-inspect-tooltip" aria-live="off"></span>';
+ }
+ function showCandleInspection(mode,index){
+   const v=views[mode];
+   if(!v.layer||!v.bars.length||!v.geo)return;
+   const safe=Math.max(0,Math.min(v.bars.length-1,index));
+   const c=v.bars[safe],x=Math.min(v.geo.x1,Math.max(v.geo.x0,v.geo.center(c)));
+   const y=Math.max(v.geo.top,Math.min(v.geo.bottom,v.geo.y(c.c)));
+   const line=v.layer.querySelector('.inj-candle-inspect-line');
+   const dot=v.layer.querySelector('.inj-candle-inspect-point');
+   const tip=v.layer.querySelector('.inj-candle-inspect-tooltip');
+   const percent=x/320*100;
+   line.style.left=percent+'%';
+   dot.style.left=percent+'%';
+   dot.style.top=(y/150*100)+'%';
+   tip.style.left=Math.max(21,Math.min(79,percent))+'%';
+   // OHLC values are real exchange values, never inferred from SVG pixels.
+   const time=clock(c.t);
+   const end=time+' · O '+format(c.o,4)+' · H '+format(c.h,4)+
+            ' · L '+format(c.l,4)+' · C '+format(c.c,4);
+   tip.textContent=end;
+   v.selected=safe;
+   v.layer.classList.add('is-inspecting');
+ }
+ function nearestCandle(mode,clientX){
+   const v=views[mode];
+   const rect=v.layer.getBoundingClientRect();
+   if(!(rect.width>0)||!v.bars.length)return -1;
+   const x=Math.max(0,Math.min(320,(clientX-rect.left)/rect.width*320));
+   let nearest=0,dist=Infinity;
+   v.bars.forEach((bar,i)=>{
+     const next=Math.abs(v.geo.center(bar)-x);
+     if(next<dist){dist=next;nearest=i;}
+   });
+   return nearest;
+ }
+ function hideInspection(mode,delay=0){
+   const v=views[mode];clearTimeout(v.hideTimer);
+   const close=()=>{v.active=false;v.selected=-1;v.layer?.classList.remove('is-inspecting')};
+   if(delay)v.hideTimer=window.setTimeout(close,delay);
+   else close();
+ }
+ function bindCandleInteraction(stage,mode){
+   const v=views[mode];
+   if(!stage)return;
+   let layer=v.layer;
+   if(!layer){
+     layer=document.createElement('div');
+     layer.className='inj-candle-interaction inj-candle-interaction-'+mode;
+     layer.setAttribute('role','group');
+     layer.setAttribute('tabindex','0');
+     layer.setAttribute('aria-label','Esplora le candele: scorri, tocca oppure usa le frecce per leggere orario, apertura, massimo, minimo e chiusura');
+     layer.innerHTML=selectionMarkup();
+     stage.appendChild(layer);
+     v.layer=layer;
+     const inspect=event=>{
+       event.stopPropagation();
+       if(!v.bars.length)return;
+       const idx=nearestCandle(mode,event.clientX);
+       if(idx<0)return;
+       clearTimeout(v.hideTimer);
+       v.active=true;
+       showCandleInspection(mode,idx);
+     };
+     layer.addEventListener('pointerdown',event=>{
+       if(event.pointerType==='mouse'&&event.button!==0)return;
+       inspect(event);
+       if(event.pointerType==='mouse')try{layer.setPointerCapture(event.pointerId)}catch(_){}
+     });
+     layer.addEventListener('pointermove',event=>{
+       if(event.pointerType==='mouse'||v.active)inspect(event);
+     });
+     layer.addEventListener('pointerup',event=>{
+       event.stopPropagation();
+       hideInspection(mode,event.pointerType==='mouse'?1500:2500);
+     });
+     layer.addEventListener('pointercancel',()=>hideInspection(mode));
+     layer.addEventListener('pointerleave',()=>hideInspection(mode,450));
+     layer.addEventListener('keydown',event=>{
+       if(event.key!=='ArrowLeft'&&event.key!=='ArrowRight'&&event.key!=='Escape')return;
+       event.stopPropagation();
+       if(event.key==='Escape'){hideInspection(mode);return;}
+       event.preventDefault();
+       clearTimeout(v.hideTimer);
+       v.active=true;
+       const delta=event.key==='ArrowRight'?1:-1;
+       const current=v.selected<0?v.bars.length-1:v.selected;
+       showCandleInspection(mode,current+delta);
+     });
+   }
+ }
+ function updateInspection(mode,bars,geo){
+   const v=views[mode];v.bars=bars;v.geo=geo;
+   if(v.active&&v.selected>=0&&v.selected<bars.length)showCandleInspection(mode,v.selected);
+ }
  function clearChart(light){
    const stage=get(light?'injLightChartPlot':'entrySparkStage');
    if(stage)delete stage.dataset.injCandlesReady;
@@ -169,6 +322,10 @@
      ['injLightPriceHigh','injLightPriceMid','injLightPriceLow','injLightPriceNow'].forEach(id=>{const el=get(id);if(el)el.hidden=true;});
      put('injLightPerf6h','— · 6H');
      put('injLightLive','SYNC');
+     hideInspection('light');
+   }else{
+     clearProAxis();
+     hideInspection('pro');
    }
  }
  function render(){
@@ -180,6 +337,10 @@
      proSvg=ensureChart(proStage,'injProCandleSvg');
      const geo=geometry(pro,now,false);
      svgContent(proSvg,pro,geo,false);
+     proPriceAxis(proStage,geo,pro[pro.length-1].c);
+     const proAxis=get('injProPriceAxis');if(proAxis)proAxis.hidden=false;
+     bindCandleInteraction(proStage,'pro');
+     updateInspection('pro',pro,geo);
      proStage.dataset.injCandlesReady='true';
      proStage.setAttribute('aria-label','INJ USDT · candele da 15 minuti, giornata UTC');
    }else clearChart(false);
@@ -187,6 +348,9 @@
    lightSvg=ensureChart(lightStage,'injLightCandleSvg');
    const geo=geometry(lite,now,true);
    svgContent(lightSvg,lite,geo,true);
+   updateLightTimeline(now,geo);
+   bindCandleInteraction(lightStage,'light');
+   updateInspection('light',lite,geo);
    // Keep the live-dot SVG outside the repeatedly redrawn candle scene.
    // Animations finish naturally even if the quote updates several times.
    markerSvg=ensureChart(lightStage,'injLightCandleMarkerSvg');

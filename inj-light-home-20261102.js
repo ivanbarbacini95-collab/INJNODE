@@ -50,7 +50,9 @@
             '<span class="inj-light-price-now" id="injLightPriceNow" hidden>—</span>'+
           '</div>'+
        '</div>'+
-       '<div class="inj-light-axis"><span>−6H</span><span>−4H</span><span>−2H</span><span data-light-it="ORA" data-light-en="NOW">ORA</span></div>'+
+       '<div class="inj-light-axis" id="injLightTimeAxis" aria-label="Orari del grafico, ora locale">'+
+         '<span id="injLightTime0">—</span><span id="injLightTime1">—</span>'+
+         '<span id="injLightTime2">—</span><span id="injLightTime3">—</span></div>'+
     '</section>'+
     '<section class="inj-light-reward"><div class="inj-light-reward-head">'+
       '<span class="inj-light-eyebrow" data-light-it="REWARD MATURATI" data-light-en="ACCRUED REWARDS">REWARD MATURATI</span>'+
