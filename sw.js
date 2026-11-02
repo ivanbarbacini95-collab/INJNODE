@@ -1,7 +1,7 @@
-const CACHE_NAME = 'inj-node-v20261102-light-dashboard-concept1';
+const CACHE_NAME = 'inj-node-v20261102-light-smooth-tick2';
 const APP_SHELL = [
-  './inj-light-home-20261102.css?v=concept1',
-  './inj-light-home-20261102.js?v=concept1',
+  './inj-light-home-20261102.css?v=light-smooth2',
+  './inj-light-home-20261102.js?v=light-smooth2',
   './inj-view-mode-20261102.css?v=lightpro2',
   './inj-view-mode-20261102.js?v=lightpro2',
   './market-refinement-20261029.css?v=crypto-fullbleed1',
@@ -304,8 +304,8 @@ self.addEventListener('install', (event) => {
     // legacy CSS/JS downloads before the worker can activate. Cache the
     // actual boot path first; runtime requests populate the rest on demand.
     const essential=new Set([
-      './inj-light-home-20261102.css?v=concept1',
-      './inj-light-home-20261102.js?v=concept1',
+      './inj-light-home-20261102.css?v=light-smooth2',
+      './inj-light-home-20261102.js?v=light-smooth2',
       './inj-view-mode-20261102.css?v=lightpro2',
       './inj-view-mode-20261102.js?v=lightpro2',
   './market-refinement-20261029.css?v=crypto-fullbleed1',

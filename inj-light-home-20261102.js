@@ -40,8 +40,9 @@
           '<svg viewBox="0 0 320 150" preserveAspectRatio="none" role="img" aria-label="Grafico INJ durante la giornata UTC">'+
           '<g class="inj-light-grid"><path d="M0 24H320M0 72H320M0 120H320"/></g>'+
           '<path id="injLightGraphArea" d=""/><path id="injLightGraphLine" d=""/>'+
+          '<circle id="injLightGraphHalo" cx="0" cy="0" r="9" visibility="hidden"/>'+ 
           '<circle id="injLightGraphDot" cx="0" cy="0" r="3.5" visibility="hidden"/></svg>'+
-          '<div id="injLightChartPending" class="inj-light-chart-pending">—</div>'+
+          ''+
        '</div>'+
        '<div class="inj-light-axis"><span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>24:00 UTC</span></div>'+
     '</section>'+
@@ -96,7 +97,34 @@
      !document.body.classList.contains('inj-section-open')&&
      !document.body.classList.contains('entry-live-launch');
  }
+
+ // The Home dock may be a native manual popover (browser top layer).
+ // CSS/z-index alone cannot reliably hide that layer on iOS Safari.
+ // Explicitly close the popover and apply inline-important display:none
+ // while Light is selected, then restore the exact original Pro behavior.
+ function enforceLightDock(){
+   const nav=$('injPrimaryBottomNav');
+   if(!nav)return;
+   const isLight=root.dataset.injViewMode==='light';
+   if(isLight){
+     if(typeof nav.hidePopover==='function'){
+       try{if(nav.matches(':popover-open'))nav.hidePopover()}catch(_){}
+     }
+     nav.style.setProperty('display','none','important');
+     nav.style.setProperty('visibility','hidden','important');
+     nav.style.setProperty('pointer-events','none','important');
+     nav.setAttribute('aria-hidden','true');
+     nav.inert=true;
+   }else{
+     nav.style.removeProperty('display');
+     nav.style.removeProperty('visibility');
+     nav.style.removeProperty('pointer-events');
+     nav.removeAttribute('aria-hidden');
+     nav.inert=false;
+   }
+ }
  function refreshVisibility(){
+   enforceLightDock();
    const show=isForeground();
    if(light.hidden===show)light.hidden=!show;
    root.dataset.injLightActive=show?'true':'false';
@@ -113,8 +141,6 @@
    $('injLightModeToggle').setAttribute('aria-label',en?'Switch to Pro mode':'Passa alla modalità Pro');
    $('injLightWalletHeading').textContent=en?'Select wallet':'Seleziona wallet';
    $('injLightWalletClose').setAttribute('aria-label',en?'Close':'Chiudi');
-   const pending=$('injLightChartPending');
-   if(pending&&!pending.hidden)pending.textContent=en?'Loading chart…':'Caricamento grafico…';
  }
  function updateWalletOptions(){
    const list=$('injLightWalletOptions');
@@ -183,6 +209,65 @@
    if(dots[next])dots[next].click();
    scheduleSync();
  },{passive:false});
+
+ // Monotone cubic Hermite interpolation: every real market sample remains
+ // on the curve, and monotonic segments cannot invent a new high or low.
+ // Flat derivatives at local reversals make the dense 3m feed less angular
+ // without averaging away spikes, dumps or real intraday extremes.
+ function curveFromMarketPath(path){
+   const points=[];
+   const re=/[ML]\s*(-?\d+(?:\.\d+)?)\s*[, ]\s*(-?\d+(?:\.\d+)?)/g;
+   let match;
+   while((match=re.exec(path))!==null){
+     const x=Number(match[1]),y=Number(match[2]);
+     if(!Number.isFinite(x)||!Number.isFinite(y))continue;
+     const prev=points[points.length-1];
+     if(prev&&x<=prev.x){
+       if(Math.abs(x-prev.x)<0.0001)prev.y=y;
+       continue;
+     }
+     points.push({x,y});
+   }
+   if(points.length<3)return{path,last:points[points.length-1]||null,first:points[0]||null};
+   const n=points.length;
+   const h=[],s=[],m=new Array(n);
+   for(let i=0;i<n-1;i++){
+     h.push(points[i+1].x-points[i].x);
+     s.push((points[i+1].y-points[i].y)/h[i]);
+   }
+   m[0]=s[0];m[n-1]=s[n-2];
+   for(let i=1;i<n-1;i++){
+     if(s[i-1]===0||s[i]===0||Math.sign(s[i-1])!==Math.sign(s[i])){
+       m[i]=0;
+     }else{
+       const w1=2*h[i]+h[i-1],w2=h[i]+2*h[i-1];
+       m[i]=(w1+w2)/(w1/s[i-1]+w2/s[i]);
+     }
+   }
+   const fmt=v=>Number(v.toFixed(3));
+   let d='M'+fmt(points[0].x)+' '+fmt(points[0].y);
+   for(let i=0;i<n-1;i++){
+     const a=points[i],b=points[i+1],step=h[i]/3;
+     d+=' C'+fmt(a.x+step)+' '+fmt(a.y+m[i]*step)+' '+fmt(b.x-step)+' '+fmt(b.y-m[i+1]*step)+' '+fmt(b.x)+' '+fmt(b.y);
+   }
+   return{path:d,first:points[0],last:points[n-1]};
+ }
+ let lastSourceGeometry='';
+ let lastVisualPoint=null;
+ let lastQuotePrice=NaN;
+ function pulsePriceDot(direction){
+   const plot=$('injLightChartPlot');
+   const dot=$('injLightGraphDot');
+   const halo=$('injLightGraphHalo');
+   plot.dataset.tick=direction>0?'up':'down';
+   for(const el of [dot,halo]){
+     el.classList.remove('inj-light-quote-pulse');
+     // Restart the CSS pulse for every genuine price movement, including
+     // consecutive same-direction ticks.
+     void el.getBoundingClientRect().width;
+     el.classList.add('inj-light-quote-pulse');
+   }
+ }
  let frame=0;
  function scheduleSync(){
    if(frame||light.hidden)return;
@@ -210,24 +295,40 @@
      new Intl.NumberFormat(locale(),{style:'currency',currency,minimumFractionDigits:2,maximumFractionDigits:2}).format(rewards*displayPrice):'—';
    output('injLightRewardFiat',fiat==='—'?'—':'≈ '+fiat);
    const current=source('entrySparkPath')?.getAttribute('d')||'';
-   const area=source('entrySparkArea')?.getAttribute('d')||'';
    const line=$('injLightGraphLine'),fill=$('injLightGraphArea');
-   if(line.getAttribute('d')!==current)line.setAttribute('d',current);
-   if(fill.getAttribute('d')!==area)fill.setAttribute('d',area);
+   if(current!==lastSourceGeometry){
+     lastSourceGeometry=current;
+     const smooth=curveFromMarketPath(current);
+     lastVisualPoint=smooth.last;
+     line.setAttribute('d',smooth.path);
+     const filled=smooth.first&&smooth.last&&current.includes('L')
+       ? smooth.path+' L'+smooth.last.x.toFixed(3)+' 150 L'+smooth.first.x.toFixed(3)+' 150 Z'
+       : '';
+     fill.setAttribute('d',filled);
+   }
    const chart=$('injLightChartPlot');
    chart.classList.toggle('negative',Boolean(source('entryInsights')?.classList.contains('spark-negative')));
    const dot=$('injLightGraphDot');
-   const sourceDot=source('entrySparkLiveDot');
-   const left=parseFloat(sourceDot?.style.left||'');
-   const top=parseFloat(sourceDot?.style.top||'');
-   if(current&&sourceDot&&!sourceDot.hidden&&Number.isFinite(left)&&Number.isFinite(top)){
-     dot.setAttribute('cx',String(left*3.2));
-     dot.setAttribute('cy',String(top*1.5));
-     dot.setAttribute('visibility','visible');
-   }else dot.setAttribute('visibility','hidden');
-   const waiting=$('injLightChartPending');
-   waiting.hidden=Boolean(current);
-   if(!waiting.hidden)waiting.textContent=english()?'Loading chart…':'Caricamento grafico…';
+   const halo=$('injLightGraphHalo');
+   if(lastVisualPoint){
+     for(const node of [dot,halo]){
+       node.setAttribute('cx',String(lastVisualPoint.x));
+       node.setAttribute('cy',String(lastVisualPoint.y));
+       node.setAttribute('visibility','visible');
+     }
+   }else{
+     for(const node of [dot,halo])node.setAttribute('visibility','hidden');
+   }
+   const tickPrice=readNum('entryMarketPrice');
+   if(Number.isFinite(tickPrice)&&tickPrice>0){
+     if(Number.isFinite(lastQuotePrice)&&lastVisualPoint&&
+       Math.abs(tickPrice-lastQuotePrice)>Math.max(1e-9,Math.abs(lastQuotePrice)*1e-12)){
+       pulsePriceDot(tickPrice-lastQuotePrice);
+     }else if(!chart.dataset.tick){
+       chart.dataset.tick=source('entryMarketChange')?.classList.contains('negative')?'down':'up';
+     }
+     lastQuotePrice=tickPrice;
+   }
    output('injLightLive',current?'LIVE':'SYNC');
    if(!$('injLightWalletSheet').hidden)updateWalletOptions();
  }
@@ -250,6 +351,7 @@
  visibilityObserver.observe(gate,{attributes:true,attributeFilter:['class','aria-hidden']});
  visibilityObserver.observe(shell,{attributes:true,attributeFilter:['class']});
  window.addEventListener('injnode:viewmodechange',refreshVisibility);
+ window.addEventListener('injnode:viewmodechange',enforceLightDock);
  window.addEventListener('injnode:languagechange',()=>{updateLang();scheduleSync()});
  window.addEventListener('injnode:fontchange',scheduleSync);
  window.addEventListener('pageshow',()=>{refreshVisibility();scheduleSync()});

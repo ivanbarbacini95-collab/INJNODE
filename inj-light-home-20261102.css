@@ -256,3 +256,69 @@ html[data-inj-page="index"] body.privacy-on #injLightHome .private{
 @media(prefers-reduced-motion:reduce){
  html[data-inj-page="index"] body #injLightHome *{animation:none!important;transition:none!important}
 }
+
+/* Light's dock exclusion is unconditional (also during overlays and during
+   iOS popover transition). JS additionally closes the native popover. */
+html[data-inj-page="index"][data-inj-view-mode="light"] body.entry-gate-open
+  > #injPrimaryBottomNav#injPrimaryBottomNav,
+html[data-inj-page="index"][data-inj-view-mode="light"] body.entry-gate-open
+  > #injPrimaryBottomNav#injPrimaryBottomNav:popover-open,
+html[data-inj-page="index"][data-inj-light-active="true"] body
+  > #injPrimaryBottomNav#injPrimaryBottomNav {
+  display:none!important;
+  opacity:0!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+
+/* No loading text is ever rendered in Light's plot, including the case
+   where the live series has not arrived yet. */
+html[data-inj-page="index"] body #injLightHome .inj-light-chart-pending,
+html[data-inj-page="index"] body #injLightHome #injLightChartPending{
+  display:none!important;
+}
+
+/* Dot color shows the direction of the latest price tick, independently
+   of the 24-hour direction of the overall chart. */
+html[data-inj-page="index"] body #injLightHome #injLightChartPlot[data-tick="up"]{
+  --inj-light-dot:#75dbad;
+}
+html[data-inj-page="index"] body #injLightHome #injLightChartPlot[data-tick="down"]{
+  --inj-light-dot:#eb7386;
+}
+html[data-inj-page="index"] body #injLightHome #injLightGraphDot{
+  fill:var(--inj-light-dot,var(--inj-light-plot))!important;
+  stroke:var(--theme-canvas,var(--bg,#07131a))!important;
+  stroke-width:1.8!important;
+  transform-box:fill-box;
+  transform-origin:center;
+}
+html[data-inj-page="index"] body #injLightHome #injLightGraphHalo{
+  fill:var(--inj-light-dot,var(--inj-light-plot))!important;
+  opacity:0;
+  transform-box:fill-box;
+  transform-origin:center;
+  pointer-events:none!important;
+}
+@keyframes inj-light-quote-blink{
+  0%{opacity:1;transform:scale(1)}
+  40%{opacity:.2;transform:scale(.78)}
+  70%{opacity:1;transform:scale(1.18)}
+  100%{opacity:1;transform:scale(1)}
+}
+@keyframes inj-light-quote-halo{
+  0%{opacity:.6;transform:scale(.55)}
+  100%{opacity:0;transform:scale(2.1)}
+}
+html[data-inj-page="index"] body #injLightHome #injLightGraphDot.inj-light-quote-pulse{
+  animation:inj-light-quote-blink .58s ease-out 1;
+}
+html[data-inj-page="index"] body #injLightHome #injLightGraphHalo.inj-light-quote-pulse{
+  animation:inj-light-quote-halo .65s ease-out 1;
+}
+@media(prefers-reduced-motion:reduce){
+  html[data-inj-page="index"] body #injLightHome
+    :is(#injLightGraphDot,#injLightGraphHalo).inj-light-quote-pulse{
+    animation:none!important;
+  }
+}
