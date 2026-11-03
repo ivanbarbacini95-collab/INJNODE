@@ -1,0 +1,26 @@
+/* A single selectable typeface throughout INJ Node, even in legacy modules.
+   Last-loaded override: no changes to sizes, spacing, graphics, or chart geometry. */
+html[data-inj-font]{
+  --inj-ui-font:var(--inj-chosen-face);
+  --inj-minimal-font:var(--inj-chosen-face);
+  --inj-minimal-mono:var(--inj-chosen-face);
+  --inj-inter-light-font:var(--inj-chosen-face);
+  --inj-node-terminal-font:var(--inj-chosen-face);
+  --inj-home-title-face:var(--inj-chosen-face);
+  --inj-home-description-face:var(--inj-chosen-face);
+  --inj-editorial-face:var(--inj-chosen-face);
+  font-family:var(--inj-chosen-face)!important;
+}
+html[data-inj-font] :is(body,button,input,textarea,select,option){
+  font-family:var(--inj-chosen-face)!important;
+}
+/* Outrank old !important font overrides in Market, Treasury and Workspace.
+   Text only: leave icon fonts and SVG drawings unchanged. */
+html[data-inj-font] body :is(*,#__injFontPlatform#__injFontPlatform#__injFontPlatform#__injFontPlatform#__injFontPlatform#__injFontPlatform#__injFontPlatform#__injFontPlatform):not(svg):not(svg *):not(.material-icons):not(.material-symbols-outlined):not(.material-symbols-rounded):not(.material-symbols-sharp):not(.fa):not(.fas):not(.far):not(.fab):not(.fal):not(.fad):not(.fa-solid):not(.fa-regular):not(.fa-brands):not(.iconfont):not(.icon-font){
+  font-family:var(--inj-chosen-face)!important;
+  font-variant-numeric:tabular-nums lining-nums;
+}
+html[data-inj-font] body svg :is(text,tspan,textPath){
+  font-family:var(--inj-chosen-face)!important;
+}
+/* Picker samples keep their intentionally different inline font previews. */
