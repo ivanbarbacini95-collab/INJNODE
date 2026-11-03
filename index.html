@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 
-<html data-inj-screen="boot" data-inj-page="index" data-inj-viewport="80" data-theme="navy" lang="it">
+<html data-inj-screen="boot" data-inj-page="index" data-inj-viewport="80" data-theme="obsidian" lang="it">
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
-<meta content="#10272a" name="theme-color"/>
-<style id="inj-prepaint-canvas">html,body{background-color:#10272a;color-scheme:dark}html[data-theme="black"],html[data-theme="black"] body{background-color:#000000}html[data-theme="light"],html[data-theme="light"] body{background-color:#f3f8ff;color-scheme:light}html[data-theme="amber"],html[data-theme="amber"] body{background-color:#181923}html[data-theme="velvet"],html[data-theme="velvet"] body{background-color:#322942}html[data-theme="ocean-x-solar"],html[data-theme="ocean-x-solar"] body{background-color:#51334f}</style>
+<meta content="#0b1722" name="theme-color"/>
+<style id="inj-prepaint-canvas">html,body{background-color:#060b11;color-scheme:dark}html[data-theme="obsidian"],html[data-theme="obsidian"] body{background-color:#060b11}html[data-theme="arctic"],html[data-theme="arctic"] body{background-color:#f1f7fa;color-scheme:light}html[data-theme="orbit"],html[data-theme="orbit"] body{background-color:#080b1a}html[data-theme="emerald"],html[data-theme="emerald"] body{background-color:#06110f}html[data-theme="ember"],html[data-theme="ember"] body{background-color:#150c12}html[data-theme="titanium"],html[data-theme="titanium"] body{background-color:#151b21}</style>
 
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="INJ Node" name="apple-mobile-web-app-title"/>
 <meta content="INJ Node — dashboard essenziale per wallet, staking e mercato Injective." name="description"/>
 <title>INJ Node</title>
-<link href="manifest.webmanifest?v=20261102nativepalette" rel="manifest"/>
+<link href="manifest.webmanifest?v=20261102litepro1" rel="manifest"/>
 
 
 
@@ -19,10 +19,12 @@
 
 <script>
     try {
-      const savedTheme = (localStorage.getItem('inj_monitor_theme') === 'dynamic' ? 'navy' : localStorage.getItem('inj_monitor_theme'));
-      document.documentElement.dataset.theme = ['navy', 'black', 'light', 'amber', 'velvet', 'ocean-x-solar'].includes(savedTheme) ? savedTheme : 'navy';
-      const initialTone = {navy:'#10272a',black:'#000000',light:'#f3f8ff',amber:'#181923',velvet:'#322942','ocean-x-solar':'#51334f'};
-      document.querySelector('meta[name="theme-color"]')?.setAttribute('content',initialTone[document.documentElement.dataset.theme]||initialTone.navy);
+      const savedTheme = localStorage.getItem('inj_monitor_theme');
+      const oldThemes = { navy:'obsidian', black:'obsidian', light:'arctic', amber:'ember', velvet:'orbit', 'ocean-x-solar':'ember', ocean:'emerald', chromatic:'orbit', aqua:'arctic', dynamic:'obsidian' };
+      const initialTone = {obsidian:'#0b1722',arctic:'#f3f9fc',orbit:'#15152e',emerald:'#10251e',ember:'#24141d',titanium:'#2b363f','pure-black':'#020305','graphite':'#101419','frost-white':'#f6f9fc','warm-ivory':'#f9f4e9','midnight-blue':'#081426','slate-grey':'#1e272e','liquid-silver':'#0d141d','chrome-blue':'#061324','pearl-glass':'#edf4f7','rose-copper':'#21151c','sapphire-glass':'#0a0f2c','golden-satin':'#21180f','neon-grid':'#040b16','cyber-cyan':'#03151b','quantum-purple':'#0e0820','matrix-green':'#05120c','solar-circuit':'#1a0f10','red-horizon':'#190b14','classic-black':'#050505','classic-white':'#ffffff','classic-navy':'#0a1625','classic-ivory':'#f8f3e9','classic-stone':'#30383d','classic-champagne':'#e8dcc9'};
+      document.documentElement.dataset.theme = initialTone[savedTheme] ? savedTheme : (oldThemes[savedTheme] || 'obsidian');
+      document.documentElement.dataset.injThemeMotion = localStorage.getItem('inj_node_theme_motion_v1')==='static'?'static':'dynamic';
+      document.querySelector('meta[name="theme-color"]')?.setAttribute('content',initialTone[document.documentElement.dataset.theme]||initialTone.obsidian);
       const savedUiStyle = localStorage.getItem('inj_monitor_ui_style');
       document.documentElement.dataset.uiStyle = ['elegant', 'futuristic', 'ultra'].includes(savedUiStyle) ? savedUiStyle : 'elegant';
       if (sessionStorage.getItem('inj_node_return_home') === '1') {
@@ -38,7 +40,7 @@
 <link href="style.css?v=16.01.44" rel="stylesheet"/>
 <script>document.addEventListener('DOMContentLoaded',()=>{const cs=getComputedStyle(document.documentElement);const c=(cs.getPropertyValue('--inj-native-status-tone').trim()||cs.getPropertyValue('--theme-canvas').trim()||cs.getPropertyValue('--bg').trim());if(c)document.querySelector('meta[name="theme-color"]')?.setAttribute('content',c)},{once:true});</script>
 <link rel="stylesheet" href="viewport.css?v=16.00.74">
-<script defer src="viewport.js?v=20261102theme-native2"></script>
+<script defer src="viewport.js?v=20261102litepro-native1"></script>
 
 <style id="entry-flat-v44-css">
 .entry-actions.entry-flat-v44{display:flex!important;flex-direction:column!important;gap:10px!important;width:100%!important}
@@ -122,7 +124,7 @@
 <script defer src="./home-entry-feedback.js?v=160720"></script>
 <script defer src="./home-scroll-memory.js?v=160719"></script>
 <script defer src="./cloud-sync-agent.js?v=20261027sync1"></script>
-<script defer src="navigation.js?v=20261030marketlabel1"></script>
+<script defer src="navigation.js?v=families30-classic-v2"></script>
 <script defer src="./i18n.js?v=20261028allsections1"></script>
 <script defer src="scroll-guard.js?v=160525"></script>
 <!-- INJ Node Home Vitality: unique theme-aware launcher art; no page-wide effects -->
@@ -311,7 +313,7 @@
 <link rel="stylesheet" href="./inj-uhd.css?v=160710">
 <link rel="stylesheet" href="./home-entry-feedback.css?v=160719">
 <link rel="stylesheet" href="./dashboard-ipad-layout.css?v=160722">
-<link rel="stylesheet" href="./home-wide-menu-fix.css?v=160744">
+<link rel="stylesheet" href="./home-wide-menu-fix.css?v=20261102-settings-fullscreen1">
 <link rel="stylesheet" href="./morning-brief.css?v=160736">
 <link rel="stylesheet" href="./reward-ladder-home.css?v=160740">
 <link rel="stylesheet" href="./workspace-home.css?v=20261027-left2">
@@ -340,7 +342,7 @@
 <script defer src="./control-center-more-20261029.js?v=20261029macro4"></script>
 
 <link rel="stylesheet" href="./inj-top-seamless.css?v=20261029continuity5"/>
-<script defer src="./inj-top-seamless.js?v=20261028ios27"></script>
+<script defer src="./inj-top-seamless.js?v=20261102-toptone1"></script>
 <link rel="stylesheet" href="./home-compact-value-bars.css?v=20261028compactbars2"/>
 <link rel="stylesheet" href="./home-market-events.css?v=20261029borderless1"/>
 <script defer src="./home-market-events.js?v=20261029macro4"></script>
@@ -377,8 +379,8 @@
 <script defer src="./home-card-height-sync-20261029.js?v=1"></script>
 <link rel="stylesheet" href="./inj-inter-light-20261029.css?v=interlight-global-1"/>
 <link rel="stylesheet" href="./inj-font-switcher-20261029.css?v=geistbold8"/>
-<link rel="stylesheet" href="./home-bottom-tabs-20261030.css?v=20261102-dashboard-etf-guard1"/>
-<script defer src="./home-bottom-tabs-20261030.js?v=20261102-crossfade11"></script>
+<link rel="stylesheet" href="./home-bottom-tabs-20261030.css?v=20261101-home-fixed5"/>
+<script defer src="./home-bottom-tabs-20261030.js?v=20261102-litepro-nav1"></script>
 <link rel="stylesheet" href="./market-tab-navigation-20261031.css?v=marketrail11"/>
 <script defer src="./market-tab-navigation-20261031.js?v=marketrail14"></script>
 <link rel="stylesheet" href="./my-reward-20261101.css?v=1">
@@ -398,22 +400,28 @@
 <script defer src="./my-reward-immersive-20261101.js?v=2"></script>
 <link rel="stylesheet" href="./nav-premium-loop-20261101.css?v=11">
 <script defer src="./nav-premium-loop-20261101.js?v=12"></script>
-<link rel="stylesheet" href="./home-theme-continuity-20261101.css?v=top-safebleed3">
+<link rel="stylesheet" href="./home-theme-continuity-20261101.css?v=20261102-toptone1">
 <link rel="stylesheet" href="./live-view-clock-below-title-20261101.css?v=1">
 <script>try{document.documentElement.dataset.injViewMode=localStorage.getItem("inj_node_view_mode_v1")==="light"?"light":"pro"}catch(_){document.documentElement.dataset.injViewMode="pro"}</script>
-<link rel="stylesheet" href="./inj-view-mode-20261102.css?v=light-crossfade12">
-<link rel="stylesheet" href="./inj-light-home-20261102.css?v=light-price-crisp14">
+<link rel="stylesheet" href="./inj-view-mode-20261102.css?v=20261102-litepro-ohlc-official1">
+<link rel="stylesheet" href="./inj-light-home-20261102.css?v=20261102-litepro-ohlc-official1">
 <link rel="stylesheet" href="./inj-home-candles-20261102.css?v=20261103-lite-week-line1">
-<script defer src="./inj-view-mode-20261102.js?v=lite-name3"></script>
+<link rel="stylesheet" href="./inj-ios-statusbar-palette-20261102.css?v=20261102-litepro-ohlc-official1">
+<script defer src="./inj-view-mode-20261102.js?v=20261102-litepro-ohlc-official1"></script>
 <script defer src="./inj-light-home-20261102.js?v=20261103-lite-week-line1"></script>
 <script defer src="./inj-home-candles-20261102.js?v=20261103-lite-week-line1"></script>
-<link rel="stylesheet" href="./inj-ios-statusbar-palette-20261102.css?v=theme-native2">
+<link rel="stylesheet" href="./inj-rubik-global-20261102.css?v=rubikbold1">
+<link rel="stylesheet" href="./desktop-orientation-20261103.css?v=20261103a">
 <link rel="stylesheet" href="./inj-lite-responsive-desktop-20261103.css?v=20261103a">
 <link rel="stylesheet" href="./inj-market-isolation-quote-20261103.css?v=20261103a">
 <link rel="stylesheet" href="./inj-privacy-dots-20261103.css?v=20261103b">
 <link rel="stylesheet" href="./tools-desktop-equal-height-20261103.css?v=20261103-tools104a">
 <link rel="stylesheet" href="./settings-desktop-readable-20261103.css?v=20261103-controlcenter1">
 <link rel="stylesheet" href="./inj-font-platform-unified-20261103.css?v=sf-dual-20261103a">
+<link rel="stylesheet" href="./inj-six-themes-20261103.css?v=theme-persist-flow-20261103c">
+<link rel="stylesheet" href="./inj-signature-atmospheres-20261103.css?v=signature-preview-fidelity1">
+<link rel="stylesheet" href="./inj-theme-collections-20261103.css?v=families30-classic-v3">
+<script defer src="./inj-six-themes-20261103.js?v=families30-classic-v2"></script>
 </head>
 <body class="boot-loading">
 <div aria-label="Avvio INJ Node" aria-live="polite" aria-atomic="true" class="boot-splash node-pulse-splash" id="bootSplash" role="status">
@@ -559,18 +567,60 @@
 <div class="theme-control menu-theme-control" id="themeControl">
 <button aria-controls="themePicker" aria-expanded="false" aria-label="Scegli Theme" class="menu-action menu-setting" id="themeButton" title="Theme" type="button">
 <span aria-hidden="true" class="menu-action-icon"><svg viewbox="0 0 24 24"><path d="M12 3.5a8.5 8.5 0 1 0 0 17h1.1a1.7 1.7 0 0 0 0-3.4h-.8a1.8 1.8 0 0 1 0-3.6H15a5.5 5.5 0 0 0 0-11h-3Z"></path><circle cx="8" cy="9" r=".7"></circle><circle cx="11" cy="6.8" r=".7"></circle><circle cx="7.2" cy="13" r=".7"></circle></svg></span>
-<span class="menu-action-copy"><strong data-it="Theme" data-en="Theme">Theme</strong><small data-it="6 temi disponibili" data-en="6 themes available">6 temi disponibili</small></span>
+<span class="menu-action-copy"><strong data-it="Theme" data-en="Theme">Theme</strong><small data-it="30 temi · 5 categorie" data-en="30 themes · 5 categories">30 temi · 5 categorie</small></span>
 <svg aria-hidden="true" class="menu-action-chevron" viewbox="0 0 24 24"><path d="m8 10 4 4 4-4"></path></svg>
 </button>
 <div aria-label="Theme" class="theme-picker" id="themePicker" role="group">
+<details class="inj-theme-family" data-family="signature">
+<summary><span class="inj-family-illustration" aria-hidden="true">◈</span><span class="inj-family-title"><strong>Signature Atmospheres</strong><small data-it="I temi originali · Nastri fluidi" data-en="Original themes · Flowing ribbons">I temi originali · Nastri fluidi</small></span><span class="inj-family-count">6</span><span class="inj-family-chevron" aria-hidden="true"></span></summary>
 <div class="theme-category-options theme-list-unified">
-<button data-theme-choice="black" type="button"><i class="theme-swatch black"></i><span data-it="Nero" data-en="Black">Nero</span></button>
-<button data-theme-choice="light" type="button"><i class="theme-swatch light"></i><span data-it="Chiaro" data-en="Light">Chiaro</span></button>
-<button data-theme-choice="amber" type="button"><i class="theme-swatch amber"></i><span>Midnight Ember</span></button>
-<button data-theme-choice="navy" type="button"><i class="theme-swatch navy"></i><span>Aurora</span></button>
-<button data-theme-choice="velvet" type="button"><i class="theme-swatch velvet"></i><span>Velvet Nebula</span></button>
-<button data-theme-choice="ocean-x-solar" type="button"><i class="theme-swatch ocean-x-solar"></i><span>Solar Surge</span></button>
-</div>
+<button data-theme-choice="obsidian" type="button"><i class="theme-swatch obsidian" aria-hidden="true"></i><span>Obsidian Pulse</span></button>
+<button data-theme-choice="arctic" type="button"><i class="theme-swatch arctic" aria-hidden="true"></i><span>Arctic Glass</span></button>
+<button data-theme-choice="orbit" type="button"><i class="theme-swatch orbit" aria-hidden="true"></i><span>Deep Orbit</span></button>
+<button data-theme-choice="emerald" type="button"><i class="theme-swatch emerald" aria-hidden="true"></i><span>Emerald Flux</span></button>
+<button data-theme-choice="ember" type="button"><i class="theme-swatch ember" aria-hidden="true"></i><span>Ember Gold</span></button>
+<button data-theme-choice="titanium" type="button"><i class="theme-swatch titanium" aria-hidden="true"></i><span>Liquid Titanium</span></button>
+</div></details>
+<details class="inj-theme-family" data-family="minimal">
+<summary><span class="inj-family-illustration" aria-hidden="true">▱</span><span class="inj-family-title"><strong>Minimal Studio</strong><small data-it="Essenziale · Professionale" data-en="Essential · Professional">Essenziale · Professionale</small></span><span class="inj-family-count">6</span><span class="inj-family-chevron" aria-hidden="true"></span></summary>
+<div class="theme-category-options theme-list-unified">
+<button data-theme-choice="pure-black" type="button"><i class="theme-swatch pure-black" aria-hidden="true"></i><span>Pure Black</span></button>
+<button data-theme-choice="graphite" type="button"><i class="theme-swatch graphite" aria-hidden="true"></i><span>Graphite</span></button>
+<button data-theme-choice="frost-white" type="button"><i class="theme-swatch frost-white" aria-hidden="true"></i><span>Frost White</span></button>
+<button data-theme-choice="warm-ivory" type="button"><i class="theme-swatch warm-ivory" aria-hidden="true"></i><span>Warm Ivory</span></button>
+<button data-theme-choice="midnight-blue" type="button"><i class="theme-swatch midnight-blue" aria-hidden="true"></i><span>Midnight Blue</span></button>
+<button data-theme-choice="slate-grey" type="button"><i class="theme-swatch slate-grey" aria-hidden="true"></i><span>Slate Grey</span></button>
+</div></details>
+<details class="inj-theme-family" data-family="crystal">
+<summary><span class="inj-family-illustration" aria-hidden="true">◇</span><span class="inj-family-title"><strong>Crystal & Metal</strong><small data-it="Riflessi di vetro e metallo" data-en="Glass and metallic reflections">Riflessi di vetro e metallo</small></span><span class="inj-family-count">6</span><span class="inj-family-chevron" aria-hidden="true"></span></summary>
+<div class="theme-category-options theme-list-unified">
+<button data-theme-choice="liquid-silver" type="button"><i class="theme-swatch liquid-silver" aria-hidden="true"></i><span>Liquid Silver</span></button>
+<button data-theme-choice="chrome-blue" type="button"><i class="theme-swatch chrome-blue" aria-hidden="true"></i><span>Chrome Blue</span></button>
+<button data-theme-choice="pearl-glass" type="button"><i class="theme-swatch pearl-glass" aria-hidden="true"></i><span>Pearl Glass</span></button>
+<button data-theme-choice="rose-copper" type="button"><i class="theme-swatch rose-copper" aria-hidden="true"></i><span>Rose Copper</span></button>
+<button data-theme-choice="sapphire-glass" type="button"><i class="theme-swatch sapphire-glass" aria-hidden="true"></i><span>Sapphire Glass</span></button>
+<button data-theme-choice="golden-satin" type="button"><i class="theme-swatch golden-satin" aria-hidden="true"></i><span>Golden Satin</span></button>
+</div></details>
+<details class="inj-theme-family" data-family="digital">
+<summary><span class="inj-family-illustration" aria-hidden="true">⌗</span><span class="inj-family-title"><strong>Digital Worlds</strong><small data-it="Griglie e flussi tecnologici" data-en="Grids and digital flows">Griglie e flussi tecnologici</small></span><span class="inj-family-count">6</span><span class="inj-family-chevron" aria-hidden="true"></span></summary>
+<div class="theme-category-options theme-list-unified">
+<button data-theme-choice="neon-grid" type="button"><i class="theme-swatch neon-grid" aria-hidden="true"></i><span>Neon Grid</span></button>
+<button data-theme-choice="cyber-cyan" type="button"><i class="theme-swatch cyber-cyan" aria-hidden="true"></i><span>Cyber Cyan</span></button>
+<button data-theme-choice="quantum-purple" type="button"><i class="theme-swatch quantum-purple" aria-hidden="true"></i><span>Quantum Purple</span></button>
+<button data-theme-choice="matrix-green" type="button"><i class="theme-swatch matrix-green" aria-hidden="true"></i><span>Matrix Green</span></button>
+<button data-theme-choice="solar-circuit" type="button"><i class="theme-swatch solar-circuit" aria-hidden="true"></i><span>Solar Circuit</span></button>
+<button data-theme-choice="red-horizon" type="button"><i class="theme-swatch red-horizon" aria-hidden="true"></i><span>Red Horizon</span></button>
+</div></details>
+<details class="inj-theme-family" data-family="classic">
+<summary><span class="inj-family-illustration" aria-hidden="true">◯</span><span class="inj-family-title"><strong>Classic</strong><small data-it="Colori pieni · Senza decorazioni" data-en="Solid colors · No decoration">Colori pieni · Senza decorazioni</small></span><span class="inj-family-count">6</span><span class="inj-family-chevron" aria-hidden="true"></span></summary>
+<div class="theme-category-options theme-list-unified">
+<button data-theme-choice="classic-black" type="button"><i class="theme-swatch classic-black" aria-hidden="true"></i><span>Nero</span></button>
+<button data-theme-choice="classic-white" type="button"><i class="theme-swatch classic-white" aria-hidden="true"></i><span>Bianco</span></button>
+<button data-theme-choice="classic-navy" type="button"><i class="theme-swatch classic-navy" aria-hidden="true"></i><span>Navy Classico</span></button>
+<button data-theme-choice="classic-ivory" type="button"><i class="theme-swatch classic-ivory" aria-hidden="true"></i><span>Avorio</span></button>
+<button data-theme-choice="classic-stone" type="button"><i class="theme-swatch classic-stone" aria-hidden="true"></i><span>Stone Grey</span></button>
+<button data-theme-choice="classic-champagne" type="button"><i class="theme-swatch classic-champagne" aria-hidden="true"></i><span>Champagne</span></button>
+</div></details>
 </div>
 </div>
 
@@ -704,7 +754,7 @@
 <div><span>AGGIORNATO</span><strong id="entryWalletFreshness">—</strong></div>
 </div>
 </section>
-<section aria-label="Price INJ USDT oggi" class="entry-insights entry-price-card" id="entryInsights">
+<section aria-label="Prezzo INJ USDT · giornata corrente UTC" class="entry-insights entry-price-card" id="entryInsights">
 <div class="entry-insights-head">
 <div>
 <span>PRICE</span>
@@ -713,7 +763,7 @@
 <span class="entry-insights-live" id="entrySparkStatus"><i></i> LIVE</span>
 </div>
 <div class="entry-sparkline entry-price-chart">
-<div aria-label="Grafico INJ USDT della giornata UTC. Clicca e trascina per leggere il prezzo lungo la curva." class="entry-spark-stage" id="entrySparkStage" role="img" tabindex="0">
+<div aria-label="Grafico INJ USDT della giornata UTC, dall’apertura di mezzanotte alla chiusura alle 24. Tocca o trascina per leggere i prezzi." class="entry-spark-stage" id="entrySparkStage" role="img" tabindex="0">
 <svg aria-hidden="true" focusable="false" preserveaspectratio="none" viewbox="0 0 320 150">
 <path class="entry-spark-area" d="" id="entrySparkArea"></path>
 <path class="entry-spark-path" d="" id="entrySparkPath"></path>
@@ -723,10 +773,10 @@
 <span aria-hidden="true" class="entry-spark-cursor" hidden="" id="entrySparkCursor"><i></i></span>
 <span aria-live="polite" class="entry-spark-tooltip" hidden="" id="entrySparkTooltip"><strong>—</strong><small>—</small></span>
 </div>
-<div class="entry-price-timebar"><span>00:00 UTC</span><span>24:00 UTC</span></div>
+<div class="entry-price-timebar"><span>APERTURA · 00:00 UTC</span><span>CHIUSURA · 24:00 UTC</span></div>
 </div>
 <div class="entry-price-pnl private">
-<div><span>P/L today</span></div>
+<div><span>P/L OGGI</span></div>
 <strong class="neutral" id="entryInsightPnl">—</strong>
 </div>
 </section>
@@ -799,7 +849,7 @@
 <span aria-hidden="true" class="entry-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M8 7h7a4 4 0 0 1 0 8H8M8 15h8a3 3 0 0 1 0 6H8M6 5h3M6 17h3"/></svg></span><span><strong class="inj-home-tile-title" data-it="Global Crypto" data-en="Global Crypto">Global Crypto</strong><small class="inj-tile-description" data-it="Lista crypto e Heatmap" data-en="Crypto list and heatmap">Lista crypto e Heatmap</small></span><svg aria-hidden="true" class="entry-action-arrow" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
 <a class="entry-action entry-action-favorites" id="entryMarketFavoritesButton" href="./market.html?entry=favorites" data-inj-market-view="favorites" aria-label="Apri Preferiti">
 <span aria-hidden="true" class="entry-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 2.8 5.8 6.4.9-4.6 4.5 1.1 6.4-5.7-3-5.7 3 1.1-6.4-4.6-4.5 6.4-.9z"/></svg></span><span><strong class="inj-home-tile-title" data-it="Preferiti" data-en="Favorites">Preferiti</strong><small class="inj-tile-description" data-it="Le tue crypto · Lista e Heatmap" data-en="Your cryptos · List and Heatmap">Le tue crypto · Lista e Heatmap</small></span><svg aria-hidden="true" class="entry-action-arrow" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
-<a class="entry-action entry-action-live-rewards" id="entryLiveRewardsButton" href="./live-rewards.html?v=16.00.46" aria-label="Apri Live Rewards">
+<a class="entry-action entry-action-live-rewards" id="entryLiveRewardsButton" href="./live-rewards.html?v=20261102-chainfix1" aria-label="Apri Live Rewards">
 <span aria-hidden="true" class="entry-action-icon live-rewards-menu-icon"><svg viewBox="0 0 24 24"><path d="M5 17V9"></path><path d="M9 17V6"></path><path d="M13 17v-4"></path><path d="M17 17V8"></path><path d="M4 20h16"></path><path d="m5 11 4-3 4 3 5-5"></path><circle cx="18" cy="6" r="1.3"></circle></svg></span>
 <span><strong class="inj-home-tile-title" data-it="Live Reward" data-en="Live Rewards">Live Reward</strong><small class="inj-tile-description" data-it="Reward staking live" data-en="Live staking rewards">Reward staking live</small></span>
 <svg aria-hidden="true" class="entry-action-arrow" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"></path></svg>
@@ -836,7 +886,7 @@
 <span class="inj-home-unified-copy"><strong class="inj-home-tile-title" data-it="Financial Freedom" data-en="Financial Freedom">Financial Freedom</strong><small class="inj-tile-description" data-it="Patrimonio e reward" data-en="Wealth &amp; rewards">Patrimonio e reward</small></span>
 </button>
 
-<a class="entry-action entry-action-treasury" id="entryTreasuryButton" href="./treasury.html?v=160525" aria-label="Apri B Capital Group · INJ Treasury">
+<a class="entry-action entry-action-treasury" id="entryTreasuryButton" href="./treasury.html?v=20261102-chainfix1" aria-label="Apri B Capital Group · INJ Treasury">
 <span aria-hidden="true" class="entry-action-icon treasury-menu-icon"><svg viewBox="0 0 24 24"><path d="M4 9h16v10H4z"></path><path d="M7 9V6.7L12 4l5 2.7V9"></path><path d="M8 13h8M8 16h5"></path><circle cx="17" cy="16" r="1.5"></circle></svg></span>
 <span class="treasury-entry-copy"><strong class="inj-home-tile-title" data-it="B Capital Group" data-en="B Capital Group">B Capital Group</strong><span class="treasury-entry-details"><small class="treasury-entry-subtitle" data-i18n-skip="true">INJ Treasury</small><small class="inj-tile-description" data-it="Totale dei tuoi wallet" data-en="All-wallet overview">Totale dei tuoi wallet</small></span></span>
 
@@ -1427,7 +1477,7 @@
   </article>
 </section>
 <div aria-live="polite" class="toast" id="toast" role="status"></div>
-<script defer="" src="app.js?v=20261102-light-price-axis4"></script>
+<script defer="" src="app.js?v=families30-classic-v2"></script>
 <script defer src="./morning-brief.js?v=160737"></script>
 <script>
 (function(){
@@ -1523,6 +1573,6 @@
 <div id="injMarketPortal" class="inj-market-portal" hidden aria-label="Mercato" role="dialog" aria-modal="true">
   <iframe id="injMarketFrame" title="Mercato" loading="eager" referrerpolicy="same-origin"></iframe>
 </div>
-<script defer src="market-portal.js?v=20261030favorites1"></script>
+<script defer src="market-portal.js?v=20261102-routefix1"></script>
 </body>
 </html>

@@ -2086,28 +2086,30 @@ function resetEntryPriceSession(dayStart = entryMarketDayBounds().start) {
 }
 
 function entrySparkPath(points) {
+  // This is the TODAY (UTC) chart: it opens at 00:00 UTC, grows over the
+  // current UTC day and completes at 24:00 UTC. The first Home card retains
+  // its independent ROLLING 24H market change.
   const bounds = entryMarketDayBounds();
   const dayStart = number(state.entrySpark.dayStart) || bounds.start;
-  const dayEnd = bounds.start === dayStart ? bounds.end : dayStart + 86_400_000;
+  const dayEnd = dayStart + 86_400_000;
+  const now = Math.min(Date.now(),dayEnd);
   const rows = Array.isArray(points)
     ? points
-        .filter((row) => number(row?.price) > 0 && number(row?.t) >= dayStart && number(row?.t) <= dayEnd)
+        .filter((row) => number(row?.price) > 0 && number(row?.t) >= dayStart && number(row?.t) <= now)
         .sort((a, b) => number(a.t) - number(b.t))
     : [];
   if (rows.length < 2) {
     if (!rows.length) return { line: '', area: '', direction: 0, last: null };
-    // At the exact start of a new day, show the real opening dot; the
-    // historical curve will grow from it as the exchange receives candles.
     const row = rows[0];
     const x = Math.max(0, Math.min(320, ((number(row.t) - dayStart) / (dayEnd - dayStart)) * 320));
     const y = 75;
-    return { line: `M${x.toFixed(2)} ${y}`, area: '', direction: number(row.price) - number(state.entrySpark.openPrice),
+    return { line: `M${x.toFixed(2)} ${y}`, area: '',
+      direction: number(row.price) - number(state.entrySpark.openPrice),
       last: [x, y], samples: [{ x, y, t: number(row.t), price: number(row.price) }], width: 320, height: 150 };
   }
 
-  // v15.83 — stronger mobile Y autoscale with protected top/bottom breathing room.
-  // The true intraday low/high always define the scale, then a dynamic margin
-  // is added so sharp pumps/dumps never pin the line against the card edges.
+  // Preserve the actual intraday maximum and minimum, even during a rapid
+  // pump/dump. Dynamic vertical padding prevents clipping at both extremes.
   const prices = rows.map((row) => number(row.price));
   const rawMin = Math.min(...prices);
   const rawMax = Math.max(...prices);
@@ -2121,8 +2123,6 @@ function entrySparkPath(points) {
   const span = Math.max(1e-9, max - min);
   const width = 320;
   const height = 150;
-  // Home price chart: use the full vertical drawing area. Price-domain
-  // padding still keeps the peaks/troughs legible; the P/L stays below the plot.
   const top = 10;
   const bottom = 143;
   const timeSpan = Math.max(1, dayEnd - dayStart);
@@ -2272,7 +2272,7 @@ function renderEntryAtGlance() {
   const liveLabel = $('entrySparkLiveLabel');
   if (path) path.setAttribute('d', spark.line);
   if (area) area.setAttribute('d', spark.area);
-  // Expose the genuine auto-scaled domain for the dedicated Light price axis.
+  // Share Home autoscaling data with the Lite dashboard.
   const stage = $('entrySparkStage');
   if (stage) {
     if (spark.priceScale) {
@@ -2338,15 +2338,21 @@ async function loadEntrySparkline(force = false) {
   renderEntryAtGlance();
   try {
     const end = Date.now();
-    const data = await fetchJson(`https://api.binance.com/api/v3/klines?symbol=INJUSDT&interval=3m&startTime=${bounds.start}&endTime=${end}&limit=500`, 9000);
+    // Request only today's UTC session. There are at most 480 three-minute
+    // candles before 24:00, and the timeline gradually fills during the day.
+    const query = `/api/v3/klines?symbol=INJUSDT&interval=3m&startTime=${bounds.start}&endTime=${end}&limit=500`;
+    let data;
+    try { data = await fetchJson('https://data-api.binance.vision' + query, 9000); }
+    catch (_) { data = await fetchJson('https://api.binance.com' + query, 9000); }
     // A pending request must not redraw yesterday after midnight UTC.
     if (entryMarketDayBounds().start !== bounds.start) return;
     const rows = Array.isArray(data) ? data.filter((row) => number(row?.[4]) > 0 && number(row?.[0]) < end) : [];
     if (rows.length) {
-      const openPrice = number(rows[0]?.[1]);
+      // Real 00:00 UTC exchange opening is shared with Performance Timeline.
+      const dailyOpen = number(rows[0]?.[1]) || number(rows[0]?.[4]);
       state.entrySpark.dayStart = bounds.start;
-      state.entrySpark.openPrice = openPrice > 0 ? openPrice : number(rows[0]?.[4]);
-      const points = [{ t: bounds.start, price: state.entrySpark.openPrice, live: false }];
+      state.entrySpark.openPrice = dailyOpen;
+      const points = [{ t: bounds.start, price: dailyOpen, live: false }];
       rows.forEach((row) => {
         const closeAt = number(row?.[6]);
         // Binance reports the end of an unfinished candle in the future;
@@ -3953,19 +3959,30 @@ async function fetchJson(url, timeout = 9000) {
   }
 }
 
-async function lcd(path) {
+let preferredHomeLcd=null;
+const homeLcdCooldown=new Map();
+async function lcd(path){
+  // Share a preferred responsive endpoint across Home, Dashboard and My Reward.
+  // Slow LCD nodes must not delay each wallet by 9s before trying another.
+  const hosts=[...LCD_ENDPOINTS].sort((a,b)=>(a===preferredHomeLcd?-1:0)-(b===preferredHomeLcd?-1:0));
+  const healthy=hosts.filter(base=>(homeLcdCooldown.get(base)||0)<Date.now());
+  const candidates=healthy.length?healthy:hosts;
   let lastError;
-  for (const base of LCD_ENDPOINTS) {
-    try {
-      const data = await fetchJson(base + path);
-      state.endpoint = base;
-      $('endpointLabel').textContent = `API · ${new URL(base).hostname}`;
+  for(const [index,base] of candidates.entries()){
+    try{
+      const data=await fetchJson(base+path,index===candidates.length-1?4000:2500);
+      preferredHomeLcd=base;
+      homeLcdCooldown.delete(base);
+      state.endpoint=base;
+      const indicator=$('endpointLabel');
+      if(indicator)indicator.textContent=`API · ${new URL(base).hostname}`;
       return data;
-    } catch (error) {
-      lastError = error;
+    }catch(error){
+      lastError=error;
+      homeLcdCooldown.set(base,Date.now()+15000);
     }
   }
-  throw lastError || new Error('Rete Injective non disponibile');
+  throw lastError||new Error('Rete Injective non disponibile');
 }
 
 function findInj(coins = []) {
@@ -4830,9 +4847,8 @@ function updateMarket(next) {
     if (state.currentView === 'charts') updateLiveChartsTick(rawPrice, Date.now());
   }
 
-  // Keep the Home day chart historically truthful: only raw exchange ticks are
-  // stored. The final live point is visually interpolated by the global motion
-  // frame without manufacturing extra historical samples.
+  // The Home chart grows from today's actual UTC opening to the latest trade.
+  // The first card separately retains the rolling 24H ticker percentage.
   if ($('entryGate')?.classList.contains('visible')) {
     const now = Date.now();
     const bounds = entryMarketDayBounds(now);
@@ -8231,20 +8247,44 @@ function registerPwa() {
 
 function applyTheme(theme, notify = false) {
   const themes = {
-    navy: { label: 'Aurora', color: '#07121b' },
-    black: { label: 'Nero', color: '#000000' },
-    light: { label: 'Chiaro', color: '#eef5ff' },
-    amber: { label: 'Midnight Ember', color: '#05080d' },
-    velvet: { label: 'Velvet Nebula', color: '#0a1024' },
-    'ocean-x-solar': { label: 'Solar Surge', color: '#1b122c' }
+    obsidian: { label: 'Obsidian Pulse', color: '#0b1722' },
+    arctic: { label: 'Arctic Glass', color: '#f3f9fc' },
+    orbit: { label: 'Deep Orbit', color: '#15152e' },
+    emerald: { label: 'Emerald Flux', color: '#10251e' },
+    ember: { label: 'Ember Gold', color: '#24141d' },
+    titanium: { label: 'Liquid Titanium', color: '#2b363f' },
+    'pure-black': { label: 'Pure Black', color: '#020305' },
+    'graphite': { label: 'Graphite', color: '#101419' },
+    'frost-white': { label: 'Frost White', color: '#f6f9fc' },
+    'warm-ivory': { label: 'Warm Ivory', color: '#f9f4e9' },
+    'midnight-blue': { label: 'Midnight Blue', color: '#081426' },
+    'slate-grey': { label: 'Slate Grey', color: '#1e272e' },
+    'liquid-silver': { label: 'Liquid Silver', color: '#0d141d' },
+    'chrome-blue': { label: 'Chrome Blue', color: '#061324' },
+    'pearl-glass': { label: 'Pearl Glass', color: '#edf4f7' },
+    'rose-copper': { label: 'Rose Copper', color: '#21151c' },
+    'sapphire-glass': { label: 'Sapphire Glass', color: '#0a0f2c' },
+    'golden-satin': { label: 'Golden Satin', color: '#21180f' },
+    'neon-grid': { label: 'Neon Grid', color: '#040b16' },
+    'cyber-cyan': { label: 'Cyber Cyan', color: '#03151b' },
+    'quantum-purple': { label: 'Quantum Purple', color: '#0e0820' },
+    'matrix-green': { label: 'Matrix Green', color: '#05120c' },
+    'solar-circuit': { label: 'Solar Circuit', color: '#1a0f10' },
+    'red-horizon': { label: 'Red Horizon', color: '#190b14' },
+    'classic-black': { label: 'Nero', color: '#050505' },
+    'classic-white': { label: 'Bianco', color: '#ffffff' },
+    'classic-navy': { label: 'Navy Classico', color: '#0a1625' },
+    'classic-ivory': { label: 'Avorio', color: '#f8f3e9' },
+    'classic-stone': { label: 'Stone Grey', color: '#30383d' },
+    'classic-champagne': { label: 'Champagne', color: '#e8dcc9' }
   };
-  const selected = themes[theme] ? theme : 'navy';
+  const selected = themes[theme] ? theme : 'obsidian';
   document.documentElement.dataset.theme = selected;
   localStorage.setItem('inj_monitor_theme', selected);
   $('themeButton').dataset.theme = selected;
   $('themeButton').title = `Tema: ${themes[selected].label}`;
   $('themeButton').setAttribute('aria-label', `Tema attuale ${themes[selected].label}. Cambia tema`);
-  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', getComputedStyle(document.documentElement).getPropertyValue('--theme-canvas').trim() || themes[selected].color);
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', (getComputedStyle(document.documentElement).getPropertyValue('--inj-native-status-tone').trim() || getComputedStyle(document.documentElement).getPropertyValue('--theme-canvas').trim() || themes[selected].color));
   document.querySelectorAll('[data-theme-choice]').forEach((button) => {
     const active = button.dataset.themeChoice === selected;
     button.classList.toggle('active', active);
@@ -8331,6 +8371,9 @@ function bindMobileFastTap() {
     if (event.pointerType !== 'touch' && event.pointerType !== 'pen') return;
     const button = event.target?.closest?.('button:not(:disabled)');
     if (!button || !document.documentElement.contains(button)) return;
+    // Navigation uses ONE native click. The old synthetic pointerup click
+    // could be followed by an iOS click retargeted to ETF or Market.
+    if (button.matches('#entryGate .entry-actions .entry-action, #injPrimaryBottomNav .inj-bottom-tab, #injMarketTabPanel .inj-market-tab-link, #injMarketHomeLink')) return;
     mobileFastTap.pointerId = event.pointerId;
     mobileFastTap.button = button;
     mobileFastTap.startX = event.clientX;
@@ -8764,7 +8807,9 @@ async function init() {
   registerPwa();
   document.body.classList.add('market-data-loading');
   if (state.address && !state.walletSummaries[state.address]?.updated) setWalletSkeleton(true);
-  applyTheme(document.documentElement.dataset.theme);
+  // The saved explicit theme is authoritative; older page scripts may still
+  // have written a fallback value to data-theme before initialization.
+  applyTheme(localStorage.getItem('inj_monitor_theme') || document.documentElement.dataset.theme);
   applyUiStyle(document.documentElement.dataset.uiStyle || localStorage.getItem('inj_monitor_ui_style') || 'elegant');
   setTimeframeCollapsed('market', timeframeCollapsedPreference('market'), false);
   setTrackerCollapsed('reward', trackerCollapsedPreference('reward'), false);

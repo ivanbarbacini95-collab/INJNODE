@@ -490,7 +490,7 @@
    const fiat=Number.isFinite(rewards)&&Number.isFinite(displayPrice)&&displayPrice>0?
      new Intl.NumberFormat(locale(),{style:'currency',currency,minimumFractionDigits:2,maximumFractionDigits:2}).format(rewards*displayPrice):'—';
    output('injLightRewardFiat',fiat==='—'?'—':'≈ '+fiat);
-   // 6H live OHLC view is rendered by inj-home-candles-20261102.js.
+   // Rolling 1W hourly line is rendered by inj-home-candles-20261102.js.
    // Never draw the old UTC-day curve, scale or tick colors over it.
    if(!$('injLightWalletSheet').hidden)updateWalletOptions();
  }

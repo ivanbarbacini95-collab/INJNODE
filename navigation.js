@@ -96,10 +96,15 @@ const themeKeys=['--bg','--surface','--surface-strong','--surface-soft','--line'
  '--card-orb','--card-orb-alt','--card-inner-highlight','--card-shadow-accent','--shadow','--accent-ink'];
 function syncSectionTheme(){
  if(main)return;
- let theme='navy';
+ let theme='obsidian';
  try{theme=localStorage.getItem('inj_monitor_theme')||theme;}catch(_){}
- if(theme==='dynamic')theme='navy';
- if(!['navy','black','light','amber','velvet','ocean-x-solar'].includes(theme))theme='navy';
+ // Six current official themes. Legacy values are mapped once, never
+ // written back as an obsolete "navy" fallback by embedded pages.
+ const official=["obsidian","arctic","orbit","emerald","ember","titanium","pure-black","graphite","frost-white","warm-ivory","midnight-blue","slate-grey","liquid-silver","chrome-blue","pearl-glass","rose-copper","sapphire-glass","golden-satin","neon-grid","cyber-cyan","quantum-purple","matrix-green","solar-circuit","red-horizon","classic-black","classic-white","classic-navy","classic-ivory","classic-stone","classic-champagne"];
+ const legacy={navy:'obsidian',black:'obsidian',light:'arctic',amber:'ember',velvet:'orbit','ocean-x-solar':'ember',
+   ocean:'emerald',chromatic:'orbit',aqua:'arctic','ocean-x-electric':'orbit','ocean-x-ion':'orbit',
+   'ocean-x-toxic':'emerald',dynamic:'obsidian'};
+ theme=official.includes(theme)?theme:(legacy[theme]||'obsidian');
  const root=document.documentElement;root.dataset.theme=theme;
  try{
   if(parent!==window && parent.location.origin===location.origin){
@@ -107,7 +112,7 @@ function syncSectionTheme(){
    for(const key of themeKeys){const value=css.getPropertyValue(key).trim();if(value)root.style.setProperty(key,value);else root.style.removeProperty(key);}
   }
  }catch(_){}
- root.style.colorScheme=theme==='light'?'light':'dark';
+ root.style.colorScheme=['arctic','frost-white','warm-ivory','pearl-glass','classic-white','classic-ivory','classic-champagne'].includes(theme)?'light':'dark';
  const color=getComputedStyle(root).getPropertyValue('--bg').trim();
  if(color)document.querySelector('meta[name="theme-color"]')?.setAttribute('content',color);
 }

@@ -43,19 +43,34 @@ html[data-theme][data-inj-page="index"] body #entryGate
 /* The moving Velvet/Ocean atmospheres remain untouched, as do the content
    cards, modals, menu settings and full-screen market/ETF destinations. */
 
-/* INJ Node · edge-to-edge safe-area gradient.
-   The PWA uses iOS black-translucent status style and viewport-fit=cover:
-   render the existing palette's REAL gradient from top=0. Do not draw the
-   former theme-canvas scrim above it (that manufactured a darker top band).
-   The root gradient is fixed while scrolling, without separate hard edges. */
-@media (max-width:900px), (hover:none) and (pointer:coarse) {
+/* 2026-11-02 · Match the PWA top to the chosen theme without the former
+   opaque dark strip over the first 150px. All Home backgrounds keep a
+   single continuous root gradient. The native iOS status area itself is OS
+   controlled, but the nearest web canvas and theme-color share a tint. */
+html[data-theme][data-inj-page="index"]{
+ --inj-native-top-tone:color-mix(
+   in srgb,var(--theme-canvas,var(--bg,#07121b)) 84%,var(--accent,#75c7c3) 16%
+ );
+}
+html[data-theme="black"][data-inj-page="index"]{
+ --inj-native-top-tone:#000000;
+}
+@media(max-width:900px),(hover:none) and (pointer:coarse){
  html[data-theme][data-inj-page="index"]{
   background-color:var(--theme-canvas,var(--bg,#07121b))!important;
-  background-image:var(--page-gradient,none)!important;
-  background-position:center top!important;
+  background-image:
+    linear-gradient(180deg,
+     var(--inj-native-top-tone) 0px,
+     color-mix(in srgb,var(--inj-native-top-tone) 40%,transparent) 66px,
+     transparent 145px),
+    var(--page-gradient,none)!important;
+  background-position:center top,center center!important;
   background-size:100% 100%!important;
-  background-attachment:fixed!important;
   background-repeat:no-repeat!important;
+  background-attachment:fixed!important;
+ }
+ html[data-theme="black"][data-inj-page="index"]{
+  background-image:var(--page-gradient,none)!important;
  }
  html[data-theme][data-inj-page="index"] body>#entryGate.entry-gate,
  html[data-theme][data-inj-page="index"] body>#entryGate.entry-gate.visible,

@@ -590,10 +590,3 @@ html[data-inj-page="index"][data-inj-home-tab="home"][data-inj-home-nav-visible=
  opacity:1!important;visibility:visible!important;pointer-events:auto!important;
  transform:translate(-50%,0)!important;
 }
-
-/* 2026-11-02: ETF overlay may only be visible inside the dedicated ETF tab.
-   Closing Home for Dashboard must never expose a cached ETF iframe. */
-html[data-inj-page="index"]:not([data-inj-home-tab="etf"]) body>#injEtfTabPanel,
-html[data-inj-page="index"] body.dashboard-scroll-ready>#injEtfTabPanel {
- display:none!important; visibility:hidden!important; pointer-events:none!important;
-}
