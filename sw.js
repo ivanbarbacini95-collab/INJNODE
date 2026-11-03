@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v20261102-native-status-palette17-privacy-layout3-lite-week-line1';
+const CACHE_NAME = 'inj-node-v20261102-native-status-palette17-privacy-layout3-lite-week-line1-tools104-crypto-readable';
 const APP_SHELL = [
   './inj-ios-statusbar-palette-20261102.css?v=theme-native2',
   './inj-home-candles-20261102.css?v=price-only5',
