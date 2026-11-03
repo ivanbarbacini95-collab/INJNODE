@@ -1,6 +1,6 @@
-const CACHE_NAME = 'inj-node-v20261103-distinct-families-workspace-fullscreen3';
+const CACHE_NAME = 'inj-node-v20261103-distinct-families-workspace-titleonly4';
 const APP_SHELL = [
-  './workspace-fullscreen-data-20261103.css?v=fullscreen-data-title1',
+  './workspace-fullscreen-data-20261103.css?v=fullscreen-data-title2',
   './workspace-pro.js?v=fullscreen-data-title1',
   './app.js?v=families30-classic-v2',
   './navigation.js?v=families30-classic-v2',
