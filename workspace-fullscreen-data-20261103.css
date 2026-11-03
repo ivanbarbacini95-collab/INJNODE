@@ -1,3 +1,7 @@
+/* Keep widget headers title-only, as requested. Wallet/value details remain
+   available inside the card body rather than a noisy header status. */
+#wsGrid .ws-card .ws-card-heading small{display:none!important}
+#wsGrid .ws-card .ws-card-heading>.ws-pro-data{display:none!important}
 /* INJ Workspace · Show exactly the saved widget information in immersive
    monitor mode. Presentation changes geometry only, never data visibility. */
 .ws-card .ws-card-heading>.ws-pro-data,
