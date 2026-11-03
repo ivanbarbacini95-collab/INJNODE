@@ -1,0 +1,70 @@
+name: INJNODE · one-time complete official snapshot
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/sync-full-official-20261103-once.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: injnode-one-time-full-official-sync
+  cancel-in-progress: false
+
+jobs:
+  publish-complete-snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout INJNODE at current main
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 1
+
+      - name: Import the complete pinned official snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Fetch from the user's public official repository. This is a pinned
+          # snapshot, not an automatic sync that could overwrite future edits.
+          git fetch --quiet --no-tags --depth=1 \
+            https://github.com/ivanbarbacini95-collab/INJ-VERSIONE-UFFICIALE.git main
+          official_sha="$(git rev-parse FETCH_HEAD)"
+          expected_sha="4957866fe96784f9b0659da8b2685715ed61b2a9"
+          if [ "$official_sha" != "$expected_sha" ]; then
+            echo "::error::Official main changed during sync; refusing unreviewed content."
+            exit 1
+          fi
+
+          for attempt in 1 2 3 4; do
+            # Keep INJNODE commit history; never force-push. The source's
+            # complete tracked tree replaces the old tracked tree atomically.
+            git fetch --quiet origin main
+            git reset --hard origin/main
+            git rm -r -q --ignore-unmatch .
+            git checkout "$official_sha" -- .
+            git add -A
+
+            if git diff --cached --quiet; then
+              echo "INJNODE already matches the complete official snapshot."
+              exit 0
+            fi
+
+            git commit -m "Release: complete INJ Node app with 30 themes and Classic"
+            if git push origin HEAD:main; then
+              echo "Published complete official snapshot into INJNODE/main"
+              echo "Official source: $official_sha"
+              exit 0
+            fi
+            echo "INJNODE/main advanced concurrently; retrying $attempt/4"
+            sleep "$attempt"
+          done
+
+          echo "::error::Unable to publish snapshot after four safe fast-forward retries."
+          exit 1
