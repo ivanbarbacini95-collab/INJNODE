@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v20261102-native-status-palette17-privacy-layout3-lite-week-line1-tools104-crypto-readable-settings-readable-desktop-fonts-global1';
+const CACHE_NAME = 'inj-node-v20261102-native-status-palette17-privacy-layout3-lite-week-line1-tools104-crypto-readable-settings-readable-desktop-fonts-global1-sf-dual2';
 const APP_SHELL = [
   './inj-ios-statusbar-palette-20261102.css?v=theme-native2',
   './inj-home-candles-20261102.css?v=price-only5',
@@ -50,13 +50,13 @@ const APP_SHELL = [
   './market-tab-navigation-20261031.js?v=marketrail14',
   './app.js?v=20261102-light-price-axis4',
   './inj-font-switcher-20261029.css?v=geistbold8',
-  './inj-font-platform-unified-20261103.css?v=font-everywhere-1',
-  './inj-font-switcher-20261029.js?v=font-everywhere-20261103a',
+  './inj-font-platform-unified-20261103.css?v=sf-dual-20261103a',
+  './inj-font-switcher-20261029.js?v=sf-dual-20261103a',
   './assets/fonts/inj-space-grotesk.woff2',
   './assets/fonts/inj-oxanium.woff2',
   './assets/fonts/inj-ibm-plex-mono-regular.woff2',
   './assets/fonts/inj-ibm-plex-mono-medium.woff2',
-  './inj-font-switcher-20261029.js?v=geistbold8',
+  './inj-font-switcher-20261029.js?v=sf-dual-20261103a',
   './inj-fluid-screen-fit.css?v=20261028fullmonitor1',
   './inj-monitor-readability.css?v=20261028readable3',
   './home-desktop-native-scroll.css?v=20261028home-scroll1',
