@@ -104,9 +104,6 @@
   document.getElementById('injCosmicHome')?.remove();
   if(!picker.querySelector('[data-family="cosmic"]'))picker.insertAdjacentHTML('beforeend',familyMarkup());
   const groups=[...picker.querySelectorAll('details.inj-theme-family')];
-  for(const group of groups){
-   if(group.dataset.cosmicExclusive)return; // Only attach once per group.
-  }
   groups.forEach(group=>{
    if(group.dataset.cosmicExclusive)return;
    group.dataset.cosmicExclusive='1';
