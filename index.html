@@ -23,7 +23,7 @@
       const oldThemes = {"navy":"orbit","black":"classic-black","light":"classic-white","amber":"obsidian","velvet":"orbit","ocean-x-solar":"obsidian","ocean":"obsidian","chromatic":"orbit","aqua":"arctic","ocean-x-electric":"orbit","ocean-x-ion":"orbit","ocean-x-toxic":"obsidian","dynamic":"obsidian","emerald":"obsidian","ember":"obsidian","titanium":"obsidian","pure-black":"classic-black","graphite":"classic-black","frost-white":"classic-white","warm-ivory":"classic-white","midnight-blue":"orbit","slate-grey":"classic-black","liquid-silver":"classic-black","chrome-blue":"orbit","pearl-glass":"classic-white","rose-copper":"obsidian","sapphire-glass":"orbit","golden-satin":"obsidian","neon-grid":"orbit","cyber-cyan":"obsidian","quantum-purple":"orbit","matrix-green":"obsidian","solar-circuit":"obsidian","red-horizon":"obsidian","classic-navy":"orbit","classic-ivory":"classic-white","classic-stone":"classic-black","classic-champagne":"classic-white"};
       const initialTone = {'classic-black':'#030304','classic-white':'#ffffff',obsidian:'#0b1722',arctic:'#f3f9fc',orbit:'#15152e'};
       document.documentElement.dataset.theme = initialTone[savedTheme] ? savedTheme : (oldThemes[savedTheme] || 'obsidian');
-      document.documentElement.dataset.injThemeMotion = localStorage.getItem('inj_node_theme_motion_v1')==='static'?'static':'dynamic';
+      document.documentElement.dataset.injThemeMotion = 'static';
       document.querySelector('meta[name="theme-color"]')?.setAttribute('content',initialTone[document.documentElement.dataset.theme]||initialTone.obsidian);
       const savedUiStyle = localStorage.getItem('inj_monitor_ui_style');
       document.documentElement.dataset.uiStyle = ['elegant', 'futuristic', 'ultra'].includes(savedUiStyle) ? savedUiStyle : 'elegant';
@@ -421,7 +421,7 @@
 <link rel="stylesheet" href="./inj-six-themes-20261103.css?v=theme-persist-flow-20261103c">
 <link rel="stylesheet" href="./inj-signature-atmospheres-20261103.css?v=signature-preview-fidelity1">
 <link rel="stylesheet" href="./inj-theme-collections-20261103.css?v=five-premium-20261104a">
-<script defer src="./inj-six-themes-20261103.js?v=five-premium-20261104a"></script>
+<script defer src="./inj-six-themes-20261103.js?v=static-obsidian-20261104a"></script>
 </head>
 <body class="boot-loading">
 <div aria-label="Avvio INJ Node" aria-live="polite" aria-atomic="true" class="boot-splash node-pulse-splash" id="bootSplash" role="status">
