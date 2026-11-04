@@ -33,3 +33,5 @@ body{min-height:100dvh}
  #wsPresetDialog .ws-preset-actions{display:flex;flex-wrap:wrap;gap:6px;}
  #wsPresetDialog .ws-preset-actions button{flex:1 1 auto;}
 }
+
+.ws-transfer #wsTransferMessage{min-height:19px;margin:6px 0 0;color:var(--ws-accent,var(--accent));font-size:12px;line-height:1.4;}
