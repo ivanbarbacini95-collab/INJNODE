@@ -232,3 +232,15 @@ window.addEventListener('injnode:languagechange',event=>{
  script.src = './inj-upside-down-20261104.js?v=20261104-injnode-fixed180b';
  document.head.appendChild(script);
 })();
+
+/* Cosmic Premium: shared presentation across pages, loaded once per document. */
+;(() => {
+ if(!document.querySelector('link[href*="inj-cosmic-backgrounds-20261104.css"]')){
+  const css=document.createElement('link');css.rel='stylesheet';
+  css.href='./inj-cosmic-backgrounds-20261104.css?v=cosmic-premium1';document.head.append(css);
+ }
+ if(!document.querySelector('script[src*="inj-cosmic-backgrounds-20261104.js"]')){
+  const js=document.createElement('script');
+  js.src='./inj-cosmic-backgrounds-20261104.js?v=cosmic-premium1';document.head.append(js);
+ }
+})();
