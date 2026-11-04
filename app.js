@@ -314,6 +314,7 @@ const entryWalletGesture = {
   programmatic: false,
   programmaticIndex: -1,
   programmaticTimer: 0,
+  motionFrame: 0,
   stage: null,
   track: null,
   stageBaseIndex: -1,
@@ -476,7 +477,7 @@ function setEntryWalletTrackProgress(progress, animate = false) {
   if (!track) return;
   const clamped = Math.max(-1, Math.min(1, Number(progress) || 0));
   const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
-  const duration = reduced ? 0 : 320;
+  const duration = reduced ? 0 : 400;
   track.style.transition = animate && duration ? `transform ${duration}ms cubic-bezier(.22,.76,.18,1)` : 'none';
   track.style.webkitTransition = animate && duration ? `-webkit-transform ${duration}ms cubic-bezier(.22,.76,.18,1)` : 'none';
   const x = -100 - clamped * 100;
@@ -484,9 +485,45 @@ function setEntryWalletTrackProgress(progress, animate = false) {
   track.style.setProperty('-webkit-transform', `translate3d(${x.toFixed(3)}%,0,0)`, 'important');
 }
 
+/* One clock drives the top wallet rail and the main-card preview.  Native
+   scroll-snap is temporarily disabled by the wallet-programmatic-scroll CSS;
+   otherwise iOS can settle the two surfaces at different times. */
+function animateEntryWalletRailTo(targetLeft, { duration = 410, direction = 0, onComplete = null } = {}) {
+  const host = $('entryWallets');
+  if (!host) return;
+  if (entryWalletGesture.motionFrame) cancelAnimationFrame(entryWalletGesture.motionFrame);
+  entryWalletGesture.motionFrame = 0;
+  const from = host.scrollLeft;
+  const destination = Math.max(0, Math.min(Math.max(0, host.scrollWidth - host.clientWidth), Number(targetLeft) || 0));
+  const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+  const ms = reduced ? 0 : Math.max(0, duration);
+  const expectedIndex = entryWalletGesture.programmaticIndex;
+  const startedAt = performance.now();
+  const advance = (now) => {
+    if (!entryWalletGesture.programmatic || entryWalletGesture.programmaticIndex !== expectedIndex) {
+      entryWalletGesture.motionFrame = 0;
+      return;
+    }
+    const fraction = ms ? Math.max(0, Math.min(1, (now - startedAt) / ms)) : 1;
+    const eased = 1 - Math.pow(1 - fraction, 3);
+    host.scrollLeft = from + (destination - from) * eased;
+    if (direction) setEntryWalletTrackProgress(direction * eased, false);
+    if (fraction < 1) {
+      entryWalletGesture.motionFrame = requestAnimationFrame(advance);
+    } else {
+      entryWalletGesture.motionFrame = 0;
+      host.scrollLeft = destination;
+      onComplete?.();
+    }
+  };
+  entryWalletGesture.motionFrame = requestAnimationFrame(advance);
+}
+
 function resetEntryWalletGestureVisuals({ keepTracking = false } = {}) {
   clearTimeout(entryWalletGesture.settleTimer);
   clearTimeout(entryWalletGesture.programmaticTimer);
+  if (entryWalletGesture.motionFrame) cancelAnimationFrame(entryWalletGesture.motionFrame);
+  entryWalletGesture.motionFrame = 0;
   entryWalletGesture.settleTimer = 0;
   entryWalletGesture.programmaticTimer = 0;
   removeEntryWalletCarouselStage();
@@ -506,6 +543,8 @@ function resetEntryWalletGestureVisuals({ keepTracking = false } = {}) {
 }
 
 function commitEntryWalletCarousel(index) {
+  if (entryWalletGesture.motionFrame) cancelAnimationFrame(entryWalletGesture.motionFrame);
+  entryWalletGesture.motionFrame = 0;
   const host = $('entryWallets');
   const rows = host ? [...host.querySelectorAll('.entry-wallet-row')] : [];
   const safeIndex = Math.max(0, Math.min(state.wallets.length - 1, Number(index) || 0));
@@ -526,6 +565,14 @@ function commitEntryWalletCarousel(index) {
     host?.classList.remove('wallet-gesture-active', 'wallet-programmatic-scroll');
     updateEntryWalletPagination(safeIndex);
     renderEntryOverview();
+    // Reveal the correct wallet's values only after replacing the slide.
+    const panel = $('entryOverview');
+    panel?.classList.remove('inj-wallet-arriving');
+    if (!window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches) {
+      void panel?.offsetWidth;
+      panel?.classList.add('inj-wallet-arriving');
+      window.setTimeout(() => panel?.classList.remove('inj-wallet-arriving'), 360);
+    }
   }));
 }
 
@@ -573,11 +620,12 @@ function selectEntryWalletFromRail(address) {
   updateEntryWalletPagination(index);
   void entryWalletGesture.stage?.offsetWidth;
   const direction = index > baseIndex ? 1 : -1;
-  requestAnimationFrame(() => {
-    setEntryWalletTrackProgress(direction, true);
-    host.scrollTo({ left: entryWalletCenteredScrollLeft(host, targetRow), behavior: 'smooth' });
+  // Use the same progress curve for both surfaces instead of two unrelated
+  // platform-native "smooth" timelines that can drift apart on iOS.
+  entryWalletGesture.programmaticTimer = window.setTimeout(finishEntryWalletProgrammaticScroll, 590);
+  animateEntryWalletRailTo(entryWalletCenteredScrollLeft(host, targetRow), {
+    duration: 410, direction, onComplete: finishEntryWalletProgrammaticScroll
   });
-  entryWalletGesture.programmaticTimer = window.setTimeout(finishEntryWalletProgrammaticScroll, 370);
 }
 
 function ensureEntryWalletGestureTracking() {
@@ -692,6 +740,8 @@ function bindEntryWalletRailGestures(host) {
     clearTimeout(entryWalletGesture.settleTimer);
     entryWalletGesture.programmaticTimer = 0;
     entryWalletGesture.settleTimer = 0;
+    if (entryWalletGesture.motionFrame) cancelAnimationFrame(entryWalletGesture.motionFrame);
+    entryWalletGesture.motionFrame = 0;
     removeEntryWalletCarouselStage();
     entryWalletGesture.programmatic = false;
     entryWalletGesture.programmaticIndex = -1;
@@ -901,11 +951,23 @@ function bindEntryOverviewWalletGestures() {
     entryWalletGesture.suppressClickUntil = performance.now() + 520;
     updateEntryWalletPagination(target);
     setEntryWalletTrackProgress(target === base ? 0 : (target > base ? 1 : -1), true);
+    // The upper rail travels in sync even when the gesture starts on the big
+    // account card; previously it jumped to the new wallet only at commit.
+    if (target !== base) {
+      const host = $('entryWallets');
+      const rows = host ? [...host.querySelectorAll('.entry-wallet-row')] : [];
+      if (host && rows[target]) {
+        entryWalletGesture.programmatic = true;
+        entryWalletGesture.programmaticIndex = target;
+        host.classList.add('wallet-programmatic-scroll');
+        animateEntryWalletRailTo(entryWalletCenteredScrollLeft(host, rows[target]), { duration: 400 });
+      }
+    }
     overview?.classList.remove('entry-overview-swipe-active');
     entryOverviewSwipe.horizontal = false;
     entryOverviewSwipe.baseIndex = -1;
 
-    window.setTimeout(() => commitEntryWalletCarousel(target), 325);
+    window.setTimeout(() => commitEntryWalletCarousel(target), 415);
   };
 
   overview.addEventListener('pointerup', (event) => finish(event, false));
