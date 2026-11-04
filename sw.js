@@ -1,7 +1,7 @@
-const CACHE_NAME = 'inj-node-v20261105-home-fit1';
+const CACHE_NAME = 'inj-node-v20261105-home-fit2';
 const APP_SHELL = [
-  './home-single-screen-20261105.css?v=fit-home1',
-  './home-single-screen-20261105.js?v=fit-home1',
+  './home-single-screen-20261105.css?v=fit-home2',
+  './home-single-screen-20261105.js?v=fit-home2',
   './home-three-sections-row-20261105.css?v=three-home-1',
   './home-unified-overview-chart-20261104.css?v=graph-air-v3',
   './inj-monochrome-pro-20261104.css?v=mono-pro1',
