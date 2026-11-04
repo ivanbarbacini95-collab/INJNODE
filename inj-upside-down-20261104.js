@@ -89,7 +89,7 @@
     // pointer behavior are still controlled by the Home tab itself.
     'html[data-inj-reverse-portrait="1"][data-inj-page="index"]',
     '[data-inj-home-tab="home"][data-inj-home-nav-visible="true"]',
-    'body.entry-gate-open > #injPrimaryBottomNav#injPrimaryBottomNav:popover-open{',
+    ' body.entry-gate-open > #injPrimaryBottomNav#injPrimaryBottomNav:popover-open{',
     'inset:max(10px,env(safe-area-inset-top,0px)) auto auto 50%!important;',
     'top:max(10px,env(safe-area-inset-top,0px))!important;',
     'bottom:auto!important;',
