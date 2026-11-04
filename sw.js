@@ -1,6 +1,6 @@
-const CACHE_NAME = 'inj-node-v20261104-home-unified1';
+const CACHE_NAME = 'inj-node-v20261104-home-join-fixed2';
 const APP_SHELL = [
-  './home-unified-overview-chart-20261104.css?v=unified-v1',
+  './home-unified-overview-chart-20261104.css?v=unified-v2',
   './inj-monochrome-pro-20261104.css?v=mono-pro1',
   './inj-upside-down-20261104.js?v=20261104-injnode-fixed180b',
   './navigation.js?v=20261104-injnode-fixed180b',
