@@ -204,3 +204,121 @@
 }
 /* If the PWA opens in landscape, one-screen squeezing must not suppress
    existing app controls. Allow the original responsive scroll behaviour. */
+
+
+/* 2026-11-05 · Mobile clipping safeguard.
+   Never hide quick-link controls behind a fixed-height Home. Keep native
+   vertical scrolling only when the compact Home genuinely cannot fit. */
+@media (max-width:700px) and (orientation:portrait) {
+  html[data-inj-page="index"][data-inj-home-tab="home"]:not([data-inj-view-mode="light"])
+  body.entry-gate-open #entryGate#entryGate#entryGate.entry-gate.visible {
+    box-sizing:border-box!important;
+    height:100dvh!important;
+    min-height:0!important;
+    max-height:100dvh!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    -webkit-overflow-scrolling:touch!important;
+    overscroll-behavior-y:contain!important;
+    touch-action:pan-y!important;
+  }
+  html[data-inj-page="index"][data-inj-home-tab="home"]:not([data-inj-view-mode="light"])
+  body.entry-gate-open #entryGate#entryGate#entryGate.entry-gate.visible
+  > .entry-gate-shell:not(.first-access) {
+    box-sizing:border-box!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    overflow:visible!important;
+    align-content:start!important;
+    padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))!important;
+  }
+  html[data-inj-page="index"][data-inj-home-tab="home"][data-inj-home-fit="true"]:not([data-inj-view-mode="light"])
+  body.entry-gate-open #entryGate#entryGate#entryGate.entry-gate.visible
+  > .entry-gate-shell:not(.first-access) {
+    padding-bottom:0!important;
+  }
+  /* Always one complete row, irrespective of older two-column launcher CSS. */
+  html[data-inj-page="index"][data-inj-home-tab="home"]:not([data-inj-view-mode="light"])
+  body.entry-gate-open #entryGate#entryGate#entryGate
+  .entry-gate-shell:not(.first-access) > .entry-actions.entry-flat-v44 {
+    display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    grid-template-rows:50px!important;
+    grid-auto-rows:50px!important;
+    column-gap:6px!important;
+    row-gap:0!important;
+    height:50px!important;
+    min-height:50px!important;
+    max-height:50px!important;
+    overflow:visible!important;
+    margin:7px 0 0!important;
+    padding:0!important;
+  }
+  html[data-inj-page="index"][data-inj-home-tab="home"]:not([data-inj-view-mode="light"])
+  body.entry-gate-open #entryGate#entryGate#entryGate
+  .entry-actions.entry-flat-v44 > :is(#entryDashboardButton,#entryLiveButton,#entryTreasuryButton).entry-action {
+    grid-column:auto!important;
+    grid-row:auto!important;
+    display:flex!important;
+    flex-direction:row!important;
+    align-items:center!important;
+    justify-content:center!important;
+    width:100%!important;
+    min-width:0!important;
+    height:50px!important;
+    min-height:50px!important;
+    max-height:50px!important;
+    padding:0 4px!important;
+    margin:0!important;
+    gap:0!important;
+    border-radius:12px!important;
+    overflow:hidden!important;
+  }
+  html[data-inj-page="index"][data-inj-home-tab="home"]:not([data-inj-view-mode="light"])
+  body.entry-gate-open #entryGate#entryGate#entryGate
+  .entry-actions.entry-flat-v44 > :is(#entryDashboardButton,#entryLiveButton,#entryTreasuryButton)
+  > :is(.entry-action-icon,.entry-action-arrow,.inj-tile-scene,.bcg-treasury-visual) {
+    display:none!important;
+  }
+  html[data-inj-page="index"][data-inj-home-tab="home"]:not([data-inj-view-mode="light"])
+  body.entry-gate-open #entryGate#entryGate#entryGate
+  .entry-actions.entry-flat-v44 > :is(#entryDashboardButton,#entryLiveButton,#entryTreasuryButton)
+  > :is(span:not(.entry-action-icon),.treasury-entry-copy) {
+    display:flex!important;
+    flex:1 1 auto!important;
+    align-items:center!important;
+    justify-content:center!important;
+    width:100%!important;
+    min-width:0!important;
+    height:auto!important;
+    padding:0!important;
+    margin:0!important;
+    gap:0!important;
+    position:static!important;
+    transform:none!important;
+  }
+  html[data-inj-page="index"][data-inj-home-tab="home"]:not([data-inj-view-mode="light"])
+  body.entry-gate-open #entryGate#entryGate#entryGate
+  .entry-actions.entry-flat-v44 > :is(#entryDashboardButton,#entryLiveButton,#entryTreasuryButton)
+  :is(.inj-tile-description,.treasury-entry-details) {
+    display:none!important;
+  }
+  html[data-inj-page="index"][data-inj-home-tab="home"]:not([data-inj-view-mode="light"])
+  body.entry-gate-open #entryGate#entryGate#entryGate
+  .entry-actions.entry-flat-v44 > :is(#entryDashboardButton,#entryLiveButton,#entryTreasuryButton)
+  .inj-home-tile-title {
+    display:block!important;
+    position:static!important;
+    width:100%!important;
+    margin:0!important;
+    padding:0!important;
+    font-size:clamp(10px,2.75vw,12.5px)!important;
+    line-height:1.25!important;
+    font-weight:650!important;
+    text-align:center!important;
+    white-space:nowrap!important;
+    overflow:visible!important;
+    transform:none!important;
+  }
+}
