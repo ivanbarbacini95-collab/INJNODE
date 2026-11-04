@@ -18,7 +18,8 @@ const layoutLocked=()=>immersive||(mode()==='mobile'?!mobileEditing:!!active().l
 const mode=()=>matchMedia('(max-width:600px)').matches?'mobile':'desktop';
 const cols=()=>mode()==='mobile'?4:12;
 const ROW=56,GAP=8;
-let immersive=false,mobileEditing=false,lastPresetId=active().id;
+let immersive=false,mobileEditing=false,lastPresetId=active().id,packedFullscreen=false;
+let packedRects=null,packedHeight=0;
 const Live=window.INJWorkspaceLive;
 const data={lastTradeAt:0,rows:{},supplements:{},price:null,priceAt:0,priceSource:'Binance',change:null,charts:{},loading:false,chartBusy:new Set(),lastWallet:0,marketBusy:false};
 let drag=null,editingCard=null,lastMode=mode(),timer=0,networkTimer=0,statusTimer=0;
@@ -119,8 +120,57 @@ function createCard(i){const node=el('article','ws-card');node.dataset.uid=i.uid
 const canvasUnit=()=>($('wsGrid').clientWidth+GAP)/cols();
 // Dense layouts keep the chosen visual order, close holes and retain each card's size.
 function compactLayouts(keys=[mode()]){for(const key of keys)M.compact(active().items,key,key==='mobile'?4:12);}
-function geometry(node,i){const r=i.layouts[mode()],unit=($('wsGrid').clientWidth+GAP)/cols();node.style.zIndex=String(drag?.item===i?100:active().items.indexOf(i)+1);Object.assign(node.style,{left:(r.x*unit)+'px',top:(r.y*ROW)+'px',width:(r.w*unit-GAP)+'px',height:(r.h*ROW-GAP)+'px'});}
-function layout(){const preset=active();if(lastPresetId!==preset.id){lastPresetId=preset.id;mobileEditing=false;window.INJWorkspaceProHooks?.editModeChange?.(false);}const mobile=mode()==='mobile';document.body.classList.toggle('ws-view-only',mobile&&!mobileEditing);document.body.classList.toggle('ws-mobile-editing',mobile&&mobileEditing);$('wsName').textContent=preset.name;$('wsEdit').textContent=mobile?(mobileEditing?t('✓ Fine','✓ Done'):t('✎ Modifica','✎ Edit')):(preset.locked?t('Modifica','Edit'):t('Blocca layout','Lock layout'));$('wsEdit').setAttribute('aria-pressed',String(!layoutLocked()));$('wsGrid').classList.toggle('editing',!layoutLocked()&&!!preset.snap);$('wsSnap').textContent=preset.snap?t('Griglia: ON','Grid: ON'):t('Posizione libera','Free positioning');$('wsSnap').setAttribute('aria-pressed',String(!!preset.snap));$('wsSnap').disabled=layoutLocked();const nodes=new Map([...$('wsGrid').children].map(n=>[n.dataset.uid,n]));let end=0;for(const i of preset.items){let node=nodes.get(i.uid);if(!node){node=createCard(i);$('wsGrid').append(node)}nodes.delete(i.uid);node.classList.toggle('editable',!layoutLocked());node.classList.toggle('no-border',!i.border);node.dataset.style=i.style;node.dataset.view=i.view||'standard';node.classList.toggle('pro-card-locked',!!i.cardLocked);node.querySelector('.ws-card-heading strong').textContent=title(i);geometry(node,i);bodyFor(i,node.querySelector('.ws-card-body'));end=Math.max(end,i.layouts[mode()].y+i.layouts[mode()].h)}nodes.forEach(n=>n.remove());$('wsGrid').style.height=(end*ROW)+'px';$('wsEmpty').hidden=!!preset.items.length;window.INJWorkspaceProHooks?.afterLayout?.();}
+// The fullscreen packing view never modifies the editor's stored rectangles.
+// Complete rows have exactly 2px between tiles; all remaining width is shared.
+function fullscreenPack(items,width,viewportHeight){
+ const space=2,columnCount=cols(),key=mode(),minWidth=width<=600?138:175;
+ const ordered=items.map((item,index)=>({item,index,r:item.layouts[key]}))
+   .sort((a,b)=>a.r.y-b.r.y||a.r.x-b.r.x||a.index-b.index);
+ const rows=[];let row=[],used=0;
+ for(const entry of ordered){
+  const span=Math.min(columnCount,Math.max(entry.r.w,minWidth*columnCount/Math.max(1,width)));
+  if(row.length&&used+span>columnCount+0.00001){rows.push(row);row=[];used=0;}
+  row.push({...entry,span});used+=span;
+ }
+ if(row.length)rows.push(row);
+ const heightFor=entry=>{
+  const type=entry.item.type;
+  const minimum=type==='orderbook'?350:C.isChart(type)?300:/heatmap/i.test(type)?250:110;
+  return Math.max(minimum,entry.r.h*ROW-space);
+ };
+ const rowHeights=rows.map(r=>Math.max(...r.map(heightFor)));
+ const natural=rowHeights.reduce((sum,v)=>sum+v,0)+space*Math.max(0,rows.length-1);
+ const fill=Math.max(0,viewportHeight-natural);
+ const weight=rowHeights.reduce((sum,h)=>sum+h,0)||1;
+ const positions=new Map();let y=0;
+ rows.forEach((entries,index)=>{
+  const rowHeight=rowHeights[index]+fill*rowHeights[index]/weight;
+  const sum=entries.reduce((total,e)=>total+e.span,0);
+  const usable=Math.max(1,width-space*(entries.length-1));
+  let x=0;
+  entries.forEach((entry,j)=>{
+   const tileWidth=j===entries.length-1?width-x:usable*entry.span/sum;
+   positions.set(entry.item.uid,{left:x,top:y,width:Math.max(1,tileWidth),height:rowHeight});
+   x+=tileWidth+space;
+  });
+  y+=rowHeight+space;
+ });
+ return{positions,height:Math.max(0,y-(rows.length?space:0))};
+}
+function geometry(node,i){
+ const tight=immersive&&packedFullscreen?packedRects?.get(i.uid):null;
+ const r=i.layouts[mode()],unit=($('wsGrid').clientWidth+GAP)/cols();
+ node.style.zIndex=String(drag?.item===i?100:active().items.indexOf(i)+1);
+ Object.assign(node.style,tight?
+   {left:tight.left+'px',top:tight.top+'px',width:tight.width+'px',height:tight.height+'px'}:
+   {left:(r.x*unit)+'px',top:(r.y*ROW)+'px',width:(r.w*unit-GAP)+'px',height:(r.h*ROW-GAP)+'px'});
+}
+function layout(){const preset=active();if(lastPresetId!==preset.id){lastPresetId=preset.id;mobileEditing=false;window.INJWorkspaceProHooks?.editModeChange?.(false);}const mobile=mode()==='mobile';document.body.classList.toggle('ws-view-only',mobile&&!mobileEditing);document.body.classList.toggle('ws-mobile-editing',mobile&&mobileEditing);$('wsName').textContent=preset.name;$('wsEdit').textContent=mobile?(mobileEditing?t('✓ Fine','✓ Done'):t('✎ Modifica','✎ Edit')):(preset.locked?t('Modifica','Edit'):t('Blocca layout','Lock layout'));$('wsEdit').setAttribute('aria-pressed',String(!layoutLocked()));$('wsGrid').classList.toggle('editing',!layoutLocked()&&!!preset.snap);$('wsSnap').textContent=preset.snap?t('Griglia: ON','Grid: ON'):t('Posizione libera','Free positioning');$('wsSnap').setAttribute('aria-pressed',String(!!preset.snap));$('wsSnap').disabled=layoutLocked();const nodes=new Map([...$('wsGrid').children].map(n=>[n.dataset.uid,n]));let end=0;
+ if(immersive&&packedFullscreen){
+  const viewport=window.visualViewport?.height||window.innerHeight;
+  const pack=fullscreenPack(preset.items,$('wsGrid').clientWidth,Math.max(1,viewport-16));
+  packedRects=pack.positions;packedHeight=pack.height;
+ }else{packedRects=null;packedHeight=0;}for(const i of preset.items){let node=nodes.get(i.uid);if(!node){node=createCard(i);$('wsGrid').append(node)}nodes.delete(i.uid);node.classList.toggle('editable',!layoutLocked());node.classList.toggle('no-border',!i.border);node.dataset.style=i.style;node.dataset.view=i.view||'standard';node.classList.toggle('pro-card-locked',!!i.cardLocked);node.querySelector('.ws-card-heading strong').textContent=title(i);geometry(node,i);bodyFor(i,node.querySelector('.ws-card-body'));end=Math.max(end,i.layouts[mode()].y+i.layouts[mode()].h)}nodes.forEach(n=>n.remove());$('wsGrid').style.height=(immersive&&packedFullscreen?packedHeight:end*ROW)+'px';$('wsEmpty').hidden=!!preset.items.length;window.INJWorkspaceProHooks?.afterLayout?.();}
 function updateValues(){if(document.hidden||drag)return;useSharedMarket();document.body.classList.toggle('ws-private',localStorage.getItem('inj_monitor_privacy')==='1');for(const i of active().items){const node=[...$('wsGrid').children].find(n=>n.dataset.uid===i.uid);if(node){if(!node.querySelector('.ws-section-controls')?.contains(document.activeElement)&&!node.querySelector('.ws-plot[data-inspecting]'))bodyFor(i,node.querySelector('.ws-card-body'));}}if($('wsCatalog').open)document.querySelectorAll('.ws-preview').forEach(n=>{if(n._item&&!n.querySelector('.ws-section-controls')?.contains(document.activeElement)&&!n.querySelector('.ws-plot[data-inspecting]'))bodyFor(n._item,n.querySelector('.ws-card-body'))});$('wsConnection').textContent=data.priceSource.endsWith('snapshot')?'SNAPSHOT':Date.now()-data.priceAt<60000?t('MERCATO LIVE','MARKET LIVE'):t('MERCATO IN ATTESA','WAITING FOR MARKET');window.INJWorkspaceProHooks?.refreshStatus?.();}
 function add(type,source,options={}){
  window.INJWorkspaceProHooks?.beforeChange?.();
@@ -275,12 +325,31 @@ $('wsAdd').onclick=$('wsEmptyAdd').onclick=openCatalog;$('wsSearch').oninput=()=
  if(on&&drag)endDrag(true);
  if(on&&mobileEditing){mobileEditing=false;window.INJWorkspaceProHooks?.editModeChange?.(false);}
  immersive=on;
+ if(!on)packedFullscreen=false;
  document.body.classList.toggle('ws-immersive',on);
+ document.body.classList.toggle('ws-packed-full',on&&packedFullscreen);
  window.INJWorkspaceProHooks?.immersiveChange?.(on);
  $('wsExitFull').hidden=!on;
+ $('wsPackFull').hidden=!on;
+ updatePackButton();
  $('wsFull').setAttribute('aria-pressed',String(on));
  layout();
 }
+function updatePackButton(){
+ const button=$('wsPackFull');
+ button.textContent=packedFullscreen?t('↔ Layout originale','↔ Original layout'):t('▦ Unisci card · 2px','▦ Pack cards · 2px');
+ button.title=packedFullscreen?t('Ripristina la disposizione originale','Restore the original arrangement'):t('Elimina gli spazi tra le card: distanza 2 px','Remove gaps between cards: 2px spacing');
+ button.setAttribute('aria-label',button.title);
+ button.setAttribute('aria-pressed',String(packedFullscreen));
+ button.disabled=!active().items.length;
+}
+$('wsPackFull').onclick=()=>{
+ if(!immersive)return;
+ packedFullscreen=!packedFullscreen;
+ document.body.classList.toggle('ws-packed-full',packedFullscreen);
+ updatePackButton();
+ layout();
+};
 async function exitImmersive(){setImmersive(false);try{if(document.fullscreenElement)await document.exitFullscreen()}catch(_){}$('wsFull').focus();}
 $('wsFull').onclick=async()=>{if(immersive)return exitImmersive();persist();setImmersive(true);try{if(!/iPhone|iPod|iPad|Android/i.test(navigator.userAgent||'')&&document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen()}catch(_){/* On mobile, stay in CSS immersive mode within rotated PWA. */}};
 $('wsExitFull').onclick=exitImmersive;
