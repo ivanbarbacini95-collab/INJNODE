@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v20261103-workspace-forcefresh-fullscreen-r2';
+const CACHE_NAME = 'inj-node-v20261104-official-static-market-viewport1';
 const APP_SHELL = [
   './workspace.html?v=workspace-20261103-fullscreen-r2',
   './workspace.css?v=fullscreen-amounts-20261103r2',
