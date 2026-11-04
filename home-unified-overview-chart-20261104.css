@@ -27,7 +27,6 @@ html[data-inj-page="index"] body #entryGate#entryGate
 html[data-inj-page="index"] body #entryGate#entryGate
  #entryUnifiedMarketCard.entry-unified-market-card > #entryInsights.entry-insights {
  box-sizing:border-box!important;
- display:block;
  flex:0 0 auto;
  width:100%!important;
  max-width:100%!important;
@@ -88,7 +87,6 @@ html[data-inj-page="index"] body #entryGate#entryGate
  width:100%!important;
  min-width:0!important;
  max-width:100%!important;
- touch-action:pan-y;
 }
 /* P/L TODAY is the card's single bottom summary, not a third mini-panel. */
 html[data-inj-page="index"] body #entryGate#entryGate
