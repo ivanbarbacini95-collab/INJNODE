@@ -25,7 +25,7 @@
    button.setAttribute('aria-label','Tema attuale '+names[theme]+'. Cambia tema');
   }
  }
- function currentMotion(){return get(motionKey)==='static'?'static':'dynamic'}
+ function currentMotion(){return 'static'}
  function refreshTone(){
   var value=tones[normalize(root.dataset.theme)];
   var tag=document.querySelector('meta[name="theme-color"]');
@@ -41,9 +41,9 @@
   updateThemeControls(theme);
  }
  function setMotion(mode,save){
-  var selected=mode==='static'?'static':'dynamic';
+  var selected='static';
   root.dataset.injThemeMotion=selected;
-  if(save)put(motionKey,selected);
+  put(motionKey,selected);
   document.querySelectorAll('#injThemeMotionSwitch [data-theme-motion-choice]').forEach(function(button){
    button.setAttribute('aria-pressed',button.dataset.themeMotionChoice===selected?'true':'false');
   });
@@ -76,6 +76,8 @@
   groups.forEach(function(group){group.open=false});
  }
  function mountControl(){
+  /* All five themes are static; the motion switch is retired. */
+  return;
   var picker=document.getElementById('themePicker');
   if(!picker||document.getElementById('injThemeMotionSwitch'))return;
   var row=document.createElement('div');row.id='injThemeMotionSwitch';row.className='theme-motion-switch';
