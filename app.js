@@ -8224,7 +8224,7 @@ function registerPwa() {
     // Android standalone must repair a stale worker without waiting for every
     // chart/font/image request to complete the window load event.
     const refreshWorker = () => {
-      navigator.serviceWorker.register('./sw.js?v=20261104-home-join-fixed2',{updateViaCache:'none'})
+      navigator.serviceWorker.register('./sw.js?v=20261104-graph-air-v3',{updateViaCache:'none'})
         .then(registration => registration.update())
         .catch(() => {});
     };
