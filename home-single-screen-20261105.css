@@ -83,7 +83,7 @@
   #entryOverview .entry-overview-head{
     margin-bottom:7px!important;
   }
-  html[data-inj-page="index"][data-inj-home-tab="home"] body #entryGate#entryGate#entryGate
+  html[data-inj-page="index"][data-inj-home-tab="home"] body #entryGate#entryGate#entryGate#entryGate#entryGate#entryGate
   .entry-gate-shell:not(.first-access) > #entryInsights.entry-price-card{
     height:var(--inj-home-fit-chart-height,244px)!important;
     min-height:188px!important;
