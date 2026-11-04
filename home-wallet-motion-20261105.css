@@ -1,0 +1,51 @@
+/* INJ Node / Wallet switch motion (2026-11-05).
+   Retains native rail scrolling and account-card gesture interaction.
+   The header rail and active-card stage now share one animation clock. */
+html[data-inj-page="index"][data-inj-home-tab="home"] body
+#entryGate #entryWallets.wallet-programmatic-scroll {
+  scroll-behavior:auto!important;
+  scroll-snap-type:none!important;
+  -webkit-scroll-snap-type:none!important;
+}
+html[data-inj-page="index"][data-inj-home-tab="home"] body
+#entryGate #entryOverview.entry-overview-carousel-active
+.entry-wallet-card-track{
+  will-change:transform;
+  backface-visibility:hidden;
+  -webkit-backface-visibility:hidden;
+}
+html[data-inj-page="index"][data-inj-home-tab="home"] body
+#entryGate #entryOverview .entry-wallet-card-slide{
+  backface-visibility:hidden;
+  -webkit-backface-visibility:hidden;
+}
+html[data-inj-page="index"][data-inj-home-tab="home"] body
+#entryGate #entryWallets > .entry-wallet-row > .entry-wallet{
+  transition:border-color .3s ease,box-shadow .3s ease,background-color .3s ease!important;
+}
+html[data-inj-page="index"][data-inj-home-tab="home"] body
+#entryGate #entryWalletPagination .entry-wallet-dot{
+  transition:background-color .28s ease,opacity .28s ease,transform .3s cubic-bezier(.2,.8,.2,1)!important;
+}
+html[data-inj-page="index"][data-inj-home-tab="home"] body
+#entryGate #entryOverview.inj-wallet-arriving .entry-overview-head > div,
+html[data-inj-page="index"][data-inj-home-tab="home"] body
+#entryGate #entryOverview.inj-wallet-arriving .entry-overview-main > .entry-overview-worth{
+  animation:injWalletContentArrive .32s cubic-bezier(.17,.76,.18,1) both;
+}
+@keyframes injWalletContentArrive{
+  from{opacity:.72;transform:translate3d(0,4px,0)}
+  to{opacity:1;transform:translate3d(0,0,0)}
+}
+@media(prefers-reduced-motion:reduce){
+ html[data-inj-page="index"][data-inj-home-tab="home"] body
+ #entryGate #entryOverview.inj-wallet-arriving .entry-overview-head > div,
+ html[data-inj-page="index"][data-inj-home-tab="home"] body
+ #entryGate #entryOverview.inj-wallet-arriving .entry-overview-main > .entry-overview-worth{
+  animation:none!important;
+ }
+ html[data-inj-page="index"][data-inj-home-tab="home"] body
+ #entryGate #entryWalletPagination .entry-wallet-dot{
+  transition:none!important;
+ }
+}
