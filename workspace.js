@@ -330,14 +330,15 @@ $('wsAdd').onclick=$('wsEmptyAdd').onclick=openCatalog;$('wsSearch').oninput=()=
  document.body.classList.toggle('ws-packed-full',on&&packedFullscreen);
  window.INJWorkspaceProHooks?.immersiveChange?.(on);
  $('wsExitFull').hidden=!on;
- $('wsPackFull').hidden=!on;
+ // Visibility is determined by the fullscreen state, not a stale [hidden] attribute.
+ $('wsPackFull').hidden=false;
  updatePackButton();
  $('wsFull').setAttribute('aria-pressed',String(on));
  layout();
 }
 function updatePackButton(){
  const button=$('wsPackFull');
- button.textContent=packedFullscreen?t('↔ Layout originale','↔ Original layout'):t('▦ Unisci card · 2px','▦ Pack cards · 2px');
+ button.textContent=packedFullscreen?t('↩ RIPRISTINA LAYOUT','↩ RESTORE LAYOUT'):t('▦ ALLINEA TUTTO · 2 PX','▦ ALIGN ALL · 2 PX');
  button.title=packedFullscreen?t('Ripristina la disposizione originale','Restore the original arrangement'):t('Elimina gli spazi tra le card: distanza 2 px','Remove gaps between cards: 2px spacing');
  button.setAttribute('aria-label',button.title);
  button.setAttribute('aria-pressed',String(packedFullscreen));
