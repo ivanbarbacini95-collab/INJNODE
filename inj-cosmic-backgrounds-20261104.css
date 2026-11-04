@@ -124,3 +124,89 @@ body.ws-immersive .inj-cosmic-launcher{position:fixed!important;bottom:max(10px,
 body.ws-immersive .inj-cosmic-launcher:hover,body.ws-immersive .inj-cosmic-launcher:focus-visible{opacity:1}
 body:not(.ws-immersive) .inj-cosmic-launcher{position:relative;z-index:1}
 @media(max-width:450px){.inj-cosmic-options{gap:6px}.inj-cosmic-option{min-height:74px;padding:8px}.inj-cosmic-world{right:-6%;top:17%;width:clamp(174px,45vw,240px);height:clamp(174px,45vw,240px)}.inj-cosmic-orbit{width:360px;height:230px;right:-150px;top:8%}}
+
+
+/* 2026-11-04 · Cosmic Still Edition.
+   The planets use self-contained textured SVG artwork, not linear stripe
+   gradients; no frame animation is left active, including on mobile/PWA. */
+.inj-cosmic-sky,.inj-cosmic-sky *,.inj-cosmic-sky *::before,.inj-cosmic-sky *::after{
+ animation:none!important;transition:none!important;will-change:auto!important;
+}
+.inj-cosmic-sky .inj-cosmic-meteor{display:none!important}
+.inj-cosmic-sky .inj-cosmic-world{
+ width:clamp(475px,88vmin,1330px)!important;
+ height:clamp(475px,88vmin,1330px)!important;
+ top:0!important;right:-13%!important;
+ transform:none!important;
+ filter:drop-shadow(0 0 34px color-mix(in srgb,var(--cosmos-primary) 15%,transparent));
+}
+.inj-cosmic-sky .inj-cosmic-world-sphere{
+ background-color:var(--cosmos-p2);
+ background-position:center!important;background-size:100% 100%!important;
+ background-repeat:no-repeat!important;
+ box-shadow:inset -37px -24px 75px rgba(0,0,0,.30),0 0 72px color-mix(in srgb,var(--cosmos-primary) 13%,transparent)!important;
+}
+.inj-cosmic-sky .inj-cosmic-world-sphere::before{content:none!important;display:none!important}
+.inj-cosmic-sky .inj-cosmic-world-sphere::after{
+ content:"";position:absolute;inset:0;border-radius:50%;
+ background:radial-gradient(ellipse at 24% 18%,rgba(255,255,255,.09),transparent 30%),
+ linear-gradient(117deg,transparent 25%,rgba(2,5,13,.025) 50%,rgba(1,2,7,.44) 100%);
+ box-shadow:inset -34px -25px 53px rgba(0,0,0,.33);
+ pointer-events:none;
+}
+.inj-cosmic-sky[data-scene="orbital"] .inj-cosmic-world-sphere{background-image:url("./assets/inj-cosmic-planet-orbital-20261104.svg?v=still1")!important}
+.inj-cosmic-sky[data-scene="neptune"] .inj-cosmic-world-sphere{background-image:url("./assets/inj-cosmic-planet-neptune-20261104.svg?v=still1")!important}
+.inj-cosmic-sky[data-scene="saturn"] .inj-cosmic-world-sphere{background-image:url("./assets/inj-cosmic-planet-saturn-20261104.svg?v=still1")!important}
+.inj-cosmic-sky[data-scene="mars"] .inj-cosmic-world-sphere{background-image:url("./assets/inj-cosmic-planet-mars-20261104.svg?v=still1")!important}
+.inj-cosmic-sky[data-scene="jupiter"] .inj-cosmic-world-sphere{background-image:url("./assets/inj-cosmic-planet-jupiter-20261104.svg?v=still1")!important}
+.inj-cosmic-sky[data-scene="aurora"] .inj-cosmic-world-sphere{background-image:url("./assets/inj-cosmic-planet-aurora-20261104.svg?v=still1")!important}
+.inj-cosmic-sky[data-scene="orbital"] .inj-cosmic-world{right:-19%!important;top:6%!important}
+.inj-cosmic-sky[data-scene="neptune"] .inj-cosmic-world{right:-18%!important;top:1%!important}
+.inj-cosmic-sky[data-scene="saturn"] .inj-cosmic-world{right:-12%!important;top:2%!important;width:clamp(440px,76vmin,1120px)!important;height:clamp(440px,76vmin,1120px)!important}
+.inj-cosmic-sky[data-scene="mars"] .inj-cosmic-world{right:-22%!important;top:-5%!important;width:clamp(515px,98vmin,1420px)!important;height:clamp(515px,98vmin,1420px)!important}
+.inj-cosmic-sky[data-scene="jupiter"] .inj-cosmic-world{right:-21%!important;top:-9%!important;width:clamp(530px,103vmin,1530px)!important;height:clamp(530px,103vmin,1530px)!important}
+.inj-cosmic-sky[data-scene="aurora"] .inj-cosmic-world{right:-16%!important;top:4%!important;opacity:.94!important}
+.inj-cosmic-sky[data-scene="saturn"] .inj-cosmic-world-ring{
+ border-width:clamp(9px,1.6vmin,23px);border-color:rgba(235,209,155,.37);
+ border-top-color:rgba(255,241,208,.73);border-left-color:rgba(185,161,135,.21);
+ border-bottom-color:rgba(194,163,127,.48);
+ box-shadow:0 0 0 5px rgba(245,224,181,.065),0 0 0 12px rgba(238,211,169,.035);
+}
+.inj-cosmic-sky .inj-cosmic-orbit{opacity:.22}
+.inj-cosmic-sky .inj-cosmic-orbit.two{opacity:.11}
+.inj-cosmic-sky .inj-cosmic-moon{opacity:.48}
+.inj-cosmic-sky .inj-cosmic-glow{filter:blur(24px)}
+/* Once a Cosmic design is chosen it lives as a third family under Themes. */
+#themePicker > .inj-theme-family[data-family="cosmic"] .inj-family-illustration{
+ color:#9fd0ef;text-shadow:0 0 12px rgba(110,155,241,.6)
+}
+#themePicker > .inj-theme-family[data-family="cosmic"] .inj-cosmic-theme-choice{
+ min-height:56px;cursor:pointer;overflow:hidden;
+}
+#themePicker .inj-cosmic-theme-choice .inj-cosmic-theme-swatch{
+ background-position:center!important;
+ background-repeat:no-repeat!important;
+ background-size:cover!important;
+ border:1px solid rgba(205,221,255,.24)!important;
+}
+#themePicker .inj-cosmic-theme-choice[data-cosmic-scene="orbital"] .inj-cosmic-theme-swatch{background-image:url("./assets/inj-cosmic-planet-orbital-20261104.svg?v=still1"),linear-gradient(140deg,#01020b,#171c38)!important}
+#themePicker .inj-cosmic-theme-choice[data-cosmic-scene="neptune"] .inj-cosmic-theme-swatch{background-image:url("./assets/inj-cosmic-planet-neptune-20261104.svg?v=still1"),linear-gradient(140deg,#010917,#084365)!important}
+#themePicker .inj-cosmic-theme-choice[data-cosmic-scene="saturn"] .inj-cosmic-theme-swatch{background-image:url("./assets/inj-cosmic-planet-saturn-20261104.svg?v=still1"),linear-gradient(140deg,#090912,#5e4c4c)!important}
+#themePicker .inj-cosmic-theme-choice[data-cosmic-scene="mars"] .inj-cosmic-theme-swatch{background-image:url("./assets/inj-cosmic-planet-mars-20261104.svg?v=still1"),linear-gradient(140deg,#17070b,#703024)!important}
+#themePicker .inj-cosmic-theme-choice[data-cosmic-scene="jupiter"] .inj-cosmic-theme-swatch{background-image:url("./assets/inj-cosmic-planet-jupiter-20261104.svg?v=still1"),linear-gradient(140deg,#0b0a13,#805b64)!important}
+#themePicker .inj-cosmic-theme-choice[data-cosmic-scene="aurora"] .inj-cosmic-theme-swatch{background-image:url("./assets/inj-cosmic-planet-aurora-20261104.svg?v=still1"),linear-gradient(140deg,#03101b,#246c78)!important}
+#themePicker .inj-cosmic-theme-choice[aria-pressed="true"]{
+ outline:1px solid var(--accent,#6fdaf0)!important;
+ outline-offset:-1px;
+ background:color-mix(in srgb,var(--accent,#6fdaf0) 12%,var(--surface,#121a2a))!important;
+}
+@media(max-width:600px){
+ .inj-cosmic-sky .inj-cosmic-world{
+  width:clamp(530px,125vw,820px)!important;
+  height:clamp(530px,125vw,820px)!important;
+  right:-61%!important;top:7%!important;
+ }
+ .inj-cosmic-sky[data-scene="saturn"] .inj-cosmic-world{width:clamp(500px,119vw,760px)!important;height:clamp(500px,119vw,760px)!important;right:-55%!important;top:11%!important}
+ .inj-cosmic-sky[data-scene="mars"] .inj-cosmic-world,.inj-cosmic-sky[data-scene="jupiter"] .inj-cosmic-world{width:clamp(590px,150vw,950px)!important;height:clamp(590px,150vw,950px)!important;right:-79%!important;top:3%!important}
+ .inj-cosmic-sky[data-scene="aurora"] .inj-cosmic-world{right:-66%!important}
+}
