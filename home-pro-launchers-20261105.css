@@ -106,7 +106,7 @@ html[data-inj-page="index"][data-inj-home-tab="home"] body
 html[data-inj-page="index"][data-inj-home-tab="home"] body
 #entryGate#entryGate#entryGate#entryGate#entryGate#entryGate#entryGate
 .entry-actions.entry-flat-v44 > :is(#entryDashboardButton,#entryLiveButton,#entryTreasuryButton)
-> :is(span:not(.entry-action-icon),.treasury-entry-copy) {
+> span:has(> .inj-home-tile-title) {
   display:flex!important;
   position:static!important;
   flex:0 0 auto!important;
@@ -255,4 +255,79 @@ html[data-inj-page="index"][data-inj-home-tab="home"] body
 }
 @media(prefers-reduced-motion:reduce) {
   .inj-pro-launcher-symbol * {animation:none!important;transition:none!important}
+}
+
+
+/* Readability lock: decorative scenes from legacy scripts must never
+   enter the three launchers or force their labels out of the card. */
+html[data-inj-page="index"][data-inj-home-tab="home"] body
+#entryGate#entryGate#entryGate#entryGate#entryGate#entryGate#entryGate
+.entry-actions.entry-flat-v44 > :is(#entryDashboardButton,#entryLiveButton,#entryTreasuryButton).entry-action
+> :not(.inj-pro-launcher-symbol):not(:has(> .inj-home-tile-title)) {
+  display:none!important;
+  visibility:hidden!important;
+  max-height:0!important;
+  max-width:0!important;
+  flex:0 0 0!important;
+  pointer-events:none!important;
+}
+html[data-inj-page="index"][data-inj-home-tab="home"] body
+#entryGate#entryGate#entryGate#entryGate#entryGate#entryGate#entryGate
+.entry-actions.entry-flat-v44 > :is(#entryDashboardButton,#entryLiveButton,#entryTreasuryButton).entry-action
+> span:has(> .inj-home-tile-title){
+  box-sizing:border-box!important;
+  display:flex!important;
+  visibility:visible!important;
+  position:relative!important;
+  z-index:2!important;
+  order:2!important;
+  flex:0 0 auto!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  height:22px!important;
+  min-height:22px!important;
+  max-height:22px!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:visible!important;
+  transform:none!important;
+  inset:auto!important;
+}
+html[data-inj-page="index"][data-inj-home-tab="home"] body
+#entryGate#entryGate#entryGate#entryGate#entryGate#entryGate#entryGate
+.entry-actions.entry-flat-v44 > :is(#entryDashboardButton,#entryLiveButton,#entryTreasuryButton).entry-action
+> .inj-pro-launcher-symbol{
+  order:1!important;
+  z-index:1!important;
+}
+html[data-inj-page="index"][data-inj-home-tab="home"] body
+#entryGate#entryGate#entryGate#entryGate#entryGate#entryGate#entryGate
+.entry-actions.entry-flat-v44 > :is(#entryDashboardButton,#entryLiveButton,#entryTreasuryButton).entry-action
+> span:has(> .inj-home-tile-title) > .inj-home-tile-title {
+  display:block!important;
+  visibility:visible!important;
+  position:static!important;
+  opacity:1!important;
+  z-index:2!important;
+  color:var(--text,#fff)!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  font-size:var(--inj-pro-link-font)!important;
+  line-height:1.24!important;
+  font-weight:700!important;
+  text-align:center!important;
+  white-space:nowrap!important;
+  text-overflow:clip!important;
+  overflow:visible!important;
+  margin:0!important;
+  padding:0!important;
+  transform:none!important;
+  inset:auto!important;
 }
