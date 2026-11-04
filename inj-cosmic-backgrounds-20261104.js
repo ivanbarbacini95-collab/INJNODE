@@ -1,251 +1,158 @@
-/* INJ Node · Cosmic Premium backgrounds · shared by Home and Workspace.
-   Independent of the existing classic/signature theme palette. */
+/* INJ Node · Cosmic Still collection: six static, textured planetary themes.
+   Attached to the existing Theme picker; native/Workspace layouts unchanged. */
 (function(){
  'use strict';
  if(window.__INJ_COSMIC_INITIALIZED__)return;
  window.__INJ_COSMIC_INITIALIZED__=true;
-
- const SCENES=[
-  ['off','Disattivato','Off'],
-  ['orbital','Orbital Black','Orbital Black'],
-  ['neptune','Blue Neptune','Blue Neptune'],
-  ['saturn','Saturn Ring','Saturn Ring'],
-  ['mars','Mars Horizon','Mars Horizon'],
-  ['jupiter','Jupiter Storm','Jupiter Storm'],
-  ['aurora','Deep Space Aurora','Deep Space Aurora']
- ];
- const KEY='inj_node_cosmic_scene_v1',MOTION='inj_node_cosmic_motion_v1',
-  DENSITY='inj_node_cosmic_density_v1',PLANETS='inj_node_cosmic_planets_v1',
-  METEORS='inj_node_cosmic_meteors_v1',SAVE='inj_node_cosmic_save_v1';
- const get=(k,fallback)=>{try{const value=localStorage.getItem(k);return value===null?fallback:value}catch(_){return fallback}};
- const save=(k,v)=>{try{localStorage.setItem(k,v)}catch(_){}};
- const isEn=()=>document.documentElement.lang==='en';
- const tr=(it,en)=>isEn()?en:it;
- const allowedScene=v=>SCENES.some(entry=>entry[0]===v)?v:'off';
- let state={
-  scene:allowedScene(get(KEY,'off')),
-  motion:['static','soft','full'].includes(get(MOTION,'soft'))?get(MOTION,'soft'):'soft',
-  density:get(DENSITY,'rich')==='soft'?'soft':'rich',
-  planets:get(PLANETS,'1')!=='0',
-  meteors:get(METEORS,'1')!=='0',
-  powerSave:get(SAVE,'0')==='1'
+ const KEY='inj_node_cosmic_scene_v1',MOTION='inj_node_cosmic_motion_v1';
+ const SCENES={
+  orbital:'Orbital Black',
+  neptune:'Blue Neptune',
+  saturn:'Saturn Ring',
+  mars:'Mars Horizon',
+  jupiter:'Jupiter Storm',
+  aurora:'Deep Space Aurora'
  };
- let layer=null,popup=null,launch=null;
- function lcg(seed){let s=seed>>>0;return function(){s=(Math.imul(1664525,s)+1013904223)>>>0;return s/4294967296}};
+ const root=document.documentElement;
+ const get=k=>{try{return localStorage.getItem(k)}catch(_){return null}};
+ const put=(k,v)=>{try{localStorage.setItem(k,v)}catch(_){}};
+ const validScene=v=>Object.prototype.hasOwnProperty.call(SCENES,v)?v:'off';
+ let current=validScene(get(KEY)),sky=null;
+ // Migrate existing animated selections to an entirely still background.
+ put(MOTION,'static');
  function starfield(seed,count){
-  const rand=lcg(seed),parts=[];
+  let s=seed>>>0;
+  const rnd=()=>{s=(Math.imul(1664525,s)+1013904223)>>>0;return s/4294967296};
+  const dots=[];
   for(let i=0;i<count;i++){
-   const x=(rand()*100).toFixed(2)+'%',y=(rand()*100).toFixed(2)+'%';
-   const r=(.35+rand()*.9).toFixed(2);
-   const color=rand()>.92?'rgba(137,200,255,.75)':'rgba(236,245,255,.65)';
-   parts.push('radial-gradient(circle at '+x+' '+y+','+color+' 0 '+r+'px,transparent '+(Number(r)+.7).toFixed(2)+'px)');
+   const x=(rnd()*100).toFixed(2),y=(rnd()*100).toFixed(2);
+   const size=(.4+rnd()*.95).toFixed(2);
+   const rgba=rnd()>.90?'rgba(158,211,255,.7)':'rgba(238,244,255,.62)';
+   dots.push('radial-gradient(circle at '+x+'% '+y+'%,'+rgba+' 0 '+size+'px,transparent '+(Number(size)+.7).toFixed(2)+'px)');
   }
-  return parts.join(',');
+  return dots.join(',');
  }
- function makeSky(){
-  if(layer&&layer.isConnected)return;
-  const home=document.documentElement.dataset.injPage==='index';
-  const mount=home?document.getElementById('entryGate'):document.body;
-  if(!mount)return;
-  layer=document.createElement('div');layer.id='injCosmicSky';layer.className='inj-cosmic-sky';
-  layer.setAttribute('aria-hidden','true');
-  const glow=document.createElement('div');glow.className='inj-cosmic-glow';
-  const far=document.createElement('div');far.className='inj-cosmic-stars far';far.style.backgroundImage=starfield(9723,65);
-  const near=document.createElement('div');near.className='inj-cosmic-stars near';near.style.backgroundImage=starfield(18543,48);
-  const orbit=document.createElement('div');orbit.className='inj-cosmic-orbit';
-  const orbit2=document.createElement('div');orbit2.className='inj-cosmic-orbit two';
-  const world=document.createElement('div');world.className='inj-cosmic-world';
-  const ring=document.createElement('div');ring.className='inj-cosmic-world-ring';
-  const sphere=document.createElement('div');sphere.className='inj-cosmic-world-sphere';
+ function create(className){const el=document.createElement('div');el.className=className;return el}
+ function mountSky(){
+  if(sky&&sky.isConnected)return;
+  const parent=root.dataset.injPage==='index'?document.getElementById('entryGate'):document.body;
+  if(!parent)return;
+  sky=create('inj-cosmic-sky');sky.id='injCosmicSky';sky.setAttribute('aria-hidden','true');
+  const glow=create('inj-cosmic-glow');
+  const far=create('inj-cosmic-stars far');far.style.backgroundImage=starfield(9723,65);
+  const near=create('inj-cosmic-stars near');near.style.backgroundImage=starfield(18543,48);
+  const orbit=create('inj-cosmic-orbit'),orbit2=create('inj-cosmic-orbit two');
+  const world=create('inj-cosmic-world'),ring=create('inj-cosmic-world-ring');
+  const sphere=create('inj-cosmic-world-sphere');
   world.append(ring,sphere);
-  const moon=document.createElement('div');moon.className='inj-cosmic-moon';
-  layer.append(glow,far,near,orbit,orbit2,world,moon);
-  for(const [top,delay,duration] of [[17,-4,17],[51,-12,23],[69,-19,29]]){
-   const m=document.createElement('span');m.className='inj-cosmic-meteor';
-   m.style.setProperty('--meteor-top',top+'%');
-   m.style.setProperty('--meteor-delay',delay+'s');
-   m.style.setProperty('--meteor-duration',duration+'s');
-   layer.append(m);
-  }
-  mount.insertBefore(layer,mount.firstChild);
+  sky.append(glow,far,near,orbit,orbit2,world,create('inj-cosmic-moon'));
+  parent.insertBefore(sky,parent.firstChild);
  }
  function render(){
-  const root=document.documentElement;
-  root.dataset.injCosmic=state.scene;
-  if(!layer||!layer.isConnected)makeSky();
-  if(layer){
-   layer.hidden=state.scene==='off';
-   layer.dataset.scene=state.scene;
-   layer.dataset.motion=state.motion;
-   layer.dataset.density=state.density;
-   layer.dataset.planets=String(state.planets);
-   layer.dataset.meteors=String(state.meteors);
-   layer.dataset.save=String(state.powerSave||Boolean(navigator.connection&&navigator.connection.saveData));
-   layer.classList.toggle('inj-cosmic-paused',document.hidden);
+  root.dataset.injCosmic=current;
+  if(!sky||!sky.isConnected)mountSky();
+  if(sky){
+   sky.hidden=current==='off';
+   sky.dataset.scene=current;
+   sky.dataset.motion='static';
+   sky.dataset.planets='true';
+   sky.dataset.meteors='false';
+   sky.dataset.density='rich';
   }
   document.querySelectorAll('[data-cosmic-scene]').forEach(button=>{
-   button.setAttribute('aria-pressed',String(button.dataset.cosmicScene===state.scene));
+   const active=button.dataset.cosmicScene===current;
+   button.setAttribute('aria-pressed',String(active));
+   button.classList.toggle('active',active);
   });
-  document.querySelectorAll('[data-cosmic-motion]').forEach(button=>{
-   button.setAttribute('aria-pressed',String(button.dataset.cosmicMotion===state.motion));
+  const picker=document.getElementById('themePicker');
+  picker?.querySelectorAll('.inj-theme-family').forEach(group=>{
+   if(group.dataset.family==='cosmic')group.dataset.selected=String(current!=='off');
+   else if(current!=='off')group.dataset.selected='false';
   });
-  document.querySelectorAll('[data-cosmic-flag]').forEach(input=>{
-   const flag=input.dataset.cosmicFlag;
-   input.checked=flag==='density'?state.density==='rich':!!state[flag];
-  });
-  if(launch){
-   launch.textContent=tr('✦ Spazio','✦ Space')+(state.scene==='off'?'':' · ON');
-   launch.setAttribute('aria-label',tr('Apri gli sfondi spaziali','Open cosmic backgrounds'));
-   launch.setAttribute('aria-expanded',String(Boolean(popup&&!popup.hidden)));
+  if(current!=='off'){
+   picker?.querySelectorAll('[data-theme-choice]').forEach(b=>{
+    b.classList.remove('active');b.setAttribute('aria-pressed','false');
+   });
   }
-  document.querySelectorAll('[data-cosmic-current]').forEach(label=>{
-   label.textContent=state.scene==='off'?tr('Nessuno sfondo attivo','No background active'):SCENES.find(x=>x[0]===state.scene)[1];
-  });
- }
- function persist(){
-  save(KEY,state.scene);save(MOTION,state.motion);save(DENSITY,state.density);
-  save(PLANETS,state.planets?'1':'0');save(METEORS,state.meteors?'1':'0');
-  save(SAVE,state.powerSave?'1':'0');
- }
- function select(scene){state.scene=allowedScene(scene);persist();render()}
- function controlsHTML(){
-  const scenes=SCENES.map(scene=>
-   '<button type="button" class="inj-cosmic-option" data-scene="'+scene[0]+'" data-cosmic-scene="'+scene[0]+'" aria-pressed="false"><span>'+scene[1]+'</span></button>'
-  ).join('');
-  return '<details class="inj-cosmic-control" open>'+
-   '<summary><span class="inj-cosmic-icon" aria-hidden="true">✦</span>'+
-   '<span class="inj-cosmic-copy"><strong data-cosmic-heading>Cosmic Backgrounds</strong>'+
-   '<small data-cosmic-subtitle>6 ambientazioni animate · stelle e pianeti</small></span>'+
-   '<span class="inj-cosmic-chevron" aria-hidden="true">⌄</span></summary>'+
-   '<div class="inj-cosmic-form">'+
-   '<p class="inj-cosmic-hint" data-cosmic-hint>Lo spazio si muove dietro le card, senza coprire i dati.</p>'+
-   '<div class="inj-cosmic-options" role="group" aria-label="Cosmic Backgrounds">'+scenes+'</div>'+
-   '<div class="inj-cosmic-settings">'+
-   '<label data-cosmic-motion-label>Movimento</label><div class="inj-cosmic-motion" role="group" aria-label="Motion">'+
-   '<button data-cosmic-motion="static" type="button" aria-pressed="false">Statico</button>'+
-   '<button data-cosmic-motion="soft" type="button" aria-pressed="false">Soft</button>'+
-   '<button data-cosmic-motion="full" type="button" aria-pressed="false">Full</button></div>'+
-   '<div class="inj-cosmic-toggles">'+
-   '<label><input type="checkbox" data-cosmic-flag="density" checked><span data-cosmic-density-label>Stelle intense</span></label>'+
-   '<label><input type="checkbox" data-cosmic-flag="planets" checked><span data-cosmic-planets-label>Pianeti</span></label>'+
-   '<label><input type="checkbox" data-cosmic-flag="meteors" checked><span data-cosmic-meteors-label>Meteore</span></label>'+
-   '<label><input type="checkbox" data-cosmic-flag="powerSave"><span data-cosmic-save-label>Battery Safe</span></label>'+
-   '</div></div></div></details>';
- }
- function updateLabels(){
-  const en=isEn();
-  for(const group of document.querySelectorAll('.inj-cosmic-control')){
-   const title=group.querySelector('[data-cosmic-heading]');
-   const note=group.querySelector('[data-cosmic-subtitle]');
-   const hint=group.querySelector('[data-cosmic-hint]');
-   if(title)title.textContent='Cosmic Backgrounds';
-   if(note)note.textContent=en?'6 animated space scenes · planets and stars':'6 ambientazioni animate · stelle e pianeti';
-   if(hint)hint.textContent=en?'Planets, stars and meteors pass behind cards. Data stays clear.':'Pianeti, stelle e meteore passano dietro le card, senza coprire i dati.';
-   const names=group.querySelectorAll('[data-cosmic-scene]');
-   names.forEach(b=>{const scene=SCENES.find(v=>v[0]===b.dataset.cosmicScene);if(scene)b.textContent=en?scene[2]:scene[1]});
-   const motion=group.querySelectorAll('[data-cosmic-motion]');
-   motion.forEach(b=>{if(b.dataset.cosmicMotion==='static')b.textContent=en?'Static':'Statico'});
-   const labels={
-    '[data-cosmic-motion-label]':en?'Movement':'Movimento',
-    '[data-cosmic-density-label]':en?'Dense stars':'Stelle intense',
-    '[data-cosmic-planets-label]':en?'Planets':'Pianeti',
-    '[data-cosmic-meteors-label]':en?'Meteors':'Meteore',
-    '[data-cosmic-save-label]':'Battery Safe'
-   };
-   for(const selector of Object.keys(labels)){
-    const el=group.querySelector(selector);if(el)el.textContent=labels[selector];
-   }
+  const theme=document.getElementById('themeButton');
+  if(theme&&current!=='off'){
+   theme.title='Tema: '+SCENES[current];
+   theme.setAttribute('aria-label','Tema '+SCENES[current]+'. Cambia tema');
   }
+ }
+ function select(scene){
+  current=validScene(scene);
+  put(KEY,current);
   render();
  }
- function mountControls(){
-  const theme=document.getElementById('themeControl');
-  if(theme&&!document.getElementById('injCosmicHome')){
-   const shell=document.createElement('div');
-   shell.id='injCosmicHome';
-   shell.innerHTML=controlsHTML();
-   const details=shell.firstElementChild;
-   details.open=false;
-   theme.insertAdjacentElement('afterend',details);
-   details.id='injCosmicHome';
-   // Keep the dedicated category independent of the original Theme picker.
-  }
-  const toolbar=document.querySelector('body .ws-toolbar');
-  if(toolbar&&!launch){
-   launch=document.createElement('button');
-   launch.type='button';launch.id='injCosmicLauncher';launch.className='inj-cosmic-launcher';
-   launch.setAttribute('aria-haspopup','dialog');launch.setAttribute('aria-expanded','false');
-   launch.textContent='✦ Spazio';
-   const before=document.getElementById('wsFull');
-   if(before)before.insertAdjacentElement('beforebegin',launch);else toolbar.append(launch);
-   // The original toolbar disappears in fullscreen. Move this one live control
-   // into the body so the Cosmic selector remains reachable without exiting.
-   const placeLauncher=()=>{
-    if(document.body.classList.contains('ws-immersive')){
-     if(launch.parentNode!==document.body)document.body.append(launch);
-    }else if(before&&launch.parentNode!==before.parentNode){
-     before.insertAdjacentElement('beforebegin',launch);
-    }
-   };
-   new MutationObserver(placeLauncher).observe(document.body,{attributes:true,attributeFilter:['class']});
-   placeLauncher();
-   popup=document.createElement('div');popup.id='injCosmicPopup';
-   popup.className='inj-cosmic-popup';popup.setAttribute('role','dialog');
-   popup.setAttribute('aria-label','Cosmic Backgrounds');popup.hidden=true;
-   popup.innerHTML=controlsHTML();document.body.append(popup);
-   const inside=popup.querySelector('details');if(inside)inside.open=true;
-   launch.addEventListener('click',()=>{
-    popup.hidden=!popup.hidden;
-    launch.setAttribute('aria-expanded',String(!popup.hidden));
-    if(!popup.hidden)popup.scrollTop=0;
-   });
-   document.addEventListener('pointerdown',e=>{
-    if(popup&&!popup.hidden&&!popup.contains(e.target)&&e.target!==launch){popup.hidden=true;launch.setAttribute('aria-expanded','false')}
-   });
-   document.addEventListener('keydown',e=>{
-    if(e.key==='Escape'&&popup&&!popup.hidden){popup.hidden=true;launch.setAttribute('aria-expanded','false');e.stopPropagation()}
-   },true);
-  }
-  updateLabels();
+ function familyMarkup(){
+  return '<details class="inj-theme-family" data-family="cosmic">'+
+   '<summary><span class="inj-family-illustration" aria-hidden="true">✦</span>'+
+   '<span class="inj-family-title"><strong>Cosmic Still</strong>'+
+   '<small data-it="6 pianeti statici · dettagli HD" data-en="6 still planets · HD detail">6 pianeti statici · dettagli HD</small></span>'+
+   '<span class="inj-family-count">6</span><span class="inj-family-chevron" aria-hidden="true"></span></summary>'+
+   '<div class="theme-category-options theme-list-unified">'+
+   Object.entries(SCENES).map(([id,name])=>
+    '<button type="button" class="inj-cosmic-theme-choice" data-cosmic-scene="'+id+'" aria-pressed="false">'+
+    '<i class="theme-swatch inj-cosmic-theme-swatch" aria-hidden="true"></i><span>'+name+'</span></button>'
+   ).join('')+'</div></details>';
  }
- // Event delegation keeps the controls working if another settings script
- // rebuilds the menu or when iOS resumes the installed PWA.
- document.addEventListener('click',function(event){
-  const scene=event.target.closest('[data-cosmic-scene]');
-  if(scene){event.preventDefault();event.stopPropagation();select(scene.dataset.cosmicScene);return}
-  const motion=event.target.closest('[data-cosmic-motion]');
-  if(motion){event.preventDefault();event.stopPropagation();state.motion=motion.dataset.cosmicMotion;persist();render()}
- },true);
- document.addEventListener('change',function(event){
-  const box=event.target.closest('[data-cosmic-flag]');if(!box)return;
-  const flag=box.dataset.cosmicFlag;
-  if(flag==='density')state.density=box.checked?'rich':'soft';
-  else if(Object.prototype.hasOwnProperty.call(state,flag))state[flag]=box.checked;
-  persist();render();
- },true);
- function refresh(){makeSky();mountControls();render()}
- function initialize(){
-  refresh();
-  document.addEventListener('visibilitychange',()=>{
-   if(layer)layer.classList.toggle('inj-cosmic-paused',document.hidden);
+ function mountThemes(){
+  const picker=document.getElementById('themePicker');
+  if(!picker)return;
+  // Remove the old standalone Cosmic preferences, if present in a restored view.
+  document.getElementById('injCosmicHome')?.remove();
+  if(!picker.querySelector('[data-family="cosmic"]'))picker.insertAdjacentHTML('beforeend',familyMarkup());
+  const groups=[...picker.querySelectorAll('details.inj-theme-family')];
+  for(const group of groups){
+   if(group.dataset.cosmicExclusive)return; // Only attach once per group.
+  }
+  groups.forEach(group=>{
+   if(group.dataset.cosmicExclusive)return;
+   group.dataset.cosmicExclusive='1';
+   group.addEventListener('toggle',()=>{
+    if(!group.open)return;
+    groups.forEach(other=>{if(other!==group)other.open=false});
+   });
   });
-  window.addEventListener('pageshow',refresh);
-  window.addEventListener('injnode:languagechange',updateLabels);
+ }
+ function click(e){
+  const cosmic=e.target.closest?.('[data-cosmic-scene]');
+  if(cosmic){
+   e.preventDefault();e.stopPropagation();
+   const desired=validScene(cosmic.dataset.cosmicScene);
+   if(desired==='off')return;
+   // Cosmic is a dark theme family. Switch light palettes to a readable
+   // base using the existing theme handler before activating the planet.
+   if(['arctic','classic-white'].includes(root.dataset.theme)){
+    const obsidian=document.querySelector('[data-theme-choice="obsidian"]');
+    if(obsidian)obsidian.click();
+   }
+   select(desired);
+   document.getElementById('themeControl')?.classList.remove('open');
+   document.getElementById('themeButton')?.setAttribute('aria-expanded','false');
+   return;
+  }
+  // Choosing a normal theme turns the cosmic family off, as with any
+  // mutually exclusive theme option; do not leave space layers behind.
+  if(e.target.closest?.('[data-theme-choice]')&&current!=='off')select('off');
+ }
+ // Capture before the existing app handlers; this also works with mobile taps.
+ document.addEventListener('click',click,true);
+ function initialize(){
+  mountSky();mountThemes();render();
+  const cosmicFamily=document.querySelector('#themePicker [data-family="cosmic"]');
+  if(cosmicFamily&&current!=='off')cosmicFamily.open=true;
+  window.addEventListener('pageshow',()=>{current=validScene(get(KEY));mountSky();mountThemes();render()});
   window.addEventListener('storage',e=>{
-   if(![KEY,MOTION,DENSITY,PLANETS,METEORS,SAVE].includes(e.key))return;
-   state.scene=allowedScene(get(KEY,'off'));
-   state.motion=['static','soft','full'].includes(get(MOTION,'soft'))?get(MOTION,'soft'):'soft';
-   state.density=get(DENSITY,'rich')==='soft'?'soft':'rich';
-   state.planets=get(PLANETS,'1')!=='0';state.meteors=get(METEORS,'1')!=='0';
-   state.powerSave=get(SAVE,'0')==='1';
-   render();
+   if(e.key===KEY){current=validScene(get(KEY));render()}
   });
   window.addEventListener('message',e=>{
    if(e.origin!==location.origin||e.data?.type!=='injnode:cosmic:sync')return;
-   state.scene=allowedScene(e.data.scene);render();
+   current=validScene(e.data.scene);render();
   });
  }
- window.INJNodeCosmic={select,refresh,getState:()=>({...state})};
+ window.INJNodeCosmic={select,refresh:()=>{mountThemes();render()},getState:()=>({scene:current,motion:'static'})};
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initialize,{once:true});
  else initialize();
 })();
