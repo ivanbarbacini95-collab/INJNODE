@@ -220,14 +220,14 @@ function portablePreset(p){
 function showTransfer(p){
  $('wsTransferTitle').textContent=t('Copia preset: ','Copy preset: ')+p.name;
  $('wsTransferHelp').textContent=t('Copia il codice e incollalo su un altro INJ Node. Può contenere indirizzi pubblici dei wallet usati dalle card; non contiene chiavi private né saldi.','Copy this code and paste it into another INJ Node. It may contain public wallet addresses configured in cards, but no private keys or balances.');
- $('wsTransferCode').value=portablePreset(p);$('wsTransferCode').readOnly=true;
+ $('wsTransferCode').value=portablePreset(p);$('wsTransferCode').readOnly=true;$('wsTransferMessage').textContent='';
  $('wsTransferCopy').hidden=false;$('wsTransferApply').hidden=true;
  $('wsTransfer').showModal();$('wsTransferCode').focus();$('wsTransferCode').select();
 }
 function showPaste(){
  $('wsTransferTitle').textContent=t('Importa da un altro INJ Node','Import from another INJ Node');
  $('wsTransferHelp').textContent=t('Incolla il codice di un preset o di un file Workspace esportato. I preset esistenti non saranno sostituiti.','Paste a preset code or exported Workspace JSON. Your existing presets will not be replaced.');
- $('wsTransferCode').value='';$('wsTransferCode').readOnly=false;
+ $('wsTransferCode').value='';$('wsTransferCode').readOnly=false;$('wsTransferMessage').textContent='';
  $('wsTransferCopy').hidden=true;$('wsTransferApply').hidden=false;
  $('wsTransfer').showModal();$('wsTransferCode').focus();
 }
@@ -236,8 +236,8 @@ async function copyTransfer(){
  try{
   if(!navigator.clipboard?.writeText)throw Error('Clipboard unavailable');
   await navigator.clipboard.writeText(input.value);
-  notice(t('Codice preset copiato','Preset code copied'));
- }catch(_){notice(t('Seleziona il testo e usa Copia','Select the text and choose Copy'))}
+  $('wsTransferMessage').textContent=t('Codice copiato. Ora puoi condividerlo con l’altro dispositivo.','Code copied. You can now share it with your other device.');notice(t('Codice preset copiato','Preset code copied'));
+ }catch(_){$('wsTransferMessage').textContent=t('Seleziona il testo e usa Copia.','Select the text and choose Copy.');notice(t('Seleziona il testo e usa Copia','Select the text and choose Copy'))}
 }
 function importWorkspace(raw){
  const imported=M.sanitize(raw);
@@ -264,7 +264,7 @@ $('wsTransferCopy').onclick=copyTransfer;
 $('wsTransferApply').onclick=()=>{
  const input=$('wsTransferCode').value;
  try{if(input.length>2000000)throw Error('Too large');importWorkspace(JSON.parse(input));$('wsTransfer').close()}
- catch(_){notice(t('Codice non valido o limite di 50 preset superato','Invalid code or 50 preset limit exceeded'))}
+ catch(_){$('wsTransferMessage').textContent=t('Codice non valido o limite di 50 preset superato.','Invalid code or 50 preset limit exceeded.');notice(t('Codice non valido o limite di 50 preset superato','Invalid code or 50 preset limit exceeded'))}
 };
 
 $('wsExport').onclick=()=>{const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='INJ-Workspace-presets.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
