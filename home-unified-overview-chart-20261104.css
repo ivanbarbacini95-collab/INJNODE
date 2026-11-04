@@ -73,3 +73,34 @@ html[data-theme="classic-white"][data-inj-page="index"] body #entryGate#entryGat
   border-radius:0 0 17px 17px!important;
  }
 }
+
+
+/* 2026-11-04 · More breathing room for the existing interactive graph.
+   The original chart's height is locked to the overview by older CSS.
+   Increase its parent flex budget modestly, instead of changing SVG sizing
+   or touching the renderer and gestures. */
+html[data-inj-page="index"] body #entryGate#entryGate
+ .entry-gate-shell:not(.first-access) > #entryInsights.entry-price-card {
+ height:calc(var(--inj-home-overview-card-height,210px) + 50px)!important;
+ max-height:calc(var(--inj-home-overview-card-height,210px) + 50px)!important;
+}
+html[data-inj-page="index"] body #entryGate#entryGate
+ #entryInsights > .entry-sparkline.entry-price-chart{
+ box-sizing:border-box!important;
+ padding:9px 0 8px!important;
+}
+html[data-inj-page="index"] body #entryGate#entryGate
+ #entryInsights .entry-price-timebar{
+ padding-top:5px!important;
+}
+@media(max-width:560px){
+ html[data-inj-page="index"] body #entryGate#entryGate
+  .entry-gate-shell:not(.first-access) > #entryInsights.entry-price-card {
+  height:calc(var(--inj-home-overview-card-height,210px) + 46px)!important;
+  max-height:calc(var(--inj-home-overview-card-height,210px) + 46px)!important;
+ }
+ html[data-inj-page="index"] body #entryGate#entryGate
+  #entryInsights > .entry-sparkline.entry-price-chart{
+  padding:8px 0 7px!important;
+ }
+}
