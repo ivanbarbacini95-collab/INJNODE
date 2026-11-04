@@ -124,7 +124,7 @@
 <script defer src="./home-entry-feedback.js?v=160720"></script>
 <script defer src="./home-scroll-memory.js?v=160719"></script>
 <script defer src="./cloud-sync-agent.js?v=20261027sync1"></script>
-<script defer src="navigation.js?v=20261104-cosmic-still3"></script>
+<script defer src="navigation.js?v=20261104-no-planets1"></script>
 <script defer src="./i18n.js?v=20261028allsections1"></script>
 <script defer src="scroll-guard.js?v=160525"></script>
 <!-- INJ Node Home Vitality: unique theme-aware launcher art; no page-wide effects -->
@@ -422,8 +422,6 @@
 <link rel="stylesheet" href="./inj-signature-atmospheres-20261103.css?v=signature-preview-fidelity1">
 <link rel="stylesheet" href="./inj-theme-collections-20261103.css?v=20261104-black-luminous1">
 <script defer src="./inj-six-themes-20261103.js?v=static-obsidian-20261104a"></script>
-<link rel="stylesheet" href="./inj-cosmic-backgrounds-20261104.css?v=cosmic-still3">
-<script defer src="./inj-cosmic-backgrounds-20261104.js?v=cosmic-still3"></script>
 </head>
 <body class="boot-loading">
 <div aria-label="Avvio INJ Node" aria-live="polite" aria-atomic="true" class="boot-splash node-pulse-splash" id="bootSplash" role="status">
@@ -569,7 +567,7 @@
 <div class="theme-control menu-theme-control" id="themeControl">
 <button aria-controls="themePicker" aria-expanded="false" aria-label="Scegli Theme" class="menu-action menu-setting" id="themeButton" title="Theme" type="button">
 <span aria-hidden="true" class="menu-action-icon"><svg viewbox="0 0 24 24"><path d="M12 3.5a8.5 8.5 0 1 0 0 17h1.1a1.7 1.7 0 0 0 0-3.4h-.8a1.8 1.8 0 0 1 0-3.6H15a5.5 5.5 0 0 0 0-11h-3Z"></path><circle cx="8" cy="9" r=".7"></circle><circle cx="11" cy="6.8" r=".7"></circle><circle cx="7.2" cy="13" r=".7"></circle></svg></span>
-<span class="menu-action-copy"><strong data-it="Theme" data-en="Theme">Theme</strong><small data-it="11 temi · 3 collezioni" data-en="11 themes · 3 collections">11 temi · 3 collezioni</small></span>
+<span class="menu-action-copy"><strong data-it="Theme" data-en="Theme">Theme</strong><small data-it="5 temi · 2 collezioni" data-en="5 themes · 2 collections">5 temi · 2 collezioni</small></span>
 <svg aria-hidden="true" class="menu-action-chevron" viewbox="0 0 24 24"><path d="m8 10 4 4 4-4"></path></svg>
 </button>
 <div aria-label="Theme" class="theme-picker" id="themePicker" role="group">
@@ -585,16 +583,6 @@
 <button data-theme-choice="obsidian" type="button"><i class="theme-swatch obsidian" aria-hidden="true"></i><span>Obsidian Pulse</span></button>
 <button data-theme-choice="arctic" type="button"><i class="theme-swatch arctic" aria-hidden="true"></i><span>Arctic Glass</span></button>
 <button data-theme-choice="orbit" type="button"><i class="theme-swatch orbit" aria-hidden="true"></i><span>Deep Orbit</span></button>
-</div></details>
-<details class="inj-theme-family" data-family="cosmic">
-<summary><span class="inj-family-illustration" aria-hidden="true">✦</span><span class="inj-family-title"><strong>Cosmic Still</strong><small data-it="6 pianeti statici · dettagli HD" data-en="6 still planets · HD detail">6 pianeti statici · dettagli HD</small></span><span class="inj-family-count">6</span><span class="inj-family-chevron" aria-hidden="true"></span></summary>
-<div class="theme-category-options theme-list-unified">
-<button type="button" class="inj-cosmic-theme-choice" data-cosmic-scene="orbital" aria-pressed="false"><i class="theme-swatch inj-cosmic-theme-swatch" aria-hidden="true"></i><span>Orbital Black</span></button>
-<button type="button" class="inj-cosmic-theme-choice" data-cosmic-scene="neptune" aria-pressed="false"><i class="theme-swatch inj-cosmic-theme-swatch" aria-hidden="true"></i><span>Blue Neptune</span></button>
-<button type="button" class="inj-cosmic-theme-choice" data-cosmic-scene="saturn" aria-pressed="false"><i class="theme-swatch inj-cosmic-theme-swatch" aria-hidden="true"></i><span>Saturn Ring</span></button>
-<button type="button" class="inj-cosmic-theme-choice" data-cosmic-scene="mars" aria-pressed="false"><i class="theme-swatch inj-cosmic-theme-swatch" aria-hidden="true"></i><span>Mars Horizon</span></button>
-<button type="button" class="inj-cosmic-theme-choice" data-cosmic-scene="jupiter" aria-pressed="false"><i class="theme-swatch inj-cosmic-theme-swatch" aria-hidden="true"></i><span>Jupiter Storm</span></button>
-<button type="button" class="inj-cosmic-theme-choice" data-cosmic-scene="aurora" aria-pressed="false"><i class="theme-swatch inj-cosmic-theme-swatch" aria-hidden="true"></i><span>Deep Space Aurora</span></button>
 </div></details>
 </div>
 </div>
@@ -854,7 +842,7 @@
 <span aria-hidden="true" class="inj-tile-scene"><svg viewBox="0 0 120 68" xmlns="http://www.w3.org/2000/svg" focusable="false"><rect class="etf-art-paper wash" x="16" y="7" width="73" height="54" rx="9"/><path class="etf-art-frame soft" d="M23 19V14h58v40H23v-8M29 20h19M29 25h12"/><text class="etf-art-label" x="29" y="43">ETF</text><circle class="etf-art-seal motion-ring" cx="88" cy="44" r="17"/><path class="etf-art-bolt motion-stroke" d="m81 45 6-8 5 5 5-6"/><circle class="solid motion-pulse" cx="97" cy="36" r="2"/><path class="soft" d="M92 13h15M96 18h11"/></svg></span>
 <svg aria-hidden="true" class="entry-action-arrow" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
 </a>
-<a class="entry-action entry-action-workspace" id="entryWorkspaceButton" href="./workspace.html?v=20261104-cosmic-still3" aria-label="INJ Workspace">
+<a class="entry-action entry-action-workspace" id="entryWorkspaceButton" href="./workspace.html?v=20261104-no-planets1" aria-label="INJ Workspace">
 <span aria-hidden="true" class="entry-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="14" y="3" width="7" height="12" rx="2"/><rect x="3" y="14" width="8" height="7" rx="2"/><path d="M14 19h7m-3.5-3.5v7"/></svg></span><span><strong class="inj-home-tile-title" data-it="INJ Workspace" data-en="INJ Workspace">INJ Workspace</strong><small class="inj-tile-description" data-it="Crea la tua schermata" data-en="Build your workspace">Crea la tua schermata</small></span><span aria-hidden="true" class="inj-tile-scene"><svg viewBox="0 0 120 68"><rect x="8" y="9" width="43" height="23" rx="4"/><rect x="59" y="9" width="51" height="48" rx="4"/><rect x="8" y="39" width="43" height="18" rx="4"/><path d="M74 33h20m-10-10v20"/></svg></span><svg aria-hidden="true" class="entry-action-arrow" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
 <button class="entry-action entry-action-freedom" id="entryFreedomButton" type="button" aria-label="Apri Financial Freedom">
 <span class="inj-tile-scene inj-home-freedom-art" aria-hidden="true"><svg class="freedom-mark" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg" focusable="false"><circle class="freedom-mark-halo" cx="36" cy="36" r="28"/><g class="freedom-mark-orbit"><path d="M36 8a28 28 0 0 1 28 28" stroke-dasharray="2 5" stroke-linecap="round"/></g><path class="freedom-mark-grid" d="M19 51V26M19 51h36M27 46V37M35 46V30M43 46V24"/><path class="freedom-mark-ascent" d="m21 43 12-12 9 6 13-18"/><path class="freedom-mark-arrow" d="M46 19h9v9"/><circle class="freedom-mark-signal" cx="55" cy="19" r="3.4"/></svg></span>
