@@ -178,6 +178,17 @@
    launch.textContent='✦ Spazio';
    const before=document.getElementById('wsFull');
    if(before)before.insertAdjacentElement('beforebegin',launch);else toolbar.append(launch);
+   // The original toolbar disappears in fullscreen. Move this one live control
+   // into the body so the Cosmic selector remains reachable without exiting.
+   const placeLauncher=()=>{
+    if(document.body.classList.contains('ws-immersive')){
+     if(launch.parentNode!==document.body)document.body.append(launch);
+    }else if(before&&launch.parentNode!==before.parentNode){
+     before.insertAdjacentElement('beforebegin',launch);
+    }
+   };
+   new MutationObserver(placeLauncher).observe(document.body,{attributes:true,attributeFilter:['class']});
+   placeLauncher();
    popup=document.createElement('div');popup.id='injCosmicPopup';
    popup.className='inj-cosmic-popup';popup.setAttribute('role','dialog');
    popup.setAttribute('aria-label','Cosmic Backgrounds');popup.hidden=true;
