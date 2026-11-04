@@ -232,3 +232,11 @@ window.addEventListener('injnode:languagechange',event=>{
  script.src = './inj-upside-down-20261104.js?v=20261104-injnode-fixed180b';
  document.head.appendChild(script);
 })();
+
+/* Black / White Pro card treatment, on direct-entry section pages too. */
+;(() => {
+ if(document.querySelector('link[href*="inj-monochrome-pro-20261104.css"]'))return;
+ const link=document.createElement('link');
+ link.rel='stylesheet';link.href='./inj-monochrome-pro-20261104.css?v=mono-pro1';
+ document.head.append(link);
+})();
