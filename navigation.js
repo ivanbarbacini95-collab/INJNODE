@@ -237,10 +237,10 @@ window.addEventListener('injnode:languagechange',event=>{
 ;(() => {
  if(!document.querySelector('link[href*="inj-cosmic-backgrounds-20261104.css"]')){
   const css=document.createElement('link');css.rel='stylesheet';
-  css.href='./inj-cosmic-backgrounds-20261104.css?v=cosmic-premium2';document.head.append(css);
+  css.href='./inj-cosmic-backgrounds-20261104.css?v=cosmic-still3';document.head.append(css);
  }
  if(!document.querySelector('script[src*="inj-cosmic-backgrounds-20261104.js"]')){
   const js=document.createElement('script');
-  js.src='./inj-cosmic-backgrounds-20261104.js?v=cosmic-premium2';document.head.append(js);
+  js.src='./inj-cosmic-backgrounds-20261104.js?v=cosmic-still3';document.head.append(js);
  }
 })();
