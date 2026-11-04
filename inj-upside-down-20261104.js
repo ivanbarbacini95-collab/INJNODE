@@ -62,7 +62,7 @@
     // viewport space so its controls appear at the physical BOTTOM when
     // the handset is held charging-port-up. Buttons keep normal hit boxes.
     'html[data-inj-reverse-portrait="1"][data-inj-page="index"]',
-    'body > #injPrimaryBottomNav:popover-open{',
+    ' body > #injPrimaryBottomNav:popover-open{',
     'position:fixed!important;',
     'inset:max(10px,env(safe-area-inset-top,0px)) auto auto 50%!important;',
     'top:max(10px,env(safe-area-inset-top,0px))!important;',
@@ -76,7 +76,7 @@
     // inside the rotated BODY and must NOT be rotated twice. Move its
     // logical bottom edge to the opposite end of that body instead.
     'html[data-inj-reverse-portrait="1"][data-inj-page="index"]',
-    'body > #injPrimaryBottomNav:not(:popover-open){',
+    ' body > #injPrimaryBottomNav:not(:popover-open){',
     'position:fixed!important;',
     'inset:max(10px,env(safe-area-inset-top,0px)) auto auto 50%!important;',
     'top:max(10px,env(safe-area-inset-top,0px))!important;',
