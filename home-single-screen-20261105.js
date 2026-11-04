@@ -39,8 +39,11 @@
   // Establish a stable baseline: never cumulatively subtract a prior fit.
   chart.style.setProperty(cssVar,'244px');
   const baseH=chart.getBoundingClientRect().height;
-  const buttonsBottom=actions.getBoundingClientRect().bottom;
-  const overviewTop=overview.getBoundingClientRect().top;
+  // Measure against the unscrolled Home origin; Safari may reopen the PWA
+  // at an old scroll offset from the previous (tall) layout.
+  const offset=gate.scrollTop||0;
+  const buttonsBottom=actions.getBoundingClientRect().bottom+offset;
+  const overviewTop=overview.getBoundingClientRect().top+offset;
   if(!(baseH>100&&buttonsBottom>overviewTop&&navTop>150)){
    root.removeAttribute('data-inj-home-fit');return;
   }
@@ -49,7 +52,7 @@
   chart.style.setProperty(cssVar,chartHeight+'px');
   // Commit the no-scroll layout only when ALL three destinations will be
   // visible and the chart still has enough room for price/time/P&L.
-  const actualBottom=actions.getBoundingClientRect().bottom;
+  const actualBottom=actions.getBoundingClientRect().bottom+offset;
   const fits=available>=188 && actualBottom<=navTop-8;
   root.dataset.injHomeFit=fits?'true':'false';
   if(fits&&gate.scrollTop>0)gate.scrollTop=0;
