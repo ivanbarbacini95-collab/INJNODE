@@ -1,7 +1,7 @@
-const CACHE_NAME = 'inj-node-v20261104-injnode-fixed180a';
+const CACHE_NAME = 'inj-node-v20261104-injnode-fixed180b';
 const APP_SHELL = [
-  './inj-upside-down-20261104.js?v=20261104-injnode-fixed180a',
-  './navigation.js?v=20261104-injnode-fixed180a',
+  './inj-upside-down-20261104.js?v=20261104-injnode-fixed180b',
+  './navigation.js?v=20261104-injnode-fixed180b',
   './workspace.js?v=20261104-injnode-fixed180a',
   './workspace.html?v=20261104-injnode-fixed180a',
   './workspace.html?v=workspace-20261103-fullscreen-r2',
@@ -375,7 +375,7 @@ self.addEventListener('install', (event) => {
     // legacy CSS/JS downloads before the worker can activate. Cache the
     // actual boot path first; runtime requests populate the rest on demand.
     const essential=new Set([
-      './inj-upside-down-20261104.js?v=20261104-injnode-fixed180a',
+      './inj-upside-down-20261104.js?v=20261104-injnode-fixed180b',
       './inj-view-mode-20261102.css?v=20261102-litepro-ohlc-official1',
       './inj-view-mode-20261102.js?v=20261102-litepro-ohlc-official1',
       './inj-light-home-20261102.css?v=20261102-litepro-ohlc-official1',
