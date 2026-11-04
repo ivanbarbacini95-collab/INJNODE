@@ -8224,7 +8224,7 @@ function registerPwa() {
     // Android standalone must repair a stale worker without waiting for every
     // chart/font/image request to complete the window load event.
     const refreshWorker = () => {
-      navigator.serviceWorker.register('./sw.js?v=20261104-cosmic-premium2',{updateViaCache:'none'})
+      navigator.serviceWorker.register('./sw.js?v=20261104-cosmic-still3',{updateViaCache:'none'})
         .then(registration => registration.update())
         .catch(() => {});
     };
