@@ -1,7 +1,7 @@
-const CACHE_NAME = 'inj-node-v20261104-cosmic-premium1';
+const CACHE_NAME = 'inj-node-v20261104-cosmic-premium2';
 const APP_SHELL = [
-  './inj-cosmic-backgrounds-20261104.css?v=cosmic-premium1',
-  './inj-cosmic-backgrounds-20261104.js?v=cosmic-premium1',
+  './inj-cosmic-backgrounds-20261104.css?v=cosmic-premium2',
+  './inj-cosmic-backgrounds-20261104.js?v=cosmic-premium2',
   './inj-upside-down-20261104.js?v=20261104-injnode-fixed180b',
   './navigation.js?v=20261104-injnode-fixed180b',
   './workspace.js?v=20261104-align-all-v3',
