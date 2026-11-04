@@ -74,7 +74,7 @@ html[data-inj-page="index"][data-inj-home-tab="home"] body
 html[data-inj-page="index"][data-inj-home-tab="home"] body
 #entryGate#entryGate#entryGate#entryGate .entry-actions.entry-flat-v44
 > :is(#entryDashboardButton,#entryLiveButton,#entryTreasuryButton)
-> :is(span:not(.entry-action-icon):not(.inj-tile-scene),.treasury-entry-copy){
+> :is(span:not(.entry-action-icon):not(.inj-tile-scene):not(.bcg-treasury-visual):not(.inj-luxury-icon):not(.inj-precision-icon),.treasury-entry-copy){
  display:flex!important;
  position:relative!important;
  inset:auto!important;
