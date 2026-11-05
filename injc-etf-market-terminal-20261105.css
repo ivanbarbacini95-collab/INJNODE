@@ -74,3 +74,60 @@
 @media(max-width:760px){.injc-price-card{grid-template-columns:1fr}.injc-price-aside{border-left:0;border-top:1px solid var(--etf-line);padding-left:0;padding-top:14px}.injc-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.injc-fund{grid-template-columns:repeat(2,minmax(0,1fr))}.injc-topline .injc-meta{margin-left:0;width:100%}}
 @media(max-width:530px){.etf-shell{padding-left:14px;padding-right:14px}.etf-top{gap:9px}.etf-headbrand strong{font-size:11px}.etf-headbrand small{font-size:9px}.head-right{gap:6px}.status-pill{font-size:9px;padding:7px 9px;max-width:160px;white-space:normal}.status-pill span{line-height:1.15}.etf-back{height:38px;width:38px}.injc-mark{width:53px;height:53px;font-size:22px}.injc-heading{gap:10px}.injc-heading h1{font-size:27px}.injc-price{font-size:52px}.injc-meta span{font-size:9px}.injc-stat{padding:14px 12px}.injc-stat strong{font-size:21px}.injc-flow-row{grid-template-columns:66px 77px 1fr;gap:8px}.injc-flow-row strong{font-size:13px}.injc-flow-body{padding:16px}.injc-chart-top{padding:12px}.injc-tabs button{min-width:38px;padding:8px}.injc-chart-surface{min-height:275px}#etfSvgWrap{height:285px}}
 @media(prefers-reduced-motion:reduce){.status-pill i,.injc-loading-orb{animation:none!important}}
+
+/* INJC v2: Nasdaq opening countdown, genuine extended-hours color and session archive. */
+:root{--injc-pre:#f4c95d}
+.injc-market-countdown{display:flex;flex-direction:column;align-items:flex-start;gap:4px;margin:17px 0 13px;padding:16px 17px;border:1px solid color-mix(in srgb,var(--etf-accent) 22%,var(--etf-line));border-radius:14px;background:color-mix(in srgb,var(--etf-accent) 5%,var(--etf-card))}
+.injc-market-countdown span{color:var(--etf-muted);font-size:10px;letter-spacing:.12em;font-weight:680}
+.injc-market-countdown strong{margin:3px 0!important;font-size:clamp(27px,4vw,39px);line-height:1.2;letter-spacing:.025em;font-variant-numeric:tabular-nums;font-weight:750;color:var(--etf-ink)}
+.injc-market-countdown small{font-size:9px;color:var(--etf-muted)}
+.injc-market-countdown[data-session="pre"]{border-color:color-mix(in srgb,var(--injc-pre) 38%,var(--etf-line));background:color-mix(in srgb,var(--injc-pre) 5%,var(--etf-card))}
+.injc-market-countdown[data-session="pre"] strong{color:var(--injc-pre)}
+.status-pill[data-state="pre"]{color:var(--injc-pre);border-color:color-mix(in srgb,var(--injc-pre) 42%,var(--etf-line));background:color-mix(in srgb,var(--injc-pre) 10%,var(--etf-card))}
+.injc-price.premarket,.injc-change.premarket,.injc-delta.premarket{color:var(--injc-pre)!important}
+.injc-chart-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.injc-chart-actions a.injc-simple-button{text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
+body.injc-chart-modal-open{overflow:hidden!important;touch-action:none}
+#etfChartPanel.injc-chart-expanded{position:fixed!important;top:0!important;left:0!important;right:0!important;bottom:0!important;z-index:200000!important;width:100vw!important;height:100dvh!important;max-height:100dvh!important;display:flex;flex-direction:column;border:0;border-radius:0;background:var(--etf-bg);overflow-y:auto;overscroll-behavior:contain;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+#etfChartPanel.injc-chart-expanded .injc-chart-top{flex:none}
+#etfChartPanel.injc-chart-expanded .injc-chart-surface{flex:1 0 auto;min-height:calc(100dvh - 230px);display:flex;align-items:stretch}
+#etfChartPanel.injc-chart-expanded #etfSvgWrap{height:calc(100dvh - 230px);min-height:320px}
+#etfChartPanel.injc-chart-expanded .injc-chart-bottom{flex:none;position:sticky;bottom:0;z-index:1;background:var(--etf-bg)}
+.injc-flow-body{padding:20px 20px 22px}
+.injc-flow-totals{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.injc-flow-totals>div{min-width:0;padding:13px 14px;background:color-mix(in srgb,var(--etf-ink) 4%,transparent);border:1px solid var(--etf-line);border-radius:12px}
+.injc-flow-totals span{display:block;font-size:10px;color:var(--etf-muted);letter-spacing:.045em;line-height:1.45}
+.injc-flow-totals strong{display:block;font-size:clamp(18px,3vw,28px);font-weight:690;margin-top:8px}
+.injc-flow-history-top{display:flex;justify-content:space-between;align-items:flex-end;gap:13px;margin:25px 0 16px;flex-wrap:wrap}
+.injc-flow-history-top strong{font-size:13px;font-weight:730}
+.injc-flow-history-top small{display:block;margin-top:6px;font-size:10px;line-height:1.5;color:var(--etf-muted)}
+.injc-flow-legend{display:flex;align-items:center;gap:15px;flex-wrap:wrap}
+.injc-flow-legend span{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--etf-muted);font-weight:680;letter-spacing:.04em}
+.injc-legend-dot{display:inline-block;width:8px;height:8px;border-radius:2px}
+.injc-legend-dot.inflow{background:var(--injc-up)}.injc-legend-dot.outflow{background:var(--injc-down)}
+.injc-flow-scroller{display:flex;gap:0;align-items:flex-end;width:100%;min-height:232px;padding:12px 4px 8px;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;scrollbar-color:var(--etf-line) transparent;overscroll-behavior-x:contain;border-bottom:1px solid var(--etf-line);background:repeating-linear-gradient(to top,color-mix(in srgb,var(--etf-ink) 6%,transparent) 0px,color-mix(in srgb,var(--etf-ink) 6%,transparent) 1px,transparent 1px,transparent 47px);border-radius:8px 8px 0 0}
+.injc-flow-day{flex:0 0 47px;display:flex;align-items:center;flex-direction:column;gap:7px;min-width:47px}
+.injc-flow-columns{display:flex;align-items:flex-end;justify-content:center;gap:4px;height:170px;width:100%;border-bottom:1px solid var(--etf-line);padding:0 4px}
+.injc-flow-column{display:block;flex:0 0 13px;max-height:100%;min-height:0;align-self:flex-end;border-radius:4px 4px 0 0;transition:height .5s ease}
+.injc-flow-column.inflow{background:var(--injc-up)}.injc-flow-column.outflow{background:var(--injc-down)}
+.injc-flow-column.is-zero{opacity:.4}
+.injc-flow-column.is-pending{background:transparent;border:1px dashed color-mix(in srgb,var(--etf-muted) 36%,transparent);border-radius:3px;opacity:.46}
+.injc-flow-date{font-size:9px;color:var(--etf-muted);white-space:nowrap;letter-spacing:0;line-height:1.25}
+.injc-flow-day-state{display:block;color:var(--etf-muted);font-size:10px;min-height:12px;line-height:1}
+.injc-flow-day[data-day] .injc-flow-day-state{opacity:.75}
+.injc-flow-axis-note{font-size:10px;line-height:1.65;color:var(--etf-muted);margin-top:13px}
+.injc-flow-foot{margin-top:14px}
+@media(max-width:540px){
+ .injc-market-countdown{padding:13px}
+ .injc-market-countdown strong{font-size:31px}
+ .injc-flow-body{padding:16px 13px}
+ .injc-flow-history-top{align-items:flex-start}
+ .injc-flow-legend{gap:10px}
+ .injc-flow-columns{height:150px}
+ .injc-flow-scroller{min-height:210px}
+ .injc-flow-day{flex-basis:43px;min-width:43px}
+ .injc-flow-column{flex-basis:11px}
+ #etfChartPanel.injc-chart-expanded .injc-chart-surface{min-height:calc(100dvh - 265px)}
+ #etfChartPanel.injc-chart-expanded #etfSvgWrap{height:calc(100dvh - 265px)}
+}
+@media(prefers-reduced-motion:reduce){.injc-flow-column{transition:none}}
