@@ -27,23 +27,27 @@ html[data-inj-page="index"][data-inj-home-tab="home"] body
 #entryGate #entryWalletPagination .entry-wallet-dot{
   transition:background-color .28s ease,opacity .28s ease,transform .3s cubic-bezier(.2,.8,.2,1)!important;
 }
+/* The preview and the live value must stay typographically identical.
+   Only the carousel TRACK translates; digits/cards never scale or bounce. */
 html[data-inj-page="index"][data-inj-home-tab="home"] body
-#entryGate #entryOverview.inj-wallet-arriving .entry-overview-head > div,
-html[data-inj-page="index"][data-inj-home-tab="home"] body
-#entryGate #entryOverview.inj-wallet-arriving .entry-overview-main > .entry-overview-worth{
-  animation:injWalletContentArrive .32s cubic-bezier(.17,.76,.18,1) both;
+#entryGate #entryOverview .entry-wallet-card-slide
+.entry-overview-main :is(.entry-market-mini,.entry-overview-worth) > strong {
+  font-variant-numeric:tabular-nums!important;
+  transform:none!important;
+  scale:1!important;
+  transition:none!important;
+  animation:none!important;
+  white-space:nowrap!important;
 }
-@keyframes injWalletContentArrive{
-  from{opacity:.72;transform:translate3d(0,4px,0)}
-  to{opacity:1;transform:translate3d(0,0,0)}
+html[data-inj-page="index"][data-inj-home-tab="home"] body
+#entryGate #entryOverview .entry-wallet-card-slide
+.entry-overview-head strong {
+  transform:none!important;
+  scale:1!important;
+  transition:none!important;
+  animation:none!important;
 }
 @media(prefers-reduced-motion:reduce){
- html[data-inj-page="index"][data-inj-home-tab="home"] body
- #entryGate #entryOverview.inj-wallet-arriving .entry-overview-head > div,
- html[data-inj-page="index"][data-inj-home-tab="home"] body
- #entryGate #entryOverview.inj-wallet-arriving .entry-overview-main > .entry-overview-worth{
-  animation:none!important;
- }
  html[data-inj-page="index"][data-inj-home-tab="home"] body
  #entryGate #entryWalletPagination .entry-wallet-dot{
   transition:none!important;
