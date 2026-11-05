@@ -213,42 +213,75 @@
  }
  function drawGraph(){
    const wrap=$('etfSvgWrap');if(!wrap)return;
-   if(!graphPoints.length){
+   const points=graphPoints.filter(p=>Number.isFinite(p.close)&&p.close>0);
+   if(!points.length){
      wrap.replaceChildren();
      $('etfChartWaiting')?.classList.remove('hidden');
+     setText('etfChartDataLabel',tr('In attesa di scambi verificati · aggiornamento automatico','Awaiting verified trades · automatic updates'));
      return;
    }
    $('etfChartWaiting')?.classList.add('hidden');
-   const prices=graphPoints.map(p=>p.close),min=Math.min(...prices),max=Math.max(...prices),
-        pad=Math.max((max-min)*.15,max*.0008,.00001),lo=min-pad,hi=max+pad;
-   const w=1000,h=350,left=14,right=18,top=22,bottom=38;
-   const x=i=>left+(w-left-right)*i/Math.max(graphPoints.length-1,1);
+   const prices=points.map(p=>p.close),min=Math.min(...prices),max=Math.max(...prices),
+     pad=Math.max((max-min)*.16,max*.001,.00001),lo=min-pad,hi=max+pad;
+   const w=1000,h=350,left=14,right=18,top=32,bottom=40;
+   const x=i=>left+(w-left-right)*i/Math.max(points.length-1,1);
    const y=v=>top+(h-top-bottom)*(hi-v)/Math.max(hi-lo,.00001);
-   const path=graphPoints.map((p,i)=>(i?'L':'M')+x(i).toFixed(2)+' '+y(p.close).toFixed(2)).join(' ');
-   const fill=path+' L '+x(graphPoints.length-1)+' '+(h-bottom)+' L '+x(0)+' '+(h-bottom)+' Z';
-   const gain=graphPoints.at(-1).close>=graphPoints[0].close;
-   const color=gain?'#45c996':'#f4777f';
-   let grids='';
-   for(let i=0;i<4;i++){const yy=top+(h-top-bottom)*i/3;grids+='<line x1="'+left+'" y1="'+yy+'" x2="'+(w-right)+'" y2="'+yy+'" stroke="currentColor" stroke-opacity=".12" stroke-dasharray="3 8"/><text x="'+(w-right)+'" y="'+(yy-5)+'" text-anchor="end" fill="currentColor" opacity=".57" font-size="12">'+fmt(hi-(hi-lo)*i/3,2)+'</text>';}
-   const dates=[0,Math.round((graphPoints.length-1)/2),graphPoints.length-1].map(i=>'<text x="'+x(i)+'" y="'+(h-10)+'" fill="currentColor" opacity=".52" font-size="12" text-anchor="'+(i===0?'start':i===graphPoints.length-1?'end':'middle')+'">'+(timeframe==='1d'?fmtTime(graphPoints[i].time):new Date(graphPoints[i].time).toLocaleDateString(lang()==='en'?'en-US':'it-IT',{month:'short',day:'numeric'}))+'</text>').join('');
-   wrap.innerHTML='<svg viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none" role="img" aria-label="'+tr('Grafico storico della quotazione INJC','INJC market price history')+'"><defs><linearGradient id="injcGraphFill" x1="0" y1="0" x2="0" y2="1"><stop stop-color="'+color+'" stop-opacity=".23"/><stop offset="1" stop-color="'+color+'" stop-opacity="0"/></linearGradient></defs>'+grids+'<path d="'+fill+'" fill="url(#injcGraphFill)"/><path d="'+path+'" fill="none" stroke="'+color+'" stroke-width="2.8" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/><circle cx="'+x(graphPoints.length-1)+'" cy="'+y(prices.at(-1))+'" r="5" fill="'+color+'"/>'+dates+'</svg>';
-   setText('etfChartDataLabel',tr('Dati di mercato · '+graphPoints.length+' punti','Market data · '+graphPoints.length+' points'));
+   const regular=points.filter(p=>p.session!=='pre');
+   const lastRegular=regular.at(-1)?.close,firstRegular=regular[0]?.close;
+   const up=Number.isFinite(lastRegular)&&Number.isFinite(firstRegular)?lastRegular>=firstRegular:points.at(-1).close>=points[0].close;
+   const normalColor=up?'#45c996':'#f4777f',preColor='#f4c95d';
+   const preActive=timeframe==='1d'&&points.some(p=>p.session==='pre');
+   const phases=[];
+   if(preActive){
+     const indices=points.map((p,i)=>p.session==='pre'?i:-1).filter(i=>i>=0);
+     if(indices.length)phases.push({indices,color:preColor,kind:'pre'});
+   }
+   const regularIndices=points.map((p,i)=>p.session!=='pre'||!preActive?i:-1).filter(i=>i>=0);
+   if(regularIndices.length)phases.push({indices:regularIndices,color:normalColor,kind:'regular'});
+   let grid='';
+   for(let i=0;i<4;i++){
+     const yy=top+(h-top-bottom)*i/3;
+     grid+='<line x1="'+left+'" y1="'+yy+'" x2="'+(w-right)+'" y2="'+yy+'" stroke="currentColor" stroke-opacity=".12" stroke-dasharray="3 8"/><text x="'+(w-right)+'" y="'+(yy-7)+'" text-anchor="end" fill="currentColor" opacity=".57" font-size="12">'+fmt(hi-(hi-lo)*i/3,2)+'</text>';
+   }
+   let shapes='';
+   for(const p of phases){
+     const arr=p.indices;
+     const path=arr.map((idx,j)=>(j?'L':'M')+x(idx).toFixed(2)+' '+y(points[idx].close).toFixed(2)).join(' ');
+     const shapeId=p.kind==='pre'?'injcPreFill':'injcNormalFill';
+     const fill=path+' L '+x(arr.at(-1))+' '+(h-bottom)+' L '+x(arr[0])+' '+(h-bottom)+' Z';
+     if(arr.length>1)shapes+='<path d="'+fill+'" fill="url(#'+shapeId+')"/>';
+     shapes+='<path d="'+path+'" fill="none" stroke="'+p.color+'" stroke-width="2.8" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>';
+     shapes+='<circle cx="'+x(arr.at(-1))+'" cy="'+y(points[arr.at(-1)].close)+'" r="4" fill="'+p.color+'"/>';
+   }
+   const ticks=[...new Set([0,Math.round((points.length-1)/2),points.length-1])];
+   const dates=ticks.map(i=>'<text x="'+x(i)+'" y="'+(h-11)+'" fill="currentColor" opacity=".56" font-size="12" text-anchor="'+(i===0?'start':i===points.length-1?'end':'middle')+'">'+(timeframe==='1d'?fmtTime(points[i].time):new Date(points[i].time).toLocaleDateString(lang()==='en'?'en-US':'it-IT',{month:'short',day:'numeric'}))+'</text>').join('');
+   let labels='';
+   if(preActive){
+     labels+='<circle cx="24" cy="15" r="4" fill="'+preColor+'"/><text x="35" y="19" fill="currentColor" opacity=".75" font-size="12">PRE-MARKET</text>';
+     if(regularIndices.length)labels+='<circle cx="145" cy="15" r="4" fill="'+normalColor+'"/><text x="156" y="19" fill="currentColor" opacity=".75" font-size="12">NASDAQ</text>';
+   }
+   wrap.innerHTML='<svg viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none" role="img" aria-label="'+tr('Grafico delle transazioni INJC: pre-market giallo, sessione rosso o verde','INJC traded chart: yellow pre-market, red or green regular session')+'"><defs><linearGradient id="injcPreFill" x1="0" y1="0" x2="0" y2="1"><stop stop-color="'+preColor+'" stop-opacity=".2"/><stop offset="1" stop-color="'+preColor+'" stop-opacity="0"/></linearGradient><linearGradient id="injcNormalFill" x1="0" y1="0" x2="0" y2="1"><stop stop-color="'+normalColor+'" stop-opacity=".2"/><stop offset="1" stop-color="'+normalColor+'" stop-opacity="0"/></linearGradient></defs>'+grid+shapes+labels+dates+'</svg>';
+   setText('etfChartDataLabel',tr('INJC · '+points.length+' transazioni campionate · feed potenzialmente ritardato','INJC · '+points.length+' sampled points · potentially delayed feed'));
  }
  function displayQuote(data,source){
    const prevTime=lastQuote?.quoteTime||0;
    if(prevTime&&data.quoteTime<prevTime&&timeframe==='1d')return;
    lastQuote=data;quoteSource=source;lastGoodAt=Date.now();
+   const pre=data.session==='pre'&&nyKey(new Date(data.quoteTime))===nyKey(new Date());
    setText('etfQuotePrice',usd(data.price));
    setText('etfQuoteChange',Number.isFinite(data.change)?(data.change>0?'+':'')+fmt(data.change,2)+'%':'—');
-   changeClass('etfQuoteChange',data.change);
    setText('etfQuoteDelta',Number.isFinite(data.previous)?(data.price-data.previous>=0?'+':'')+usd(data.price-data.previous)+' '+tr('vs chiusura prec.','vs previous close'):'—');
-   changeClass('etfQuoteDelta',data.price-data.previous);
-   setText('etfQuoteFreshness',source+' · '+tr('ultima transazione','last trade')+' '+fmtTime(data.quoteTime)+' NY');
+   for(const id of ['etfQuotePrice','etfQuoteChange','etfQuoteDelta']){
+     const el=$(id);if(el)el.classList.toggle('premarket',pre);
+   }
+   changeClass('etfQuoteChange',pre?null:data.change);
+   changeClass('etfQuoteDelta',pre?null:data.price-data.previous);
+   setText('etfQuoteFreshness',source+' · '+(pre?tr('PRE-MARKET','PRE-MARKET'):tr('ultima transazione','last trade'))+' '+fmtTime(data.quoteTime)+' NY');
    setText('etfVolume',count(data.volume));
    setText('etfNotional',Number.isFinite(data.volume)?shortUsd(data.volume*data.price):'—');
    setText('etfDayHigh',usd(data.high));setText('etfDayLow',usd(data.low));
    setText('etfDayOpen',usd(data.open));setText('etfPreviousClose',usd(data.previous));
-   setText('etfVolumeFootnote',tr('Volumi di quota, non acquisti netti. Controvalore indicativo = volume × ultimo prezzo.','Share volume, not net fund purchases. Indicative turnover = shares × last price.'));
+   setText('etfVolumeFootnote',tr('Volumi di quote nella sessione regolare, non afflussi netti nel fondo. Controvalore indicativo = volume × ultimo prezzo.','Regular-session share volume, not net fund inflows. Indicative turnover = volume × last share price.'));
    graphPoints=data.points;
    drawGraph();
    renderStatus();
@@ -273,46 +306,82 @@
      renderStatus();
    }finally{busy=false}
  }
+ function isVerifiedFlow(row){
+   return Boolean(row&&/^\d{4}-\d\d-\d\d$/.test(row.date)&&/^https:\/\//.test(row.source||'')
+     &&row.verified===true&&numeric(row.inflowUsd)!==null&&numeric(row.outflowUsd)!==null
+     &&numeric(row.inflowUsd)>=0&&numeric(row.outflowUsd)>=0);
+ }
  function renderFlows(){
-   const today=nyKey(new Date());
-   const valid=flows&&flows.date===today&&Number.isFinite(flows.inflowUsd)&&Number.isFinite(flows.outflowUsd);
-   const incoming=valid?flows.inflowUsd:null,outgoing=valid?flows.outflowUsd:null,net=valid?incoming-outgoing:null;
-   setText('etfInflowValue',shortUsd(incoming));setText('etfOutflowValue',shortUsd(outgoing));
+   const today=nyKey(new Date()),start=dayUTC('2026-11-05'),end=dayUTC(today);
+   const dateKeys=[];
+   for(let i=0;start<=end&&i<2500;i++,start.setUTCDate(start.getUTCDate()+1)){
+     const key=keyUTC(start);if(isTradingDay(key))dateKeys.push(key);
+   }
+   const byDate=new Map(flowsHistory.filter(isVerifiedFlow).map(x=>[x.date,x]));
+   const lastVerified=dateKeys.map(d=>byDate.get(d)).filter(Boolean).at(-1);
+   const todayFlow=byDate.get(today);
+   setText('etfInflowValue',shortUsd(todayFlow?.inflowUsd));
+   setText('etfOutflowValue',shortUsd(todayFlow?.outflowUsd));
+   const net=lastVerified?lastVerified.inflowUsd-lastVerified.outflowUsd:null;
    setText('etfNetFlow',Number.isFinite(net)?(net>0?'+':'')+shortUsd(net):'—');
    changeClass('etfNetFlow',net);
-   const max=Math.max(incoming||0,outgoing||0);
-   $('etfInflowBar').style.width=valid&&max>0?(100*incoming/max).toFixed(1)+'%':'0%';
-   $('etfOutflowBar').style.width=valid&&max>0?(100*outgoing/max).toFixed(1)+'%':'0%';
-   setText('etfFlowVerified',valid
-     ?tr('Flussi del fondo · '+flows.date+' · fonte verificata','Fund flows · '+flows.date+' · verified source')
-     :tr('Non pubblicati / non verificati · aggiornamento giornaliero, non tick-by-tick','Not published / unverified · daily reporting, not tick-by-tick'));
-   $('etfFlowsSource').hidden=!(valid&&flows.source);
-   if(valid&&flows.source)$('etfFlowsSource').href=flows.source;
+   setText('etfFlowVerified',lastVerified
+     ?tr('Ultima seduta verificata · '+lastVerified.date+' · flussi giornalieri','Latest verified session · '+lastVerified.date+' · daily fund flows')
+     :tr('Flussi non pubblicati/verificati · nuove colonne per ogni seduta Nasdaq','Fund flows not yet published/verified · one new set of columns each Nasdaq session'));
+   $('etfFlowsSource').hidden=!lastVerified;
+   if(lastVerified)$('etfFlowsSource').href=lastVerified.source;
+   const el=$('etfFlowHistory');if(!el)return;
+   const oldScroll=el.scrollLeft,first=plottedFlowsFirstTime;
+   const all=Array.from(byDate.values()).filter(r=>dateKeys.includes(r.date));
+   const max=Math.max(1,...all.map(r=>Math.max(r.inflowUsd,r.outflowUsd)));
+   const todayLabel=tr('OGGI','TODAY');
+   const frag=document.createDocumentFragment();
+   for(const key of dateKeys){
+     const row=byDate.get(key),label=key.slice(8)+'/'+key.slice(5,7);
+     const group=document.createElement('div');group.className='injc-flow-day';group.dataset.day=key;
+     group.setAttribute('aria-label',key+' · '+(row?'Inflow '+shortUsd(row.inflowUsd)+'; Outflow '+shortUsd(row.outflowUsd):tr('flussi non disponibili','fund flows unavailable')));
+     group.title=group.getAttribute('aria-label');
+     const bars=document.createElement('div');bars.className='injc-flow-columns';
+     for(const side of ['inflow','outflow']){
+       const bar=document.createElement('i');bar.className='injc-flow-column '+side;
+       if(row){
+         const value=side==='inflow'?row.inflowUsd:row.outflowUsd;
+         bar.style.height=(value===0?'3px':Math.max(6,Math.min(100,value/max*100)).toFixed(1)+'%');
+         bar.classList.toggle('is-zero',value===0);
+       }else{bar.style.height='11px';bar.classList.add('is-pending');}
+       bars.appendChild(bar);
+     }
+     group.appendChild(bars);
+     const date=document.createElement('span');date.className='injc-flow-date';date.textContent=label;group.appendChild(date);
+     const state=document.createElement('small');state.className='injc-flow-day-state';state.textContent=row?'✓':key===today?todayLabel:'·';group.appendChild(state);
+     frag.appendChild(group);
+   }
+   el.replaceChildren(frag);
+   if(first){el.scrollLeft=el.scrollWidth;plottedFlowsFirstTime=false;}
+   else el.scrollLeft=Math.min(oldScroll,Math.max(0,el.scrollWidth-el.clientWidth));
+   setText('etfFlowsSummary',tr(dateKeys.length+' sedute dal lancio · '+byDate.size+' con dati verificati',dateKeys.length+' sessions since listing · '+byDate.size+' with verified flows'));
+   flowDayKey=today;
  }
  async function refreshFlows(){
    try{
      const data=await getJson('./market-data/injc-etf-flows.json?t='+Date.now(),8000);
-     // Only accept a source-backed, dated fund-creation/redemption flow report;
-     // secondary market buy/sell volume is NOT an ETF inflow/outflow.
-     if(data?.ticker==='INJC'&&/^\d{4}-\d\d-\d\d$/.test(data.date)
-       &&/^https:\/\//.test(data.source||'')&&data.verified===true
-       &&Number.isFinite(Number(data.inflowUsd))&&Number.isFinite(Number(data.outflowUsd))
-       &&Number(data.inflowUsd)>=0&&Number(data.outflowUsd)>=0){
-       flows={date:data.date,source:data.source,inflowUsd:Number(data.inflowUsd),outflowUsd:Number(data.outflowUsd)};
+     const rows=Array.isArray(data.sessions)?data.sessions:data.date?[data]:[];
+     if(data?.ticker==='INJC'){
+       const byDate=new Map(rows.filter(isVerifiedFlow).map(x=>[x.date,{date:x.date,source:x.source,verified:true,inflowUsd:Number(x.inflowUsd),outflowUsd:Number(x.outflowUsd)}]));
+       flowsHistory=[...byDate.values()].sort((a,b)=>a.date.localeCompare(b.date));
      }
-   }catch(_){/* Missing certified flow feed is normal on IPO day. */}
+   }catch(_){/* A missing third-party verified feed is not a zero dollar flow. */}
    renderFlows();
  }
- function advancedChart(){
-   const el=$('etfAdvancedChart');
-   if(!el||!el.hidden)return;
-   el.hidden=false;el.innerHTML='';
-   const wrap=document.createElement('div');wrap.className='tradingview-widget-container';wrap.style.cssText='height:430px;width:100%';
-   const inner=document.createElement('div');inner.className='tradingview-widget-container__widget';inner.style.cssText='height:100%;width:100%';wrap.appendChild(inner);
-   const script=document.createElement('script');script.async=true;script.src='https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
-   script.textContent=JSON.stringify({autosize:true,symbol:'NASDAQ:INJC',interval:'5',timezone:'America/New_York',theme:document.documentElement.dataset.theme==='light'?'light':'dark',style:'1',locale:lang(),hide_top_toolbar:false,hide_side_toolbar:true,allow_symbol_change:false,calendar:false,support_host:'https://www.tradingview.com'});
-   wrap.appendChild(script);el.appendChild(wrap);
-   setText('etfAdvancedButton',tr('CHIUDI GRAFICO AVANZATO','CLOSE ADVANCED CHART'));
+ function toggleExpandedChart(force){
+   const panel=$('etfChartPanel'),button=$('etfAdvancedButton');
+   if(!panel||!button)return;
+   const expanded=typeof force==='boolean'?force:!panel.classList.contains('injc-chart-expanded');
+   panel.classList.toggle('injc-chart-expanded',expanded);
+   document.body.classList.toggle('injc-chart-modal-open',expanded);
+   button.setAttribute('aria-expanded',String(expanded));
+   setText('etfAdvancedButton',expanded?tr('CHIUDI SCHERMO INTERO','CLOSE FULL SCREEN'):tr('INGRANDISCI GRAFICO','EXPAND CHART'));
+   if(expanded)panel.scrollTop=0;
  }
  function bind(){
    document.querySelectorAll('[data-etf-range]').forEach(b=>b.addEventListener('click',()=>{
@@ -321,10 +390,8 @@
       graphPoints=[];drawGraph();refreshMarket();
    }));
    $('etfRefresh')?.addEventListener('click',()=>{refreshMarket();refreshFlows()});
-   $('etfAdvancedButton')?.addEventListener('click',()=>{
-     if($('etfAdvancedChart').hidden)advancedChart();
-     else{$('etfAdvancedChart').hidden=true;$('etfAdvancedChart').replaceChildren();setText('etfAdvancedButton',tr('GRAFICO AVANZATO','ADVANCED CHART'));}
-   });
+   $('etfAdvancedButton')?.addEventListener('click',()=>toggleExpandedChart());
+   document.addEventListener('keydown',event=>{if(event.key==='Escape')toggleExpandedChart(false);});
    document.addEventListener('visibilitychange',()=>{if(!document.hidden){refreshMarket();refreshFlows();renderStatus()}});
    window.addEventListener('pageshow',()=>{refreshMarket();renderStatus()});
    window.addEventListener('storage',event=>{if(event.key==='inj_node_language_v1')location.reload()});
@@ -332,7 +399,7 @@
    renderStatus();renderFlows();drawGraph();
    refreshMarket();refreshFlows();
    refreshTimer=setInterval(()=>{if(!document.hidden)refreshMarket()},30000);
-   marketPulseTimer=setInterval(()=>{if(!document.hidden)renderStatus()},15000);
+   marketPulseTimer=setInterval(()=>{if(!document.hidden){renderStatus();if(flowDayKey!==nyKey(new Date()))renderFlows()}},1000);
    setInterval(()=>{if(!document.hidden)refreshFlows()},300000);
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind,{once:true});else bind();
