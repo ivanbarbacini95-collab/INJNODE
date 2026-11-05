@@ -6,8 +6,33 @@
   'use strict';
   const root=document.documentElement;
   let queued=false;
+  let edgeSample=null;
+  // On newer iOS versions, Safari may sample a real fixed element at the
+  // content edge when choosing native chrome colors. This is a best-effort
+  // hint only: the OS-owned status area can still be fixed at install time.
+  function installEdgeSample(){
+    if(root.dataset.injPage!=='index'||!document.body)return;
+    const ios=/iPhone|iPad|iPod/.test(navigator.userAgent)||
+      (navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+    const standalone=navigator.standalone===true||
+      Boolean(window.matchMedia?.('(display-mode: standalone)')?.matches);
+    if(!ios||!standalone)return;
+    edgeSample=document.getElementById('injNativeChromeEdgeSample');
+    if(edgeSample)return;
+    edgeSample=document.createElement('span');
+    edgeSample.id='injNativeChromeEdgeSample';
+    edgeSample.setAttribute('aria-hidden','true');
+    edgeSample.style.cssText=[
+      'position:fixed','top:0','left:0','width:100%','height:7px',
+      'z-index:2147483646','pointer-events:none','display:block',
+      'visibility:visible','opacity:1',
+      'background-color:var(--theme-canvas,var(--bg,#060b11))'
+    ].join(';');
+    document.body.appendChild(edgeSample);
+  }
   function sync(){
     queued=false;
+    installEdgeSample();
     const computed=getComputedStyle(root);
     const color=computed.getPropertyValue('--theme-canvas').trim() ||
       computed.getPropertyValue('--bg').trim() ||
