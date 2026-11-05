@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "asOf": "2026-11-05",
+  "checkedAt": null,
+  "sourceStatus": "official-filing-verified",
+  "fund": {
+    "name": "Canary Staked INJ ETF",
+    "ticker": "INJC",
+    "sponsor": "Canary Capital Group LLC",
+    "exchange": "Nasdaq",
+    "issuerUrl": "https://canaryetfs.com/injc/",
+    "sourceAsOf": "2026-11-03",
+    "inceptionDate": "2026-11-04"
+  },
+  "listing": {
+    "status": "approved",
+    "date": "2026-11-03",
+    "form": "8-A12B",
+    "source": "https://www.sec.gov/Archives/edgar/data/2073616/000199937126024343/canary-8a12b_110326.htm",
+    "description": "Nasdaq approved the listing application. Not evidence of a first trade."
+  },
+  "registration": {
+    "status": "unconfirmed",
+    "latestForm": "S-1/A",
+    "latestDate": "2026-11-02",
+    "amendment": 5,
+    "source": "https://www.sec.gov/Archives/edgar/data/2073616/000199937126024117/inj-s1a_110226.htm"
+  },
+  "trading": {
+    "status": "unconfirmed",
+    "date": null,
+    "marketPrice": null,
+    "volume": null,
+    "nav": null,
+    "source": "https://canaryetfs.com/injc/"
+  },
+  "milestones": [
+    {
+      "date": "2026-11-02",
+      "form": "S-1/A",
+      "title": "Amendment No. 5",
+      "source": "https://www.sec.gov/Archives/edgar/data/2073616/000199937126024117/inj-s1a_110226.htm"
+    },
+    {
+      "date": "2026-11-03",
+      "form": "8-A12B",
+      "title": "Nasdaq listing application approved",
+      "source": "https://www.sec.gov/Archives/edgar/data/2073616/000199937126024343/canary-8a12b_110326.htm"
+    }
+  ]
+}
