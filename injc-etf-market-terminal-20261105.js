@@ -41,7 +41,7 @@
  }
  function renderStatus(){
    const state=marketState();
-   const fresh=lastGoodAt&&Date.now()-lastGoodAt<180000;
+   const fresh=lastGoodAt&&lastQuote?.quoteTime&&nyKey(new Date(lastQuote.quoteTime))===nyKey(new Date())&&Date.now()-lastQuote.quoteTime<1200000&&Date.now()-lastGoodAt<180000;
    status(state,state==='open'&&!lastQuote?'pending':fresh?'fresh':'stale');
    if(!lastQuote)setText('etfQuoteFreshness',state==='pre'?tr('I dati compaiono dopo il primo scambio','Data appears after the first trade'):tr('In attesa di una quotazione verificabile','Waiting for a verified market quote'));
  }
