@@ -412,6 +412,26 @@ function createEntryWalletCarouselSlide(address) {
   clone.querySelector('.entry-wallet-card-viewport')?.remove();
   clone.classList.remove('entry-overview-carousel-active');
   fillEntryOverviewClone(clone, address);
+  // Keep the preview's text at exactly the live card's computed size.
+  // Once clone IDs are removed, legacy ID-only CSS otherwise shrinks values
+  // during swipe and they jump back to the larger live font at commit.
+  for (const id of [
+    'entryOverviewWallet', 'entryMarketPrice', 'entryMarketChange',
+    'entryWalletWorth', 'entryWalletTotal',
+    'entryWalletStaked', 'entryWalletRewards', 'entryWalletFreshness'
+  ]) {
+    const real = document.getElementById(id);
+    const preview = clone.querySelector('#' + id);
+    if (!real || !preview) continue;
+    const computed = window.getComputedStyle(real);
+    for (const property of [
+      'font-size', 'line-height', 'font-weight', 'font-family',
+      'letter-spacing', 'font-variant-numeric', 'font-feature-settings'
+    ]) {
+      const value = computed.getPropertyValue(property);
+      if (value) preview.style.setProperty(property, value, 'important');
+    }
+  }
   clone.removeAttribute('id');
   clone.querySelectorAll('[id]').forEach((node) => node.removeAttribute('id'));
   clone.querySelectorAll('[aria-live]').forEach((node) => node.removeAttribute('aria-live'));
@@ -553,6 +573,9 @@ function commitEntryWalletCarousel(index) {
   if (host && rows[safeIndex]) host.scrollLeft = entryWalletCenteredScrollLeft(host, rows[safeIndex]);
 
   requestAnimationFrame(() => requestAnimationFrame(() => {
+    // Hydrate the underlying real card while the matching preview still
+    // covers it. Removing the preview first briefly exposed old-wallet text.
+    renderEntryOverview();
     removeEntryWalletCarouselStage();
     entryWalletGesture.active = false;
     entryWalletGesture.tracking = false;
@@ -564,15 +587,6 @@ function commitEntryWalletCarousel(index) {
     entryWalletGesture.velocityX = 0;
     host?.classList.remove('wallet-gesture-active', 'wallet-programmatic-scroll');
     updateEntryWalletPagination(safeIndex);
-    renderEntryOverview();
-    // Reveal the correct wallet's values only after replacing the slide.
-    const panel = $('entryOverview');
-    panel?.classList.remove('inj-wallet-arriving');
-    if (!window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches) {
-      void panel?.offsetWidth;
-      panel?.classList.add('inj-wallet-arriving');
-      window.setTimeout(() => panel?.classList.remove('inj-wallet-arriving'), 360);
-    }
   }));
 }
 
@@ -1246,12 +1260,12 @@ function renderEntryOverview() {
     'entryWalletWorth',
     total > 0 && state.price > 0 ? compactMoney(worth) : '—',
     worth,
-    { roll: Boolean(sameWorthWallet), stableDigits: true }
+    { roll: Boolean(sameWorthWallet), stableDigits: true, directional: Boolean(sameWorthWallet) }
   );
   if (entryWorth) entryWorth.dataset.walletAddress = wallet.address;
-  setEntryAnimatedValue('entryWalletTotal', row ? formatInj(total, 4) : 'Sincronizzazione…', total);
-  setEntryAnimatedValue('entryWalletStaked', row ? formatInj(number(row.staked), 4) : '—', number(row?.staked));
-  setEntryAnimatedValue('entryWalletRewards', row ? formatInj(number(row.rewards), 4) : '—', number(row?.rewards), { directional: true });
+  setEntryAnimatedValue('entryWalletTotal', row ? formatInj(total, 4) : 'Sincronizzazione…', total, { directional: Boolean(sameWorthWallet) });
+  setEntryAnimatedValue('entryWalletStaked', row ? formatInj(number(row.staked), 4) : '—', number(row?.staked), { directional: Boolean(sameWorthWallet) });
+  setEntryAnimatedValue('entryWalletRewards', row ? formatInj(number(row.rewards), 4) : '—', number(row?.rewards), { directional: Boolean(sameWorthWallet) });
   $('entryWalletFreshness').textContent = row?.updated ? formatFreshAge(row.updated) : '—';
   setEntryAnimatedValue('entryMarketPrice', state.price > 0 ? money(state.price, state.price < 10 ? 4 : 3) : '—', state.price, { directional: true, roll: true });
   const change = $('entryMarketChange');
