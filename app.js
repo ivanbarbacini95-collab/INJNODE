@@ -364,36 +364,9 @@ function entryWalletCurrentBaseIndex() {
   return selected >= 0 ? selected : 0;
 }
 
-function fillEntryOverviewClone(clone, address) {
-  if (!clone || !address) return;
-  const wallet = state.wallets.find((item) => item.address === address);
-  if (!wallet) return;
-  const row = state.walletSummaries[wallet.address] || null;
-  const total = number(row?.total);
-  const worth = total * state.price;
-  const q = (id) => clone.querySelector(`#${id}`);
-  if (q('entryOverviewWallet')) q('entryOverviewWallet').textContent = wallet.label;
-  if (q('entryWalletWorth')) {
-    const worthNode = q('entryWalletWorth');
-    worthNode.classList.add('number-roll-host');
-    renderStableNumberText(worthNode, total > 0 && state.price > 0 ? compactMoney(worth) : '—');
-  }
-  if (q('entryWalletTotal')) q('entryWalletTotal').textContent = row ? formatInj(total, 4) : 'Sincronizzazione…';
-  if (q('entryWalletStaked')) q('entryWalletStaked').textContent = row ? formatInj(number(row.staked), 4) : '—';
-  if (q('entryWalletRewards')) q('entryWalletRewards').textContent = row ? formatInj(number(row.rewards), 4) : '—';
-  if (q('entryWalletFreshness')) q('entryWalletFreshness').textContent = row?.updated ? formatFreshAge(row.updated) : '—';
-  if (q('entryMarketPrice')) {
-    const priceNode = q('entryMarketPrice');
-    priceNode.classList.add('number-roll-host');
-    renderStableNumberText(priceNode, state.price > 0 ? money(state.price, state.price < 10 ? 4 : 3) : '—');
-  }
-  const change = q('entryMarketChange');
-  if (change) {
-    const value = Number(state.change);
-    change.textContent = state.price > 0 ? `${value > 0 ? '+' : ''}${value.toFixed(2)}% · 24H` : '— · 24H';
-    change.className = value > 0 ? 'positive' : value < 0 ? 'negative' : 'neutral';
-  }
-}
+/* Wallet values now use the one real overview node. There is no duplicate
+   preview card with independent font sizing, so iOS cannot enlarge its text
+   during a gesture and shrink it at the final wallet commit. */
 
 function removeEntryWalletCarouselStage() {
   entryWalletGesture.stage?.remove();
@@ -405,104 +378,15 @@ function removeEntryWalletCarouselStage() {
   $('entryOverview')?.classList.remove('entry-overview-carousel-active');
 }
 
-function createEntryWalletCarouselSlide(address) {
-  const overview = $('entryOverview');
-  if (!overview || !address) return null;
-  const clone = overview.cloneNode(true);
-  clone.querySelector('.entry-wallet-card-viewport')?.remove();
-  clone.classList.remove('entry-overview-carousel-active');
-  fillEntryOverviewClone(clone, address);
-  // Keep the preview's text at exactly the live card's computed size.
-  // Once clone IDs are removed, legacy ID-only CSS otherwise shrinks values
-  // during swipe and they jump back to the larger live font at commit.
-  for (const id of [
-    'entryOverviewWallet', 'entryMarketPrice', 'entryMarketChange',
-    'entryWalletWorth', 'entryWalletTotal',
-    'entryWalletStaked', 'entryWalletRewards', 'entryWalletFreshness'
-  ]) {
-    const real = document.getElementById(id);
-    const preview = clone.querySelector('#' + id);
-    if (!real || !preview) continue;
-    const computed = window.getComputedStyle(real);
-    for (const property of [
-      'font-size', 'line-height', 'font-weight', 'font-family',
-      'letter-spacing', 'font-variant-numeric', 'font-feature-settings'
-    ]) {
-      const value = computed.getPropertyValue(property);
-      if (value) preview.style.setProperty(property, value, 'important');
-    }
-  }
-  clone.removeAttribute('id');
-  clone.querySelectorAll('[id]').forEach((node) => node.removeAttribute('id'));
-  clone.querySelectorAll('[aria-live]').forEach((node) => node.removeAttribute('aria-live'));
-  clone.querySelectorAll('button, a, input, select, textarea').forEach((node) => node.setAttribute('tabindex', '-1'));
-  clone.setAttribute('aria-hidden', 'true');
-  clone.classList.add('entry-wallet-card-slide');
-  return clone;
+function ensureEntryWalletCarouselStage() {
+  // Intentionally do not clone #entryOverview. The market price/graph stay
+  // mounted at a fixed size while wallet-specific text fades in place.
+  return null;
 }
 
-function ensureEntryWalletCarouselStage(baseIndex, explicitTargetIndex = -1) {
-  const overview = $('entryOverview');
-  if (!overview || state.wallets.length < 2) return null;
-  const safeBase = Math.max(0, Math.min(state.wallets.length - 1, baseIndex));
-  let prevIndex = safeBase - 1;
-  let nextIndex = safeBase + 1;
-  if (explicitTargetIndex >= 0 && explicitTargetIndex < state.wallets.length) {
-    if (explicitTargetIndex < safeBase) prevIndex = explicitTargetIndex;
-    if (explicitTargetIndex > safeBase) nextIndex = explicitTargetIndex;
-  }
-
-  if (
-    entryWalletGesture.stage &&
-    entryWalletGesture.stageBaseIndex === safeBase &&
-    entryWalletGesture.stagePrevIndex === prevIndex &&
-    entryWalletGesture.stageNextIndex === nextIndex
-  ) return entryWalletGesture.stage;
-
-  removeEntryWalletCarouselStage();
-
-  const viewport = document.createElement('div');
-  viewport.className = 'entry-wallet-card-viewport';
-  viewport.setAttribute('aria-hidden', 'true');
-  const track = document.createElement('div');
-  track.className = 'entry-wallet-card-track';
-
-  [prevIndex, safeBase, nextIndex].forEach((walletIndex) => {
-    const slot = document.createElement('div');
-    slot.className = 'entry-wallet-card-slot';
-    const address = state.wallets[walletIndex]?.address;
-    if (address) {
-      const slide = createEntryWalletCarouselSlide(address);
-      if (slide) slot.appendChild(slide);
-    } else {
-      slot.classList.add('is-empty');
-    }
-    track.appendChild(slot);
-  });
-
-  viewport.appendChild(track);
-  overview.appendChild(viewport);
-  overview.classList.add('entry-overview-carousel-active');
-  entryWalletGesture.stage = viewport;
-  entryWalletGesture.track = track;
-  entryWalletGesture.stageBaseIndex = safeBase;
-  entryWalletGesture.stagePrevIndex = prevIndex;
-  entryWalletGesture.stageNextIndex = nextIndex;
-  setEntryWalletTrackProgress(0, false);
-  return viewport;
-}
-
-function setEntryWalletTrackProgress(progress, animate = false) {
-  const track = entryWalletGesture.track;
-  if (!track) return;
-  const clamped = Math.max(-1, Math.min(1, Number(progress) || 0));
-  const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
-  const duration = reduced ? 0 : 400;
-  track.style.transition = animate && duration ? `transform ${duration}ms cubic-bezier(.22,.76,.18,1)` : 'none';
-  track.style.webkitTransition = animate && duration ? `-webkit-transform ${duration}ms cubic-bezier(.22,.76,.18,1)` : 'none';
-  const x = -100 - clamped * 100;
-  track.style.setProperty('transform', `translate3d(${x.toFixed(3)}%,0,0)`, 'important');
-  track.style.setProperty('-webkit-transform', `translate3d(${x.toFixed(3)}%,0,0)`, 'important');
+function setEntryWalletTrackProgress() {
+  // The top wallet rail is the single scrolling surface. No oversized
+  // second copy of the main card is ever created or translated.
 }
 
 /* One clock drives the top wallet rail and the main-card preview.  Native
@@ -547,6 +431,9 @@ function resetEntryWalletGestureVisuals({ keepTracking = false } = {}) {
   entryWalletGesture.settleTimer = 0;
   entryWalletGesture.programmaticTimer = 0;
   removeEntryWalletCarouselStage();
+  const overview = $('entryOverview');
+  overview?.classList.remove('inj-wallet-changing', 'entry-overview-swipe-active');
+  overview?.style.removeProperty('--inj-wallet-swipe-opacity');
   const host = $('entryWallets');
   host?.classList.remove('wallet-gesture-active', 'wallet-programmatic-scroll');
   entryWalletGesture.active = false;
@@ -569,12 +456,13 @@ function commitEntryWalletCarousel(index) {
   const rows = host ? [...host.querySelectorAll('.entry-wallet-row')] : [];
   const safeIndex = Math.max(0, Math.min(state.wallets.length - 1, Number(index) || 0));
   const address = state.wallets[safeIndex]?.address;
+  const overview = $('entryOverview');
   if (address) setEntryWalletSelection(address, { scroll: false });
   if (host && rows[safeIndex]) host.scrollLeft = entryWalletCenteredScrollLeft(host, rows[safeIndex]);
 
   requestAnimationFrame(() => requestAnimationFrame(() => {
-    // Hydrate the underlying real card while the matching preview still
-    // covers it. Removing the preview first briefly exposed old-wallet text.
+    // Update wallet-only values inside the SINGLE live card. The market
+    // price and its typography never unmount, duplicate or scale.
     renderEntryOverview();
     removeEntryWalletCarouselStage();
     entryWalletGesture.active = false;
@@ -587,6 +475,9 @@ function commitEntryWalletCarousel(index) {
     entryWalletGesture.velocityX = 0;
     host?.classList.remove('wallet-gesture-active', 'wallet-programmatic-scroll');
     updateEntryWalletPagination(safeIndex);
+    overview?.style.removeProperty('--inj-wallet-swipe-opacity');
+    // Resolve the soft wallet-data fade after the new values are painted.
+    requestAnimationFrame(() => overview?.classList.remove('inj-wallet-changing'));
   }));
 }
 
@@ -625,6 +516,7 @@ function selectEntryWalletFromRail(address) {
     return;
   }
 
+  $('entryOverview')?.classList.add('inj-wallet-changing');
   entryWalletGesture.programmatic = true;
   entryWalletGesture.programmaticIndex = index;
   entryWalletGesture.baseIndex = baseIndex;
@@ -693,6 +585,7 @@ function settleEntryWalletGesture(index, { behavior = 'smooth' } = {}) {
   const safeIndex = Math.max(0, Math.min(rows.length - 1, index));
   const baseIndex = Math.max(0, Math.min(rows.length - 1, entryWalletGesture.baseIndex >= 0 ? entryWalletGesture.baseIndex : entryWalletCurrentBaseIndex()));
   entryWalletGesture.targetIndex = safeIndex;
+  $('entryOverview')?.classList.toggle('inj-wallet-changing', safeIndex !== baseIndex);
   entryWalletGesture.settling = true;
   entryWalletGesture.tracking = true;
   entryWalletGesture.baseIndex = baseIndex;
@@ -865,6 +758,7 @@ const entryOverviewSwipe = {
 function resetEntryOverviewSwipe(removeStage = true) {
   const overview = $('entryOverview');
   overview?.classList.remove('entry-overview-swipe-active');
+  overview?.style.removeProperty('--inj-wallet-swipe-opacity');
   entryOverviewSwipe.pointerId = null;
   entryOverviewSwipe.baseIndex = -1;
   entryOverviewSwipe.horizontal = false;
@@ -927,8 +821,10 @@ function bindEntryOverviewWalletGestures() {
         (entryOverviewSwipe.baseIndex === state.wallets.length - 1 && progress > 0)) {
       progress *= .22; // soft edge resistance
     }
-    setEntryWalletTrackProgress(Math.max(-1, Math.min(1, progress)), false);
-
+    // Show horizontal intent through a slight opacity cue on wallet-only
+    // values. No movement, scaling, or replacement of the global price.
+    overview.style.setProperty('--inj-wallet-swipe-opacity',
+      String(Math.max(.68, 1 - Math.abs(progress) * .3)));
     const preview = Math.max(0, Math.min(state.wallets.length - 1,
       entryOverviewSwipe.baseIndex + (progress > .18 ? 1 : progress < -.18 ? -1 : 0)));
     updateEntryWalletPagination(preview);
@@ -978,6 +874,8 @@ function bindEntryOverviewWalletGestures() {
       }
     }
     overview?.classList.remove('entry-overview-swipe-active');
+    overview?.style.removeProperty('--inj-wallet-swipe-opacity');
+    if (target !== base) overview?.classList.add('inj-wallet-changing');
     entryOverviewSwipe.horizontal = false;
     entryOverviewSwipe.baseIndex = -1;
 
