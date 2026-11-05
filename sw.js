@@ -1,8 +1,8 @@
-const CACHE_NAME = 'inj-node-v20261105-injc-market-terminal1';
+const CACHE_NAME = 'inj-node-v20261105-injc-market-terminal2';
 const APP_SHELL = [
   './inj-theme-canvas-sync-20261105.css?v=theme-continuity1',
-  './injc-etf-market-terminal-20261105.js?v=market-live-1',
-  './injc-etf-market-terminal-20261105.css?v=market-live-1',
+  './injc-etf-market-terminal-20261105.js?v=market-live-2',
+  './injc-etf-market-terminal-20261105.css?v=market-live-2',
   './market-data/injc-etf-quotes.json',
   './market-data/injc-etf-flows.json',
   './injc-etf-status-live-20261105.js?v=sec-feed2',
@@ -195,7 +195,7 @@ const APP_SHELL = [
   './home-micro-terminal.css?v=20261027h1',
   './home-micro-terminal.js?v=20261026a',
   './privacy-shield.css?v=20261026',
-  './injc-etf.html?v=market-terminal-20261105a',
+  './injc-etf.html?v=market-terminal-20261105b',
   './injc-home-tile.css?v=20261026b',
   './home-launcher-grid.css?v=20261028freedom2',
   './workspace-fullscreen-lock.css?v=16102413',
