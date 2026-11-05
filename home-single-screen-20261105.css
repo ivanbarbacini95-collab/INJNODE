@@ -65,7 +65,11 @@
   html[data-inj-page="index"][data-inj-home-tab="home"] body #entryGate#entryGate#entryGate
   .entry-wallet-section > #entryWallets.entry-wallets{
     margin-block:0!important;
-    padding-block:0!important;
+    /* Reserve space inside the clipped horizontal scrollport for the
+       selected card's top outline/glow (especially iOS PWA). */
+    padding-top:8px!important;
+    padding-bottom:4px!important;
+    box-sizing:border-box!important;
   }
   html[data-inj-page="index"][data-inj-home-tab="home"] body #entryGate#entryGate#entryGate
   .entry-wallet-section > #entryWalletPagination.entry-wallet-pagination{
