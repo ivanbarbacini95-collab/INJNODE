@@ -56,7 +56,9 @@
   html[data-inj-page="index"][data-inj-home-tab="home"] body #entryGate#entryGate#entryGate
   .entry-wallet-section > .entry-wallet-heading{
     min-height:0!important;
-    margin:0 0 3px!important;
+    /* More air below the market ticker: move the entire wallet block
+       and its following Home content down in natural document flow. */
+    margin:12px 0 3px!important;
     padding:0!important;
     line-height:1.2!important;
   }
