@@ -1,6 +1,6 @@
-const CACHE_NAME = 'inj-node-v20261105-injc-sec-approved1';
+const CACHE_NAME = 'inj-node-v20261105-injc-sec-approved2';
 const APP_SHELL = [
-  './injc-etf-status-live-20261105.js?v=sec-feed1',
+  './injc-etf-status-live-20261105.js?v=sec-feed2',
   './market-data/injc-etf-status.json',
   './home-wallet-motion-20261105.css?v=wallet-single-card3',
   './app.js?v=wallet-single-card-20261105c',
@@ -190,7 +190,7 @@ const APP_SHELL = [
   './home-micro-terminal.css?v=20261027h1',
   './home-micro-terminal.js?v=20261026a',
   './privacy-shield.css?v=20261026',
-  './injc-etf.html?v=sec-approved-20261105a',
+  './injc-etf.html?v=sec-approved-20261105b',
   './injc-home-tile.css?v=20261026b',
   './home-launcher-grid.css?v=20261028freedom2',
   './workspace-fullscreen-lock.css?v=16102413',
