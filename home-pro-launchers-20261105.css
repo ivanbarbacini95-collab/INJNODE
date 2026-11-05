@@ -25,7 +25,9 @@ html[data-inj-page="index"][data-inj-home-tab="home"] body
   min-height:var(--inj-pro-link-height)!important;
   max-height:var(--inj-pro-link-height)!important;
   overflow:visible!important;
-  margin:9px 0 0!important;
+  /* Bring the three destinations closer to the bottom dock, while the
+     chart-fit controller protects shorter phone viewports. */
+  margin:clamp(16px,2.75dvh,27px) 0 0!important;
   padding:0!important;
 }
 html[data-inj-page="index"][data-inj-home-tab="home"] body
