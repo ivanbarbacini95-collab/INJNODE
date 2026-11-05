@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v20261105-theme-canvas1';
+const CACHE_NAME = 'inj-node-v20261105-ios-edge-sample2';
 const APP_SHELL = [
   './inj-theme-canvas-sync-20261105.css?v=theme-continuity1',
   './injc-etf-status-live-20261105.js?v=sec-feed2',
@@ -159,7 +159,7 @@ const APP_SHELL = [
   './home-market-events.css?v=20261028prefs1',
   './home-market-events.js?v=20261028prefs1',
   './inj-top-seamless.css?v=20261028fullbleed4',
-  './inj-top-seamless.js?v=20261105-theme-canvas1',
+  './inj-top-seamless.js?v=20261105-ios-edge-sample2',
   './home-statusbar-continuity.css?v=20261028seam1',
   './menu-control-pro.css?v=20261028pro1',
   './menu-control-pro.js?v=20261028pro1',
