@@ -1,7 +1,7 @@
-const CACHE_NAME = 'inj-node-v20261105-wallet-stable2';
+const CACHE_NAME = 'inj-node-v20261105-wallet-single-card3';
 const APP_SHELL = [
-  './home-wallet-motion-20261105.css?v=wallet-motion-stable2',
-  './app.js?v=wallet-motion-stable-20261105b',
+  './home-wallet-motion-20261105.css?v=wallet-single-card3',
+  './app.js?v=wallet-single-card-20261105c',
   './home-pro-launcher-guard-20261105.js?v=launcher-clean1',
   './home-vitality.js?v=20261105-launcher-clean1',
   './home-premium-iconography.js?v=20261105-launcher-clean1',
