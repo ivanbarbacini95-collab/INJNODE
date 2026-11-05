@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inj-node-v20261105-ios-edge-sample2';
+const CACHE_NAME = 'inj-node-v20261105-theme-stable-home1';
 const APP_SHELL = [
   './inj-theme-canvas-sync-20261105.css?v=theme-continuity1',
   './injc-etf-status-live-20261105.js?v=sec-feed2',
@@ -10,7 +10,7 @@ const APP_SHELL = [
   './home-premium-iconography.js?v=20261105-launcher-clean1',
   './home-pro-launchers-20261105.css?v=premium-links2',
   './home-single-screen-20261105.css?v=fit-home3',
-  './home-single-screen-20261105.js?v=fit-home3',
+  './home-single-screen-20261105.js?v=theme-layout-stable1',
   './home-three-sections-row-20261105.css?v=three-home-1',
   './home-unified-overview-chart-20261104.css?v=graph-air-v3',
   './inj-monochrome-pro-20261104.css?v=mono-pro1',
