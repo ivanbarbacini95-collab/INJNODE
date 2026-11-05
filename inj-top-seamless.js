@@ -1,10 +1,7 @@
-/* INJ VERSIONE UFFICIALE · iOS 27 native status-bar continuity.
-   Installed iOS PWAs may keep native status chrome beyond web control.
-   status area of a newly installed Home Screen PWA. WebKit recommends
-   OMITTING apple-mobile-web-app-status-bar-style altogether.
-   Do not reinsert or mutate that tag: launch-time chrome is installation-scoped.
-   Keep metadata colour theme-aware for Safari, Android and other browsers.
-   This file never alters positions, scrolling or wallet state. */
+/* INJ Node · theme-aware browser/status color.
+   The content canvas and meta theme-color use the same selected palette.
+   iOS Home Screen native status chrome may remain installation-controlled;
+   do not create a fake bar or change safe-area dimensions. */
 (()=>{
   'use strict';
   const root=document.documentElement;
@@ -28,6 +25,7 @@
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',sync,{once:true});
   else sync();
   window.addEventListener('pageshow',sync);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)queue();});
   window.addEventListener('injnode:themechange',queue);
   new MutationObserver(queue).observe(root,{attributes:true,attributeFilter:['data-theme']});
 })();
