@@ -31,10 +31,10 @@ function restore(json){
 }
 function undo(){if(!allowed()||!undoStack.length)return;const current=snapshot(),previous=undoStack.pop();redoStack.push(current);restore(previous);}
 function redo(){if(!allowed()||!redoStack.length)return;const current=snapshot(),next=redoStack.pop();undoStack.push(current);restore(next);}
-function mutate(fn,pack=false){
+function mutate(fn){
  if(!allowed())return notice(T('Sblocca il layout per modificare','Unlock the layout to edit'));
  if(selection().some(i=>i.cardLocked))return notice(T('Sblocca le card selezionate prima di modificarle','Unlock selected cards before editing'));
- pushHistory();$('wsConfig').close();fn();if(pack){A.model.compact(items(),'desktop',12);A.model.compact(items(),'mobile',4);}A.persist();A.layout();A.refresh();buttons();
+ pushHistory();$('wsConfig').close();fn();A.persist();A.layout();A.refresh();buttons();
 }
 function select(uid,additive){
  if(!allowed())return;
@@ -102,8 +102,7 @@ function resizeView(v){
     i.layouts[key]=A.model.normalize({...r,w,h},cols);
    }
   }
-  if(preset().snap)for(const [key,c] of [['desktop',12],['mobile',4]])A.model.settle(items(),key,c);
- },true);
+ });
 }
 function duplicate(){
  if(!allowed())return;
@@ -122,7 +121,6 @@ function align(axis){
   const key=A.mode(),chosen=selection(),anchor=Math.min(...chosen.map(i=>i.layouts[key][axis]));
   if(axis==='x')for(const i of chosen)i.layouts[key].x=Math.max(0,Math.min(A.cols()-i.layouts[key].w,anchor));
   else for(const i of chosen)i.layouts[key].y=anchor;
-  if(preset().snap)A.model.settle(items(),key,A.cols());
  });
 }
 function distribute(){
@@ -132,7 +130,6 @@ function distribute(){
   const l=sorted[0].layouts[key].x,r=sorted.at(-1).layouts[key].x+sorted.at(-1).layouts[key].w;
   const gap=(r-l-sorted.reduce((sum,i)=>sum+i.layouts[key].w,0))/(sorted.length-1);
   let cursor=l;for(const i of sorted){i.layouts[key].x=cursor;cursor+=i.layouts[key].w+gap;}
-  if(preset().snap)A.model.settle(items(),key,A.cols());
  });
 }
 bar.addEventListener('click',e=>{const a=e.target.closest('[data-pro-action]')?.dataset.proAction;if(a)run(a);});
@@ -148,7 +145,7 @@ function run(a){
  if(a==='left')return align('x');
  if(a==='top')return align('y');
  if(a==='distribute')return distribute();
- if(a==='width'||a==='height')return mutate(()=>{const key=A.mode(),field=a==='width'?'w':'h',value=selection()[0].layouts[key][field];for(const i of selection())i.layouts[key]=A.model.normalize({...i.layouts[key],[field]:value},A.cols());},true);
+ if(a==='width'||a==='height')return mutate(()=>{const key=A.mode(),field=a==='width'?'w':'h',value=selection()[0].layouts[key][field];for(const i of selection())i.layouts[key]=A.model.normalize({...i.layouts[key],[field]:value},A.cols());});
  if(a==='vertical')return mutate(()=>{const key=A.mode(),list=selection().sort((a,b)=>a.layouts[key].y-b.layouts[key].y);if(list.length<3)return;const first=list[0].layouts[key],last=list.at(-1).layouts[key];const gap=(last.y+last.h-first.y-list.reduce((s,i)=>s+i.layouts[key].h,0))/(list.length-1);let y=first.y;for(const i of list){i.layouts[key].y=y;y+=i.layouts[key].h+gap;}});
  if(a==='cardlock'&&allowed()){pushHistory();const lock=!selection().every(i=>i.cardLocked);for(const i of selection())i.cardLocked=lock;A.persist();A.layout();}
 }
@@ -225,20 +222,6 @@ window.INJWorkspaceProHooks={
    if(!selected.has(i.uid)||i.uid===d.item.uid||i.cardLocked)continue;
    const original=d.snapshot.find(x=>x.uid===i.uid);
    if(original)i.layouts[d.key]=A.model.normalize({...original.layouts[d.key],x:original.layouts[d.key].x+dx,y:original.layouts[d.key].y+dy},A.cols());
-  }
-  if(preset().snap){
-   const chosen=items().filter(i=>selected.has(i.uid)&&!i.cardLocked);
-   const others=items().filter(i=>!selected.has(i.uid));
-   // Move the group as one rectangle: preserve member offsets instead of settling them independently.
-   for(let n=0;n<30;n++){
-    let shift=0;
-    for(const i of chosen)for(const other of others){
-     const a=i.layouts[d.key],b=other.layouts[d.key];
-     if(A.model.overlaps(a,b))shift=Math.max(shift,b.y+b.h-a.y);
-    }
-    if(shift<=0)break;
-    for(const i of chosen)i.layouts[d.key].y+=shift;
-   }
   }
   return true;
  },
