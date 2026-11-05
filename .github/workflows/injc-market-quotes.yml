@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   schedule:
     # Cron uses UTC; include DST range, script checks America/New_York.
-    - cron: '*/5 13-22 * * 1-5'
+    - cron: '*/5 8-23 * * 1-5'
   push:
     branches: [main]
     paths:
