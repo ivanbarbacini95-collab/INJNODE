@@ -168,37 +168,12 @@ document.addEventListener('keydown',e=>{
 const measurement=document.createElement('output');measurement.className='ws-pro-measure';measurement.hidden=true;grid.insertAdjacentElement('afterend',measurement);
 const guides=()=>{measurement.hidden=true;grid.classList.remove('ws-guide-x','ws-guide-y');grid.style.removeProperty('--ws-guide-x');grid.style.removeProperty('--ws-guide-y');};
 function alignGuide(d,rect){
- if(preset().snap){guides();return rect;}
- const unit=d.unit,thresholdX=8/unit,thresholdY=8/56;
- const candidates=items().filter(i=>i.uid!==d.item.uid&&!selected.has(i.uid)).map(i=>i.layouts[d.key]);
- const gaps=candidates.flatMap(r=>{const out=[];if(rect.y<r.y+r.h&&rect.y+rect.h>r.y){const g=Math.max(r.x-rect.x-rect.w,rect.x-r.x-r.w);if(g>=0)out.push(g*unit+8);}if(rect.x<r.x+r.w&&rect.x+rect.w>r.x){const g=Math.max(r.y-rect.y-rect.h,rect.y-r.y-r.h);if(g>=0)out.push(g*56+8);}return out;});
- measurement.hidden=false;measurement.textContent='X '+Math.round(rect.x*unit)+' · Y '+Math.round(rect.y*56)+' px'+(gaps.length?' · '+T('Spazio','Gap')+' '+Math.round(Math.min(...gaps))+' px':'');
- let bestX=null,bestY=null;
- const xedges=d.action==='move'?['x','right']:d.edge.includes('e')?['right']:d.edge.includes('w')?['x']:[];
- const yedges=d.action==='move'?['y','bottom']:d.edge.includes('s')?['bottom']:d.edge.includes('n')?['y']:[];
- const xof=(r,edge)=>edge==='right'?r.x+r.w:r.x;
- const yof=(r,edge)=>edge==='bottom'?r.y+r.h:r.y;
- for(const other of [...candidates,{x:0,y:0,w:A.cols(),h:Math.max(20,grid.clientHeight/56)}]){
-  for(const edge of xedges)for(const target of [other.x,other.x+other.w,other.x+other.w/2]){
-   const dist=target-xof(rect,edge);if(Math.abs(dist)<=thresholdX&&(!bestX||Math.abs(dist)<Math.abs(bestX.dist)))bestX={dist,target,edge};
-  }
-  for(const edge of yedges)for(const target of [other.y,other.y+other.h,other.y+other.h/2]){
-   const dist=target-yof(rect,edge);if(Math.abs(dist)<=thresholdY&&(!bestY||Math.abs(dist)<Math.abs(bestY.dist)))bestY={dist,target,edge};
-  }
- }
- if(bestX){
-  if(d.action==='move')rect.x+=bestX.dist;
-  else if(bestX.edge==='right')rect.w+=bestX.dist;
-  else{rect.x+=bestX.dist;rect.w-=bestX.dist;}
-  grid.style.setProperty('--ws-guide-x',bestX.target*unit+'px');grid.classList.add('ws-guide-x');
- }else{grid.classList.remove('ws-guide-x');}
- if(bestY){
-  if(d.action==='move')rect.y+=bestY.dist;
-  else if(bestY.edge==='bottom')rect.h+=bestY.dist;
-  else{rect.y+=bestY.dist;rect.h-=bestY.dist;}
-  grid.style.setProperty('--ws-guide-y',bestY.target*56+'px');grid.classList.add('ws-guide-y');
- }else{grid.classList.remove('ws-guide-y');}
- return A.model.normalize(rect,A.cols());
+  // Free positioning: a card never locks onto nearby edges, centers or gaps.
+  // Keep only the non-interactive pixel coordinates while dragging.
+  guides();
+  measurement.hidden=false;
+  measurement.textContent='X '+Math.round(rect.x*d.unit)+' · Y '+Math.round(rect.y*56)+' px';
+  return rect;
 }
 window.INJWorkspaceProHooks={
  beforeChange(){pushHistory();},
@@ -313,7 +288,7 @@ $('wsPresetList').insertAdjacentElement('beforebegin',templateArea);
 function buildTemplate(tmpl){
  const db=A.getDb();if(db.presets.length>=50)return notice(T('Massimo 50 preset','Maximum 50 presets'));
  pushHistory();
- const p={id:A.uid(),name:tmpl.it,locked:false,snap:true,monitor:{density:'comfortable',controls:true,header:true,status:true},items:[]};
+ const p={id:A.uid(),name:tmpl.it,locked:false,snap:false,monitor:{density:'comfortable',controls:true,header:true,status:true},items:[]};
  for(const type of tmpl.types){
   const spec=A.catalog.byType[type];if(!spec)continue;
   const item={...A.catalog.defaults(type),uid:A.uid(),type,source:spec.scope==='market'?'market':'selected',title:'',style:'solid',border:true,details:true,cardLocked:false,view:'standard',group:'',layouts:{}};
