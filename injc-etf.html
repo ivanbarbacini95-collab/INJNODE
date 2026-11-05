@@ -192,12 +192,17 @@ html[data-inj-etf-embedded="1"],html[data-inj-etf-embedded="1"] body{
  </div>
  <div class="injc-price-aside"><div class="injc-caption" data-it="STATO QUOTAZIONI" data-en="MARKET STATUS">STATO QUOTAZIONI</div><strong id="etfQuoteFreshness" aria-live="polite" data-it="In attesa della prima quotazione" data-en="Waiting for first quote">In attesa della prima quotazione</strong>
   <p id="etfMarketClock">Nasdaq · 09:30–16:00 New York</p>
+  <div class="injc-market-countdown" id="etfCountdownBox" data-session="closed" aria-live="off">
+  <span id="etfCountdownLabel" data-it="ALL’APERTURA DEL NASDAQ" data-en="UNTIL NASDAQ OPENS">ALL’APERTURA DEL NASDAQ</span>
+  <strong id="etfOpenCountdown" role="timer">--:--:--</strong>
+  <small>NEW YORK · ET</small>
+</div>
   <p style="margin-top:9px" data-it="Prezzo INJC, non INJ spot. I feed gratuiti possono essere ritardati; nessun dato simulato." data-en="INJC share price, not INJ spot. Free data feeds can be delayed; no simulated figures.">Prezzo INJC, non INJ spot. I feed gratuiti possono essere ritardati; nessun dato simulato.</p>
  </div>
 </section>
 <section aria-label="Grafico INJC">
  <div class="injc-title-row"><h2 data-it="Grafico di mercato" data-en="Market Chart">Grafico di mercato</h2><small id="etfSyncLabel">IN ATTESA</small></div>
- <div class="injc-panel">
+ <div class="injc-panel" id="etfChartPanel">
   <div class="injc-chart-top"><strong>INJC / USD <span style="color:var(--etf-muted);font-weight:550">· NASDAQ</span></strong><div class="injc-tabs" role="group" aria-label="Periodo del grafico">
     <button type="button" data-etf-range="1d" class="active" aria-pressed="true">1D</button>
     <button type="button" data-etf-range="5d" aria-pressed="false">5D</button>
@@ -209,8 +214,8 @@ html[data-inj-etf-embedded="1"],html[data-inj-etf-embedded="1"] body{
    <div class="injc-chart-waiting" id="etfChartWaiting"><div class="injc-loading-orb" aria-hidden="true"></div><strong data-it="In attesa dei dati di mercato" data-en="Waiting for market data">In attesa dei dati di mercato</strong><p data-it="Il grafico si attiverà automaticamente non appena il provider registrerà scambi reali di INJC." data-en="The chart will activate automatically as soon as the data provider receives actual INJC trades.">Il grafico si attiverà automaticamente non appena il provider registrerà scambi reali di INJC.</p></div>
   </div>
   <div class="injc-chart-bottom"><small id="etfChartDataLabel" data-it="Aggiornamento automatico ogni 30 secondi quando la pagina è aperta" data-en="Auto-refresh every 30 seconds while page is open">Aggiornamento automatico ogni 30 secondi quando la pagina è aperta</small>
-   <button class="injc-simple-button" type="button" id="etfAdvancedButton" data-it="GRAFICO AVANZATO" data-en="ADVANCED CHART">GRAFICO AVANZATO</button></div>
-  <div id="etfAdvancedChart" hidden></div>
+   <div class="injc-chart-actions"><a class="injc-simple-button" href="https://www.tradingview.com/symbols/NASDAQ-INJC/" target="_blank" rel="noopener noreferrer" data-it="TRADINGVIEW ↗" data-en="TRADINGVIEW ↗">TRADINGVIEW ↗</a><button class="injc-simple-button" type="button" id="etfAdvancedButton" aria-expanded="false" data-it="INGRANDISCI GRAFICO" data-en="EXPAND CHART">INGRANDISCI GRAFICO</button></div></div>
+
  </div>
 </section>
 <section aria-label="Performance ETF">
@@ -228,9 +233,19 @@ html[data-inj-etf-embedded="1"],html[data-inj-etf-embedded="1"] body{
 <section aria-label="Flussi ETF">
  <div class="injc-title-row"><h2 data-it="Flussi del fondo" data-en="Fund Flows">Flussi del fondo</h2><small data-it="RILEVAZIONE GIORNALIERA · NON IN TEMPO REALE" data-en="DAILY REPORTING · NOT REAL TIME">RILEVAZIONE GIORNALIERA · NON IN TEMPO REALE</small></div>
  <div class="injc-panel injc-flow-body">
-  <div class="injc-flow-net"><div><div class="injc-caption">NET FLOW · USD</div><span data-it="Creazioni meno rimborsi del fondo" data-en="Fund creations minus redemptions">Creazioni meno rimborsi del fondo</span></div><strong id="etfNetFlow">—</strong></div>
-  <div class="injc-flow-row"><span>INFLOW</span><strong id="etfInflowValue">—</strong><div class="injc-flow-track" aria-label="Barra inflow"><i class="inflow" id="etfInflowBar"></i></div></div>
-  <div class="injc-flow-row"><span>OUTFLOW</span><strong id="etfOutflowValue">—</strong><div class="injc-flow-track" aria-label="Barra outflow"><i class="outflow" id="etfOutflowBar"></i></div></div>
+  <div class="injc-flow-net">
+   <div><div class="injc-caption">NET FLOW · USD</div><span id="etfFlowNetLabel" data-it="Ultima seduta verificata" data-en="Latest verified session">Ultima seduta verificata</span></div><strong id="etfNetFlow">—</strong>
+  </div>
+  <div class="injc-flow-totals">
+   <div><span data-it="INFLOW · SEDUTA ODIERNA" data-en="INFLOW · TODAY">INFLOW · SEDUTA ODIERNA</span><strong id="etfInflowValue">—</strong></div>
+   <div><span data-it="OUTFLOW · SEDUTA ODIERNA" data-en="OUTFLOW · TODAY">OUTFLOW · SEDUTA ODIERNA</span><strong id="etfOutflowValue">—</strong></div>
+  </div>
+  <div class="injc-flow-history-top">
+   <div><strong data-it="Storico dei flussi" data-en="Historical Fund Flows">Storico dei flussi</strong><small id="etfFlowsSummary">—</small></div>
+   <div class="injc-flow-legend"><span><i class="injc-legend-dot inflow"></i> INFLOW</span><span><i class="injc-legend-dot outflow"></i> OUTFLOW</span></div>
+  </div>
+  <div class="injc-flow-scroller" id="etfFlowHistory" tabindex="0" role="region" aria-label="Flussi ETF INJC per seduta, scorrimento orizzontale" title="Scorri per consultare le sedute precedenti"></div>
+  <div class="injc-flow-axis-note" data-it="Ogni coppia di colonne rappresenta una seduta Nasdaq. Le colonne si compilano solo con flussi pubblicati e verificati. Scorri per vedere lo storico." data-en="Each pair of vertical columns represents one Nasdaq session. Bars fill only with verified published flows. Scroll for earlier sessions.">Ogni coppia di colonne rappresenta una seduta Nasdaq. Le colonne si compilano solo con flussi pubblicati e verificati. Scorri per vedere lo storico.</div>
   <div class="injc-flow-foot"><span id="etfFlowVerified" aria-live="polite" data-it="In attesa di report ufficiale dei flussi" data-en="Awaiting verified flows report">In attesa di report ufficiale dei flussi</span> <a id="etfFlowsSource" href="https://canaryetfs.com/injc/" target="_blank" rel="noopener noreferrer" hidden data-it="FONTE ↗" data-en="SOURCE ↗">FONTE ↗</a>
    <div data-it="Inflow/outflow indicano nuove sottoscrizioni e rimborsi, non acquisti e vendite sul mercato secondario. Le barre si valorizzano soltanto con una fonte giornaliera verificata." data-en="Inflows/outflows reflect creations and redemptions, not secondary-market buying and selling. Bars populate only from verified daily fund flow reports.">Inflow/outflow indicano nuove sottoscrizioni e rimborsi, non acquisti e vendite sul mercato secondario. Le barre si valorizzano soltanto con una fonte giornaliera verificata.</div>
   </div>
