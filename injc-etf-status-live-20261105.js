@@ -68,12 +68,14 @@
    (stale?'Verifica SEC non recente · ':'Fonte SEC · ')+(automatic?'ultimo controllo ':'documento verificato ')+time,
    (stale?'SEC check is out of date · ':'SEC filing · ')+(automatic?'last checked ':'verified as of ')+time);
   set('etfRoadmapAsOf', 'SEC · '+time,'SEC · '+time);
-  set('etfFilingRefresh',
-   (stale?'Verifica automatica in ritardo · ':'Documenti SEC · controllo ')+time,
-   (stale?'Automatic check delayed · ':'SEC documents · checked ')+time);
   const latest=status.recentSEC?.[0]||status.latest8A;
+  const docName=latest?.form||status.latestProspectus?.form||'8-A12B';
+  const docDateText=fmtDate(latest?.date||status.latestProspectus?.date||status.listing?.date);
+  set('etfFilingRefresh',
+   (stale?'Verifica in ritardo · ':'Ultimo deposito: ')+docName+' · '+docDateText+' · controllo '+time,
+   (stale?'Check delayed · ':'Latest filing: ')+docName+' · '+docDateText+' · checked '+time);
   if(latest?.source?.startsWith('https://www.sec.gov/'))$('etfLatestFiling').href=latest.source;
-  const docDate=fmtDate(s1);
+  const docDate=fmtDate(status.latestProspectus?.date||s1);
   if($('etfFundDocumentDate'))$('etfFundDocumentDate').textContent='SEC · '+docDate;
  }
  async function load(force=false){
