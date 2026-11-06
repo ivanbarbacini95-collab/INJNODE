@@ -36,17 +36,35 @@
         '</span></div>'+
       '<small id="injLightChange" class="inj-light-meta">— · 24H</small></div>'+
     '</div>'+
-    '<section class="inj-light-chart"><div class="inj-light-chart-head">'+
-       '<h2 data-light-it="Andamento INJ" data-light-en="INJ price movement">Andamento INJ</h2>'+ 
-       '<span class="inj-light-6h-performance" id="injLightPerf6h" aria-live="off">— · 1W</span>'+
-       '<span class="inj-light-live"><i aria-hidden="true"></i><span id="injLightLive">SYNC</span></span></div>'+
-       '<p class="inj-light-chart-sub" data-light-it="INJ / USDT · ULTIMI 7 GIORNI" data-light-en="INJ / USDT · ROLLING 7 DAYS">INJ / USDT · ULTIMI 7 GIORNI</p>'+
+    '<section class="inj-light-chart">'+
+       '<div class="inj-light-chart-head">'+
+         '<h2 data-light-it="Andamento INJ" data-light-en="INJ price movement">Andamento INJ</h2>'+
+         '<div class="inj-lite-chart-state">'+
+           '<span class="inj-light-6h-performance" id="injLightPerf6h" aria-live="off">— · 1W</span>'+
+           '<span class="inj-light-live"><i aria-hidden="true"></i><span id="injLightLive">SYNC</span></span>'+
+         '</div>'+
+       '</div>'+
+       '<div id="injLiteChartControls" class="inj-lite-chart-controls">'+
+         '<div class="inj-lite-chart-segment inj-lite-chart-types" role="group" aria-label="Tipo grafico">'+
+           '<button type="button" data-lite-chart-type="line" data-light-it="Linee" data-light-en="Line">Linee</button>'+
+           '<button type="button" data-lite-chart-type="candles" data-light-it="Candele" data-light-en="Candles">Candele</button>'+
+         '</div>'+
+         '<div class="inj-lite-chart-segment inj-lite-chart-periods" role="group" aria-label="Periodo grafico">'+
+           '<button type="button" data-lite-chart-timeframe="1h">1H</button>'+
+           '<button type="button" data-lite-chart-timeframe="1d">1D</button>'+
+           '<button type="button" data-lite-chart-timeframe="1w">1W</button>'+
+           '<button type="button" data-lite-chart-timeframe="1mo">1M</button>'+
+           '<button type="button" data-lite-chart-timeframe="1y">1Y</button>'+
+         '</div>'+
+       '</div>'+
+              '<p id="injLiteChartSub" class="inj-light-chart-sub">INJ / USDT · ULTIMI 7 GIORNI</p>'+
        '<div id="injLightChartPlot" class="inj-light-chart-plot">'+
           '<svg viewBox="0 0 320 150" preserveAspectRatio="none" role="img" aria-label="Grafico settimanale a linee del prezzo INJ">'+
           '<g class="inj-light-grid"><path d="M0 24H320M0 72H320M0 120H320"/></g>'+
           '<path id="injLightGraphArea" d=""/><path id="injLightGraphLine" d=""/>'+
           '<circle id="injLightGraphHalo" cx="0" cy="0" r="9" visibility="hidden"/>'+ 
           '<circle id="injLightGraphDot" cx="0" cy="0" r="3.5" visibility="hidden"/></svg>'+
+          '<div id="injLiteCurrentPriceGuide" class="inj-lite-price-guide" aria-hidden="true" hidden></div>'+
           '<div class="inj-light-price-axis" aria-hidden="true">'+
             '<span class="inj-light-price-tick" id="injLightPriceHigh" hidden>—</span>'+
             '<span class="inj-light-price-tick" id="injLightPriceMid" hidden>—</span>'+

@@ -111,7 +111,10 @@ body.injc-chart-modal-open{overflow:hidden!important;touch-action:none}
 .injc-flow-column{display:block;flex:0 0 13px;max-height:100%;min-height:0;align-self:flex-end;border-radius:4px 4px 0 0;transition:height .5s ease}
 .injc-flow-column.inflow{background:var(--injc-up)}.injc-flow-column.outflow{background:var(--injc-down)}
 .injc-flow-column.is-zero{opacity:.4}
-.injc-flow-column.is-pending{background:transparent;border:1px dashed color-mix(in srgb,var(--etf-muted) 36%,transparent);border-radius:3px;opacity:.46}
+.injc-flow-column.is-pending{background:color-mix(in srgb,var(--etf-muted) 11%,transparent);border:1.5px dashed color-mix(in srgb,var(--etf-muted) 78%,transparent);border-radius:4px 4px 0 0;opacity:1;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--etf-card) 20%,transparent)}
+.injc-flow-day.is-current .injc-flow-date{color:var(--etf-ink);font-weight:750}
+.injc-flow-day.is-current .injc-flow-day-state{color:var(--etf-accent);font-weight:750;opacity:1}
+.injc-legend-dot.pending{background:color-mix(in srgb,var(--etf-muted) 11%,transparent);border:1px dashed color-mix(in srgb,var(--etf-muted) 78%,transparent)}
 .injc-flow-date{font-size:9px;color:var(--etf-muted);white-space:nowrap;letter-spacing:0;line-height:1.25}
 .injc-flow-day-state{display:block;color:var(--etf-muted);font-size:10px;min-height:12px;line-height:1}
 .injc-flow-day[data-day] .injc-flow-day-state{opacity:.75}
@@ -131,3 +134,182 @@ body.injc-chart-modal-open{overflow:hidden!important;touch-action:none}
  #etfChartPanel.injc-chart-expanded #etfSvgWrap{height:calc(100dvh - 265px)}
 }
 @media(prefers-reduced-motion:reduce){.injc-flow-column{transition:none}}
+
+
+/* INJC ETF · precision price-range rail (2026-11-05)
+   Actual traded LOW, OPEN and HIGH by selected period.
+   Two distinct markers: opening (hairline) and current/latest price (dot). */
+.injc-price-range{
+  padding:16px 20px 14px;
+  border-top:1px solid var(--etf-line);
+  background:color-mix(in srgb,var(--etf-card) 77%,transparent);
+  min-width:0;
+}
+.injc-price-range-head{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  flex-wrap:wrap;margin-bottom:17px;
+}
+.injc-price-range-eyebrow{
+  display:flex;align-items:center;gap:10px;white-space:nowrap;
+  font-size:10px;line-height:1.3;font-weight:750;
+  letter-spacing:.11em;color:var(--etf-muted);
+}
+.injc-price-range-eyebrow .injc-range-period{
+  display:inline-flex;align-items:center;justify-content:center;
+  padding:5px 8px;border-radius:7px;color:var(--etf-ink);
+  background:color-mix(in srgb,var(--etf-accent) 9%,var(--etf-card));
+  letter-spacing:.06em;
+}
+.injc-price-range-tabs{display:flex;gap:3px;align-items:center;flex-wrap:nowrap}
+.injc-price-range-tabs button{
+  appearance:none;min-width:36px;min-height:32px;padding:5px 9px;
+  background:transparent;color:var(--etf-muted);border:1px solid transparent;
+  border-radius:8px;cursor:pointer;font-size:10px;font-weight:740;
+}
+.injc-price-range-tabs button.active{
+  color:var(--etf-ink);
+  border-color:color-mix(in srgb,var(--etf-accent) 29%,var(--etf-line));
+  background:color-mix(in srgb,var(--etf-accent) 12%,transparent);
+}
+.injc-price-range-tabs button:focus-visible{outline:2px solid var(--etf-accent);outline-offset:2px}
+.injc-price-range-values{
+  display:grid;grid-template-columns:1fr minmax(100px,1fr) 1fr;
+  align-items:end;column-gap:7px;margin-bottom:15px;
+  font-variant-numeric:tabular-nums;
+}
+.injc-price-range-values>div{min-width:0}
+.injc-price-range-values>div small{
+  display:block;color:var(--etf-muted);font-size:9px;
+  letter-spacing:.14em;font-weight:720;margin-bottom:7px;
+}
+.injc-price-range-values>div strong{
+  display:block;color:var(--etf-ink);font-size:clamp(15px,2.7vw,22px);
+  font-weight:730;letter-spacing:-.035em;overflow-wrap:anywhere;
+}
+.injc-range-open{text-align:center}
+.injc-price-range-values .injc-range-open strong{color:var(--etf-accent)}
+.injc-range-high{text-align:right}
+.injc-price-range-track{
+  display:block;position:relative;height:6px;margin:0 6px;
+  background:color-mix(in srgb,var(--etf-ink) 12%,transparent);
+  border-radius:999px;overflow:visible;
+}
+.injc-price-range-fill{
+  position:absolute;left:0;top:0;bottom:0;
+  border-radius:inherit;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--etf-accent) 42%,var(--etf-card)),var(--etf-accent));
+  transition:width .3s ease;
+}
+.injc-price-range-track.is-premarket .injc-price-range-fill{
+  background:linear-gradient(90deg,color-mix(in srgb,var(--injc-pre) 32%,var(--etf-card)),var(--injc-pre));
+}
+.injc-price-range-open-marker{
+  position:absolute;top:-6px;height:18px;width:1px;
+  background:var(--etf-ink);opacity:.8;
+  transform:translateX(-50%);pointer-events:none;z-index:2;
+}
+.injc-price-range-last-marker{
+  position:absolute;top:50%;width:13px;height:13px;
+  background:var(--etf-accent);
+  box-shadow:0 0 0 3px var(--etf-card);
+  border:2px solid var(--etf-ink);
+  border-radius:50%;transform:translate(-50%,-50%);
+  pointer-events:none;z-index:3;transition:left .3s ease;
+}
+.injc-price-range-track.is-premarket .injc-price-range-last-marker{background:var(--injc-pre)}
+.injc-price-range-track.is-empty{opacity:.52}
+.injc-price-range-track [hidden]{display:none!important}
+.injc-price-range-footer{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;margin-top:15px;color:var(--etf-muted);
+}
+.injc-price-range-footer small{font-size:10px;line-height:1.5;min-width:0}
+.injc-price-range-footer .injc-range-last{
+  display:flex;align-items:baseline;gap:6px;white-space:nowrap;
+  color:var(--etf-muted);font-weight:690;
+}
+.injc-price-range-footer .injc-range-last strong{
+  color:var(--etf-ink);font-size:12px;font-weight:750;
+}
+@media(max-width:530px){
+ .injc-price-range{padding:13px 12px}
+ .injc-price-range-head{gap:9px;margin-bottom:15px}
+ .injc-price-range-eyebrow{font-size:9px;gap:5px;letter-spacing:.07em}
+ .injc-price-range-tabs button{min-width:32px;min-height:30px;padding:5px 7px}
+ .injc-price-range-values{grid-template-columns:minmax(0,1fr) minmax(90px,1fr) minmax(0,1fr)}
+ .injc-price-range-values>div strong{font-size:clamp(15px,4.5vw,20px)}
+ .injc-price-range-footer small{font-size:9px}
+}
+@media(prefers-reduced-motion:reduce){
+ .injc-price-range-fill,.injc-price-range-last-marker{transition:none}
+}
+
+/* INJC axis typography · responsive, undistorted CSS-pixel viewBox */
+#etfSvgWrap svg .injc-axis-price,
+#etfSvgWrap svg .injc-axis-time {
+  font-family: var(--inj-chosen-face, system-ui, -apple-system, sans-serif);
+  font-weight: 620;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+  text-rendering: geometricPrecision;
+  pointer-events: none;
+}
+#etfSvgWrap svg .injc-axis-price { font-weight: 640; }
+#etfSvgWrap svg .injc-axis-time { font-weight: 600; }
+
+
+/* INJC · market phases and verified-price interaction · 2026-11-06 */
+:root { --injc-pre:#c59a40; }
+.status-pill[data-state="pre"] {
+ color:var(--injc-pre);
+ border-color:color-mix(in srgb,var(--injc-pre) 36%,var(--etf-line));
+ background:color-mix(in srgb,var(--injc-pre) 8%,var(--etf-card));
+}
+.injc-chart-session {
+ display:inline-flex;align-items:center;justify-content:center;
+ margin-left:auto;white-space:nowrap;flex:none;
+ padding:6px 10px;border:1px solid var(--etf-line);
+ border-radius:7px;background:color-mix(in srgb,var(--etf-card) 91%,transparent);
+ color:var(--etf-muted);font-size:10px;font-weight:800;
+ line-height:1;letter-spacing:.065em;font-variant-numeric:tabular-nums;
+}
+.injc-chart-session[data-state="pre"]{
+ color:var(--injc-pre);
+ border-color:color-mix(in srgb,var(--injc-pre) 45%,var(--etf-line));
+ background:color-mix(in srgb,var(--injc-pre) 9%,var(--etf-card));
+}
+.injc-chart-session[data-state="open"]{
+ color:var(--injc-up);
+ border-color:color-mix(in srgb,var(--injc-up) 40%,var(--etf-line));
+ background:color-mix(in srgb,var(--injc-up) 9%,var(--etf-card));
+}
+#etfSvgWrap svg.injc-price-inspectable {
+ touch-action:pan-y; cursor:crosshair;
+ -webkit-tap-highlight-color:transparent; user-select:none;
+}
+#etfSvgWrap svg.injc-price-inspectable:focus-visible{
+ outline:2px solid var(--etf-accent);outline-offset:-2px;border-radius:8px;
+}
+#etfSvgWrap .injc-price-inspector {
+ position:absolute;top:8px;left:50%;transform:translateX(-50%);
+ min-width:126px;max-width:calc(100% - 16px);padding:9px 13px 8px;
+ display:flex;flex-direction:column;gap:3px;pointer-events:none;z-index:4;
+ border:1px solid color-mix(in srgb,var(--etf-ink) 15%,var(--etf-line));
+ border-radius:11px;
+ background:color-mix(in srgb,var(--etf-card) 94%,var(--etf-bg));
+ color:var(--etf-ink);
+ box-shadow:0 6px 24px rgba(0,0,0,.15);
+ font-variant-numeric:tabular-nums;text-align:left;
+}
+#etfSvgWrap .injc-price-inspector[hidden]{display:none!important}
+#etfSvgWrap .injc-inspector-price{font-size:15px;font-weight:780;line-height:1.1;letter-spacing:-.02em}
+#etfSvgWrap .injc-inspector-time{color:var(--etf-muted);font-size:10px;white-space:nowrap}
+#etfSvgWrap .injc-inspector-session{font-size:9px;letter-spacing:.09em;font-weight:790;color:var(--etf-muted)}
+#etfSvgWrap .injc-inspector-session[data-state="pre"]{color:var(--injc-pre)}
+#etfSvgWrap .injc-chart-cursor{transition:none;pointer-events:none}
+@media(max-width:530px){
+ .injc-chart-session{padding:6px 8px;font-size:9px}
+ .injc-chart-top .injc-tabs{width:100%;justify-content:space-between;gap:2px}
+ .injc-chart-top .injc-tabs button{flex:1;min-width:0}
+ #etfSvgWrap .injc-price-inspector{padding:8px 10px;min-width:126px}
+}
