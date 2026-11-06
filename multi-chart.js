@@ -15,12 +15,13 @@
     {id:'1w',name:'1 SETTIMANA',nameEn:'1 WEEK',interval:'1w',ms:604800000},
     {id:'1M',name:'1 MESE',nameEn:'1 MONTH',interval:'1M',ms:null}
   ];
-  const groups = [defs.slice(0,4),defs.slice(4)];
+  const groups = [defs.slice(0,2),defs.slice(2,4),defs.slice(4,6),defs.slice(6,8)];
   const cards = new Map();
   const state = {
     page:0,style:'candles',series:new Map(),loading:new Map(),lastLoad:new Map(),
     socket:null,lastTradeAt:0,reconnectTimer:0,retries:0,drawFrame:0,lastDraw:0,
-    zoom:null,resizeObserver:null,trades:[],closed:false
+    zoom:null,resizeObserver:null,trades:[],closed:false,
+    quote:NaN,shownQuote:NaN,lastQuoteChangeAt:0,quoteResetTimer:0
   };
   const rail = $('mcRail');
   const zoom = $('mcZoom');
@@ -85,11 +86,11 @@
     queueDraw(true);
   }
   function setPage(page,move){
-    const next=Math.max(0,Math.min(1,page));
+    const next=Math.max(0,Math.min(groups.length-1,page));
     state.page=next;
-    $('mcRangeHeading').textContent=next===0?'1m · 5m · 15m · 1H':'4H · 1D · 1W · 1M';
+    $('mcRangeHeading').textContent=['1m · 5m','15m · 1H','4H · 1D','1W · 1M'][next];
     $('mcPrev').disabled=next===0;
-    $('mcNext').disabled=next===1;
+    $('mcNext').disabled=next===groups.length-1;
     document.querySelectorAll('.mc-dots button').forEach(button=>{
       const current=Number(button.dataset.page)===next;
       button.classList.toggle('active',current);
@@ -161,6 +162,7 @@
         if(!visible())return;
         state.series.set(def.id,rows);
         state.lastLoad.set(def.id,Date.now());
+        if(!(state.quote>0)){state.quote=rows.at(-1)?.c||NaN;paintQuote();}
         card.empty.hidden=true;
         card.empty.dataset.error='false';
         updateChange(def);
@@ -283,6 +285,7 @@
   }
   function drawVisible(){
     if(!visible())return;
+    paintQuote();
     for(const def of groups[state.page]){
       const card=cards.get(def.id);
       if(card){updateChange(def);draw(card.canvas,def);}
@@ -307,6 +310,7 @@
   function applyTrade(price,time){
     if(!(price>0&&time>0))return;
     state.lastTradeAt=Date.now();
+    state.quote=price;
     state.trades.push({at:Date.now(),price,time});
     if(state.trades.length>160)state.trades.splice(0,state.trades.length-160);
     for(const def of defs){
@@ -321,6 +325,33 @@
       state.lastFeedPaint=Date.now();updateFeed();
     }
   }
+  function paintQuote(){
+    const display=$('mcLivePrice'),arrow=$('mcPriceArrow'),quote=$('mcQuote');
+    if(!display||!arrow||!quote)return;
+    const value=state.quote;
+    if(!(value>0)){display.textContent='—';arrow.textContent='';quote.classList.remove('up','down');return;}
+    const label=priceLabel(value);
+    if(display.textContent!==label)display.textContent=label;
+    const previous=state.shownQuote;
+    if(Number.isFinite(previous)&&value!==previous&&state.lastTradeAt>0){
+      const rising=value>previous;
+      quote.classList.toggle('up',rising);
+      quote.classList.toggle('down',!rising);
+      arrow.textContent=rising?'↑':'↓';
+      state.lastQuoteChangeAt=Date.now();
+      if(state.quoteResetTimer)clearTimeout(state.quoteResetTimer);
+      state.quoteResetTimer=setTimeout(()=>{
+        state.quoteResetTimer=0;
+        quote.classList.remove('up','down');
+        arrow.textContent='';
+      },900);
+    }else if(Date.now()-state.lastQuoteChangeAt>900){
+      quote.classList.remove('up','down');
+      arrow.textContent='';
+    }
+    state.shownQuote=value;
+  }
+
   function updateFeed(){
     const feed=$('mcFeed'),label=$('mcFeedText');
     const paint=(next,message)=>{
@@ -390,8 +421,8 @@
   $('mcBack').addEventListener('click',goBack);
   $('mcCandles').addEventListener('click',()=>setStyle('candles'));
   $('mcLines').addEventListener('click',()=>setStyle('lines'));
-  $('mcPrev').addEventListener('click',()=>setPage(0,true));
-  $('mcNext').addEventListener('click',()=>setPage(1,true));
+  $('mcPrev').addEventListener('click',()=>setPage(state.page-1,true));
+  $('mcNext').addEventListener('click',()=>setPage(state.page+1,true));
   $('mcZoomClose').addEventListener('click',closeZoom);
   zoom.addEventListener('close',()=>{state.zoom=null;});
   document.querySelectorAll('.mc-dots button').forEach(button=>{
@@ -423,7 +454,7 @@
   window.addEventListener('online',()=>{connectSocket();ensureGroup(state.page,true);updateFeed();});
   window.addEventListener('offline',()=>{closeSocket();updateFeed();});
   window.addEventListener('pageshow',()=>{state.closed=false;connectSocket();ensureGroup(state.page);});
-  window.addEventListener('pagehide',()=>{state.closed=true;closeSocket();});
+  window.addEventListener('pagehide',()=>{state.closed=true;closeSocket();if(state.quoteResetTimer){clearTimeout(state.quoteResetTimer);state.quoteResetTimer=0;}});
   window.addEventListener('message',event=>{
     if(event.origin!==location.origin)return;
     if(event.data?.type==='injnode:font:sync'){

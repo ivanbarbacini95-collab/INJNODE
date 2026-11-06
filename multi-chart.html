@@ -18,8 +18,8 @@ try{
    ({obsidian:'#060b11',arctic:'#f1f7fa',orbit:'#080b1a','classic-black':'#030304','classic-white':'#ffffff'})[theme];
 }catch(_){}
 </script>
-<link rel="stylesheet" href="./multi-chart.css?v=20261106a">
-<script defer src="./multi-chart.js?v=20261106a"></script>
+<link rel="stylesheet" href="./multi-chart.css?v=20261106-vertical4-price1">
+<script defer src="./multi-chart.js?v=20261106-vertical4-price1"></script>
 </head>
 <body>
 <div class="mc-app" id="mcApp">
@@ -35,19 +35,24 @@ try{
    <button id="mcCandles" type="button" class="selected" aria-pressed="true" data-it="Candele" data-en="Candles">Candele</button>
    <button id="mcLines" type="button" aria-pressed="false" data-it="Linee" data-en="Lines">Linee</button>
   </div>
-  <div class="mc-range-heading" id="mcRangeHeading" aria-live="polite">1m · 5m · 15m · 1H</div>
+  <output class="mc-quote" id="mcQuote" aria-label="Prezzo INJ USDT"><span id="mcPriceArrow" class="mc-price-arrow" aria-hidden="true"></span><strong id="mcLivePrice">—</strong></output>
+  <div class="mc-range-heading" id="mcRangeHeading" aria-live="polite">1m · 5m</div>
  </div>
  <main class="mc-main">
   <div class="mc-rail" id="mcRail" tabindex="0" aria-label="Scorri i gruppi di timeframe">
-   <section class="mc-page" id="mcPage0" aria-label="1m 5m 15m 1H"><div class="mc-grid" id="mcGrid0"></div></section>
-   <section class="mc-page" id="mcPage1" aria-label="4H 1D 1W 1M"><div class="mc-grid" id="mcGrid1"></div></section>
+   <section class="mc-page" id="mcPage0" aria-label="1m 5m"><div class="mc-grid" id="mcGrid0"></div></section>
+   <section class="mc-page" id="mcPage1" aria-label="15m 1H"><div class="mc-grid" id="mcGrid1"></div></section>
+   <section class="mc-page" id="mcPage2" aria-label="4H 1D"><div class="mc-grid" id="mcGrid2"></div></section>
+   <section class="mc-page" id="mcPage3" aria-label="1W 1M"><div class="mc-grid" id="mcGrid3"></div></section>
   </div>
  </main>
  <footer class="mc-footer">
   <button id="mcPrev" class="mc-page-button" type="button" aria-label="Timeframe brevi" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg></button>
   <div class="mc-dots" role="group" aria-label="Gruppi timeframe">
-   <button type="button" data-page="0" class="active" aria-current="page" aria-label="1m 5m 15m 1H"></button>
-   <button type="button" data-page="1" aria-label="4H 1D 1W 1M"></button>
+   <button type="button" data-page="0" class="active" aria-current="page" aria-label="1m 5m"></button>
+   <button type="button" data-page="1" aria-label="15m 1H"></button>
+   <button type="button" data-page="2" aria-label="4H 1D"></button>
+   <button type="button" data-page="3" aria-label="1W 1M"></button>
   </div>
   <button id="mcNext" class="mc-page-button" type="button" aria-label="Timeframe lunghi"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></button>
  </footer>

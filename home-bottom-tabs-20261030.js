@@ -11,15 +11,12 @@
  // without duplicating cards or depending on the cached index.html template.
  function ensureMultiChartLauncher(){
    let card=document.getElementById('entryMultiChartButton');
-   if(card&&card.parentElement===actions)return card;
-   if(card)return card;
-   card=document.createElement('a');
+   if(!card){card=document.createElement('a');card.id='entryMultiChartButton';}
+   if(card.parentElement!==actions)actions.insertBefore(card,document.getElementById('entryComparisonButton')||actions.firstChild);
    card.className='entry-action entry-action-multi-chart';
-   card.id='entryMultiChartButton';
-   card.href='./multi-chart.html?v=20261106-tools-fix2';
+   card.href='./multi-chart.html?v=20261106-vertical4-price1';
    card.setAttribute('aria-label','Apri INJ Multi Chart');
-   card.innerHTML='<span aria-hidden="true" class="entry-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.6" y="3" width="8.6" height="8" rx="1.5"/><rect x="12.8" y="3" width="8.6" height="8" rx="1.5"/><rect x="2.6" y="13" width="8.6" height="8" rx="1.5"/><rect x="12.8" y="13" width="8.6" height="8" rx="1.5"/></svg></span><span><strong class="inj-home-tile-title" data-it="INJ Multi Chart" data-en="INJ Multi Chart">INJ Multi Chart</strong><small class="inj-tile-description" data-it="8 timeframe · 4 grafici" data-en="8 timeframes · 4 charts">8 timeframe · 4 grafici</small></span><svg aria-hidden="true" class="entry-action-arrow" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>';
-   actions.insertBefore(card,document.getElementById('entryComparisonButton')||actions.firstChild);
+   card.innerHTML='<span aria-hidden="true" class="entry-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2.3" y="2.8" width="9" height="8.6" rx="1.8"/><rect x="12.7" y="2.8" width="9" height="8.6" rx="1.8"/><rect x="2.3" y="12.6" width="9" height="8.6" rx="1.8"/><rect x="12.7" y="12.6" width="9" height="8.6" rx="1.8"/><path d="m4.4 8 2-2.1 1.6 1 1.4-1.8M14.4 8.6l2-2.6 1.8 1.1 1.4-2M4.3 19.3l2-2.5 1.8 1 1.6-2.2M14.4 18.9l1.5-1.6 1.9.7 1.8-3"/></svg></span><span><strong class="inj-home-tile-title" data-it="INJ Multi Chart" data-en="INJ Multi Chart">INJ Multi Chart</strong></span><svg aria-hidden="true" class="entry-action-arrow" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>';
    return card;
  }
  ensureMultiChartLauncher();
