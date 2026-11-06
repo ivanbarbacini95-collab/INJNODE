@@ -20,6 +20,30 @@
    return card;
  }
  ensureMultiChartLauncher();
+ // Tools tile polish: preserve a compact 4-chart logo and remove every
+ // anchor/title underline, including theme pseudo-elements and link states.
+ // Works even if iOS PWA kept the previous Home markup in memory.
+ if(!document.getElementById('injMultiChartToolsTilePolish')){
+   const tileStyle=document.createElement('style');
+   tileStyle.id='injMultiChartToolsTilePolish';
+   tileStyle.textContent=[
+     'html[data-inj-page="index"] body #entryGate#entryGate#entryGate .entry-actions.entry-flat-v44 > #entryMultiChartButton.entry-action,',
+     'html[data-inj-page="index"] body #entryGate#entryGate#entryGate .entry-actions.entry-flat-v44 > #entryMultiChartButton.entry-action:link,',
+     'html[data-inj-page="index"] body #entryGate#entryGate#entryGate .entry-actions.entry-flat-v44 > #entryMultiChartButton.entry-action:visited,',
+     'html[data-inj-page="index"] body #entryGate#entryGate#entryGate .entry-actions.entry-flat-v44 > #entryMultiChartButton.entry-action:hover,',
+     'html[data-inj-page="index"] body #entryGate#entryGate#entryGate .entry-actions.entry-flat-v44 > #entryMultiChartButton.entry-action:focus-visible',
+     '{text-decoration:none!important;text-decoration-line:none!important;}',
+     'html[data-inj-page="index"] body #entryGate#entryGate#entryGate #entryMultiChartButton .inj-home-tile-title',
+     '{text-decoration:none!important;text-decoration-line:none!important;border-bottom:none!important;box-shadow:none!important;}',
+     'html[data-inj-page="index"] body #entryGate#entryGate#entryGate #entryMultiChartButton .inj-home-tile-title::after',
+     '{display:none!important;content:none!important;border:0!important;}',
+     'html[data-inj-page="index"] body #entryGate#entryGate#entryGate #entryMultiChartButton .entry-action-icon',
+     '{display:grid!important;place-items:center!important;flex-shrink:0!important;}',
+     'html[data-inj-page="index"] body #entryGate#entryGate#entryGate #entryMultiChartButton .entry-action-icon svg',
+     '{display:block!important;visibility:visible!important;width:27px!important;height:27px!important;fill:none!important;stroke:currentColor;stroke-width:1.7;opacity:1!important;}'
+   ].join('');
+   document.head.appendChild(tileStyle);
+ }
  const sections=[
   {id:'mercato',it:'Mercato',en:'Market',titleIt:'MERCATO',titleEn:'MARKET',subIt:'Prezzi, analisi e calendario macro',subEn:'Prices, research and macro calendar',ids:['entryGlobalMarketsButton','entryGlobalCryptoButton','entryLiveChartsButton','entryOrderBookButton','entryPerformanceButton','entryMacroCalendarButton'],icon:'<path d="M3.5 19.5h17M5 18V5.5M7.8 15l4-4 3 2 4.3-6M15.6 7h3.5v3.5"/>'},
   {id:'etf',it:'ETF',en:'ETF',titleIt:'',titleEn:'',subIt:'',subEn:'',ids:[],icon:'<rect x="5" y="3.5" width="14" height="17" rx="2.7"/><path d="M9 8h6M9 11.5h4m-4 5.9 2.2-2.4 2 1.5 2.8-3.1"/>'},
