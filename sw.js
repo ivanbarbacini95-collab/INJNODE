@@ -1,7 +1,7 @@
 /* INJ Node PWA | Cross-platform lean cache (2026-11-06)
    One cache entry per asset path: query-string build aliases no longer
    occupy multiple CacheStorage slots. Auth/API requests are never cached. */
-const CACHE_NAME = 'inj-node-v20261106-multichart-logo-clean1';
+const CACHE_NAME = 'inj-node-v20261106-multichart-visible-art1';
 const BOOT_ASSETS = [
   './index.html',
   './manifest.webmanifest?v=20261102litepro1',
@@ -9,7 +9,7 @@ const BOOT_ASSETS = [
   './inj-home-overrides-20261106.css?v=perf1',
   './app.js?v=wallet-single-card-20261105c',
   './navigation.js?v=20261106-multichart-tools-visibility2',
-  './home-bottom-tabs-20261030.js?v=20261106-multichart-logo-clean1'
+  './home-bottom-tabs-20261030.js?v=20261106-multichart-visible-art1'
 ];
 const BOOT_FALLBACK = new URL('./index.html', self.registration.scope).href;
 
