@@ -13,6 +13,7 @@ try{
   const theme=themes.includes(selected)?selected:'obsidian';
   document.documentElement.dataset.theme=theme;
   document.documentElement.lang=localStorage.getItem('inj_node_language_v1')==='en'?'en':'it';
+  document.documentElement.dataset.injFont=localStorage.getItem('inj_node_font_v1')==='slim'?'slim':'bold';
   document.querySelector('meta[name="theme-color"]').content=
    ({obsidian:'#060b11',arctic:'#f1f7fa',orbit:'#080b1a','classic-black':'#030304','classic-white':'#ffffff'})[theme];
 }catch(_){}
