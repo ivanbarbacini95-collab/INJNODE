@@ -261,7 +261,9 @@
     const last=shown[shown.length-1];
     if(last?.c>0){
       const y=mapY(last.c);
-      ctx.setLineDash([3,4]);ctx.strokeStyle=dim;ctx.globalAlpha=.38;
+      // Price reference only: thin, readable yellow dashed line on every timeframe.
+      const priceLine=styles.getPropertyValue('--mc-price-line').trim()||'#ffd84a';
+      ctx.setLineDash([3,4]);ctx.strokeStyle=priceLine;ctx.lineWidth=.9;ctx.globalAlpha=.82;
       ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(right,y);ctx.stroke();
       ctx.setLineDash([]);ctx.globalAlpha=1;
       ctx.font=(expanded?'11':'9')+'px system-ui,sans-serif';
