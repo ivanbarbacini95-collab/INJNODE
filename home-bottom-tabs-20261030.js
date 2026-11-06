@@ -7,6 +7,22 @@
  const gate=document.getElementById('entryGate');
  const actions=gate?.querySelector('.entry-actions.entry-flat-v44');
  if(!gate||!actions||document.getElementById('injPrimaryBottomNav'))return;
+ // A stale Home shell can survive a PWA update. Repair a missing launcher
+ // without duplicating cards or depending on the cached index.html template.
+ function ensureMultiChartLauncher(){
+   let card=document.getElementById('entryMultiChartButton');
+   if(card&&card.parentElement===actions)return card;
+   if(card)return card;
+   card=document.createElement('a');
+   card.className='entry-action entry-action-multi-chart';
+   card.id='entryMultiChartButton';
+   card.href='./multi-chart.html?v=20261106-tools-fix2';
+   card.setAttribute('aria-label','Apri INJ Multi Chart');
+   card.innerHTML='<span aria-hidden="true" class="entry-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.6" y="3" width="8.6" height="8" rx="1.5"/><rect x="12.8" y="3" width="8.6" height="8" rx="1.5"/><rect x="2.6" y="13" width="8.6" height="8" rx="1.5"/><rect x="12.8" y="13" width="8.6" height="8" rx="1.5"/></svg></span><span><strong class="inj-home-tile-title" data-it="INJ Multi Chart" data-en="INJ Multi Chart">INJ Multi Chart</strong><small class="inj-tile-description" data-it="8 timeframe · 4 grafici" data-en="8 timeframes · 4 charts">8 timeframe · 4 grafici</small></span><svg aria-hidden="true" class="entry-action-arrow" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>';
+   actions.insertBefore(card,document.getElementById('entryComparisonButton')||actions.firstChild);
+   return card;
+ }
+ ensureMultiChartLauncher();
  const sections=[
   {id:'mercato',it:'Mercato',en:'Market',titleIt:'MERCATO',titleEn:'MARKET',subIt:'Prezzi, analisi e calendario macro',subEn:'Prices, research and macro calendar',ids:['entryGlobalMarketsButton','entryGlobalCryptoButton','entryLiveChartsButton','entryOrderBookButton','entryPerformanceButton','entryMacroCalendarButton'],icon:'<path d="M3.5 19.5h17M5 18V5.5M7.8 15l4-4 3 2 4.3-6M15.6 7h3.5v3.5"/>'},
   {id:'etf',it:'ETF',en:'ETF',titleIt:'',titleEn:'',subIt:'',subEn:'',ids:[],icon:'<rect x="5" y="3.5" width="14" height="17" rx="2.7"/><path d="M9 8h6M9 11.5h4m-4 5.9 2.2-2.4 2 1.5 2.8-3.1"/>'},
