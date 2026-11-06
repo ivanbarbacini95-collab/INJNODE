@@ -195,9 +195,11 @@
   function updateChange(def){
     const card=cards.get(def.id),arr=state.series.get(def.id);
     if(!card)return;
-    const last=arr?.at(-1),first=arr?.[Math.max(0,arr.length-32)];
-    if(!first?.o||!last?.c){card.change.textContent='—';card.change.className='mc-card-change';return;}
-    const pct=(last.c/first.o-1)*100;
+    const last=arr?.at(-1);
+    // Display the current candle's change for the labeled timeframe, never
+    // an unlabeled arbitrary 32-bar return.
+    if(!last?.o||!last?.c){card.change.textContent='—';card.change.className='mc-card-change';return;}
+    const pct=(last.c/last.o-1)*100;
     card.change.textContent=(pct>0?'+':'')+pct.toFixed(2)+'%';
     card.change.className='mc-card-change'+(pct>0?' up':pct<0?' down':'');
   }
