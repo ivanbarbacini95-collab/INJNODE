@@ -18,8 +18,8 @@ try{
    ({obsidian:'#060b11',arctic:'#f1f7fa',orbit:'#080b1a','classic-black':'#030304','classic-white':'#ffffff'})[theme];
 }catch(_){}
 </script>
-<link rel="stylesheet" href="./multi-chart.css?v=20261106-yellowguide1">
-<script defer src="./multi-chart.js?v=20261106-yellowguide1"></script>
+<link rel="stylesheet" href="./multi-chart.css?v=20261106-premium2">
+<script defer src="./multi-chart.js?v=20261106-premium2"></script>
 </head>
 <body>
 <div class="mc-app" id="mcApp">
@@ -35,7 +35,12 @@ try{
    <button id="mcCandles" type="button" class="selected" aria-pressed="true" data-it="Candele" data-en="Candles">Candele</button>
    <button id="mcLines" type="button" aria-pressed="false" data-it="Linee" data-en="Lines">Linee</button>
   </div>
-  <output class="mc-quote" id="mcQuote" aria-label="Prezzo INJ USDT"><span id="mcPriceArrow" class="mc-price-arrow" aria-hidden="true"></span><strong id="mcLivePrice">—</strong></output>
+  <output class="mc-quote" id="mcQuote" aria-label="Prezzo live INJ USDT">
+   <span id="mcPriceArrow" class="mc-price-arrow" aria-hidden="true"></span>
+   <span class="mc-quote-divider" aria-hidden="true"></span>
+   <strong id="mcLivePrice">—</strong>
+   <span class="mc-quote-badge" id="mcQuoteStatus" data-state="connecting">SYNC</span>
+  </output>
   <div class="mc-range-heading" id="mcRangeHeading" aria-live="polite">1m · 5m</div>
  </div>
  <main class="mc-main">
