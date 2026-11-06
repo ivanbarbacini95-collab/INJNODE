@@ -16,7 +16,7 @@
    card.className='entry-action entry-action-multi-chart';
    card.href='./multi-chart.html?v=20261106-vertical4-price1';
    card.setAttribute('aria-label','Apri INJ Multi Chart');
-   card.innerHTML='<span aria-hidden="true" class="entry-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2.3" y="2.8" width="9" height="8.6" rx="1.8"/><rect x="12.7" y="2.8" width="9" height="8.6" rx="1.8"/><rect x="2.3" y="12.6" width="9" height="8.6" rx="1.8"/><rect x="12.7" y="12.6" width="9" height="8.6" rx="1.8"/><path d="m4.4 8 2-2.1 1.6 1 1.4-1.8M14.4 8.6l2-2.6 1.8 1.1 1.4-2M4.3 19.3l2-2.5 1.8 1 1.6-2.2M14.4 18.9l1.5-1.6 1.9.7 1.8-3"/></svg></span><span><strong class="inj-home-tile-title" data-it="INJ Multi Chart" data-en="INJ Multi Chart">INJ Multi Chart</strong></span><svg aria-hidden="true" class="entry-action-arrow" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>';
+   card.innerHTML='<span><strong class="inj-home-tile-title" data-it="INJ Multi Chart" data-en="INJ Multi Chart">INJ Multi Chart</strong></span><span aria-hidden="true" data-premium-artwork="luxury-b" class="inj-tile-scene inj-precision-icon inj-luxury-icon inj-multichart-art"><svg viewBox="0 0 120 68" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><rect class="pi-panel" x="11" y="8" width="44" height="23" rx="4"/><rect class="pi-panel" x="65" y="8" width="44" height="23" rx="4"/><rect class="pi-panel" x="11" y="37" width="44" height="23" rx="4"/><rect class="pi-panel" x="65" y="37" width="44" height="23" rx="4"/><path class="pi-strong" d="m16 24 8-6 7 4 8-9 10 3M70 24l7-7 7 4 8-8 11 4M16 52l7-8 8 3 8-6 10 4M70 53l7-5 7 2 9-9 10 3"/><path class="pi-hair" d="M16 27h34M70 27h34M16 56h34M70 56h34"/><circle class="pi-led" cx="49" cy="16" r="2"/><circle class="pi-led" cx="103" cy="44" r="2"/></svg></span><svg aria-hidden="true" class="entry-action-arrow" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>';
    return card;
  }
  ensureMultiChartLauncher();
@@ -41,6 +41,15 @@
      '{display:grid!important;place-items:center!important;flex-shrink:0!important;}',
      'html[data-inj-page="index"] body #entryGate#entryGate#entryGate #entryMultiChartButton .entry-action-icon svg',
      '{display:block!important;visibility:visible!important;width:27px!important;height:27px!important;fill:none!important;stroke:currentColor;stroke-width:1.7;opacity:1!important;}'
+     ,
+     'html[data-inj-page="index"][data-inj-home-tab="altro"] body #entryGate#entryGate#entryGate #entryMultiChartButton > .inj-multichart-art',
+     '{display:block!important;visibility:visible!important;opacity:1!important;pointer-events:none!important;position:absolute!important;z-index:1!important;box-sizing:border-box!important;top:7px!important;bottom:auto!important;left:50%!important;right:auto!important;width:80px!important;max-width:80px!important;height:43px!important;min-height:0!important;transform:translateX(-50%)!important;}',
+     'html[data-inj-page="index"][data-inj-home-tab="altro"] body #entryGate#entryGate#entryGate #entryMultiChartButton > .inj-multichart-art svg',
+     '{display:block!important;visibility:visible!important;opacity:1!important;width:100%!important;height:100%!important;overflow:visible!important;}',
+     '@media (min-width:800px){',
+     'html[data-inj-page="index"][data-inj-home-tab="altro"] body #entryGate#entryGate#entryGate #entryMultiChartButton > .inj-multichart-art',
+     '{top:50%!important;left:auto!important;right:17px!important;width:77px!important;max-width:77px!important;height:49px!important;transform:translateY(-50%)!important;}',
+     '}'
    ].join('');
    document.head.appendChild(tileStyle);
  }
