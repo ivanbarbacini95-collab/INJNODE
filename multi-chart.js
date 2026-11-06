@@ -221,8 +221,8 @@
     const styles=getComputedStyle(document.documentElement);
     const ink=styles.getPropertyValue('--mc-ink').trim()||'#e4eef3';
     const dim=styles.getPropertyValue('--mc-dim').trim()||'#899da8';
-    const green=styles.getPropertyValue('--mc-green').trim()||'#3cd0a5';
-    const red=styles.getPropertyValue('--mc-red').trim()||'#f56a74';
+    const green=styles.getPropertyValue('--mc-green').trim()||'#00eb8b';
+    const red=styles.getPropertyValue('--mc-red').trim()||'#ff415c';
     const accent=styles.getPropertyValue('--mc-accent').trim()||green;
     const left=expanded?12:5,right=width-(expanded?57:45);
     const top=expanded?14:7,bottom=height-(expanded?29:21);
@@ -339,7 +339,7 @@
       const rising=value>previous;
       quote.classList.toggle('up',rising);
       quote.classList.toggle('down',!rising);
-      arrow.textContent=rising?'↑':'↓';
+      arrow.textContent=rising?'↗':'↘';
       state.lastQuoteChangeAt=Date.now();
       if(state.quoteResetTimer)clearTimeout(state.quoteResetTimer);
       state.quoteResetTimer=setTimeout(()=>{
@@ -359,6 +359,12 @@
     const paint=(next,message)=>{
       if(feed.dataset.state!==next)feed.dataset.state=next;
       if(label.textContent!==message)label.textContent=message;
+      const badge=$('mcQuoteStatus');
+      if(badge){
+        if(badge.dataset.state!==next)badge.dataset.state=next;
+        const short=next==='live'?'LIVE':next==='offline'?'OFF':next==='delayed'?'HIST':'SYNC';
+        if(badge.textContent!==short)badge.textContent=short;
+      }
     };
     if(!navigator.onLine){paint('offline','OFFLINE');return;}
     const open=state.socket?.readyState===WebSocket.OPEN;
