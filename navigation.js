@@ -189,7 +189,7 @@ window.INJ_OPEN_SECTION=function(url){
 };
 if(main){
  document.addEventListener('click',event=>{
-  const link=event.target.closest('#entryInjcEtfButton,#entryWorkspaceButton,#entryTreasuryButton,#entryLiveRewardsButton,#entryRewardLadderButton,#entryComparisonButton,#entryVisualizeWealthButton,#injAdminInsightsMenuButton,#injCloudSyncMenuButton');
+  const link=event.target.closest('#entryMultiChartButton,#entryInjcEtfButton,#entryWorkspaceButton,#entryTreasuryButton,#entryLiveRewardsButton,#entryRewardLadderButton,#entryComparisonButton,#entryVisualizeWealthButton,#injAdminInsightsMenuButton,#injCloudSyncMenuButton');
   if(!link || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey)return;
   event.preventDefault();event.stopImmediatePropagation();window.INJ_OPEN_SECTION(link.href);
  },true);
