@@ -285,7 +285,7 @@
     if(!visible())return;
     for(const def of groups[state.page]){
       const card=cards.get(def.id);
-      if(card)draw(card.canvas,def);
+      if(card){updateChange(def);draw(card.canvas,def);}
     }
     if(state.zoom&&zoom.open)draw($('mcZoomCanvas'),state.zoom,true);
   }
@@ -313,23 +313,30 @@
       const rows=state.series.get(def.id);
       if(!rows)continue;
       addPrice(rows,def,price,time);
-      if(groups[state.page].includes(def)||state.zoom?.id===def.id)updateChange(def);
     }
     queueDraw();
-    updateFeed();
+    // The exchange can send many trades per second; repaint the connection
+    // badge at most once per second instead of writing the DOM every trade.
+    if(Date.now()-(state.lastFeedPaint||0)>1200){
+      state.lastFeedPaint=Date.now();updateFeed();
+    }
   }
   function updateFeed(){
     const feed=$('mcFeed'),label=$('mcFeedText');
-    if(!navigator.onLine){feed.dataset.state='offline';label.textContent='OFFLINE';return;}
+    const paint=(next,message)=>{
+      if(feed.dataset.state!==next)feed.dataset.state=next;
+      if(label.textContent!==message)label.textContent=message;
+    };
+    if(!navigator.onLine){paint('offline','OFFLINE');return;}
     const open=state.socket?.readyState===WebSocket.OPEN;
     if(open&&Date.now()-state.lastTradeAt<65000){
-      feed.dataset.state='live';label.textContent='LIVE';
+      paint('live','LIVE');
     }else if(open){
-      feed.dataset.state='connecting';label.textContent=text('CONNESSO','CONNECTED');
+      paint('connecting',text('CONNESSO','CONNECTED'));
     }else if(state.series.size){
-      feed.dataset.state='delayed';label.textContent=text('STORICO','HISTORY');
+      paint('delayed',text('STORICO','HISTORY'));
     }else {
-      feed.dataset.state='connecting';label.textContent='SYNC';
+      paint('connecting','SYNC');
     }
   }
   function closeSocket(){
