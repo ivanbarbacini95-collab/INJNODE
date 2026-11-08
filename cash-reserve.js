@@ -163,7 +163,7 @@
       for (const account of accounts) {
         const info = account?.account?.data?.parsed?.info;
         const token = info?.tokenAmount;
-        if (info?.mint !== mint || token?.decimals !== 6 || !/^\\d+$/.test(String(token?.amount ?? ''))) {
+        if (info?.mint !== mint || token?.decimals !== 6 || !/^\d+$/.test(String(token?.amount ?? ''))) {
           throw new Error('Unexpected Solana mint/decimals response');
         }
         total += BigInt(token.amount);
