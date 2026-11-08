@@ -143,7 +143,7 @@
 <link rel="stylesheet" href="./inj-signature-atmospheres-20261103.css?v=signature-preview-fidelity1">
 <link rel="stylesheet" href="./inj-theme-collections-20261103.css?v=families30-distinct2">
 <script src="./inj-six-themes-20261103.js?v=families30-classic-v2"></script>
-<link rel="stylesheet" href="./cash-reserve.css?v=20261108jupiter-logos2">
+<link rel="stylesheet" href="./cash-reserve.css?v=20261108history1">
 </head>
 <body>
   <div class="treasury-shell">
@@ -404,7 +404,18 @@
                 <button type="button" data-cash-range="ALL" aria-pressed="true">ALL</button>
               </div>
             </div>
-            <svg id="cashHistoryChart" class="cash-reserve-chart-svg" viewBox="0 0 660 180" preserveAspectRatio="none" role="img" aria-label="Storico saldo Cash Reserve"></svg>
+            <div class="cash-chart-scroll" id="cashChartScroll" aria-label="Scorri il grafico per visitare le rilevazioni precedenti">
+              <svg id="cashHistoryChart" class="cash-reserve-chart-svg" viewBox="0 0 660 180" preserveAspectRatio="none" role="img" tabindex="0" aria-label="Storico Cash Reserve interattivo, usa le frecce sinistra e destra per navigare"></svg>
+            </div>
+            <div class="cash-chart-history-tools">
+              <div class="cash-chart-navigation" aria-label="Navigazione nello storico">
+                <button type="button" id="cashChartPrev" aria-label="Rilevazione precedente" title="Rilevazione precedente">‹</button>
+                <button type="button" id="cashChartNext" aria-label="Rilevazione successiva" title="Rilevazione successiva">›</button>
+                <button type="button" id="cashChartLatest" data-cash-it="Adesso" data-cash-en="Latest">Adesso</button>
+              </div>
+              <span data-cash-it="Scorri e tocca i punti · verde ingresso, rosso uscita" data-cash-en="Scroll and tap points · green increase, red decrease">Scorri e tocca i punti · verde ingresso, rosso uscita</span>
+            </div>
+            <div id="cashChartDetail" class="cash-chart-detail" aria-live="polite"></div>
             <p id="cashChartEmpty" class="cash-reserve-chart-empty" data-cash-it="Lo storico si formerà da questo dispositivo a partire dalle prossime sincronizzazioni." data-cash-en="History starts on this device with the next successful syncs.">Lo storico si formerà da questo dispositivo a partire dalle prossime sincronizzazioni.</p>
             <div class="cash-reserve-chart-dates"><span id="cashChartFirst">—</span><span id="cashChartLast">—</span></div>
           </div>
@@ -425,6 +436,6 @@
 
 
   <script defer src="./cash-portfolio-onchain.js?v=20261108jupiter-logos2"></script>
-  <script defer src="./cash-reserve.js?v=20261108jupiter-logos2"></script>
+  <script defer src="./cash-reserve.js?v=20261108history1"></script>
 </body>
 </html>
