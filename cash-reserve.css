@@ -1,0 +1,53 @@
+
+/* Cash Reserve · independent add-on to INJ Treasury */
+.cash-reserve-panel{margin:20px 0 28px;padding:clamp(18px,3.5vw,28px);border-radius:22px;border:1px solid rgba(101,207,195,.32);background:linear-gradient(135deg,rgba(35,125,121,.12),rgba(16,36,49,.14) 45%,rgba(10,27,35,.08));color:var(--text,#eff7fc);box-shadow:0 14px 46px rgba(0,0,0,.13);min-width:0}
+.cash-reserve-panel *{box-sizing:border-box}
+.cash-reserve-head,.cash-reserve-title-row,.cash-reserve-actions,.cash-reserve-address,.cash-reserve-statusline,.cash-reserve-chart-head,.cash-reserve-goal-head,.cash-reserve-goal-bottom{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.cash-reserve-title-row{justify-content:flex-start}
+.cash-reserve-shield{display:grid;place-items:center;width:44px;height:44px;flex:0 0 44px;border-radius:13px;background:rgba(38,206,183,.13);color:#35dac4;border:1px solid rgba(57,205,185,.36);font-size:22px}
+.cash-reserve-title-row h2{margin:0;font-size:clamp(1.04rem,2vw,1.4rem);font-weight:760;letter-spacing:.025em}
+.cash-reserve-title-row p{margin:4px 0 0;color:var(--muted,#93abb8);font-size:.75rem}
+.cash-reserve-actions{justify-content:flex-end;flex-wrap:wrap}
+.cash-pill{font-size:.68rem;font-weight:750;letter-spacing:.08em;padding:7px 11px;border-radius:999px;border:1px solid rgba(145,161,171,.25);white-space:nowrap}
+.cash-pill.is-ok{border-color:rgba(49,208,162,.46);color:#47e4bb;background:rgba(49,208,162,.09)}
+.cash-pill.is-error{color:#ff8989;border-color:rgba(255,100,100,.4)}
+.cash-pill.is-idle{color:var(--muted,#a0b2bc)}
+.cash-reserve-actions button,.cash-reserve-panel select,.cash-reserve-panel input,.cash-reserve-chart-ranges button{font:inherit;border-radius:10px;min-height:35px;border:1px solid rgba(127,165,177,.28);color:inherit;background:rgba(130,160,180,.07)}
+.cash-reserve-actions button{padding:7px 12px;cursor:pointer}
+.cash-reserve-actions button[aria-pressed="true"]{border-color:#35dac4;color:#35dac4}
+.cash-reserve-top{margin-top:20px;display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.cash-reserve-eyebrow{font-size:.7rem;letter-spacing:.11em;font-weight:650;color:var(--muted,#9aaeba)}
+.cash-reserve-total{margin:6px 0 0;display:block;font-size:clamp(2.2rem,7vw,4.2rem);line-height:1.08;font-weight:740;letter-spacing:-.045em;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.cash-reserve-panel select{padding:7px 12px;max-width:90px}
+.cash-reserve-assets{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;margin-top:22px}
+.cash-reserve-asset{background:rgba(135,161,177,.075);border:1px solid rgba(127,161,176,.17);border-radius:14px;padding:14px;min-width:0}
+.cash-reserve-asset-label{display:flex;gap:8px;align-items:center;font-size:.74rem;font-weight:700;color:var(--muted-strong,#bed1da)}
+.cash-reserve-dot{width:10px;height:10px;border-radius:50%;background:#297cff}
+.cash-reserve-dot.usdt{background:#28a980}.cash-reserve-dot.legacy{background:#a7a9b0}
+.cash-reserve-asset strong{display:block;margin-top:12px;font-size:clamp(1rem,2.5vw,1.65rem);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.cash-reserve-asset small{display:block;margin-top:4px;font-size:.67rem;color:var(--muted,#97abb6)}
+.cash-reserve-grid{margin-top:14px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:13px}
+.cash-reserve-box{background:rgba(135,161,177,.065);border:1px solid rgba(127,161,176,.17);border-radius:15px;padding:16px;min-width:0}
+.cash-reserve-goal-head strong,.cash-reserve-chart-head strong{font-size:.88rem}
+.cash-reserve-goal-head span,.cash-reserve-goal-bottom{font-size:.72rem;color:var(--muted,#91a8b4)}
+.cash-reserve-goal-form{display:flex;gap:8px;margin:16px 0}
+.cash-reserve-goal-form input{width:100%;min-width:0;padding:9px 12px;font-variant-numeric:tabular-nums}
+.cash-reserve-goal-form button{padding:7px 13px;border:1px solid rgba(45,213,190,.55);background:rgba(45,213,190,.13);border-radius:10px;color:inherit;cursor:pointer}
+.cash-reserve-progress{height:8px;border-radius:100px;background:rgba(114,141,153,.26);overflow:hidden;margin-bottom:10px}
+.cash-reserve-progress div{height:100%;width:0;border-radius:100px;background:linear-gradient(90deg,#14af9d,#6ef1da);transition:width .35s ease}
+.cash-reserve-chart-ranges{display:flex;gap:4px;flex-wrap:wrap}
+.cash-reserve-chart-ranges button{font-size:.66rem;min-height:27px;padding:4px 7px;cursor:pointer}
+.cash-reserve-chart-ranges button[aria-pressed="true"]{border-color:rgba(64,221,195,.75);color:#3fdec4}
+.cash-reserve-chart-svg{display:block;width:100%;height:165px;color:var(--muted,#8aa2ae);margin:13px 0 4px}
+.cash-reserve-chart-dates{display:flex;justify-content:space-between;color:var(--muted,#9caebb);font-size:.65rem}
+.cash-reserve-chart-empty{font-size:.73rem;color:var(--muted,#9caebb);line-height:1.5;margin:8px 0}
+.cash-reserve-statusline{margin-top:16px;font-size:.7rem;color:var(--muted,#9bb1bc);flex-wrap:wrap}
+.cash-reserve-address{margin-top:11px;justify-content:flex-start;font-size:.72rem;flex-wrap:wrap}
+.cash-reserve-address code{font-size:.76rem;letter-spacing:.02em;overflow-wrap:anywhere}
+.cash-reserve-address button{border:0;color:#45dec9;background:transparent;padding:6px;cursor:pointer}
+.cash-reserve-note{margin:10px 0 0;font-size:.69rem;line-height:1.5;color:var(--muted,#9bb1bc)}
+.cash-reserve-error{color:#ff9090;font-size:.74rem;margin:10px 0 0}
+html[data-theme="light"] .cash-reserve-panel,html[data-theme="arctic"] .cash-reserve-panel,html[data-theme="white"] .cash-reserve-panel{background:linear-gradient(140deg,rgba(27,174,157,.07),rgba(190,220,229,.16));border-color:rgba(8,116,106,.24)}
+html[data-theme="light"] .cash-reserve-box,html[data-theme="arctic"] .cash-reserve-box,html[data-theme="white"] .cash-reserve-box,html[data-theme="light"] .cash-reserve-asset,html[data-theme="arctic"] .cash-reserve-asset{background:rgba(60,103,120,.045)}
+@media(max-width:740px){.cash-reserve-grid{grid-template-columns:1fr}.cash-reserve-assets{grid-template-columns:repeat(2,minmax(0,1fr))}.cash-reserve-asset:last-child{grid-column:1/-1}.cash-reserve-head{align-items:flex-start;flex-wrap:wrap}.cash-reserve-chart-head{align-items:flex-start;flex-wrap:wrap}}
+@media(max-width:390px){.cash-reserve-panel{padding:14px}.cash-reserve-assets{gap:7px}.cash-reserve-asset{padding:11px}.cash-reserve-total{font-size:2.15rem}}
