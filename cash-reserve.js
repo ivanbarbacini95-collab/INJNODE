@@ -10,7 +10,7 @@
   const $ = (id) => document.getElementById(id);
   if (!$('cashReservePanel')) return;
 
-  const state = { amounts: null, usd: null, fx: null, lastSync: 0, loading: false, error: false, partial: false, errorDetail: '', privacy: false, target: 0, currency: 'USD', lang: 'it', range: 'ALL', history: [], portfolio: null, pendingDrop: null, reconciling: false };
+  const state = { amounts: null, usd: null, fx: null, lastSync: 0, loading: false, error: false, partial: false, errorDetail: '', privacy: false, target: 0, currency: 'USD', lang: 'it', range: 'ALL', history: [], portfolio: null, pendingDrop: null, reconciling: false, selectedTime: null, chartExploring: false, chartSelect: null, chartPoints: [] };
   const historyKey = () => KEY_HISTORY;
   const phrases = {
     it: {reserve:'CASH RESERVE', sub:'Riserva patrimoniale · Injective + Solana', nominal:'Valore nominale della riserva', note:'Valore nominale: 1 stablecoin = 1 USD. Non è una quotazione di mercato né un capitale assicurato.', target:'Obiettivo di accumulo', targetHint:'Imposta un obiettivo in USD', save:'Salva', noGoal:'Nessun obiettivo impostato', ofGoal:'del target', history:'Evoluzione riserva', historyEmpty:'Lo storico si formerà da questo dispositivo a partire dalle prossime sincronizzazioni.', sync:'Sincronizza', updating:'Sincronizzazione…', online:'Online', offline:'Offline', pending:'In attesa', copied:'Indirizzo copiato', copy:'Copia', privacy:'Privacy', address:'Wallet di riserva', updated:'Aggiornato', noFX:'Cambio EUR/USD temporaneamente non disponibile', source:'Sola lettura · saldo on-chain · nessuna firma richiesta', warning:'Solo USDC nativo su Injective e USDC/USDT ufficiali su Solana. I saldi delle due reti restano distinti.', solPlaceholder:'Indirizzo pubblico wallet Solana', solMissing:'Solana non configurata: totale riferito solo a Injective.', solConfigured:'Solana collegata · lettura pubblica dei saldi', solInvalid:'Indirizzo Solana non valido.', partial:'Parziale', solFailed:'Impossibile leggere Solana; verifica la rete RPC.', injFailed:'Impossibile leggere Injective; verifica la rete LCD.', failed:'Saldo non verificabile: controlla la rete o riprova.', fx:'Controvalore stimato con cambio di riferimento USD/EUR.'},
@@ -180,55 +180,154 @@
     $('cashGoalTotal').textContent = state.target > 0 ? shown(money(state.target)) : '—';
     $('cashGoalAmount').value = state.target > 0 ? String(state.target) : '';
   };
+  // Periodic samples are throttled to preserve months/years of history.
+  // Meaningful movements create distinct event points, while earned interest
+  // remains in the total and is not falsely presented as an external deposit.
   const saveSnapshot = () => {
-    if (state.usd == null) return;
+    if (state.usd == null || !Number.isFinite(state.usd)) return;
     const now = Date.now();
     const last = state.history[state.history.length-1];
-    if (!last || Math.abs(last.v - state.usd) > 0.000001 || now - last.t > 3600000) {
-      state.history.push({t:now,v:state.usd});
-      state.history = state.history.slice(-1800);
-      store(historyKey(),state.history);
+    if (!last) {
+      state.history.push({t:now,v:state.usd,kind:'start',delta:0});
+    } else {
+      const delta = state.usd - last.v;
+      const elapsed = Math.max(0,now-last.t);
+      const daily = (state.portfolio?.jupiter?.positions||[]).reduce((sum,p)=>sum+(Number(p.day)||0),0);
+      const expectedYield = daily*Math.min(elapsed/86400000,14);
+      const eventLimit = Math.max(0.02,last.v*0.00002,delta>0?expectedYield*2.5+0.02:0);
+      const kind = delta < -eventLimit ? 'out' : delta > eventLimit ? 'in' : 'sample';
+      if(kind!=='sample'||elapsed>=900000) {
+        state.history.push({t:now,v:state.usd,kind,delta});
+      }
     }
+    state.history = state.history.slice(-12000);
+    store(historyKey(),state.history);
   };
   const updateChart = () => {
     const chart = $('cashHistoryChart');
+    const viewport = $('cashChartScroll');
+    const detail = $('cashChartDetail');
+    if(!chart||!viewport||!detail)return;
     const now = Date.now();
-    const windows = { '1M':30*86400000,'3M':90*86400000,'6M':180*86400000,'1Y':365*86400000,'ALL':Infinity };
-    let points = state.history.filter(p => p.t >= now-windows[state.range]);
-    const current = state.usd != null ? {t:now,v:state.usd} : null;
-    if (current && (!points.length || points[points.length-1].t < now-5000)) points.push(current);
-    chart.textContent = '';
-    $('cashChartEmpty').hidden = points.length > 1;
-    if (points.length <= 1) return;
-    const minT = points[0].t, maxT = Math.max(now,points[points.length-1].t,minT+1000);
-    const lo = Math.min(...points.map(p => p.v)), hi = Math.max(...points.map(p=>p.v));
-    const padding = Math.max((hi-lo)*0.12,hi*0.015,1);
-    const yMin = Math.max(0,lo-padding), yMax = hi+padding;
-    const x = p => 8+(p.t-minT)/(maxT-minT)*644;
-    const y = p => 164 - (p.v-yMin)/(yMax-yMin)*146;
-    const ns = 'http://www.w3.org/2000/svg';
-    const shape = (tag,attributes) => {
-      const element = document.createElementNS(ns,tag);
-      Object.entries(attributes).forEach(([k,v]) => element.setAttribute(k,String(v)));
-      chart.appendChild(element);
-      return element;
+    const windows = {'1M':30*86400000,'3M':90*86400000,'6M':180*86400000,'1Y':365*86400000,'ALL':Infinity};
+    const saved = state.history.filter(p=>p.t>=now-windows[state.range]);
+    const points = saved.slice();
+    if(state.usd!=null&&!state.error&&!state.reconciling&&now-state.lastSync<120000) {
+      const last=points[points.length-1];
+      if(!last||now-last.t>5000)points.push({t:now,v:state.usd,kind:'live',delta:last?state.usd-last.v:0});
+    }
+    state.chartPoints=points;
+    chart.replaceChildren();
+    const empty=$('cashChartEmpty');
+    empty.hidden=points.length>1;
+    const previousLeft=viewport.scrollLeft;
+    const navPrev=$('cashChartPrev'),navNext=$('cashChartNext');
+    if(points.length<=1) {
+      detail.textContent=state.lang==='it'?'Lo storico apparirà dopo le prime rilevazioni complete.':'History appears after the first complete observations.';
+      if(navPrev)navPrev.disabled=true;
+      if(navNext)navNext.disabled=true;
+      $('cashChartFirst').textContent=points[0]?new Date(points[0].t).toLocaleDateString(state.lang==='it'?'it-IT':'en-US'):'—';
+      $('cashChartLast').textContent='—';
+      state.chartSelect=null;
+      return;
+    }
+    const w=Math.max(660,Math.min(12000,points.length*30));
+    chart.setAttribute('viewBox','0 0 '+w+' 180');
+    chart.style.width=w+'px';
+    const minT=points[0].t,maxT=Math.max(points[points.length-1].t,minT+1000);
+    const values=points.map(p=>p.v);
+    const lo=Math.min(...values),hi=Math.max(...values);
+    const padding=Math.max((hi-lo)*.12,hi*.015,1);
+    const yMin=Math.max(0,lo-padding),yMax=hi+padding;
+    const x=p=>12+(p.t-minT)/(maxT-minT)*(w-24);
+    const y=p=>164-(p.v-yMin)/(yMax-yMin)*146;
+    const ns='http://www.w3.org/2000/svg';
+    const shape=(tag,attrs)=>{
+      const el=document.createElementNS(ns,tag);
+      Object.entries(attrs).forEach(([k,v])=>el.setAttribute(k,String(v)));
+      chart.appendChild(el);
+      return el;
     };
-    [24,72,120,164].forEach(y => shape('line',{x1:8,x2:652,y1:y,y2:y,stroke:'currentColor','stroke-opacity':'.12','stroke-dasharray':'3 6'}));
-    let d = 'M '+x(points[0]).toFixed(1)+' '+y(points[0]).toFixed(1);
-    // Interest increases are joined between verified snapshots; outflows are stepped.
-    // No projected yield, smoothing artefacts, or inferred deposits.
-    points.slice(1).forEach((p,i) => {
-      const px=x(p).toFixed(1),py=y(p).toFixed(1);
-      const prior=points[i];
-      const delta=p.v-prior.v;
-      const smallYield=delta>=0&&delta<=Math.max(0.05,prior.v*0.001);
-      d+=(smallYield?' L '+px+' '+py:' H '+px+' V '+py);
+    [24,72,120,164].forEach(yy=>shape('line',{x1:12,x2:w-12,y1:yy,y2:yy,stroke:'currentColor','stroke-opacity':'.12','stroke-dasharray':'3 6','pointer-events':'none'}));
+    let d='M '+x(points[0]).toFixed(2)+' '+y(points[0]).toFixed(2);
+    points.slice(1).forEach((p,i)=>{
+      const prev=points[i],delta=p.v-prev.v;
+      const smallYield=delta>=0&&delta<=Math.max(.05,prev.v*.001);
+      d+=(smallYield?' L ':' H ')+x(p).toFixed(2)+(smallYield?' ':' V ')+y(p).toFixed(2);
     });
-    shape('path',{d,fill:'none',stroke:'#45e5ce','stroke-width':2.6,'stroke-linejoin':'round','stroke-linecap':'round'});
-    const end = points[points.length-1];
-    shape('circle',{cx:x(end),cy:y(end),r:4,fill:'#45e5ce'});
-    $('cashChartFirst').textContent = new Date(minT).toLocaleDateString(state.lang==='it'?'it-IT':'en-US');
-    $('cashChartLast').textContent = new Date(now).toLocaleDateString(state.lang==='it'?'it-IT':'en-US');
+    shape('path',{d,fill:'none',stroke:'#45e5ce','stroke-width':2.6,'stroke-linejoin':'round','stroke-linecap':'round','pointer-events':'none'});
+    points.forEach((p,i)=>{
+      if(!['in','out'].includes(p.kind))return;
+      shape('circle',{cx:x(p),cy:y(p),r:4.5,fill:p.kind==='in'?'#48e4a4':'#ff7782',stroke:'var(--surface,#10202c)','stroke-width':1.5,'pointer-events':'none'});
+    });
+    const cursor=shape('line',{x1:0,y1:15,x2:0,y2:165,stroke:'#c2f8ec','stroke-width':1,'stroke-dasharray':'3 4','stroke-opacity':'.75','pointer-events':'none'});
+    const dot=shape('circle',{cx:0,cy:0,r:5,fill:'#45e5ce',stroke:'var(--surface,#10202c)','stroke-width':2,'pointer-events':'none'});
+    const locale=state.lang==='it'?'it-IT':'en-US';
+    const describe=p=>{
+      if(p.kind==='in')return state.lang==='it'?'Aumento rilevato':'Detected increase';
+      if(p.kind==='out')return state.lang==='it'?'Diminuzione rilevata':'Detected decrease';
+      if(p.kind==='live')return state.lang==='it'?'Saldo in tempo reale':'Live balance';
+      if(p.kind==='start')return state.lang==='it'?'Inizio rilevazioni':'History start';
+      return state.lang==='it'?'Rilevazione verificata':'Verified observation';
+    };
+    const selectPoint=(index,reveal=false)=>{
+      const i=Math.max(0,Math.min(points.length-1,index));
+      const p=points[i];
+      state.selectedTime=p.t;
+      state.chartIndex=i;
+      cursor.setAttribute('x1',x(p));cursor.setAttribute('x2',x(p));
+      dot.setAttribute('cx',x(p));dot.setAttribute('cy',y(p));
+      dot.setAttribute('fill',p.kind==='out'?'#ff7782':p.kind==='in'?'#48e4a4':'#45e5ce');
+      const stamp=new Date(p.t).toLocaleString(locale,{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+      const previous=points[i-1];
+      const delta=Number.isFinite(p.delta)?p.delta:(previous?p.v-previous.v:0);
+      const sign=delta>0?'+':'';
+      const suffix=p.kind==='start'?'':(' · '+(state.privacy?'••••••':sign+money(delta)));
+      detail.replaceChildren();
+      const label=document.createElement('strong');
+      label.textContent=stamp+' · '+describe(p);
+      const amount=document.createElement('span');
+      amount.textContent=shown(money(p.v))+' USD'+suffix;
+      amount.className=delta<0?'cash-history-negative':delta>0?'cash-history-positive':'';
+      detail.append(label,amount);
+      if(navPrev)navPrev.disabled=i===0;
+      if(navNext)navNext.disabled=i===points.length-1;
+      if(reveal){
+        const center=x(p)-viewport.clientWidth/2;
+        viewport.scrollLeft=Math.max(0,Math.min(viewport.scrollWidth-viewport.clientWidth,center));
+      }
+    };
+    state.chartSelect=selectPoint;
+    const nearest=clientX=>{
+      const bounds=chart.getBoundingClientRect();
+      if(!bounds.width)return points.length-1;
+      const xx=(clientX-bounds.left)/bounds.width*w;
+      let a=0,b=points.length-1;
+      while(a<b){const mid=(a+b)>>1;if(x(points[mid])<xx)a=mid+1;else b=mid;}
+      return a>0&&Math.abs(x(points[a-1])-xx)<Math.abs(x(points[a])-xx)?a-1:a;
+    };
+    chart.onpointermove=e=>{
+      if(e.pointerType==='touch'&&e.buttons===0)return;
+      state.chartExploring=true;
+      selectPoint(nearest(e.clientX));
+    };
+    chart.onpointerdown=e=>{
+      state.chartExploring=true;
+      selectPoint(nearest(e.clientX));
+    };
+    chart.onkeydown=e=>{
+      if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;
+      e.preventDefault();state.chartExploring=true;
+      const current=state.chartIndex??points.length-1;
+      selectPoint(e.key==='Home'?0:e.key==='End'?points.length-1:current+(e.key==='ArrowLeft'?-1:1),true);
+    };
+    const selected=state.chartExploring&&state.selectedTime!=null
+      ?points.reduce((best,p,i)=>Math.abs(p.t-state.selectedTime)<Math.abs(points[best].t-state.selectedTime)?i:best,0)
+      :points.length-1;
+    selectPoint(selected);
+    viewport.scrollLeft=state.chartExploring?previousLeft:viewport.scrollWidth;
+    $('cashChartFirst').textContent=new Date(minT).toLocaleDateString(locale);
+    $('cashChartLast').textContent=new Date(maxT).toLocaleDateString(locale);
   };
   const render = () => { readPrefs(); updateTexts(); updateAmounts(); pickCurrency(); updateGoal(); updateStatus(); updateChart(); renderPortfolio(); };
   async function getJSON(url,ms=6500) {
@@ -279,9 +378,9 @@
       ?p.inj.usdc+p.sol.usdc+p.sol.usdt+p.jupiter.usdc+p.jupiter.usdt:null;
     const last=state.history[state.history.length-1];
     state.reconciling=false;
-    // On deposit/withdraw transitions, Solana RPC and Jupiter indexer can temporarily
-    // disagree. Require four complete snapshots before recording a genuine decline.
-    if(candidate!=null&&last&&candidate<last.v-Math.max(0.01,last.v*0.00001)){
+    // RPC and Jupiter may disagree briefly in EITHER direction during Earn
+    // deposits/redemptions. Confirm material balance shifts before charting them.
+    if(candidate!=null&&last&&Math.abs(candidate-last.v)>Math.max(0.1,last.v*0.0005)){
       const pending=state.pendingDrop;
       if(!pending||Math.abs(pending.value-candidate)>Math.max(0.02,candidate*0.0001))
         state.pendingDrop={value:candidate,count:1};
@@ -303,7 +402,7 @@
     render();
   }
   function boot() {
-    state.history = (load(historyKey(),[]) || []).filter(p=>Number.isFinite(p?.t)&&Number.isFinite(p?.v)&&p.v>=0).slice(-1800);
+    state.history = (load(historyKey(),[]) || []).filter(p=>Number.isFinite(p?.t)&&Number.isFinite(p?.v)&&p.v>=0).sort((a,b)=>a.t-b.t).slice(-12000);
     state.target = Math.max(0,Number(load(KEY_TARGET,0))||0);
     state.privacy = !!load(KEY_PRIVACY,false);
     $('cashPrivacy').setAttribute('aria-pressed',String(state.privacy));
@@ -324,9 +423,15 @@
       render();
     });
     $('cashSync').addEventListener('click',()=>void sync());
+    const chartScroll=$('cashChartScroll');
+    ['touchstart','wheel','pointerdown'].forEach(type=>chartScroll?.addEventListener(type,()=>{state.chartExploring=true;},{passive:true}));
+    $('cashChartPrev')?.addEventListener('click',()=>{state.chartExploring=true;state.chartSelect?.((state.chartIndex??state.chartPoints.length-1)-1,true);});
+    $('cashChartNext')?.addEventListener('click',()=>{state.chartExploring=true;state.chartSelect?.((state.chartIndex??0)+1,true);});
+    $('cashChartLatest')?.addEventListener('click',()=>{state.chartExploring=false;state.selectedTime=null;updateChart();});
     document.querySelectorAll('[data-cash-range]').forEach(button=>{
       button.addEventListener('click',()=>{
         state.range=button.dataset.cashRange;
+        state.chartExploring=false;state.selectedTime=null;
         document.querySelectorAll('[data-cash-range]').forEach(el=>el.setAttribute('aria-pressed',String(el===button)));
         updateChart();
       });
