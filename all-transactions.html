@@ -128,7 +128,7 @@ function changeWallet(value){
  current=value;try{sessionStorage.setItem('inj_all_transaction_selected',value);}catch(_){}
  setText('atMask',lang('Indirizzo non mostrato · sola lettura','Address not displayed · read only'));
  setText('atNetwork',chainOf(value)==='solana'?'SOLANA':'INJECTIVE');
- category='all';$('atSearch').value='';$('atFrom').value='';$('atTo').value='';renderFilters();
+ category='all';solCursors={};$('atSearch').value='';$('atFrom').value='';$('atTo').value='';renderFilters();
  retrieve(false);
 }
 function stateText(status,message){
@@ -149,8 +149,8 @@ function initializeTranslations(){
  $('atSearch').placeholder=lang('Cerca hash, categoria, token...','Search hash, category, token...');
  setText('atMore',lang('Carica precedenti','Load older transactions'));
  setText('atDisclaimer',lang(
- 'Lo storico mostra le transazioni confermate indicizzate dagli endpoint pubblici Injective. Operazioni interne a dApp, attività off-chain e transazioni storiche non indicizzate potrebbero non apparire. Nessuna chiave privata necessaria.',
- 'History displays confirmed transactions indexed by public Injective endpoints. Internal dApp actions, off-chain activity and older unindexed transactions may be unavailable. No private keys required.'));
+ 'Storico on-chain parziale quando gli indexer pubblici non espongono tutte le transazioni: su Solana gli account token già chiusi e alcune operazioni DeFi interne possono mancare. Depositi, staking e bridge non sono necessariamente uscite dal patrimonio. Controvalori storici non disponibili senza un feed dedicato. Nessuna chiave privata necessaria.',
+ 'On-chain history can be incomplete when public indexers do not expose all transactions: closed Solana token accounts and some internal DeFi actions may be missing. Deposits, staking and bridges are not necessarily portfolio withdrawals. Historical fiat values require a dedicated feed. No private keys needed.'));
  $('atBack').setAttribute('aria-label',lang('Torna a Tools','Back to Tools'));
  $('atRefresh').setAttribute('aria-label',lang('Aggiorna transazioni','Refresh transactions'));
 }
@@ -226,7 +226,7 @@ function categorize(messages,events,addr){
  if(/msgcreate.*order|msgcancel.*order|msgbatchupdateorders|msgliquidateposition/.test(combined))return 'trading';
  if(/msgvote|msgsubmitproposal|msgdeposit/.test(combined))return 'governance';
  if(/swap/.test(eventNames))return 'swap';
- if(/msgexecutecontract|msginstantiatecontract/.test(combined))return 'swap';
+ if(/msgexecutecontract|msginstantiatecontract/.test(combined))return 'defi';
  if(/msgsend|msgmultisend/.test(combined)){
   var sent=messages.some(function(m){return String(m.from_address||'').toLowerCase()===addr;});
   var received=messages.some(function(m){return String(m.to_address||'').toLowerCase()===addr;});
@@ -262,15 +262,18 @@ function normalize(tx,response,addr){
  return {hash:hash,time:response.timestamp||'',height:String(response.height||''),cat:cat,dir:direction,amount:formatAmount,asset:first?first.symbol:'',failed:failures,fee:amountParts(Array.isArray(fee)?fee.map(function(v){return String(v.amount||'')+String(v.denom||'');}):[]).map(function(x){return x.n+' '+x.symbol;}).join(', '),peers:peers.slice(0,4),msgs:messages.map(function(m){return String(m['@type']||m.type||'').split('.').pop();}).slice(0,6)};
 }
 function titleFor(item){
- var types={received:lang('Ricevuta','Received'),sent:lang('Invio','Sent'),staking:'Staking',reward:'Reward',swap:'Swap / DeFi',bridge:'Bridge / IBC',trading:'Trading',governance:'Governance',other:lang('Operazione on-chain','On-chain activity')};
+ var types={received:lang('Ricevuta','Received'),sent:lang('Invio','Sent'),staking:'Staking',reward:'Reward',swap:'Swap',defi:'DeFi',bridge:'Bridge / IBC',trading:'Trading',governance:'Governance',other:lang('Operazione on-chain','On-chain activity')};
  return types[item.cat]||types.other;
 }
 function iconFor(item){
- return {received:'↙',sent:'↗',staking:'⬡',reward:'✧',swap:'⇄',bridge:'⇢',trading:'≋',governance:'◈',other:'•'}[item.cat]||'•';
+ return {received:'↙',sent:'↗',staking:'⬡',reward:'✧',swap:'⇄',defi:'▣',bridge:'⇢',trading:'≋',governance:'◈',other:'•'}[item.cat]||'•';
 }
 function render(){
  var filtered=rows.filter(function(item){
   if(category!=='all'&&item.cat!==category)return false;
+  var from=$('atFrom').value,to=$('atTo').value,time=Date.parse(item.time||'');
+  if(from&&(!Number.isFinite(time)||time<new Date(from+'T00:00:00').getTime()))return false;
+  if(to&&(!Number.isFinite(time)||time>new Date(to+'T23:59:59.999').getTime()))return false;
   var needle=$('atSearch').value.trim().toLowerCase();
   return !needle||[item.hash,item.asset,titleFor(item),item.amount,item.height].concat(item.peers||[]).join(' ').toLowerCase().includes(needle);
  });
@@ -279,7 +282,7 @@ function render(){
  setText('atTotal',String(rows.length));setText('atIn',String(inCount));setText('atOut',String(outCount));
  setText('atCount',filtered.length+'/'+rows.length+' '+lang('caricate','loaded'));
  var host=$('atRows');host.replaceChildren();
- if(!current){host.innerHTML='<p class="notice center">'+lang('Salva un wallet Injective nella Home per vedere le sue transazioni.','Save an Injective wallet in Home to view its transactions.')+'</p>';$('atMore').classList.add('hidden');return;}
+ if(!current){host.innerHTML='<p class="notice center">'+lang('Nessun wallet salvato disponibile.','No saved wallet available.')+'</p>';$('atMore').classList.add('hidden');return;}
  if(!filtered.length){
   var message=busy?lang('Caricamento delle transazioni...','Loading transactions...'):rows.length?lang('Nessun risultato con questi filtri.','No matches for these filters.'):dataQuality==='error'?lang('Impossibile recuperare lo storico in questo momento.','Unable to load transaction history right now.'):lang('Nessuna transazione disponibile dalle fonti interrogate.','No transactions available from queried sources.');
   host.innerHTML='<p class="notice center'+(dataQuality==='error'?' error':'')+'">'+esc(message)+'</p>';
@@ -290,12 +293,15 @@ function render(){
   var amount=(item.dir==='in'?'+':item.dir==='out'?'−':'')+(item.amount||'—');
   var peer=item.peers&&item.peers.length?short(item.peers[0]):'—';
   detail.innerHTML='<summary><span class="tx-icon '+(item.dir==='in'?'in':item.dir==='out'?'out':'')+'">'+iconFor(item)+'</span><span class="tx-center"><span class="tx-name"><strong>'+esc(titleFor(item))+'</strong></span><span class="tx-info">'+esc(fmtDate(item.time))+' · '+esc(short(item.hash))+'</span></span><span class="tx-right"><span class="tx-amount '+(item.dir==='in'?'in':item.dir==='out'?'out':'')+'">'+esc(amount)+'</span><br><span class="tx-status'+(item.failed?' failed':'')+'">'+esc(status)+'</span></span></summary>'+
-   '<div class="tx-details"><div class="tx-field"><small>HASH</small><div>'+esc(short(item.hash))+'</div></div>'+
+   '<div class="tx-details"><div class="tx-field"><small>HASH</small><div>'+esc(item.hash)+'</div></div>'+
    '<div class="tx-field"><small>'+lang('BLOCCO','BLOCK')+'</small><div>'+esc(item.height||'—')+'</div></div>'+
    '<div class="tx-field"><small>'+lang('CONTROPARTE','COUNTERPARTY')+'</small><div>'+esc(peer)+'</div></div>'+
    '<div class="tx-field"><small>FEE</small><div>'+esc(item.fee||'—')+'</div></div>'+
-   '<div class="tx-field full"><small>'+lang('MESSAGGI','MESSAGES')+'</small><div>'+esc((item.msgs||[]).join(', ')||'—')+'</div></div>'+
-   '<div class="full"><a class="tx-link" target="_blank" rel="noopener noreferrer" href="https://explorer.injective.network/transaction/'+encodeURIComponent(item.hash)+'">'+lang('Apri su Injective Explorer','Open in Injective Explorer')+' ↗</a></div></div>';
+   '<div class="tx-field"><small>'+lang('RETE','NETWORK')+'</small><div>'+esc((item.network||chainOf(current)).toUpperCase())+'</div></div>'+ 
+   '<div class="tx-field"><small>'+lang('VALORE STORICO','HISTORICAL VALUE')+'</small><div>'+lang('Non disponibile','Unavailable')+'</div></div>'+ 
+   '<div class="tx-field full"><small>'+lang('MESSAGGI','MESSAGES')+'</small><div>'+esc((item.msgs||[]).join(', ')||'—')+'</div></div>'+ 
+   (item.note?'<div class="tx-field full"><small>DeFi</small><div>'+esc(item.note)+'</div></div>':'')+
+   '<div class="full"><a class="tx-link" target="_blank" rel="noopener noreferrer" href="'+(item.network==='solana'?'https://solscan.io/tx/':'https://explorer.injective.network/transaction/')+encodeURIComponent(item.hash)+'">'+(item.network==='solana'?'Solscan':lang('Apri su Injective Explorer','Open in Injective Explorer'))+' ↗</a></div></div>';
   host.appendChild(detail);
  });
  $('atMore').classList.toggle('hidden',!current||!canLoad);
@@ -423,11 +429,15 @@ function start(){
  if(current)changeWallet(current);else{canLoad=false;stateText('idle',lang('Nessun wallet salvato','No saved wallet'));render();}
  $('atWallet').addEventListener('change',function(){changeWallet(this.value);});
  $('atSearch').addEventListener('input',render);
+ $('atFrom').addEventListener('change',render);
+ $('atTo').addEventListener('change',render);
+ $('atClearDates').addEventListener('click',function(){$('atFrom').value='';$('atTo').value='';render();});
  $('atMore').addEventListener('click',function(){retrieve(true);});
  $('atRefresh').addEventListener('click',function(){SOURCES=['indexer'];retrieve(false);});
  $('atBack').addEventListener('click',function(){location.href='./index.html?tab=tools';});
  window.addEventListener('pageshow',function(){var next=readSaved();if(next.length!==saved.length){loadWallets();if(current)changeWallet(current);}});
  document.addEventListener('visibilitychange',function(){if(!document.hidden&&current&&!busy&&dataQuality!=='idle')retrieve(false);});
+ window.setInterval(function(){if(!document.hidden&&navigator.onLine&&current&&!busy)retrieve(false);},60000);
 }
 start();
 })();
