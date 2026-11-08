@@ -58,7 +58,8 @@ button,select,input{font:inherit}button{cursor:pointer}button:disabled{cursor:de
 'use strict';
 var addressPattern=/^inj1[0-9a-z]{38,60}$/i;
 var ENDPOINTS=['https://sentry.lcd.injective.network','https://lcd.injective.network','https://1rpc.io/inj-lcd'];
-var SOURCES=['indexer','message.sender','transfer.recipient','coin_received.receiver'];
+var SOURCES=['indexer'];
+var LCD_SOURCES=['message.sender','transfer.recipient','coin_received.receiver'];
 var PAGE_SIZE=30;
 var CACHE_KEY='inj_all_transactions_cache_v1';
 var CATEGORY=[
@@ -112,7 +113,7 @@ function loadWallets(){
 }
 function changeWallet(value){
  if(!addressPattern.test(value))return;
- cancelled();generation++;busy=false;
+ cancelled();generation++;busy=false;SOURCES=['indexer'];
  current=value;try{sessionStorage.setItem('inj_all_transaction_selected',value);}catch(_){}
  setText('atMask',lang('Indirizzo nascosto · '+short(value),'Address hidden · '+short(value)));
  category='all';$('atSearch').value='';renderFilters();
@@ -385,6 +386,11 @@ async function retrieve(more){
    if(result.reason&&result.reason.name==='AbortError')return;
   }
  });
+ if(!succeeded&&sources.includes('indexer')){
+  SOURCES=LCD_SOURCES.slice();offsetBySource={};doneBySource={};busy=false;
+  stateText('partial',lang('Verifica sorgente alternativa...','Trying alternate source...'));
+  return retrieve(false);
+ }
  if(succeeded){
   var seen=new Map();
   rows.concat(fresh).forEach(function(item){if(item&&item.hash)seen.set(item.hash,item);});
@@ -403,7 +409,7 @@ function start(){
  $('atWallet').addEventListener('change',function(){changeWallet(this.value);});
  $('atSearch').addEventListener('input',render);
  $('atMore').addEventListener('click',function(){retrieve(true);});
- $('atRefresh').addEventListener('click',function(){retrieve(false);});
+ $('atRefresh').addEventListener('click',function(){SOURCES=['indexer'];retrieve(false);});
  $('atBack').addEventListener('click',function(){location.href='./index.html?tab=tools';});
  window.addEventListener('pageshow',function(){var next=readSaved();if(next.length!==saved.length){loadWallets();if(current)changeWallet(current);}});
  document.addEventListener('visibilitychange',function(){if(!document.hidden&&current&&!busy&&dataQuality!=='idle')retrieve(false);});
