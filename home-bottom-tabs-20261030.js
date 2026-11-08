@@ -35,6 +35,26 @@
    return card;
  }
  ensureAllTransactionsLauncher();
+
+ // Ensure premium icon/title remain visible without browser link underlines.
+ if(!document.getElementById('injAllTransactionsToolsTilePolish')){
+   const style=document.createElement('style');
+   style.id='injAllTransactionsToolsTilePolish';
+   style.textContent=[
+     'html[data-inj-page="index"] body #entryGate#entryGate#entryGate #entryAllTransactionsButton,',
+     'html[data-inj-page="index"] body #entryGate#entryGate#entryGate #entryAllTransactionsButton:link,',
+     'html[data-inj-page="index"] body #entryGate#entryGate#entryGate #entryAllTransactionsButton:visited',
+     '{text-decoration:none!important;text-decoration-line:none!important;}',
+     'html[data-inj-page="index"] body #entryGate#entryGate#entryGate #entryAllTransactionsButton .inj-home-tile-title',
+     '{text-decoration:none!important;text-decoration-line:none!important;border-bottom:0!important;box-shadow:none!important;}',
+     'html[data-inj-page="index"] body #entryGate#entryGate#entryGate #entryAllTransactionsButton .inj-home-tile-title::after',
+     '{display:none!important;content:none!important;}',
+     'html[data-inj-page="index"] body #entryGate#entryGate#entryGate #entryAllTransactionsButton .entry-action-icon svg',
+     '{display:block!important;width:29px!important;height:29px!important;fill:none!important;stroke:currentColor!important;opacity:1!important;}'
+   ].join('');
+   document.head.appendChild(style);
+ }
+
  
  // Tools tile polish: preserve a compact 4-chart logo and remove every
  // anchor/title underline, including theme pseudo-elements and link states.
