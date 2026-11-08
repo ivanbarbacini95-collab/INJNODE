@@ -18,6 +18,19 @@
   const INJ_LCD = ['https://sentry.lcd.injective.network:443','https://lcd.injective.network','https://1rpc.io/inj-lcd'];
   const SOL_RPC = ['https://public.rpc.solanavibestation.com','https://api.mainnet-beta.solana.com','https://rpc.solanatracker.io/public','https://solana-rpc.publicnode.com'];
   const APR_URL = 'https://api.ui.injective.network/api/v1/cache/stats/apr';
+  const JUP_LEND = 'https://api.jup.ag/lend/v1/earn';
+  const JUP_TOKENS = 'https://api.jup.ag/tokens/v2/search?query=';
+  const USDC_SOL_MINT = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
+  const USDT_SOL_MINT = 'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB';
+  const TRUST = 'https://assets-cdn.trustwallet.com/blockchains/';
+  const LOGOS = Object.freeze({
+    inj: TRUST+'injective/info/logo.png',
+    sol: TRUST+'solana/info/logo.png',
+    usdc: TRUST+'solana/assets/'+USDC_SOL_MINT+'/logo.png',
+    usdt: TRUST+'solana/assets/'+USDT_SOL_MINT+'/logo.png'
+  });
+  const solTokenCache = new Map();
+  let lendMarkets = null, lendMarketsTime = 0;
 
   async function json(url, options = {}, ms = 6700) {
     const abort = new AbortController();
@@ -58,8 +71,37 @@
       value:Number.isFinite(numberValue)?numberValue:null
     };
   }
-  function token(name,symbol,kind,raw,decimals,note) {
-    return {name,symbol,kind,amount:qty(raw,decimals),note:note||''};
+  function token(name,symbol,kind,raw,decimals,note,logoUrl=null,mint=null) {
+    return {name,symbol,kind,amount:qty(raw,decimals),note:note||'',logoUrl,mint};
+  }
+  function validLogo(url) {
+    try {
+      const u=new URL(String(url));
+      return u.protocol==='https:'&&!u.username&&!u.password&&!u.port&&
+        !/(?:^|\\.)(?:localhost|local|internal)$/.test(u.hostname)&&
+        ['assets-cdn.trustwallet.com','raw.githubusercontent.com','static.jup.ag',
+         'cdn.jup.ag','token.jup.ag','tokens.jup.ag','arweave.net','gateway.irys.xyz'].includes(u.hostname)
+        ?u.href:null;
+    } catch (_) {return null;}
+  }
+  async function enrichSolanaMetadata(mints) {
+    const unknown=mints.filter(m=>!MINTS[m]&&!solTokenCache.has(m));
+    if(unknown.length) {
+      try {
+        // Resolve against the exact mint, never the token symbol.
+        const data=await json(JUP_TOKENS+encodeURIComponent(unknown.slice(0,75).join(',')),{},6000);
+        const found=new Map(Array.isArray(data)?data.filter(x=>x&&unknown.includes(x.id)).map(x=>[x.id,x]):[]);
+        for(const mint of unknown){
+          const x=found.get(mint);
+          solTokenCache.set(mint,x?{
+            symbol:String(x.symbol||'TOK').slice(0,20),
+            name:String(x.name||'Token Solana').slice(0,70),
+            verified:x.isVerified===true,
+            logoUrl:validLogo(x.icon)
+          }:null);
+        }
+      } catch (_) { /* Keep balances visible even if token metadata is offline. */ }
+    }
   }
   async function injectiveBank() {
     const items=[];
@@ -79,8 +121,8 @@
     const active=items.filter(b=>/^\d+$/.test(String(b.amount))&&BigInt(b.amount)>0n);
     const results=await Promise.all(active.map(async(b,i)=>{
       const denom=String(b.denom||'');
-      if(denom==='inj')return token('Injective','INJ','native',b.amount,18,'Disponibile');
-      if(denom.toLowerCase()===INJ_USDC)return token('USD Coin','USDC','stable',b.amount,6,'USDC nativo Circle');
+      if(denom==='inj')return token('Injective','INJ','native',b.amount,18,'Disponibile',LOGOS.inj,'inj');
+      if(denom.toLowerCase()===INJ_USDC)return token('USD Coin','USDC','stable',b.amount,6,'USDC nativo Circle',LOGOS.usdc,INJ_USDC);
       try {
         const r=await lcd('/cosmos/bank/v1beta1/denoms_metadata/'+encodeURIComponent(denom));
         const m=r.metadata;
@@ -88,7 +130,7 @@
         if(m&&unit) {
           const label=String(m.symbol||m.name||'Token').slice(0,50);
           const short=String(m.symbol||'TOK').slice(0,12);
-          return token(label,short,'token',b.amount,unit.exponent,'Disponibile');
+          return token(label,short,'token',b.amount,unit.exponent,'Disponibile',null,denom);
         }
       }catch(_){}
       const v=token('Token Injective '+(i+1),'TOK','token',b.amount,0,'Unità base · metadati non disponibili');
@@ -113,7 +155,7 @@
     if(!responses)throw error||new Error('Solana unavailable');
     const assets=[];
     const lamports=String(responses[0].value??'0');
-    if(qty(lamports,9).positive)assets.push(token('Solana','SOL','native',lamports,9,'SOL disponibile'));
+    if(qty(lamports,9).positive)assets.push(token('Solana','SOL','native',lamports,9,'SOL disponibile',LOGOS.sol,'SOL'));
     const byMint=new Map();
     let unsupported=0;
     for(const arr of [responses[1].value,responses[2].value]) {
@@ -127,13 +169,20 @@
         byMint.set(mint,{dec,raw:(existing?.raw||0n)+BigInt(bal.amount)});
       }
     }
+    await enrichSolanaMetadata([...byMint.keys()]);
     let missing=0;
     for(const [mint,amount]of byMint){
       if(amount.raw===0n)continue;
       const official=MINTS[mint];
       // Never infer stablecoin identity from an unverified token symbol.
-      const label=official||{symbol:'TOK',name:'Token Solana '+(++missing),kind:'token'};
-      assets.push(token(label.name,label.symbol,label.kind,amount.raw.toString(),amount.dec,official?'Token ufficiale':'Token SPL · nome non verificato'));
+      const meta=solTokenCache.get(mint);
+      const label=official||meta||{symbol:'TOK',name:'Token Solana '+(++missing),kind:'token'};
+      const logo=official?.kind==='stable'?(mint===USDC_SOL_MINT?LOGOS.usdc:LOGOS.usdt):
+        mint==='So11111111111111111111111111111111111111112'?LOGOS.sol:
+        meta?.logoUrl||TRUST+'solana/assets/'+mint+'/logo.png';
+      assets.push(token(label.name,label.symbol,label.kind||'token',amount.raw.toString(),amount.dec,
+        official?'Token ufficiale':meta?.verified?'Token verificato · Jupiter':'Token SPL · identità non verificata',
+        logo,mint));
     }
     return {
       assets,
@@ -141,6 +190,77 @@
       usdt:assets.find(a=>a.kind==='stable'&&a.symbol==='USDT')?.amount.value||0,
       unsupported
     };
+  }
+  function asRatePercent(raw) {
+    // Jupiter REST data has historically used fractions (0.06=6%) and 1e4 basis points.
+    const n=Number(raw);
+    if(!Number.isFinite(n)||n<0)return null;
+    const v=n>100?n/100:n<=1?n*100:n;
+    return v>=0&&v<=100?v:null;
+  }
+  function marketMint(market) {
+    return String(market?.assetAddress||market?.asset?.address||market?.asset?.id||'');
+  }
+  async function jupiterEarn() {
+    // Read-only Jupiter Lend Earn API. Does not require wallet connection or signatures.
+    // A failed API must NOT silently turn an invested balance into zero.
+    const raw=await json(JUP_LEND+'/positions?users='+encodeURIComponent(SOL_ACCOUNT),{},11000);
+    const rows=Array.isArray(raw)?raw:raw?.data;
+    if(!Array.isArray(rows))throw new Error('Unexpected Jupiter positions response');
+    let markets=lendMarkets;
+    if(!markets||Date.now()-lendMarketsTime>600000) {
+      try {
+        const fetched=await json(JUP_LEND+'/tokens',{},10000);
+        if(Array.isArray(fetched)) {
+          markets=fetched;lendMarkets=fetched;lendMarketsTime=Date.now();
+        }
+      } catch (_) { /* Position balances can still be displayed without APY. */ }
+    }
+    const positions=[];
+    let usdc=0,usdt=0;
+    for(const row of rows){
+      if(row?.ownerAddress&&row.ownerAddress!==SOL_ACCOUNT)continue;
+      const rowToken=row?.token||{};
+      const tokenId=String(rowToken.address||rowToken.id||'');
+      const market=markets?.find(x=>x.address===tokenId||marketMint(x)===tokenId);
+      const asset=String(rowToken.assetAddress||rowToken.asset?.address||marketMint(market)||tokenId);
+      const decimals=Number(rowToken.decimals??market?.asset?.decimals??market?.decimals);
+      if(!Number.isInteger(decimals)||decimals<0||decimals>30)continue;
+      let amount;
+      try { amount=qty(String(row.underlyingAssets),decimals).value; } catch (_) {continue;}
+      if(!Number.isFinite(amount)||amount<=0)continue;
+      const symbol=asset===USDC_SOL_MINT?'USDC':asset===USDT_SOL_MINT?'USDT':
+        String(market?.asset?.symbol||rowToken.symbol||'TOKEN').replace(/^jl/i,'').slice(0,15);
+      const stable=asset===USDC_SOL_MINT||asset===USDT_SOL_MINT;
+      const apr=asRatePercent(market?.totalRate);
+      const logoUrl=stable?(asset===USDC_SOL_MINT?LOGOS.usdc:LOGOS.usdt):
+        validLogo(market?.asset?.logo_url)||null;
+      positions.push({
+        kind:'jupiter',name:'Jupiter Earn · '+symbol,network:'Solana',asset:symbol,
+        amount,apr,rateKind:'APY',rewards:null,day:apr==null?null:amount*(Math.pow(1+apr/100,1/365)-1),
+        logoUrl,assetMint:asset,stable,source:'Jupiter Lend · on-chain shares'
+      });
+      if(asset===USDC_SOL_MINT)usdc+=amount;
+      if(asset===USDT_SOL_MINT)usdt+=amount;
+    }
+    // Read accrued earnings separately; underlyingAssets already includes them.
+    if(positions.length){
+      try {
+        const mints=[...new Set(positions.map(p=>p.assetMint))];
+        const earn=await json(JUP_LEND+'/earnings?user='+encodeURIComponent(SOL_ACCOUNT)+'&positions='+encodeURIComponent(mints.join(',')),{},6500);
+        if(Array.isArray(earn)){
+          for(const p of positions){
+            const e=earn.find(x=>x.ownerAddress===SOL_ACCOUNT&&x.address===p.assetMint);
+            if(e&&Number.isFinite(Number(e.earnings))&&Number(e.earnings)>=0){
+              const decimals=p.assetMint===USDC_SOL_MINT||p.assetMint===USDT_SOL_MINT?6:
+                Number(rows.find(x=>(x.token?.address||x.token?.id)===p.assetMint)?.token?.decimals??9);
+              p.rewards=Number(e.earnings)/Math.pow(10,decimals);
+            }
+          }
+        }
+      } catch (_) {/* Never invent accrued interest. */}
+    }
+    return {positions,usdc,usdt,available:true};
   }
   async function injectiveYield() {
     const [delegated,rewards,aprResponse]=await Promise.allSettled([
@@ -173,15 +293,17 @@
     };
   }
   async function scan() {
-    const done=await Promise.allSettled([injectiveBank(),solanaBank(),injectiveYield()]);
+    const done=await Promise.allSettled([injectiveBank(),solanaBank(),injectiveYield(),jupiterEarn()]);
     return {
       inj:done[0].status==='fulfilled'?done[0].value:null,
       sol:done[1].status==='fulfilled'?done[1].value:null,
       yield:done[2].status==='fulfilled'?done[2].value:null,
+      jupiter:done[3].status==='fulfilled'?done[3].value:null,
       errors:{
         inj:done[0].status==='rejected',
         sol:done[1].status==='rejected',
-        yield:done[2].status==='rejected'
+        yield:done[2].status==='rejected',
+        jupiter:done[3].status==='rejected'
       }
     };
   }
