@@ -143,6 +143,7 @@
 <link rel="stylesheet" href="./inj-signature-atmospheres-20261103.css?v=signature-preview-fidelity1">
 <link rel="stylesheet" href="./inj-theme-collections-20261103.css?v=families30-distinct2">
 <script src="./inj-six-themes-20261103.js?v=families30-classic-v2"></script>
+<link rel="stylesheet" href="./cash-reserve.css?v=20261108a">
 </head>
 <body>
   <div class="treasury-shell">
@@ -188,6 +189,72 @@
             <span class="treasury-ownership-loading">Sincronizzazione quote wallet…</span>
           </div>
         </div>
+      </section>
+
+      
+      <!-- Cash Reserve: standalone read-only stablecoin reserve, independent from INJ staking accounting. -->
+      <section class="cash-reserve-panel" id="cashReservePanel" aria-label="Cash Reserve · stablecoin Injective">
+        <div class="cash-reserve-head">
+          <div class="cash-reserve-title-row">
+            <span class="cash-reserve-shield" aria-hidden="true">⬡</span>
+            <div><h2>CASH RESERVE</h2><p data-cash-it="Riserva patrimoniale · Injective" data-cash-en="Capital reserve · Injective">Riserva patrimoniale · Injective</p></div>
+          </div>
+          <div class="cash-reserve-actions">
+            <span id="cashStatus" class="cash-pill is-idle" role="status" aria-live="polite">In attesa</span>
+            <button id="cashPrivacy" type="button" aria-label="Privacy" aria-pressed="false" title="Nascondi o mostra importi">◉</button>
+            <button id="cashSync" type="button">Sincronizza</button>
+          </div>
+        </div>
+        <div class="cash-reserve-top">
+          <div><span class="cash-reserve-eyebrow" data-cash-it="VALORE NOMINALE DELLA RISERVA" data-cash-en="NOMINAL RESERVE VALUE">VALORE NOMINALE DELLA RISERVA</span>
+            <strong id="cashTotal" class="cash-reserve-total" aria-live="polite">—</strong></div>
+          <select id="cashCurrency" aria-label="Valuta della riserva">
+            <option value="USD">USD</option><option value="EUR">EUR</option>
+          </select>
+        </div>
+        <div class="cash-reserve-assets">
+          <div class="cash-reserve-asset"><span class="cash-reserve-asset-label"><i class="cash-reserve-dot"></i>USDC</span><strong id="cashUsdc">—</strong><small>Circle · Native Injective</small></div>
+          <div class="cash-reserve-asset"><span class="cash-reserve-asset-label"><i class="cash-reserve-dot usdt"></i>USDT</span><strong id="cashUsdt">—</strong><small>Peggy · Ethereum bridge</small></div>
+          <div class="cash-reserve-asset"><span class="cash-reserve-asset-label"><i class="cash-reserve-dot legacy"></i>USDCnb</span><strong id="cashUsdcnb">—</strong><small>Legacy · Noble IBC</small></div>
+        </div>
+        <div class="cash-reserve-grid">
+          <div class="cash-reserve-box">
+            <div class="cash-reserve-goal-head"><strong data-cash-it="Obiettivo di accumulo" data-cash-en="Savings target">Obiettivo di accumulo</strong><span id="cashGoalTotal">—</span></div>
+            <form id="cashGoalForm" class="cash-reserve-goal-form">
+              <input id="cashGoalAmount" type="number" min="0" step="0.01" inputmode="decimal" aria-label="Obiettivo riserva in USD" placeholder="Imposta un obiettivo in USD" />
+              <button type="submit" data-cash-it="Salva" data-cash-en="Save">Salva</button>
+            </form>
+            <div class="cash-reserve-progress"><div id="cashProgressBar"></div></div>
+            <div class="cash-reserve-goal-bottom"><span id="cashGoalProgress">Nessun obiettivo impostato</span><span>USD</span></div>
+          </div>
+          <div class="cash-reserve-box">
+            <div class="cash-reserve-chart-head">
+              <strong data-cash-it="Evoluzione riserva" data-cash-en="Reserve history">Evoluzione riserva</strong>
+              <div class="cash-reserve-chart-ranges" role="group" aria-label="Periodo grafico">
+                <button type="button" data-cash-range="1M" aria-pressed="false">1M</button>
+                <button type="button" data-cash-range="3M" aria-pressed="false">3M</button>
+                <button type="button" data-cash-range="6M" aria-pressed="false">6M</button>
+                <button type="button" data-cash-range="1Y" aria-pressed="false">1Y</button>
+                <button type="button" data-cash-range="ALL" aria-pressed="true">ALL</button>
+              </div>
+            </div>
+            <svg id="cashHistoryChart" class="cash-reserve-chart-svg" viewBox="0 0 660 180" preserveAspectRatio="none" role="img" aria-label="Storico saldo Cash Reserve"></svg>
+            <p id="cashChartEmpty" class="cash-reserve-chart-empty" data-cash-it="Lo storico si formerà da questo dispositivo a partire dalle prossime sincronizzazioni." data-cash-en="History starts on this device with the next successful syncs.">Lo storico si formerà da questo dispositivo a partire dalle prossime sincronizzazioni.</p>
+            <div class="cash-reserve-chart-dates"><span id="cashChartFirst">—</span><span id="cashChartLast">—</span></div>
+          </div>
+        </div>
+        <div class="cash-reserve-statusline">
+          <span id="cashSyncInfo">In attesa</span>
+          <span data-cash-it="Sola lettura · saldo on-chain · nessuna firma richiesta" data-cash-en="Read-only · on-chain balance · no wallet signature required">Sola lettura · saldo on-chain · nessuna firma richiesta</span>
+        </div>
+        <div class="cash-reserve-address">
+          <span data-cash-it="Wallet di riserva" data-cash-en="Reserve wallet">Wallet di riserva</span>
+          <code id="cashWalletAddress">inj1…</code>
+          <button id="cashCopy" type="button">Copia</button>
+        </div>
+        <p class="cash-reserve-note" id="cashFxNote">Valore nominale: 1 stablecoin = 1 USD. Non è una quotazione di mercato né un capitale assicurato.</p>
+        <p class="cash-reserve-note" data-cash-it="USDCnb è una versione bridged/legacy e viene distinta da USDC nativo." data-cash-en="USDCnb is a bridged/legacy token, distinct from native USDC.">USDCnb è una versione bridged/legacy e viene distinta da USDC nativo.</p>
+        <p class="cash-reserve-error" id="cashError" role="alert"></p>
       </section>
 
       <section class="treasury-grid">
@@ -331,5 +398,6 @@
   <script src="./treasury.js?v=20261102-chainfix1" defer></script>
 
 
+  <script defer src="./cash-reserve.js?v=20261108a"></script>
 </body>
 </html>
