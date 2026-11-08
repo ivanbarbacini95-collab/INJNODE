@@ -86,7 +86,7 @@
     } catch (_) {return null;}
   }
   async function enrichSolanaMetadata(mints) {
-    const unknown=mints.filter(m=>!MINTS[m]&&!solTokenCache.has(m));
+    const unknown=mints.filter(m=>(!MINTS[m]||MINTS[m].kind==='receipt')&&!solTokenCache.has(m));
     if(unknown.length) {
       try {
         // Resolve against the exact mint, never the token symbol.
