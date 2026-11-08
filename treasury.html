@@ -143,7 +143,7 @@
 <link rel="stylesheet" href="./inj-signature-atmospheres-20261103.css?v=signature-preview-fidelity1">
 <link rel="stylesheet" href="./inj-theme-collections-20261103.css?v=families30-distinct2">
 <script src="./inj-six-themes-20261103.js?v=families30-classic-v2"></script>
-<link rel="stylesheet" href="./cash-reserve.css?v=20261108b">
+<link rel="stylesheet" href="./cash-reserve.css?v=20261108fullview1">
 </head>
 <body>
   <div class="treasury-shell">
@@ -328,7 +328,7 @@
         </article>
       </section>
 
-      <!-- Cash Reserve: standalone read-only stablecoin reserve, independent from INJ staking accounting. -->
+      <!-- Cash Reserve: wallet asset inventory and verified staking positions, separate from managed Treasury. -->
       <section class="cash-reserve-panel" id="cashReservePanel" aria-label="Cash Reserve · stablecoin Injective e Solana">
         <div class="cash-reserve-head">
           <div class="cash-reserve-title-row">
@@ -353,15 +353,36 @@
           <div class="cash-reserve-asset"><span class="cash-reserve-asset-label"><i class="cash-reserve-dot solana"></i>USDC · SOL</span><strong id="cashUsdcSol">—</strong><small>Circle · Solana</small></div>
           <div class="cash-reserve-asset"><span class="cash-reserve-asset-label"><i class="cash-reserve-dot usdt"></i>USDT · SOL</span><strong id="cashUsdtSol">—</strong><small>Tether · Solana</small></div>
         </div>
-        <div class="cash-reserve-solana-config">
-          <div class="cash-reserve-solana-label"><strong data-cash-it="Wallet Solana" data-cash-en="Solana wallet">Wallet Solana</strong><small data-cash-it="Solo indirizzo pubblico · mai la chiave privata" data-cash-en="Public address only · never a private key">Solo indirizzo pubblico · mai la chiave privata</small></div>
-          <form id="cashSolWalletForm" class="cash-reserve-solana-form">
-            <input id="cashSolAddress" type="text" spellcheck="false" autocomplete="off" autocapitalize="off" aria-label="Indirizzo pubblico wallet Solana" placeholder="Indirizzo pubblico wallet Solana" />
-            <button id="cashSolSave" type="submit">Salva</button>
-          </form>
-          <small id="cashSolStatus" class="cash-reserve-sol-status">Solana non configurata: totale riferito solo a Injective.</small>
-          <small id="cashSolAddressError" class="cash-reserve-error" role="alert"></small>
+        <div class="cash-reserve-networks" aria-label="Portafoglio completo per blockchain">
+          <section class="cash-network-card" aria-label="Token disponibili su Injective">
+            <header class="cash-network-head">
+              <div><small>ON-CHAIN WALLET</small><h3>Injective</h3></div>
+              <span class="cash-network-badge" id="cashInjAssetsStatus">SYNC</span>
+            </header>
+            <div class="cash-token-list" id="cashInjectiveTokens" aria-live="polite">
+              <p class="cash-token-empty">Sincronizzazione asset…</p>
+            </div>
+          </section>
+          <section class="cash-network-card" aria-label="Token disponibili su Solana">
+            <header class="cash-network-head">
+              <div><small>ON-CHAIN WALLET</small><h3>Solana</h3></div>
+              <span class="cash-network-badge" id="cashSolAssetsStatus">SYNC</span>
+            </header>
+            <div class="cash-token-list" id="cashSolanaTokens" aria-live="polite">
+              <p class="cash-token-empty">Sincronizzazione asset…</p>
+            </div>
+            <p class="cash-network-note" id="cashSolAssetsNote"></p>
+          </section>
         </div>
+        <section class="cash-reserve-yield" aria-label="Posizioni staking e rendite verificabili">
+          <div class="cash-yield-section-head">
+            <div><small>YIELD MONITOR</small><h3>Staking &amp; DeFi</h3></div>
+            <span id="cashTokenCount" class="cash-token-count">—</span>
+          </div>
+          <div id="cashYieldList" class="cash-yield-list" aria-live="polite">
+            <p class="cash-token-empty">Lettura delle posizioni e delle ricompense…</p>
+          </div>
+        </section>
         <div class="cash-reserve-grid">
           <div class="cash-reserve-box">
             <div class="cash-reserve-goal-head"><strong data-cash-it="Obiettivo di accumulo" data-cash-en="Savings target">Obiettivo di accumulo</strong><span id="cashGoalTotal">—</span></div>
@@ -392,13 +413,8 @@
           <span id="cashSyncInfo">In attesa</span>
           <span data-cash-it="Sola lettura · saldo on-chain · nessuna firma richiesta" data-cash-en="Read-only · on-chain balance · no wallet signature required">Sola lettura · saldo on-chain · nessuna firma richiesta</span>
         </div>
-        <div class="cash-reserve-address">
-          <span data-cash-it="Wallet di riserva" data-cash-en="Reserve wallet">Wallet di riserva</span>
-          <code id="cashWalletAddress">inj1…</code>
-          <button id="cashCopy" type="button">Copia</button>
-        </div>
         <p class="cash-reserve-note" id="cashFxNote">Valore nominale: 1 stablecoin = 1 USD. Non è una quotazione di mercato né un capitale assicurato.</p>
-        <p class="cash-reserve-note" data-cash-it="Solo USDC nativo su Injective e USDC/USDT ufficiali su Solana. I saldi delle due reti restano distinti." data-cash-en="Only native USDC on Injective and official USDC/USDT on Solana. Balances stay separated by network.">Solo USDC nativo su Injective e USDC/USDT ufficiali su Solana. I saldi delle due reti restano distinti.</p>
+        <p class="cash-reserve-note" data-cash-it="Le stablecoin verificate sono conteggiate nella riserva; tutti gli altri token sono elencati a parte." data-cash-en="Verified stablecoins count toward the reserve; all other tokens are displayed separately.">Le stablecoin verificate sono conteggiate nella riserva; tutti gli altri token sono elencati a parte.</p>
         <p class="cash-reserve-error" id="cashError" role="alert"></p>
       </section>
 
@@ -408,6 +424,7 @@
   <script src="./treasury.js?v=20261102-chainfix1" defer></script>
 
 
-  <script defer src="./cash-reserve.js?v=20261108b"></script>
+  <script defer src="./cash-portfolio-onchain.js?v=20261108fullview1"></script>
+  <script defer src="./cash-reserve.js?v=20261108fullview1"></script>
 </body>
 </html>
