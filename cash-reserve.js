@@ -196,7 +196,7 @@
       const expectedYield = daily*Math.min(elapsed/86400000,14);
       const eventLimit = Math.max(0.02,last.v*0.00002,delta>0?expectedYield*2.5+0.02:0);
       const kind = delta < -eventLimit ? 'out' : delta > eventLimit ? 'in' : 'sample';
-      if(kind!=='sample'||elapsed>=900000) {
+      if(kind!=='sample'||elapsed>=3600000) {
         state.history.push({t:now,v:state.usd,kind,delta});
       }
     }
