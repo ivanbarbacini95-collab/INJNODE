@@ -121,7 +121,8 @@ async function sourceAccounts(account,signal){
 async function load(account,cursors,signal){
  const sources=await sourceAccounts(account,signal);
  const fetched=await Promise.allSettled(sources.addresses.map(async a=>{
-  const config={limit:15,commitment:'confirmed'};
+  const config={limit:3,commitment:'confirmed'};
+  if(cursors&&cursors[a]==='END')return {account:a,records:[]};
   if(cursors&&cursors[a])config.before=cursors[a];
   const history=await rpc('getSignaturesForAddress',[a,config],signal);
   return {account:a,records:history||[]};
@@ -135,7 +136,7 @@ async function load(account,cursors,signal){
   else next[a]='END';
   records.forEach(r=>{if(r&&r.signature)signatures.set(r.signature,r);});
  });
- const candidates=Array.from(signatures.values()).sort((a,b)=>(b.blockTime||0)-(a.blockTime||0)).slice(0,42);
+ const candidates=Array.from(signatures.values()).sort((a,b)=>(b.blockTime||0)-(a.blockTime||0));
  let parseErrors=0;
  const items=[];
  for(let i=0;i<candidates.length;i+=5){
