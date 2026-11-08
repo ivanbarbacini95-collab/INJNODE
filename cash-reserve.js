@@ -1,7 +1,7 @@
 /* INJ Node · Cash Reserve · read-only Injective + Solana stablecoin monitor */
 (() => {
   'use strict';
-  const ADDRESS = 'inj1hqzpll2ma9t02rywfcfx7hpsl0rran5ptj4pd8';
+  // Fixed address configuration is held in cash-portfolio-onchain.js; never rendered.
   const LCDS = [
     'https://sentry.lcd.injective.network:443',
     'https://lcd.injective.network',
@@ -17,15 +17,14 @@
   });
   const SOL_RPC = 'https://api.mainnet-beta.solana.com';
   // Version 2 starts a fresh history because the old token basket included bridged/legacy assets.
-  const KEY_HISTORY = 'inj_node_cash_reserve_history_v2_';
-  const KEY_SOL_ADDRESS = 'inj_node_cash_reserve_sol_wallet_v1';
+  const KEY_HISTORY = 'inj_node_cash_reserve_history_v3';
   const KEY_TARGET = 'inj_node_cash_reserve_goal_v1';
   const KEY_PRIVACY = 'inj_node_cash_reserve_privacy_v1';
   const $ = (id) => document.getElementById(id);
   if (!$('cashReservePanel')) return;
 
-  const state = { amounts: null, usd: null, fx: null, lastSync: 0, loading: false, error: false, partial: false, errorDetail: '', privacy: false, target: 0, currency: 'USD', lang: 'it', range: 'ALL', history: [], solAddress: '' };
-  const historyKey = () => KEY_HISTORY + (state.solAddress || 'injective-only');
+  const state = { amounts: null, usd: null, fx: null, lastSync: 0, loading: false, error: false, partial: false, errorDetail: '', privacy: false, target: 0, currency: 'USD', lang: 'it', range: 'ALL', history: [], portfolio: null };
+  const historyKey = () => KEY_HISTORY;
   const phrases = {
     it: {reserve:'CASH RESERVE', sub:'Riserva patrimoniale · Injective + Solana', nominal:'Valore nominale della riserva', note:'Valore nominale: 1 stablecoin = 1 USD. Non è una quotazione di mercato né un capitale assicurato.', target:'Obiettivo di accumulo', targetHint:'Imposta un obiettivo in USD', save:'Salva', noGoal:'Nessun obiettivo impostato', ofGoal:'del target', history:'Evoluzione riserva', historyEmpty:'Lo storico si formerà da questo dispositivo a partire dalle prossime sincronizzazioni.', sync:'Sincronizza', updating:'Sincronizzazione…', online:'Online', offline:'Offline', pending:'In attesa', copied:'Indirizzo copiato', copy:'Copia', privacy:'Privacy', address:'Wallet di riserva', updated:'Aggiornato', noFX:'Cambio EUR/USD temporaneamente non disponibile', source:'Sola lettura · saldo on-chain · nessuna firma richiesta', warning:'Solo USDC nativo su Injective e USDC/USDT ufficiali su Solana. I saldi delle due reti restano distinti.', solPlaceholder:'Indirizzo pubblico wallet Solana', solMissing:'Solana non configurata: totale riferito solo a Injective.', solConfigured:'Solana collegata · lettura pubblica dei saldi', solInvalid:'Indirizzo Solana non valido.', partial:'Parziale', solFailed:'Impossibile leggere Solana; verifica la rete RPC.', injFailed:'Impossibile leggere Injective; verifica la rete LCD.', failed:'Saldo non verificabile: controlla la rete o riprova.', fx:'Controvalore stimato con cambio di riferimento USD/EUR.'},
     en: {reserve:'CASH RESERVE', sub:'Capital reserve · Injective + Solana', nominal:'Nominal reserve value', note:'Nominal valuation: 1 stablecoin = 1 USD. Not a market quote or insured capital.', target:'Savings target', targetHint:'Set a target in USD', save:'Save', noGoal:'No target set', ofGoal:'of target', history:'Reserve history', historyEmpty:'History starts on this device with the next successful syncs.', sync:'Sync', updating:'Syncing…', online:'Online', offline:'Offline', pending:'Waiting', copied:'Address copied', copy:'Copy', privacy:'Privacy', address:'Reserve wallet', updated:'Updated', noFX:'EUR/USD rate temporarily unavailable', source:'Read-only · on-chain balance · no wallet signature required', warning:'Only native USDC on Injective and official USDC/USDT on Solana. Balances stay separated by network.', solPlaceholder:'Public Solana wallet address', solMissing:'Solana not configured: total includes Injective only.', solConfigured:'Solana connected · public balance monitoring', solInvalid:'Invalid Solana address.', partial:'Partial', solFailed:'Solana balance unavailable; check RPC.', injFailed:'Injective balance unavailable; check LCD.', failed:'Balance cannot be verified: check the network and try again.', fx:'Estimated value using a reference USD/EUR exchange rate.'}
@@ -46,11 +45,7 @@
     });
     $('cashGoalAmount').placeholder = tr('targetHint');
     $('cashSync').textContent = state.loading ? tr('updating') : tr('sync');
-    $('cashCopy').textContent = tr('copy');
-    $('cashPrivacy').setAttribute('aria-label', tr('privacy'));
-    $('cashSolAddress').placeholder = tr('solPlaceholder');
-    $('cashSolSave').textContent = tr('save');
-    $('cashSolStatus').textContent = state.solAddress ? tr('solConfigured') : tr('solMissing');
+    $('cashPrivacy').setAttribute('aria-label',tr('privacy'));
   };
   const readPrefs = () => {
     try {
@@ -79,10 +74,88 @@
       $(id).textContent = Number.isFinite(amount) ? shown(fmt(amount,2)) : '—';
     }
   }
+
+  function makeNode(tag, cls, value) {
+    const e=document.createElement(tag);
+    if(cls)e.className=cls;
+    if(value!=null)e.textContent=value;
+    return e;
+  }
+  function renderAssetList(target,network) {
+    const root=$(target);
+    if(!root)return;
+    root.replaceChildren();
+    if(!network) {
+      root.append(makeNode('p','cash-token-empty',state.lang==='it'?'Rete non disponibile · riprova la sincronizzazione':'Network unavailable · retry sync'));
+      return;
+    }
+    const list=network.assets.slice().sort((a,b)=>{
+      const rank=v=>v.kind==='stable'?0:v.kind==='native'?1:2;
+      return rank(a)-rank(b)||a.name.localeCompare(b.name);
+    });
+    if(!list.length) {
+      root.append(makeNode('p','cash-token-empty',state.lang==='it'?'Nessun asset con saldo positivo.':'No positive asset balances.'));
+      return;
+    }
+    for(const entry of list) {
+      const row=makeNode('div','cash-token-row');
+      const icon=makeNode('span','cash-token-icon',entry.symbol.slice(0,4).toUpperCase());
+      icon.setAttribute('aria-hidden','true');
+      const main=makeNode('div','cash-token-name');
+      main.append(makeNode('strong','',entry.name));
+      main.append(makeNode('small','',entry.note));
+      const amount=makeNode('div','cash-token-amount');
+      amount.append(makeNode('strong','',shown(entry.amount.text)));
+      if(entry.unformatted)amount.append(makeNode('small','',state.lang==='it'?'Unità base, decimali non disponibili':'Raw units; decimals unavailable'));
+      else amount.append(makeNode('small','',entry.symbol));
+      row.append(icon,main,amount);
+      root.append(row);
+    }
+  }
+  function renderYield() {
+    const root=$('cashYieldList');
+    if(!root)return;
+    root.replaceChildren();
+    const report=state.portfolio?.yield;
+    if(!report) {
+      root.append(makeNode('p','cash-token-empty',state.lang==='it'?'Lettura posizioni di rendimento non disponibile.':'Yield position data unavailable.'));
+      return;
+    }
+    if(!report.positions.length) {
+      root.append(makeNode('p','cash-token-empty',state.lang==='it'?'Nessuna delegazione staking nativa rilevata. Le posizioni in altre dApp richiedono integrazioni specifiche.':'No native staking delegations detected. Other dApps require dedicated integrations.'));
+    }
+    for(const p of report.positions) {
+      const row=makeNode('article','cash-yield-position');
+      const top=makeNode('div','cash-yield-heading');
+      top.append(makeNode('strong','',p.name));
+      top.append(makeNode('span','',p.apr!=null?fmt(p.apr,2)+'% APR '+(state.lang==='it'?'rete':'network'):'APR —'));
+      const info=makeNode('div','cash-yield-metrics');
+      function cell(label,val) {const wrapper=makeNode('div','');wrapper.append(makeNode('span','',label));wrapper.append(makeNode('strong','',shown(val)));return wrapper;}
+      info.append(cell(state.lang==='it'?'IN DELEGA':'STAKED',fmt(p.amount,4)+' '+p.asset));
+      info.append(cell(state.lang==='it'?'REWARD ON-CHAIN':'ON-CHAIN REWARDS',p.rewards==null?'—':fmt(p.rewards,6)+' '+p.asset));
+      info.append(cell(state.lang==='it'?'STIMA / GIORNO':'EST. / DAY',p.day==null?'—':fmt(p.day,6)+' '+p.asset));
+      row.append(top,info,makeNode('small','cash-yield-hint',state.lang==='it'?'APR di riferimento di rete, non rendimento garantito; reward confermate dalla blockchain.':'Reference network APR, not guaranteed; on-chain rewards shown separately.'));
+      root.append(row);
+    }
+    root.append(makeNode('p','cash-yield-disclaimer',state.lang==='it'?'Le posizioni in Hydro, vault, lending e altre dApp non possono essere ricostruite in modo affidabile dal solo saldo del wallet: servono adapter specifici per contratto e protocollo. Nessuna rendita viene inventata.':'Hydro, vaults, lending and other dApps require protocol-specific on-chain adapters. No unverified yield is invented.'));
+  }
+  function renderPortfolio() {
+    renderAssetList('cashInjectiveTokens',state.portfolio?.inj);
+    renderAssetList('cashSolanaTokens',state.portfolio?.sol);
+    const inj=$('cashInjAssetsStatus'),sol=$('cashSolAssetsStatus');
+    if(inj)inj.textContent=state.portfolio?.inj?(state.lang==='it'?'ONLINE':'ONLINE'):'OFFLINE';
+    if(sol)sol.textContent=state.portfolio?.sol?(state.lang==='it'?'ONLINE':'ONLINE'):'OFFLINE';
+    const count=[state.portfolio?.inj,state.portfolio?.sol].filter(Boolean).reduce((sum,b)=>sum+b.assets.length,0);
+    const counter=$('cashTokenCount');
+    if(counter)counter.textContent=count+(state.portfolio?.inj&&state.portfolio?.sol?'':' · PARZIALE');
+    const solUnsupported=$('cashSolAssetsNote');
+    if(solUnsupported)solUnsupported.textContent=state.portfolio?.sol?.unsupported?(state.lang==='it'?'Alcuni token con formato non leggibile: '+state.portfolio.sol.unsupported:'Unreadable token accounts: '+state.portfolio.sol.unsupported):'';
+    renderYield();
+  }
   const updateGoal = () => {
     const progress = state.target > 0 && state.usd != null ? Math.max(0, Math.min(100, state.usd / state.target * 100)) : 0;
     $('cashProgressBar').style.width = progress + '%';
-    $('cashGoalProgress').textContent = state.target > 0 && state.usd != null ? shown(fmt(progress,1)+'% '+tr('ofGoal')) : tr('noGoal');
+    $('cashGoalProgress').textContent = state.target > 0 ? (state.usd != null ? shown(fmt(progress,1)+'% '+tr('ofGoal')) : (state.lang==='it'?'Saldi in sincronizzazione':'Waiting for balances')) : tr('noGoal');
     $('cashGoalTotal').textContent = state.target > 0 ? shown(money(state.target)) : '—';
     $('cashGoalAmount').value = state.target > 0 ? String(state.target) : '';
   };
@@ -129,7 +202,7 @@
     $('cashChartFirst').textContent = new Date(minT).toLocaleDateString(state.lang==='it'?'it-IT':'en-US');
     $('cashChartLast').textContent = new Date(now).toLocaleDateString(state.lang==='it'?'it-IT':'en-US');
   };
-  const render = () => { readPrefs(); updateTexts(); updateAmounts(); pickCurrency(); updateGoal(); updateStatus(); updateChart(); };
+  const render = () => { readPrefs(); updateTexts(); updateAmounts(); pickCurrency(); updateGoal(); updateStatus(); updateChart(); renderPortfolio(); };
   async function getJSON(url,ms=6500) {
     const abort = new AbortController(), timer = setTimeout(()=>abort.abort(),ms);
     try {
@@ -202,65 +275,36 @@
     } catch (_) { /* Never invent a live FX rate. USD remains available. */ }
   }
   async function sync() {
-    if (state.loading || document.hidden) return;
-    state.loading = true; render();
-    const useSolana = Boolean(state.solAddress);
-    const addressAtStart = state.solAddress;
-    const [injective, solana] = await Promise.allSettled([
-      fetchBalances(),
-      useSolana ? fetchSolanaBalances(addressAtStart) : Promise.resolve(null)
-    ]);
-    // Never combine balances from a wallet that changed during an in-flight request.
-    if (addressAtStart !== state.solAddress) {
-      state.loading = false; render(); void sync(); return;
-    }
-    const next = {usdcInj:null,usdcSol:null,usdtSol:null};
-    if (injective.status === 'fulfilled') {
-      const byDenom = new Map();
-      injective.value.forEach(b=>byDenom.set(String(b.denom||'').toLowerCase(),String(b.amount||'0')));
-      const value = amt(byDenom.get(INJ_USDC_DENOM) || '0',6);
-      if (Number.isFinite(value) && value >= 0) next.usdcInj = value;
-    }
-    if (useSolana && solana.status === 'fulfilled') {
-      next.usdcSol = solana.value.usdcSol;
-      next.usdtSol = solana.value.usdtSol;
-    }
-    const injOK = Number.isFinite(next.usdcInj);
-    const solOK = !useSolana || (Number.isFinite(next.usdcSol) && Number.isFinite(next.usdtSol));
-    state.amounts = next;
-    state.error = !injOK || !solOK;
-    state.partial = state.error && (injOK || (useSolana && solOK));
-    state.errorDetail = [!injOK && tr('injFailed'),useSolana && !solOK && tr('solFailed')].filter(Boolean).join(' ');
-    state.usd = injOK && solOK ? next.usdcInj + (useSolana ? next.usdcSol + next.usdtSol : 0) : null;
-    if (injOK || (useSolana && solOK)) state.lastSync = Date.now();
-    if (state.usd != null) saveSnapshot();
-    state.loading = false;
+    if(state.loading||document.hidden)return;
+    state.loading=true;render();
+    let p;
+    try {p=await window.INJ_CASH_PORTFOLIO.scan();}
+    catch(e) {p={inj:null,sol:null,yield:null,errors:{inj:true,sol:true,yield:true}};}
+    state.portfolio=p;
+    const injOK=Boolean(p.inj),solOK=Boolean(p.sol);
+    state.amounts={
+      usdcInj:injOK?p.inj.usdc:null,
+      usdcSol:solOK?p.sol.usdc:null,
+      usdtSol:solOK?p.sol.usdt:null
+    };
+    state.error=!injOK||!solOK;
+    state.partial=state.error&&(injOK||solOK);
+    state.errorDetail=[
+      !injOK&&tr('injFailed'),
+      !solOK&&tr('solFailed')
+    ].filter(Boolean).join(' ');
+    // Do not call a partial total a complete reserve.
+    state.usd=injOK&&solOK?p.inj.usdc+p.sol.usdc+p.sol.usdt:null;
+    if(injOK||solOK)state.lastSync=Date.now();
+    if(state.usd!=null)saveSnapshot();
+    state.loading=false;
     render();
   }
   function boot() {
-    state.solAddress = String(load(KEY_SOL_ADDRESS,'')||'');
     state.history = (load(historyKey(),[]) || []).filter(p=>Number.isFinite(p?.t)&&Number.isFinite(p?.v)&&p.v>=0).slice(-1800);
-    $('cashSolAddress').value = state.solAddress;
     state.target = Math.max(0,Number(load(KEY_TARGET,0))||0);
     state.privacy = !!load(KEY_PRIVACY,false);
-    $('cashWalletAddress').textContent = ADDRESS.slice(0,11)+'…'+ADDRESS.slice(-9);
     $('cashPrivacy').setAttribute('aria-pressed',String(state.privacy));
-    $('cashSolWalletForm').addEventListener('submit',event=>{
-      event.preventDefault();
-      const address = $('cashSolAddress').value.trim();
-      const error = $('cashSolAddressError');
-      if (address && !/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(address)) {
-        error.textContent = tr('solInvalid'); return;
-      }
-      error.textContent = '';
-      if (address === state.solAddress) return;
-      state.solAddress = address;
-      store(KEY_SOL_ADDRESS,address);
-      state.history = (load(historyKey(),[]) || []).filter(p=>Number.isFinite(p?.t)&&Number.isFinite(p?.v)&&p.v>=0).slice(-1800);
-      state.amounts = null; state.usd = null; state.lastSync = 0;
-      state.error = false; state.errorDetail = '';
-      render(); void sync();
-    });
     $('cashGoalForm').addEventListener('submit',event=>{
       event.preventDefault();
       const v = Number($('cashGoalAmount').value);
@@ -276,10 +320,6 @@
       state.currency = event.target.value;
       try{localStorage.setItem('inj_monitor_currency',state.currency)}catch(_){}
       render();
-    });
-    $('cashCopy').addEventListener('click',async()=>{
-      try { await navigator.clipboard.writeText(ADDRESS); $('cashCopy').textContent=tr('copied'); }
-      catch (_) { $('cashWalletAddress').textContent=ADDRESS; }
     });
     $('cashSync').addEventListener('click',()=>void sync());
     document.querySelectorAll('[data-cash-range]').forEach(button=>{
