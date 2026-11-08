@@ -143,7 +143,7 @@
 <link rel="stylesheet" href="./inj-signature-atmospheres-20261103.css?v=signature-preview-fidelity1">
 <link rel="stylesheet" href="./inj-theme-collections-20261103.css?v=families30-distinct2">
 <script src="./inj-six-themes-20261103.js?v=families30-classic-v2"></script>
-<link rel="stylesheet" href="./cash-reserve.css?v=20261108a">
+<link rel="stylesheet" href="./cash-reserve.css?v=20261108b">
 </head>
 <body>
   <div class="treasury-shell">
@@ -329,11 +329,11 @@
       </section>
 
       <!-- Cash Reserve: standalone read-only stablecoin reserve, independent from INJ staking accounting. -->
-      <section class="cash-reserve-panel" id="cashReservePanel" aria-label="Cash Reserve · stablecoin Injective">
+      <section class="cash-reserve-panel" id="cashReservePanel" aria-label="Cash Reserve · stablecoin Injective e Solana">
         <div class="cash-reserve-head">
           <div class="cash-reserve-title-row">
             <span class="cash-reserve-shield" aria-hidden="true">⬡</span>
-            <div><h2>CASH RESERVE</h2><p data-cash-it="Riserva patrimoniale · Injective" data-cash-en="Capital reserve · Injective">Riserva patrimoniale · Injective</p></div>
+            <div><h2>CASH RESERVE</h2><p data-cash-it="Riserva patrimoniale · Injective + Solana" data-cash-en="Capital reserve · Injective + Solana">Riserva patrimoniale · Injective + Solana</p></div>
           </div>
           <div class="cash-reserve-actions">
             <span id="cashStatus" class="cash-pill is-idle" role="status" aria-live="polite">In attesa</span>
@@ -349,9 +349,18 @@
           </select>
         </div>
         <div class="cash-reserve-assets">
-          <div class="cash-reserve-asset"><span class="cash-reserve-asset-label"><i class="cash-reserve-dot"></i>USDC</span><strong id="cashUsdc">—</strong><small>Circle · Native Injective</small></div>
-          <div class="cash-reserve-asset"><span class="cash-reserve-asset-label"><i class="cash-reserve-dot usdt"></i>USDT</span><strong id="cashUsdt">—</strong><small>Peggy · Ethereum bridge</small></div>
-          <div class="cash-reserve-asset"><span class="cash-reserve-asset-label"><i class="cash-reserve-dot legacy"></i>USDCnb</span><strong id="cashUsdcnb">—</strong><small>Legacy · Noble IBC</small></div>
+          <div class="cash-reserve-asset"><span class="cash-reserve-asset-label"><i class="cash-reserve-dot"></i>USDC · INJ</span><strong id="cashUsdc">—</strong><small>Circle · Injective nativo</small></div>
+          <div class="cash-reserve-asset"><span class="cash-reserve-asset-label"><i class="cash-reserve-dot solana"></i>USDC · SOL</span><strong id="cashUsdcSol">—</strong><small>Circle · Solana</small></div>
+          <div class="cash-reserve-asset"><span class="cash-reserve-asset-label"><i class="cash-reserve-dot usdt"></i>USDT · SOL</span><strong id="cashUsdtSol">—</strong><small>Tether · Solana</small></div>
+        </div>
+        <div class="cash-reserve-solana-config">
+          <div class="cash-reserve-solana-label"><strong data-cash-it="Wallet Solana" data-cash-en="Solana wallet">Wallet Solana</strong><small data-cash-it="Solo indirizzo pubblico · mai la chiave privata" data-cash-en="Public address only · never a private key">Solo indirizzo pubblico · mai la chiave privata</small></div>
+          <form id="cashSolWalletForm" class="cash-reserve-solana-form">
+            <input id="cashSolAddress" type="text" spellcheck="false" autocomplete="off" autocapitalize="off" aria-label="Indirizzo pubblico wallet Solana" placeholder="Indirizzo pubblico wallet Solana" />
+            <button id="cashSolSave" type="submit">Salva</button>
+          </form>
+          <small id="cashSolStatus" class="cash-reserve-sol-status">Solana non configurata: totale riferito solo a Injective.</small>
+          <small id="cashSolAddressError" class="cash-reserve-error" role="alert"></small>
         </div>
         <div class="cash-reserve-grid">
           <div class="cash-reserve-box">
@@ -389,7 +398,7 @@
           <button id="cashCopy" type="button">Copia</button>
         </div>
         <p class="cash-reserve-note" id="cashFxNote">Valore nominale: 1 stablecoin = 1 USD. Non è una quotazione di mercato né un capitale assicurato.</p>
-        <p class="cash-reserve-note" data-cash-it="USDCnb è una versione bridged/legacy e viene distinta da USDC nativo." data-cash-en="USDCnb is a bridged/legacy token, distinct from native USDC.">USDCnb è una versione bridged/legacy e viene distinta da USDC nativo.</p>
+        <p class="cash-reserve-note" data-cash-it="Solo USDC nativo su Injective e USDC/USDT ufficiali su Solana. I saldi delle due reti restano distinti." data-cash-en="Only native USDC on Injective and official USDC/USDT on Solana. Balances stay separated by network.">Solo USDC nativo su Injective e USDC/USDT ufficiali su Solana. I saldi delle due reti restano distinti.</p>
         <p class="cash-reserve-error" id="cashError" role="alert"></p>
       </section>
 
@@ -399,6 +408,6 @@
   <script src="./treasury.js?v=20261102-chainfix1" defer></script>
 
 
-  <script defer src="./cash-reserve.js?v=20261108a"></script>
+  <script defer src="./cash-reserve.js?v=20261108b"></script>
 </body>
 </html>
