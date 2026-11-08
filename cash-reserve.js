@@ -10,7 +10,7 @@
   const $ = (id) => document.getElementById(id);
   if (!$('cashReservePanel')) return;
 
-  const state = { amounts: null, usd: null, fx: null, lastSync: 0, loading: false, error: false, partial: false, errorDetail: '', privacy: false, target: 0, currency: 'USD', lang: 'it', range: 'ALL', history: [], portfolio: null };
+  const state = { amounts: null, usd: null, fx: null, lastSync: 0, loading: false, error: false, partial: false, errorDetail: '', privacy: false, target: 0, currency: 'USD', lang: 'it', range: 'ALL', history: [], portfolio: null, pendingDrop: null, reconciling: false };
   const historyKey = () => KEY_HISTORY;
   const phrases = {
     it: {reserve:'CASH RESERVE', sub:'Riserva patrimoniale · Injective + Solana', nominal:'Valore nominale della riserva', note:'Valore nominale: 1 stablecoin = 1 USD. Non è una quotazione di mercato né un capitale assicurato.', target:'Obiettivo di accumulo', targetHint:'Imposta un obiettivo in USD', save:'Salva', noGoal:'Nessun obiettivo impostato', ofGoal:'del target', history:'Evoluzione riserva', historyEmpty:'Lo storico si formerà da questo dispositivo a partire dalle prossime sincronizzazioni.', sync:'Sincronizza', updating:'Sincronizzazione…', online:'Online', offline:'Offline', pending:'In attesa', copied:'Indirizzo copiato', copy:'Copia', privacy:'Privacy', address:'Wallet di riserva', updated:'Aggiornato', noFX:'Cambio EUR/USD temporaneamente non disponibile', source:'Sola lettura · saldo on-chain · nessuna firma richiesta', warning:'Solo USDC nativo su Injective e USDC/USDT ufficiali su Solana. I saldi delle due reti restano distinti.', solPlaceholder:'Indirizzo pubblico wallet Solana', solMissing:'Solana non configurata: totale riferito solo a Injective.', solConfigured:'Solana collegata · lettura pubblica dei saldi', solInvalid:'Indirizzo Solana non valido.', partial:'Parziale', solFailed:'Impossibile leggere Solana; verifica la rete RPC.', injFailed:'Impossibile leggere Injective; verifica la rete LCD.', failed:'Saldo non verificabile: controlla la rete o riprova.', fx:'Controvalore stimato con cambio di riferimento USD/EUR.'},
@@ -49,7 +49,7 @@
     const online = !state.error && state.lastSync > 0;
     el.className = 'cash-pill ' + (state.error ? (state.partial ? 'is-partial' : 'is-error') : online ? 'is-ok' : 'is-idle');
     el.textContent = state.error ? (state.partial ? tr('partial') : tr('offline')) : online ? tr('online') : tr('pending');
-    $('cashSyncInfo').textContent = state.lastSync ? tr('updated') + ' ' + new Date(state.lastSync).toLocaleTimeString(state.lang === 'it'?'it-IT':'en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'}) : tr('pending');
+    $('cashSyncInfo').textContent = state.reconciling?(state.lang==='it'?'Riconciliazione movimenti in corso':'Reconciling wallet movements'):(state.lastSync ? tr('updated') + ' ' + new Date(state.lastSync).toLocaleTimeString(state.lang === 'it'?'it-IT':'en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'}) : tr('pending'));
     $('cashError').textContent = state.error ? (state.errorDetail || tr('failed')) : '';
   };
   function updateAmounts() {
@@ -275,9 +275,30 @@
     // Do not call a partial total a complete reserve.
     // Never mistake moving funds from liquid wallet into Jupiter Earn for an outflow.
     // Do not commit incomplete snapshots when any source is temporarily unavailable.
-    state.usd=injOK&&solOK&&jupOK?p.inj.usdc+p.sol.usdc+p.sol.usdt+p.jupiter.usdc+p.jupiter.usdt:null;
+    const candidate=injOK&&solOK&&jupOK
+      ?p.inj.usdc+p.sol.usdc+p.sol.usdt+p.jupiter.usdc+p.jupiter.usdt:null;
+    const last=state.history[state.history.length-1];
+    state.reconciling=false;
+    // On deposit/withdraw transitions, Solana RPC and Jupiter indexer can temporarily
+    // disagree. Require four complete snapshots before recording a genuine decline.
+    if(candidate!=null&&last&&candidate<last.v-Math.max(0.01,last.v*0.00001)){
+      const pending=state.pendingDrop;
+      if(!pending||Math.abs(pending.value-candidate)>Math.max(0.02,candidate*0.0001))
+        state.pendingDrop={value:candidate,count:1};
+      else state.pendingDrop={value:candidate,count:pending.count+1};
+      if(state.pendingDrop.count<4){
+        state.usd=last.v;
+        state.reconciling=true;
+      } else {
+        state.usd=candidate;
+        state.pendingDrop=null;
+      }
+    } else {
+      state.usd=candidate;
+      state.pendingDrop=null;
+    }
     if(injOK||solOK)state.lastSync=Date.now();
-    if(state.usd!=null)saveSnapshot();
+    if(state.usd!=null&&!state.reconciling)saveSnapshot();
     state.loading=false;
     render();
   }
