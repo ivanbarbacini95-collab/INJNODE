@@ -1,22 +1,8 @@
-/* INJ Node · Cash Reserve · read-only Injective + Solana stablecoin monitor */
+/* INJ Node · Cash Reserve · watch-only portfolio and verified yield monitor */
 (() => {
   'use strict';
   // Fixed address configuration is held in cash-portfolio-onchain.js; never rendered.
-  const LCDS = [
-    'https://sentry.lcd.injective.network:443',
-    'https://lcd.injective.network',
-    'https://1rpc.io/inj-lcd'
-  ];
-  // Exact, chain-verified denoms. Do not match tokens by their display symbol.
-  // Keep only the canonical native Injective USDC denom.
-  const INJ_USDC_DENOM = 'erc20:0xa00c59ff5a080d2b954d0c75e46e22a0c371235a';
-  // Solana mainnet mint IDs confirmed by Solana and the respective issuers.
-  const SOL_MINTS = Object.freeze({
-    usdcSol: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
-    usdtSol: 'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB'
-  });
-  const SOL_RPC = 'https://api.mainnet-beta.solana.com';
-  // Version 2 starts a fresh history because the old token basket included bridged/legacy assets.
+  // V3 history is scoped to the two fixed, configured wallet accounts.
   const KEY_HISTORY = 'inj_node_cash_reserve_history_v3';
   const KEY_TARGET = 'inj_node_cash_reserve_goal_v1';
   const KEY_PRIVACY = 'inj_node_cash_reserve_privacy_v1';
@@ -35,9 +21,6 @@
   const fmt = (n, places = 2) => Number(n).toLocaleString(state.lang === 'it' ? 'it-IT' : 'en-US',{ minimumFractionDigits: places, maximumFractionDigits: places });
   const money = (n, c = 'USD') => (c === 'EUR' ? '€ ' : '$ ') + fmt(n);
   const shown = (v) => state.privacy ? '••••••' : v;
-  const amt = (raw, decimals) => {
-    try { return Number(BigInt(raw || '0')) / (10 ** decimals); } catch (_) { return NaN; }
-  };
   const updateTexts = () => {
     document.querySelectorAll('[data-cash-it]').forEach((node) => {
       const label = state.lang === 'en' ? node.dataset.cashEn : node.dataset.cashIt;
@@ -210,63 +193,6 @@
       if (!result.ok) throw new Error('HTTP '+result.status);
       return await result.json();
     } finally { clearTimeout(timer); }
-  }
-  async function postRPC(payload, ms = 9000) {
-    const abort = new AbortController();
-    const timer = setTimeout(() => abort.abort(), ms);
-    try {
-      const result = await fetch(SOL_RPC, {
-        method: 'POST', headers: {'Content-Type':'application/json'},
-        body: JSON.stringify(payload), cache: 'no-store', signal: abort.signal
-      });
-      if (!result.ok) throw new Error('Solana RPC HTTP ' + result.status);
-      const json = await result.json();
-      if (json.error) throw new Error(json.error.message || 'Solana RPC error');
-      if (!Array.isArray(json.result?.value)) throw new Error('Invalid Solana RPC response');
-      return json.result.value;
-    } finally { clearTimeout(timer); }
-  }
-  async function fetchSolanaBalances(address) {
-    const entries = await Promise.all(Object.entries(SOL_MINTS).map(async ([id,mint],index) => {
-      const accounts = await postRPC({
-        jsonrpc:'2.0', id:index+1, method:'getTokenAccountsByOwner',
-        params:[address,{mint},{encoding:'jsonParsed',commitment:'confirmed'}]
-      });
-      let total = 0n;
-      for (const account of accounts) {
-        const info = account?.account?.data?.parsed?.info;
-        const token = info?.tokenAmount;
-        if (info?.mint !== mint || token?.decimals !== 6 || !/^\d+$/.test(String(token?.amount ?? ''))) {
-          throw new Error('Unexpected Solana mint/decimals response');
-        }
-        total += BigInt(token.amount);
-      }
-      const value = Number(total) / 1e6;
-      if (!Number.isFinite(value) || value < 0) throw new Error('Invalid Solana token balance');
-      return [id,value];
-    }));
-    return Object.fromEntries(entries);
-  }
-  async function fetchBalances() {
-    let lastError = null;
-    for (const host of LCDS) {
-      try {
-        const all = [], visited = new Set();
-        let nextKey = '';
-        for(let page=0;page<8;page++) {
-          const path = '/cosmos/bank/v1beta1/balances/'+encodeURIComponent(ADDRESS)+'?pagination.limit=200'+(nextKey?'&pagination.key='+encodeURIComponent(nextKey):'');
-          const result = await getJSON(host+path,5000);
-          if (!Array.isArray(result.balances)) throw new Error('Invalid bank balance response');
-          all.push(...result.balances);
-          nextKey = result.pagination && result.pagination.next_key || '';
-          if (!nextKey) return all;
-          if (visited.has(nextKey)) throw new Error('Repeated pagination key');
-          visited.add(nextKey);
-        }
-        throw new Error('Too many balance pages');
-      } catch (error) { lastError = error; }
-    }
-    throw lastError || new Error('LCD unavailable');
   }
   async function refreshFX() {
     try {
