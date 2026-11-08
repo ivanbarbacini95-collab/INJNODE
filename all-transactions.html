@@ -380,17 +380,43 @@ async function querySource(source,page){
  }
  throw errors[0]||new Error('Network error');
 }
+async function retrieveSolana(run){
+ var controller=new AbortController();controllers.push(controller);
+ try {
+  if(!window.INJ_SOLANA_TRANSACTIONS)throw new Error('Solana history module unavailable');
+  var result=await window.INJ_SOLANA_TRANSACTIONS.load(current,solCursors,controller.signal);
+  if(run!==generation)return;
+  solCursors=result.before||{};
+  var seen=new Map();
+  rows.concat(result.items||[]).forEach(function(item){if(item&&item.hash)seen.set(item.hash,item);});
+  rows=Array.from(seen.values()).sort(function(a,b){
+   var delta=Date.parse(b.time||'')-Date.parse(a.time||'');
+   return Number.isFinite(delta)?delta:0;
+  });
+  cacheWrite();
+  canLoad=!result.done;
+  stateText(result.partial?'partial':'ok',
+   result.partial?lang('Risultati parziali','Partial results'):lang('On-chain · aggiornato','On-chain · updated'));
+ } catch(e) {
+  if(run!==generation)return;
+  canLoad=false;
+  stateText('error',rows.length?lang('Offline · dati salvati','Offline · cached data'):lang('Fonte Solana non raggiungibile','Solana source unavailable'));
+ }
+ if(run!==generation)return;
+ busy=false;render();
+}
 async function retrieve(more){
  if(!current){rows=[];canLoad=false;stateText('idle',lang('Nessun wallet','No wallet'));render();return;}
  if(busy)return;
  var run=++generation;
  if(!more){
-  cancelled();rows=[];offsetBySource={};doneBySource={};canLoad=true;
+  cancelled();rows=[];offsetBySource={};doneBySource={};solCursors={};canLoad=true;
   var fromCache=cacheRead(current);
   if(fromCache.length){rows=fromCache;stateText('partial',lang('Storico salvato · sincronizzazione','Cached history · syncing'));}
  }else{cancelled();}
  busy=true;
  stateText('partial',lang('Sincronizzazione...','Syncing...'));render();
+ if(chainOf(current)==='solana')return retrieveSolana(run);
  var sources=SOURCES.filter(function(source){return !doneBySource[source];});
  var results=await Promise.allSettled(sources.map(function(source){return querySource(source,(offsetBySource[source]||0)+1);}));
  if(run!==generation)return;
