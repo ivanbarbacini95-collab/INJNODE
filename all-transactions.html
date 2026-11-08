@@ -355,7 +355,7 @@ function render(){
   var unresolved=!firstTimestamp(item.time)||!item.amount&&['received','sent','staking','reward'].includes(item.cat);
   var amount=item.amount?(item.dir==='in'?'+':item.dir==='out'?'−':'')+item.amount:lang('Importo n/d','Amount n/a');
   var peer=item.peers&&item.peers.length?short(item.peers[0]):'—';
-  detail.innerHTML='<summary><span class="tx-icon '+(item.dir==='in'?'in':item.dir==='out'?'out':'')+'">'+iconFor(item)+'</span><span class="tx-center"><span class="tx-name"><strong>'+esc(titleFor(item))+'</strong></span><span class="tx-info">'+esc(firstTimestamp(item.time)?fmtDate(item.time):lang('Data in verifica','Checking date'))+' · '+esc(short(item.hash))+'</span></span><span class="tx-right"><span class="tx-amount '+(item.dir==='in'?'in':item.dir==='out'?'out':'')+'">'+esc(amount)+'</span><br><span class="tx-status'+(item.failed?' failed':'')+'">'+esc(status)+(unresolved?' · '+esc(lang('Dati parziali','Partial data')):'')+'</span></span></summary>'+
+  detail.innerHTML='<summary><span class="tx-icon '+(item.dir==='in'?'in':item.dir==='out'?'out':'')+'">'+iconFor(item)+'</span><span class="tx-center"><span class="tx-name"><strong>'+esc(titleFor(item))+'</strong></span><span class="tx-info">'+esc(firstTimestamp(item.time)?fmtDate(item.time):hydrationFailures.has(item.hash)?lang('Data non disponibile','Date unavailable'):lang('Data in verifica','Checking date'))+' · '+esc(short(item.hash))+'</span></span><span class="tx-right"><span class="tx-amount '+(item.dir==='in'?'in':item.dir==='out'?'out':'')+'">'+esc(amount)+'</span><br><span class="tx-status'+(item.failed?' failed':'')+'">'+esc(status)+(unresolved?' · '+esc(lang('Dati parziali','Partial data')):'')+'</span></span></summary>'+
    '<div class="tx-details"><div class="tx-field"><small>HASH</small><div>'+esc(item.hash)+'</div></div>'+
    '<div class="tx-field"><small>'+lang('BLOCCO','BLOCK')+'</small><div>'+esc(item.height||'—')+'</div></div>'+
    '<div class="tx-field"><small>'+lang('CONTROPARTE','COUNTERPARTY')+'</small><div>'+esc(peer)+'</div></div>'+
@@ -530,6 +530,10 @@ async function enrichInjectiveRows(run){
   var dateDelta=Date.parse(b.time||'')-Date.parse(a.time||'');
   return Number.isFinite(dateDelta)&&dateDelta!==0?dateDelta:Number(b.height||0)-Number(a.height||0);
  });cacheWrite();render();}
+ if(run===generation){
+  var partial=rows.some(needsHydration);
+  stateText(partial?'partial':'ok',partial?lang('Dettagli parziali','Partial details'):lang('On-chain · aggiornato','On-chain · updated'));
+ }
  hydrating=false;
 }
 async function retrieveSolana(run){
@@ -595,7 +599,8 @@ async function retrieve(more){
   rows.concat(fresh).forEach(function(item){if(item&&item.hash)seen.set(item.hash,item);});
   rows=Array.from(seen.values()).sort(function(a,b){var d=Date.parse(b.time||'')-Date.parse(a.time||'');return isFinite(d)&&d!==0?d:Number(b.height||0)-Number(a.height||0);});
   cacheWrite();
-  stateText(failed?'partial':'ok',failed?lang('Risultati parziali','Partial results'):lang('On-chain · aggiornato','On-chain · updated'));
+  var incomplete=rows.some(needsHydration);
+  stateText(failed||incomplete?'partial':'ok',failed?lang('Risultati parziali','Partial results'):incomplete?lang('Recupero dettagli...','Loading details...'):lang('On-chain · aggiornato','On-chain · updated'));
  }else{
   stateText('error',rows.length?lang('Offline · dati salvati','Offline · cached data'):lang('Fonte non raggiungibile','Source unavailable'));
  }
@@ -612,7 +617,7 @@ function start(){
  $('atTo').addEventListener('change',render);
  $('atClearDates').addEventListener('click',function(){$('atFrom').value='';$('atTo').value='';render();});
  $('atMore').addEventListener('click',function(){retrieve(true);});
- $('atRefresh').addEventListener('click',function(){SOURCES=['indexer'];retrieve(false);});
+ $('atRefresh').addEventListener('click',function(){SOURCES=['indexer'];hydrationFailures.clear();hydratedHashKeys.clear();retrieve(false);});
  $('atBack').addEventListener('click',function(){location.href='./index.html?tab=tools';});
  window.addEventListener('pageshow',function(){var next=readSaved();if(next.length!==saved.length){loadWallets();if(current)changeWallet(current);}});
  document.addEventListener('visibilitychange',function(){if(!document.hidden&&current&&!busy&&dataQuality!=='idle')retrieve(false);});
