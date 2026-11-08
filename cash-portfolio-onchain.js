@@ -13,7 +13,8 @@
   const MINTS = Object.freeze({
     'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v':{symbol:'USDC', name:'USD Coin', kind:'stable'},
     'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB':{symbol:'USDT', name:'Tether USD', kind:'stable'},
-    'So11111111111111111111111111111111111111112':{symbol:'wSOL',name:'Wrapped SOL',kind:'token'}
+    'So11111111111111111111111111111111111111112':{symbol:'wSOL',name:'Wrapped SOL',kind:'token'},
+    '9BEcn9aPEmhSPbPQeFGjidRiEKki46fVQDyPpSQXPA2D':{symbol:'jlUSDC',name:'Jupiter Lend USDC',kind:'receipt'}
   });
   const INJ_LCD = ['https://sentry.lcd.injective.network:443','https://lcd.injective.network','https://1rpc.io/inj-lcd'];
   const SOL_RPC = ['https://public.rpc.solanavibestation.com','https://api.mainnet-beta.solana.com','https://rpc.solanatracker.io/public','https://solana-rpc.publicnode.com'];
@@ -181,7 +182,7 @@
         mint==='So11111111111111111111111111111111111111112'?LOGOS.sol:
         meta?.logoUrl||TRUST+'solana/assets/'+mint+'/logo.png';
       assets.push(token(label.name,label.symbol,label.kind||'token',amount.raw.toString(),amount.dec,
-        official?'Token ufficiale':meta?.verified?'Token verificato · Jupiter':'Token SPL · identità non verificata',
+        official?.kind==='receipt'?'Quota Jupiter Earn · il valore USDC è nella sezione DeFi':official?'Token ufficiale':meta?.verified?'Token verificato · Jupiter':'Token SPL · identità non verificata',
         logo,mint));
     }
     return {
