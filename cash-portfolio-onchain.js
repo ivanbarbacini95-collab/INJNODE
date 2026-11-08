@@ -16,7 +16,7 @@
     'So11111111111111111111111111111111111111112':{symbol:'wSOL',name:'Wrapped SOL',kind:'token'}
   });
   const INJ_LCD = ['https://sentry.lcd.injective.network:443','https://lcd.injective.network','https://1rpc.io/inj-lcd'];
-  const SOL_RPC = ['https://api.mainnet-beta.solana.com','https://solana-rpc.publicnode.com'];
+  const SOL_RPC = ['https://public.rpc.solanavibestation.com','https://api.mainnet-beta.solana.com','https://rpc.solanatracker.io/public','https://solana-rpc.publicnode.com'];
   const APR_URL = 'https://api.ui.injective.network/api/v1/cache/stats/apr';
 
   async function json(url, options = {}, ms = 6700) {
