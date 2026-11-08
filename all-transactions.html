@@ -65,7 +65,7 @@ var ENDPOINTS=['https://sentry.lcd.injective.network','https://lcd.injective.net
 var SOURCES=['indexer'];
 var LCD_SOURCES=['message.sender','transfer.recipient','coin_received.receiver'];
 var PAGE_SIZE=30;
-var CACHE_KEY='inj_all_transactions_cache_v2';
+var CACHE_KEY='inj_all_transactions_cache_v3';
 var solCursors={};
 var CATEGORY=[
  ['all','Tutte','All'],['received','Ricevute','Received'],['sent','Inviate','Sent'],
@@ -315,6 +315,14 @@ function normalize(tx,response,addr){
  return {hash:hash,time:firstTimestamp(response.timestamp,response.block_timestamp,response.block_unix_timestamp),height:String(response.height||''),cat:cat,dir:direction,amount:formatAmount,asset:first?first.symbol:'',failed:failures,fee:amountParts(Array.isArray(fee)?fee.map(function(v){return String(v.amount||'')+String(v.denom||'');}):[]).map(function(x){return x.n+' '+x.symbol;}).join(', '),peers:peers.slice(0,4),msgs:messages.map(function(m){return String(m['@type']||m.type||'').split('.').pop();}).slice(0,6)};
 }
 function titleFor(item){
+ var signatures=(item.msgs||[]).join(' ').toLowerCase();
+ if(item.cat==='staking'){
+  if(/beginredelegate|redelegate/.test(signatures))return lang('Redelega INJ','Redelegate INJ');
+  if(/undelegate|unbond/.test(signatures))return lang('Sblocco staking','Unstake INJ');
+  if(/cancelunbond/.test(signatures))return lang('Annulla sblocco','Cancel unstaking');
+  if(/delegate/.test(signatures))return lang('Delega INJ','Stake INJ');
+ }
+ if(item.cat==='reward'&&/withdraw/.test(signatures))return lang('Riscossione reward','Claim rewards');
  var types={received:lang('Ricevuta','Received'),sent:lang('Invio','Sent'),staking:'Staking',reward:'Reward',swap:'Swap',defi:'DeFi',bridge:'Bridge / IBC',trading:'Trading',governance:'Governance',other:lang('Operazione on-chain','On-chain activity')};
  return types[item.cat]||types.other;
 }
@@ -344,9 +352,10 @@ function render(){
  filtered.forEach(function(item){
   var detail=document.createElement('details');detail.className='tx';detail.dataset.hash=item.hash;if(opened.has(item.hash))detail.open=true;
   var status=item.failed?lang('Non riuscita','Failed'):lang('Confermata','Confirmed');
-  var amount=(item.dir==='in'?'+':item.dir==='out'?'−':'')+(item.amount||'—');
+  var unresolved=!firstTimestamp(item.time)||!item.amount&&['received','sent','staking','reward'].includes(item.cat);
+  var amount=item.amount?(item.dir==='in'?'+':item.dir==='out'?'−':'')+item.amount:lang('Importo n/d','Amount n/a');
   var peer=item.peers&&item.peers.length?short(item.peers[0]):'—';
-  detail.innerHTML='<summary><span class="tx-icon '+(item.dir==='in'?'in':item.dir==='out'?'out':'')+'">'+iconFor(item)+'</span><span class="tx-center"><span class="tx-name"><strong>'+esc(titleFor(item))+'</strong></span><span class="tx-info">'+esc(fmtDate(item.time))+' · '+esc(short(item.hash))+'</span></span><span class="tx-right"><span class="tx-amount '+(item.dir==='in'?'in':item.dir==='out'?'out':'')+'">'+esc(amount)+'</span><br><span class="tx-status'+(item.failed?' failed':'')+'">'+esc(status)+'</span></span></summary>'+
+  detail.innerHTML='<summary><span class="tx-icon '+(item.dir==='in'?'in':item.dir==='out'?'out':'')+'">'+iconFor(item)+'</span><span class="tx-center"><span class="tx-name"><strong>'+esc(titleFor(item))+'</strong></span><span class="tx-info">'+esc(firstTimestamp(item.time)?fmtDate(item.time):lang('Data in verifica','Checking date'))+' · '+esc(short(item.hash))+'</span></span><span class="tx-right"><span class="tx-amount '+(item.dir==='in'?'in':item.dir==='out'?'out':'')+'">'+esc(amount)+'</span><br><span class="tx-status'+(item.failed?' failed':'')+'">'+esc(status)+(unresolved?' · '+esc(lang('Dati parziali','Partial data')):'')+'</span></span></summary>'+
    '<div class="tx-details"><div class="tx-field"><small>HASH</small><div>'+esc(item.hash)+'</div></div>'+
    '<div class="tx-field"><small>'+lang('BLOCCO','BLOCK')+'</small><div>'+esc(item.height||'—')+'</div></div>'+
    '<div class="tx-field"><small>'+lang('CONTROPARTE','COUNTERPARTY')+'</small><div>'+esc(peer)+'</div></div>'+
