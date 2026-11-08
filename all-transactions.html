@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="it" data-theme="obsidian" data-inj-page="all-transactions">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#060b11">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>All Transaction · INJ Node</title>
+<script>
+try {
+ const allowed=['obsidian','arctic','orbit','classic-black','classic-white'];
+ const raw=localStorage.getItem('inj_monitor_theme')||'obsidian';
+ document.documentElement.dataset.theme=allowed.includes(raw)?raw:'obsidian';
+ document.documentElement.lang=localStorage.getItem('inj_node_language_v1')==='en'?'en':'it';
+ document.documentElement.dataset.injThemeMotion='static';
+ const tones={obsidian:'#060b11',arctic:'#f1f7fa',orbit:'#080b1a','classic-black':'#030304','classic-white':'#ffffff'};
+ document.querySelector('meta[name="theme-color"]').content=tones[document.documentElement.dataset.theme];
+} catch(_){}
+</script>
+<style>
+:root{--bg:#060b11;--panel:#101a25;--raised:#142330;--border:rgba(126,180,215,.19);--fg:#edf5fb;--muted:#96a9b8;--accent:#56c5eb;--up:#32d6a0;--down:#ff7480;--shadow:0 14px 42px rgba(0,0,0,.22);color-scheme:dark}
+html[data-theme="orbit"]{--bg:#080b1a;--panel:#13152a;--raised:#1c1b39;--border:rgba(162,150,247,.2);--accent:#a79cff}
+html[data-theme="classic-black"]{--bg:#030304;--panel:#0c0d10;--raised:#16171c;--border:rgba(255,255,255,.14);--accent:#f4f4f5}
+html[data-theme="classic-white"]{--bg:#fff;--panel:#f7f8fa;--raised:#eceff3;--border:rgba(13,31,51,.13);--fg:#101b2a;--muted:#667487;--accent:#365bd6;--shadow:0 12px 30px rgba(0,20,50,.07);color-scheme:light}
+html[data-theme="arctic"]{--bg:#f1f7fa;--panel:#fff;--raised:#eaf3f7;--border:rgba(0,61,99,.14);--fg:#123447;--muted:#5b7a89;--accent:#057ba3;--shadow:0 12px 30px rgba(0,36,69,.07);color-scheme:light}
+*{box-sizing:border-box}html{min-height:100%;background:var(--bg);scroll-behavior:smooth}body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) max(16px,env(safe-area-inset-right)) calc(26px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));background:var(--bg);color:var(--fg);font:500 14px/1.45 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+button,select,input{font:inherit}button{cursor:pointer}button:disabled{cursor:default;opacity:.42}a{color:var(--accent)}button:focus-visible,select:focus-visible,input:focus-visible,a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.shell{max-width:1040px;margin:0 auto}.top{display:flex;align-items:center;gap:13px;padding:18px 0 22px}.back,.refresh{width:43px;height:43px;border-radius:14px;border:1px solid var(--border);background:var(--panel);color:var(--fg);display:grid;place-items:center;flex:none}.back svg,.refresh svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.refresh{margin-left:auto}.heading{min-width:0}.eyebrow{font-size:10px;letter-spacing:.17em;color:var(--accent);font-weight:800}.heading h1{font-size:clamp(21px,4vw,29px);margin:1px 0;font-weight:850;letter-spacing:-.045em}.heading p{margin:0;color:var(--muted);font-size:12px}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:19px;box-shadow:var(--shadow)}.wallet-panel{padding:18px;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:end}.input-label{display:block;color:var(--muted);font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:750;margin-bottom:7px}.wallet-select{width:100%;padding:13px;border:1px solid var(--border);border-radius:12px;background:var(--raised);color:var(--fg);font-weight:750;min-width:0}.wallet-mask{font-size:11px;color:var(--muted);overflow-wrap:anywhere;margin-top:7px}.network-tag{align-self:center;color:var(--accent);background:var(--raised);border:1px solid var(--border);padding:9px 12px;border-radius:30px;font-size:11px;font-weight:800}
+.metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:13px 0 17px}.metric{padding:17px 15px;min-height:82px}.metric small{color:var(--muted);font-size:10px;letter-spacing:.065em;text-transform:uppercase;font-weight:760;display:block}.metric strong{display:block;font-size:clamp(21px,4.6vw,29px);margin-top:7px;line-height:1.2;font-variant-numeric:tabular-nums}.positive{color:var(--up)}.negative{color:var(--down)}
+.toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:8px 0 13px}.search{border:1px solid var(--border);border-radius:12px;background:var(--panel);padding:11px 12px;color:var(--fg);min-width:0;flex:1 1 210px}.search::placeholder{color:var(--muted)}.state{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px;font-weight:700}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--muted)}.dot.ok{background:var(--up)}.dot.partial{background:#eebf62}.filters{display:flex;gap:8px;overflow-x:auto;padding:3px 0 13px;scrollbar-width:thin;overscroll-behavior-x:contain}.filter{white-space:nowrap;border:1px solid var(--border);border-radius:10px;background:var(--panel);color:var(--muted);padding:10px 13px;font-size:12px;font-weight:750;flex:none}.filter.active{border-color:var(--accent);color:var(--accent);background:var(--raised)}
+.timeline{overflow:hidden}.timeline-head{padding:14px 17px;display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--border)}.timeline-head strong{font-size:12px;letter-spacing:.04em}.timeline-head span{font-size:11px;color:var(--muted)}.tx{border-bottom:1px solid var(--border)}.tx:last-child{border-bottom:0}.tx summary{list-style:none;display:flex;align-items:center;gap:13px;padding:15px 16px;cursor:pointer}.tx summary::-webkit-details-marker{display:none}.tx[open] summary{background:var(--raised)}.tx-icon{width:37px;height:37px;flex:none;border-radius:12px;display:grid;place-items:center;background:var(--raised);font-size:19px;color:var(--accent)}.tx-icon.in{color:var(--up)}.tx-icon.out{color:var(--down)}.tx-center{min-width:0;flex:1}.tx-name{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.tx-name strong{font-size:13px}.tx-info{margin-top:3px;display:block;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}.tx-right{text-align:right;min-width:0;max-width:43%}.tx-amount{font-weight:850;font-size:13px;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}.tx-amount.in{color:var(--up)}.tx-amount.out{color:var(--down)}.tx-status{font-size:10px;color:var(--muted)}.tx-status.failed{color:var(--down)}.tx-details{padding:5px 16px 16px;display:grid;grid-template-columns:1fr 1fr;gap:12px 20px;background:var(--raised)}.tx-field{min-width:0}.tx-field small{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.05em}.tx-field div{font-size:12px;font-weight:690;overflow-wrap:anywhere;margin-top:2px}.tx-link{display:inline-flex;gap:7px;align-items:center;padding:8px 0;font-size:12px;font-weight:750;text-decoration:none}.tx-link:hover{text-decoration:underline}.full{grid-column:1/-1}.notice{color:var(--muted);font-size:12px;line-height:1.65;padding:15px 17px}.notice.error{color:var(--down)}.center{text-align:center}.more{display:block;margin:18px auto 0;min-width:190px;border:1px solid var(--border);border-radius:12px;background:var(--panel);color:var(--fg);padding:12px 22px;font-weight:800}.disclaimer{color:var(--muted);margin:18px 4px;font-size:11px;line-height:1.6}.hidden{display:none!important}
+@media(max-width:560px){body{padding-left:12px;padding-right:12px}.top{padding-top:12px}.wallet-panel{padding:14px}.network-tag{padding:7px 9px}.metrics{gap:7px}.metric{padding:12px 10px;min-height:75px}.tx summary{padding:13px 11px;gap:9px}.tx-details{grid-template-columns:1fr;padding:13px}.tx-right{max-width:45%}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<main class="shell">
+<header class="top">
+<button class="back" id="atBack" type="button" aria-label="Torna a Tools"><svg viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></svg></button>
+<div class="heading"><div class="eyebrow">INJ NODE / TOOLS</div><h1>All Transaction</h1><p id="atSubtitle">Storico on-chain dei wallet salvati</p></div>
+<button class="refresh" id="atRefresh" type="button" aria-label="Aggiorna transazioni"><svg viewBox="0 0 24 24"><path d="M19.5 8a8 8 0 1 0 1 7M20 3v5h-5"/></svg></button>
+</header>
+<section class="panel wallet-panel"><div><label class="input-label" for="atWallet" id="atWalletLabel">Wallet salvato</label><select id="atWallet" class="wallet-select" aria-label="Wallet salvato"></select><div class="wallet-mask" id="atMask"></div></div><span class="network-tag">INJECTIVE</span></section>
+<section class="metrics">
+<div class="metric panel"><small id="atTotalLabel">Operazioni caricate</small><strong id="atTotal">—</strong></div>
+<div class="metric panel"><small id="atInLabel">In entrata</small><strong class="positive" id="atIn">—</strong></div>
+<div class="metric panel"><small id="atOutLabel">In uscita</small><strong class="negative" id="atOut">—</strong></div>
+</section>
+<div class="toolbar"><input class="search" id="atSearch" type="search" autocomplete="off" placeholder="Cerca hash, categoria, token..." aria-label="Cerca transazioni"><span class="state" id="atState"><i class="dot"></i><span id="atStateText">In attesa</span></span></div>
+<nav class="filters" id="atFilters" aria-label="Filtra transazioni"></nav>
+<section class="panel timeline"><div class="timeline-head"><strong id="atHistory">CRONOLOGIA</strong><span id="atCount"></span></div><div id="atRows" role="feed" aria-live="polite"></div></section>
+<button class="more hidden" type="button" id="atMore">Carica precedenti</button>
+<p class="disclaimer" id="atDisclaimer">Solo operazioni confermate e indicizzate sulla rete Injective. Eventi DeFi interni, operazioni off-chain e transazioni non più indicizzate dagli endpoint pubblici possono non essere disponibili. Non sono necessarie chiavi private.</p>
+</main>
+<script>
+(function(){
+'use strict';
+var addressPattern=/^inj1[0-9a-z]{38,60}$/i;
+var ENDPOINTS=['https://sentry.lcd.injective.network','https://lcd.injective.network','https://1rpc.io/inj-lcd'];
+var SOURCES=['message.sender','transfer.recipient','coin_received.receiver'];
+var PAGE_SIZE=30;
+var CACHE_KEY='inj_all_transactions_cache_v1';
+var CATEGORY=[
+ ['all','Tutte','All'],['received','Ricevute','Received'],['sent','Inviate','Sent'],
+ ['staking','Staking','Staking'],['reward','Reward','Rewards'],['swap','Swap / DeFi','Swap / DeFi'],
+ ['bridge','Bridge / IBC','Bridge / IBC'],['trading','Trading','Trading'],['governance','Governance','Governance'],['other','Altro','Other']
+];
+var $=function(id){return document.getElementById(id);};
+var en=document.documentElement.lang==='en';
+var lang=function(it,english){return en?english:it;};
+var saved=[];
+var current='';
+var category='all';
+var rows=[];
+var offsetBySource={};
+var doneBySource={};
+var canLoad=true;
+var busy=false;
+var generation=0;
+var controllers=[];
+var dataQuality='idle';
+function setText(id,text){$(id).textContent=text;}
+function short(s){s=String(s||'');return s.length>20?s.slice(0,10)+'…'+s.slice(-6):s;}
+function fmtDate(date){
+ if(!date)return lang('Data non disponibile','Date unavailable');
+ var d=new Date(date);
+ return isNaN(d.valueOf())?lang('Data non disponibile','Date unavailable'):new Intl.DateTimeFormat(en?'en-GB':'it-IT',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}).format(d);
+}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function readSaved(){
+ var values=[];
+ try{values=JSON.parse(localStorage.getItem('inj_monitor_wallets_v1')||'[]');}catch(_){}
+ if(!Array.isArray(values))values=[];
+ var legacy='';
+ try{legacy=localStorage.getItem('inj_monitor_address')||'';}catch(_){}
+ if(addressPattern.test(legacy)&&!values.some(function(v){return String(v.address||'').toLowerCase()===legacy.toLowerCase();}))values.push({address:legacy,label:lang('Wallet attivo','Active wallet')});
+ var unique=new Set();
+ return values.map(function(v,i){return {address:String(v.address||'').trim().toLowerCase(),label:String(v.label||'Wallet '+(i+1)).slice(0,28)};})
+ .filter(function(v){if(!addressPattern.test(v.address)||unique.has(v.address))return false;unique.add(v.address);return true;});
+}
+function loadWallets(){
+ saved=readSaved();
+ var select=$('atWallet');select.replaceChildren();
+ if(!saved.length){var empty=document.createElement('option');empty.value='';empty.textContent=lang('Nessun wallet salvato','No saved wallets');select.add(empty);select.disabled=true;current='';return;}
+ select.disabled=false;
+ saved.forEach(function(v){var o=document.createElement('option');o.value=v.address;o.textContent=v.label+' · '+short(v.address);select.add(o);});
+ var active='';
+ try{active=sessionStorage.getItem('inj_all_transaction_selected')||localStorage.getItem('inj_monitor_address')||'';}catch(_){}
+ current=saved.some(function(v){return v.address===active.toLowerCase();})?active.toLowerCase():saved[0].address;
+ select.value=current;
+}
+function changeWallet(value){
+ if(!addressPattern.test(value))return;
+ current=value;try{sessionStorage.setItem('inj_all_transaction_selected',value);}catch(_){}
+ setText('atMask',lang('Indirizzo nascosto · '+short(value),'Address hidden · '+short(value)));
+ category='all';$('atSearch').value='';renderFilters();
+ retrieve(false);
+}
+function stateText(status,message){
+ dataQuality=status;
+ $('atState').querySelector('.dot').className='dot'+(status==='ok'?' ok':status==='partial'?' partial':'');
+ setText('atStateText',message);
+}
+function initializeTranslations(){
+ setText('atSubtitle',lang('Storico on-chain dei wallet salvati','On-chain history of saved wallets'));
+ setText('atWalletLabel',lang('Wallet salvato','Saved wallet'));
+ setText('atTotalLabel',lang('Operazioni caricate','Loaded transactions'));
+ setText('atInLabel',lang('In entrata','Incoming'));
+ setText('atOutLabel',lang('In uscita','Outgoing'));
+ setText('atHistory',lang('CRONOLOGIA','HISTORY'));
+ $('atSearch').placeholder=lang('Cerca hash, categoria, token...','Search hash, category, token...');
+ setText('atMore',lang('Carica precedenti','Load older transactions'));
+ setText('atDisclaimer',lang(
+ 'Lo storico mostra le transazioni confermate indicizzate dagli endpoint pubblici Injective. Operazioni interne a dApp, attività off-chain e transazioni storiche non indicizzate potrebbero non apparire. Nessuna chiave privata necessaria.',
+ 'History displays confirmed transactions indexed by public Injective endpoints. Internal dApp actions, off-chain activity and older unindexed transactions may be unavailable. No private keys required.'));
+ $('atBack').setAttribute('aria-label',lang('Torna a Tools','Back to Tools'));
+ $('atRefresh').setAttribute('aria-label',lang('Aggiorna transazioni','Refresh transactions'));
+}
+function renderFilters(){
+ var root=$('atFilters');root.replaceChildren();
+ CATEGORY.forEach(function(item){var b=document.createElement('button');b.className='filter'+(category===item[0]?' active':'');b.type='button';b.textContent=en?item[2]:item[1];b.setAttribute('aria-pressed',category===item[0]?'true':'false');b.addEventListener('click',function(){category=item[0];renderFilters();render();});root.appendChild(b);});
+}
+function cacheRead(address){
+ try{var all=JSON.parse(localStorage.getItem(CACHE_KEY)||'{}');var item=all[address];return item&&Array.isArray(item.rows)?item.rows:[];}catch(_){return [];}
+}
+function cacheWrite(){
+ try{var all=JSON.parse(localStorage.getItem(CACHE_KEY)||'{}');if(!all||typeof all!=='object')all={};all[current]={saved:Date.now(),rows:rows.slice(0,120)};var keys=Object.keys(all);keys.slice(0,Math.max(0,keys.length-8)).forEach(function(key){delete all[key];});localStorage.setItem(CACHE_KEY,JSON.stringify(all));}catch(_){}
+}
+function getMessageList(tx){return Array.isArray(tx&&tx.body&&tx.body.messages)?tx.body.messages:[];}
+function flattenEvents(response){
+ var result=[];
+ var logs=Array.isArray(response.logs)?response.logs:[];
+ logs.forEach(function(l){(l.events||[]).forEach(function(e){result.push(e);});});
+ if(!result.length)(response.events||[]).forEach(function(e){result.push(e);});
+ return result;
+}
+function attrs(event){
+ var out={};(event.attributes||[]).forEach(function(a){if(a&&a.key!=null)out[String(a.key)]=String(a.value||'');});return out;
+}
+function amountParts(v){
+ var raw=Array.isArray(v)?v:[v];
+ var output=[];
+ raw.forEach(function(value){
+  String(value||'').split(',').forEach(function(part){
+   var m=part.trim().match(/^([0-9]+(?:\.[0-9]+)?)([^,\s]+)$/);
+   if(!m)return;
+   var denom=m[2],n=Number(m[1]),symbol=denom==='inj'?'INJ':(denom==='peggy0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'?'USDC':denom);
+   if(denom==='inj')n=n/1e18;
+   if(denom==='usdc'||denom==='uusdc') {n=n/1e6;symbol='USDC';}
+   output.push({n:n,symbol:symbol});
+  });
+ });
+ return output;
+}
+function amountFromMessages(messages,cat,addr){
+ for(var i=0;i<messages.length;i++){
+  var m=messages[i],type=String(m['@type']||m.type||'').toLowerCase();
+  if(type.includes('msgsend')){
+   var isRelated=[m.from_address,m.to_address].some(function(v){return String(v||'').toLowerCase()===addr;});
+   if(isRelated&&Array.isArray(m.amount)&&m.amount.length)return amountParts(m.amount.map(function(x){return String(x.amount||'')+String(x.denom||'');}));
+  }
+  if((cat==='staking'||cat==='bridge')&&m.amount&&m.amount.amount&&m.amount.denom)return amountParts(String(m.amount.amount)+String(m.amount.denom));
+  if(cat==='bridge'&&m.token&&m.token.amount&&m.token.denom)return amountParts(String(m.token.amount)+String(m.token.denom));
+ }
+ return [];
+}
+function transfersFromEvents(events,addr,cat){
+ var transfers=[];
+ events.forEach(function(event){
+  if(event.type!=='transfer'&&event.type!=='coin_received')return;
+  var a=attrs(event);
+  if(event.type==='transfer'){
+   if(a.recipient!==addr&&a.sender!==addr)return;
+   transfers.push({incoming:a.recipient===addr,outgoing:a.sender===addr,amount:a.amount});
+  }else if(a.receiver===addr&&cat==='reward')transfers.push({incoming:true,outgoing:false,amount:a.amount});
+ });
+ return transfers;
+}
+function categorize(messages,events,addr){
+ var types=messages.map(function(m){return String(m['@type']||m.type||'').toLowerCase();});
+ var combined=types.join(' '), eventNames=events.map(function(e){return String(e.type||'').toLowerCase();}).join(' ');
+ if(/withdrawdelegatorreward|withdrawvalidatorcommission/.test(combined))return 'reward';
+ if(/delegate|undelegate|redelegate|cancelunbonding|restake/.test(combined))return 'staking';
+ if(/ibc|msgtransfer|recvpacket|acknowledgement|msgtimeout|msgsendtoprotocol/.test(combined))return 'bridge';
+ if(/swap|route|exacts|exchange/.test(combined)&&/swap/.test(combined+' '+eventNames))return 'swap';
+ if(/msgcreate.*order|msgcancel.*order|msgbatchupdateorders|msgliquidateposition/.test(combined))return 'trading';
+ if(/msgvote|msgsubmitproposal|msgdeposit/.test(combined))return 'governance';
+ if(/swap/.test(eventNames))return 'swap';
+ if(/msgexecutecontract|msginstantiatecontract/.test(combined))return 'swap';
+ if(/msgsend|msgmultisend/.test(combined)){
+  var sent=messages.some(function(m){return String(m.from_address||'').toLowerCase()===addr;});
+  var received=messages.some(function(m){return String(m.to_address||'').toLowerCase()===addr;});
+  if(received&&!sent)return 'received';
+  if(sent)return 'sent';
+ }
+ var transfers=transfersFromEvents(events,addr,'other');
+ if(transfers.some(function(x){return x.outgoing;}))return 'sent';
+ if(transfers.some(function(x){return x.incoming;}))return 'received';
+ return 'other';
+}
+function normalize(tx,response,addr){
+ var hash=String(response.txhash||response.hash||'').trim().toUpperCase();
+ if(!/^[0-9A-F]{64}$/.test(hash))return null;
+ var messages=getMessageList(tx);
+ var events=flattenEvents(response);
+ var cat=categorize(messages,events,addr);
+ var transferList=transfersFromEvents(events,addr,cat);
+ var amounts=amountFromMessages(messages,cat,addr);
+ if(!amounts.length && transferList.length){
+  var matched=transferList.filter(function(t){return cat==='received'||cat==='reward'?t.incoming:cat==='sent'?t.outgoing:true;});
+  amounts=amountParts((matched[0]||transferList[0]).amount);
+ }
+ var inValue=cat==='received'||cat==='reward';
+ var outValue=cat==='sent';
+ var direction=inValue?'in':outValue?'out':'neutral';
+ var first=amounts[0];
+ var formatAmount=first&&isFinite(first.n)?(new Intl.NumberFormat(en?'en-US':'it-IT',{maximumFractionDigits:6}).format(first.n)+' '+(first.symbol.length>18?first.symbol.slice(0,13)+'…':first.symbol)):'';
+ var failures=Number(response.code||0)!==0;
+ var fee=tx&&tx.auth_info&&tx.auth_info.fee&&tx.auth_info.fee.amount;
+ var peers=[];
+ messages.forEach(function(m){['from_address','to_address','sender','receiver','delegator_address','validator_address','contract','recipient'].forEach(function(k){var v=m[k];if(typeof v==='string'&&v!==addr&&!peers.includes(v)&&v.length>10)peers.push(v);});});
+ return {hash:hash,time:response.timestamp||'',height:String(response.height||''),cat:cat,dir:direction,amount:formatAmount,asset:first?first.symbol:'',failed:failures,fee:amountParts(Array.isArray(fee)?fee.map(function(v){return String(v.amount||'')+String(v.denom||'');}):[]).map(function(x){return x.n+' '+x.symbol;}).join(', '),peers:peers.slice(0,4),msgs:messages.map(function(m){return String(m['@type']||m.type||'').split('.').pop();}).slice(0,6)};
+}
+function titleFor(item){
+ var types={received:lang('Ricevuta','Received'),sent:lang('Invio','Sent'),staking:'Staking',reward:'Reward',swap:'Swap / DeFi',bridge:'Bridge / IBC',trading:'Trading',governance:'Governance',other:lang('Operazione on-chain','On-chain activity')};
+ return types[item.cat]||types.other;
+}
+function iconFor(item){
+ return {received:'↙',sent:'↗',staking:'⬡',reward:'✧',swap:'⇄',bridge:'⇢',trading:'≋',governance:'◈',other:'•'}[item.cat]||'•';
+}
+function render(){
+ var filtered=rows.filter(function(item){
+  if(category!=='all'&&item.cat!==category)return false;
+  var needle=$('atSearch').value.trim().toLowerCase();
+  return !needle||[item.hash,item.asset,titleFor(item),item.amount,item.height].concat(item.peers||[]).join(' ').toLowerCase().includes(needle);
+ });
+ var inCount=rows.filter(function(x){return x.dir==='in'&&!x.failed;}).length;
+ var outCount=rows.filter(function(x){return x.dir==='out'&&!x.failed;}).length;
+ setText('atTotal',String(rows.length));setText('atIn',String(inCount));setText('atOut',String(outCount));
+ setText('atCount',filtered.length+'/'+rows.length+' '+lang('caricate','loaded'));
+ var host=$('atRows');host.replaceChildren();
+ if(!current){host.innerHTML='<p class="notice center">'+lang('Salva un wallet Injective nella Home per vedere le sue transazioni.','Save an Injective wallet in Home to view its transactions.')+'</p>';$('atMore').classList.add('hidden');return;}
+ if(!filtered.length){
+  var message=busy?lang('Caricamento delle transazioni...','Loading transactions...'):rows.length?lang('Nessun risultato con questi filtri.','No matches for these filters.'):dataQuality==='error'?lang('Impossibile recuperare lo storico in questo momento.','Unable to load transaction history right now.'):lang('Nessuna transazione disponibile dalle fonti interrogate.','No transactions available from queried sources.');
+  host.innerHTML='<p class="notice center'+(dataQuality==='error'?' error':'')+'">'+esc(message)+'</p>';
+ }
+ filtered.forEach(function(item){
+  var detail=document.createElement('details');detail.className='tx';
+  var status=item.failed?lang('Non riuscita','Failed'):lang('Confermata','Confirmed');
+  var amount=(item.dir==='in'?'+':item.dir==='out'?'−':'')+(item.amount||'—');
+  var peer=item.peers&&item.peers.length?short(item.peers[0]):'—';
+  detail.innerHTML='<summary><span class="tx-icon '+(item.dir==='in'?'in':item.dir==='out'?'out':'')+'">'+iconFor(item)+'</span><span class="tx-center"><span class="tx-name"><strong>'+esc(titleFor(item))+'</strong></span><span class="tx-info">'+esc(fmtDate(item.time))+' · '+esc(short(item.hash))+'</span></span><span class="tx-right"><span class="tx-amount '+(item.dir==='in'?'in':item.dir==='out'?'out':'')+'">'+esc(amount)+'</span><br><span class="tx-status'+(item.failed?' failed':'')+'">'+esc(status)+'</span></span></summary>'+
+   '<div class="tx-details"><div class="tx-field"><small>HASH</small><div>'+esc(short(item.hash))+'</div></div>'+
+   '<div class="tx-field"><small>'+lang('BLOCCO','BLOCK')+'</small><div>'+esc(item.height||'—')+'</div></div>'+
+   '<div class="tx-field"><small>'+lang('CONTROPARTE','COUNTERPARTY')+'</small><div>'+esc(peer)+'</div></div>'+
+   '<div class="tx-field"><small>FEE</small><div>'+esc(item.fee||'—')+'</div></div>'+
+   '<div class="tx-field full"><small>'+lang('MESSAGGI','MESSAGES')+'</small><div>'+esc((item.msgs||[]).join(', ')||'—')+'</div></div>'+
+   '<div class="full"><a class="tx-link" target="_blank" rel="noopener noreferrer" href="https://explorer.injective.network/transaction/'+encodeURIComponent(item.hash)+'">'+lang('Apri su Injective Explorer','Open in Injective Explorer')+' ↗</a></div></div>';
+  host.appendChild(detail);
+ });
+ $('atMore').classList.toggle('hidden',!current||!canLoad);
+ $('atMore').disabled=busy;
+}
+function cancelled(){controllers.forEach(function(c){try{c.abort();}catch(_){}});controllers=[];}
+async function requestJSON(url){
+ var controller=new AbortController();controllers.push(controller);
+ var timeout=setTimeout(function(){controller.abort();},13000);
+ try{var response=await fetch(url,{headers:{Accept:'application/json'},signal:controller.signal,cache:'no-store'});
+  if(!response.ok)throw new Error('HTTP '+response.status);
+  var data=await response.json();
+  if(data&&data.code&&data.message&&!data.tx_responses)throw new Error(data.message);
+  return data;
+ }finally{clearTimeout(timeout);}
+}
+async function querySource(source,page){
+ var expr=source+"='"+current+"'";
+ var errors=[];
+ for(var i=0;i<ENDPOINTS.length;i++){
+  for(var j=0;j<2;j++){
+   var path='/cosmos/tx/v1beta1/txs?'+(j===0?'query=':'events=')+encodeURIComponent(expr)+'&page='+page+'&limit='+PAGE_SIZE+'&order_by=2';
+   try{
+    var data=await requestJSON(ENDPOINTS[i]+path);
+    if(!Array.isArray(data.tx_responses))throw new Error('invalid response');
+    var normalized=data.tx_responses.map(function(r,index){return normalize((data.txs||[])[index]||{},r,current);}).filter(Boolean);
+    var total=Number(data.total||(data.pagination&&data.pagination.total)||0);
+    return {items:normalized,done:!data.tx_responses.length||data.tx_responses.length<PAGE_SIZE||(total>0&&page*PAGE_SIZE>=total)};
+   }catch(error){if(error&&error.name==='AbortError')throw error;errors.push(error);}
+  }
+ }
+ throw errors[0]||new Error('Network error');
+}
+async function retrieve(more){
+ if(!current){rows=[];canLoad=false;stateText('idle',lang('Nessun wallet','No wallet'));render();return;}
+ if(busy)return;
+ var run=++generation;
+ if(!more){
+  cancelled();rows=[];offsetBySource={};doneBySource={};canLoad=true;
+  var fromCache=cacheRead(current);
+  if(fromCache.length){rows=fromCache;stateText('partial',lang('Storico salvato · sincronizzazione','Cached history · syncing'));}
+ }else{cancelled();}
+ busy=true;
+ stateText('partial',lang('Sincronizzazione...','Syncing...'));render();
+ var sources=SOURCES.filter(function(source){return !doneBySource[source];});
+ var results=await Promise.allSettled(sources.map(function(source){return querySource(source,(offsetBySource[source]||0)+1);}));
+ if(run!==generation)return;
+ var succeeded=0,failed=0,fresh=[];
+ results.forEach(function(result,index){
+  var source=sources[index];
+  if(result.status==='fulfilled'){
+   succeeded++;
+   offsetBySource[source]=(offsetBySource[source]||0)+1;
+   doneBySource[source]=result.value.done;
+   fresh=fresh.concat(result.value.items);
+  }else{
+   failed++;
+   if(result.reason&&result.reason.name==='AbortError')return;
+  }
+ });
+ if(succeeded){
+  var seen=new Map();
+  rows.concat(fresh).forEach(function(item){if(item&&item.hash)seen.set(item.hash,item);});
+  rows=Array.from(seen.values()).sort(function(a,b){var d=Date.parse(b.time||'')-Date.parse(a.time||'');return isFinite(d)&&d!==0?d:Number(b.height||0)-Number(a.height||0);});
+  cacheWrite();
+  stateText(failed?'partial':'ok',failed?lang('Risultati parziali','Partial results'):lang('On-chain · aggiornato','On-chain · updated'));
+ }else{
+  stateText('error',rows.length?lang('Offline · dati salvati','Offline · cached data'):lang('Fonte non raggiungibile','Source unavailable'));
+ }
+ canLoad=sources.some(function(s){return !doneBySource[s];});
+ busy=false;render();
+}
+function start(){
+ initializeTranslations();renderFilters();loadWallets();
+ if(current)changeWallet(current);else{canLoad=false;stateText('idle',lang('Nessun wallet salvato','No saved wallet'));render();}
+ $('atWallet').addEventListener('change',function(){changeWallet(this.value);});
+ $('atSearch').addEventListener('input',render);
+ $('atMore').addEventListener('click',function(){retrieve(true);});
+ $('atRefresh').addEventListener('click',function(){retrieve(false);});
+ $('atBack').addEventListener('click',function(){location.href='./index.html?tab=tools';});
+ window.addEventListener('pageshow',function(){var next=readSaved();if(next.length!==saved.length){loadWallets();if(current)changeWallet(current);}});
+ document.addEventListener('visibilitychange',function(){if(!document.hidden&&current&&!busy&&dataQuality!=='idle')retrieve(false);});
+}
+start();
+})();
+</script>
+</body>
+</html>
