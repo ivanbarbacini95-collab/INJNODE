@@ -57,7 +57,7 @@ function makeItem(tx,record,account){
  const instructions=instr.map(i=>(i.parsed&&i.parsed.type||'').toLowerCase());
  const names=programs.concat(instructions).join(' ');
  const isJupiter=/jup|jupiter|route|swap|jup6|jup4|jupagg|j1toso|jup2/.test(names);
- const isLend=/lend|deposit|withdraw|kamino|marginfi|solend|save|vault|flashloan|stakepool/.test(names);
+ const hasDeFiInstruction=/lend|deposit|withdraw|kamino|marginfi|solend|save|vault|flashloan|stakepool/.test(names);
  const isBridge=/worm|bridge|debridge|allbridge|portal|mayan|cctp|circle/.test(names);
  const isStaking=/delegate|deactivate|withdrawstake|splitstake|mergestake/.test(names);
  const ownerDiff=new Map();
@@ -78,6 +78,7 @@ function makeItem(tx,record,account){
  const delta=new Map();
  ownerDiff.forEach(x=>delta.set(x.mint,(delta.get(x.mint)||0)+x.after-x.before));
  const tokenDeltas=Array.from(delta.entries()).filter(x=>Number.isFinite(x[1])&&Math.abs(x[1])>1e-10);
+ const isLend=hasDeFiInstruction||tokenDeltas.some(x=>SYMBOLS[x[0]]==='jlUSDC');
  const ownerIndex=keys.indexOf(account);
  const rawSol=ownerIndex<0?0:((Number((meta.postBalances||[])[ownerIndex]||0)-Number((meta.preBalances||[])[ownerIndex]||0))+(keys[0]===account?Number(meta.fee||0):0))/1e9;
  const isToken=tokenDeltas.length>0;
