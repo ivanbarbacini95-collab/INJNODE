@@ -1,4 +1,4 @@
-/* INJ Node · Cash Reserve · read-only Injective stablecoin monitor */
+/* INJ Node · Cash Reserve · read-only Injective + Solana stablecoin monitor */
 (() => {
   'use strict';
   const ADDRESS = 'inj1hqzpll2ma9t02rywfcfx7hpsl0rran5ptj4pd8';
@@ -8,21 +8,27 @@
     'https://1rpc.io/inj-lcd'
   ];
   // Exact, chain-verified denoms. Do not match tokens by their display symbol.
-  const ASSETS = Object.freeze([
-    { id: 'usdc', label: 'USDC', denom: 'erc20:0xa00c59ff5a080d2b954d0c75e46e22a0c371235a', decimals: 6 },
-    { id: 'usdt', label: 'USDT', denom: 'peggy0xdac17f958d2ee523a2206206994597c13d831ec7', decimals: 6 },
-    { id: 'usdcnb', label: 'USDCnb', denom: 'ibc/2cbc2ea121ae42563b08028466f37b600f2d7d4282342de938283cc3fb2bc00e', decimals: 6 }
-  ]);
-  const KEY_HISTORY = 'inj_node_cash_reserve_history_v1';
+  // Keep only the canonical native Injective USDC denom.
+  const INJ_USDC_DENOM = 'erc20:0xa00c59ff5a080d2b954d0c75e46e22a0c371235a';
+  // Solana mainnet mint IDs confirmed by Solana and the respective issuers.
+  const SOL_MINTS = Object.freeze({
+    usdcSol: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+    usdtSol: 'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB'
+  });
+  const SOL_RPC = 'https://api.mainnet-beta.solana.com';
+  // Version 2 starts a fresh history because the old token basket included bridged/legacy assets.
+  const KEY_HISTORY = 'inj_node_cash_reserve_history_v2_';
+  const KEY_SOL_ADDRESS = 'inj_node_cash_reserve_sol_wallet_v1';
   const KEY_TARGET = 'inj_node_cash_reserve_goal_v1';
   const KEY_PRIVACY = 'inj_node_cash_reserve_privacy_v1';
   const $ = (id) => document.getElementById(id);
   if (!$('cashReservePanel')) return;
 
-  const state = { amounts: null, usd: null, fx: null, lastSync: 0, loading: false, error: false, privacy: false, target: 0, currency: 'USD', lang: 'it', range: 'ALL', history: [] };
+  const state = { amounts: null, usd: null, fx: null, lastSync: 0, loading: false, error: false, partial: false, errorDetail: '', privacy: false, target: 0, currency: 'USD', lang: 'it', range: 'ALL', history: [], solAddress: '' };
+  const historyKey = () => KEY_HISTORY + (state.solAddress || 'injective-only');
   const phrases = {
-    it: {reserve:'CASH RESERVE', sub:'Riserva patrimoniale · Injective', nominal:'Valore nominale della riserva', note:'Valore nominale: 1 stablecoin = 1 USD. Non è una quotazione di mercato né un capitale assicurato.', target:'Obiettivo di accumulo', targetHint:'Imposta un obiettivo in USD', save:'Salva', noGoal:'Nessun obiettivo impostato', ofGoal:'del target', history:'Evoluzione riserva', historyEmpty:'Lo storico si formerà da questo dispositivo a partire dalle prossime sincronizzazioni.', sync:'Sincronizza', updating:'Sincronizzazione…', online:'Online', offline:'Offline', pending:'In attesa', copied:'Indirizzo copiato', copy:'Copia', privacy:'Privacy', address:'Wallet di riserva', updated:'Aggiornato', noFX:'Cambio EUR/USD temporaneamente non disponibile', source:'Sola lettura · saldo on-chain · nessuna firma richiesta', warning:'USDCnb è una versione bridged/legacy e viene distinta da USDC nativo.', failed:'Saldo non verificabile: controlla la rete o riprova.', fx:'Controvalore stimato con cambio di riferimento USD/EUR.'},
-    en: {reserve:'CASH RESERVE', sub:'Capital reserve · Injective', nominal:'Nominal reserve value', note:'Nominal valuation: 1 stablecoin = 1 USD. Not a market quote or insured capital.', target:'Savings target', targetHint:'Set a target in USD', save:'Save', noGoal:'No target set', ofGoal:'of target', history:'Reserve history', historyEmpty:'History starts on this device with the next successful syncs.', sync:'Sync', updating:'Syncing…', online:'Online', offline:'Offline', pending:'Waiting', copied:'Address copied', copy:'Copy', privacy:'Privacy', address:'Reserve wallet', updated:'Updated', noFX:'EUR/USD rate temporarily unavailable', source:'Read-only · on-chain balance · no wallet signature required', warning:'USDCnb is a bridged/legacy token, distinct from native USDC.', failed:'Balance cannot be verified: check the network and try again.', fx:'Estimated value using a reference USD/EUR exchange rate.'}
+    it: {reserve:'CASH RESERVE', sub:'Riserva patrimoniale · Injective + Solana', nominal:'Valore nominale della riserva', note:'Valore nominale: 1 stablecoin = 1 USD. Non è una quotazione di mercato né un capitale assicurato.', target:'Obiettivo di accumulo', targetHint:'Imposta un obiettivo in USD', save:'Salva', noGoal:'Nessun obiettivo impostato', ofGoal:'del target', history:'Evoluzione riserva', historyEmpty:'Lo storico si formerà da questo dispositivo a partire dalle prossime sincronizzazioni.', sync:'Sincronizza', updating:'Sincronizzazione…', online:'Online', offline:'Offline', pending:'In attesa', copied:'Indirizzo copiato', copy:'Copia', privacy:'Privacy', address:'Wallet di riserva', updated:'Aggiornato', noFX:'Cambio EUR/USD temporaneamente non disponibile', source:'Sola lettura · saldo on-chain · nessuna firma richiesta', warning:'Solo USDC nativo su Injective e USDC/USDT ufficiali su Solana. I saldi delle due reti restano distinti.', solPlaceholder:'Indirizzo pubblico wallet Solana', solMissing:'Solana non configurata: totale riferito solo a Injective.', solConfigured:'Solana collegata · lettura pubblica dei saldi', solInvalid:'Indirizzo Solana non valido.', partial:'Parziale', solFailed:'Impossibile leggere Solana; verifica la rete RPC.', injFailed:'Impossibile leggere Injective; verifica la rete LCD.', failed:'Saldo non verificabile: controlla la rete o riprova.', fx:'Controvalore stimato con cambio di riferimento USD/EUR.'},
+    en: {reserve:'CASH RESERVE', sub:'Capital reserve · Injective + Solana', nominal:'Nominal reserve value', note:'Nominal valuation: 1 stablecoin = 1 USD. Not a market quote or insured capital.', target:'Savings target', targetHint:'Set a target in USD', save:'Save', noGoal:'No target set', ofGoal:'of target', history:'Reserve history', historyEmpty:'History starts on this device with the next successful syncs.', sync:'Sync', updating:'Syncing…', online:'Online', offline:'Offline', pending:'Waiting', copied:'Address copied', copy:'Copy', privacy:'Privacy', address:'Reserve wallet', updated:'Updated', noFX:'EUR/USD rate temporarily unavailable', source:'Read-only · on-chain balance · no wallet signature required', warning:'Only native USDC on Injective and official USDC/USDT on Solana. Balances stay separated by network.', solPlaceholder:'Public Solana wallet address', solMissing:'Solana not configured: total includes Injective only.', solConfigured:'Solana connected · public balance monitoring', solInvalid:'Invalid Solana address.', partial:'Partial', solFailed:'Solana balance unavailable; check RPC.', injFailed:'Injective balance unavailable; check LCD.', failed:'Balance cannot be verified: check the network and try again.', fx:'Estimated value using a reference USD/EUR exchange rate.'}
   };
   const tr = (k) => phrases[state.lang][k] || k;
   const store = (k, value) => { try { localStorage.setItem(k, JSON.stringify(value)); } catch (_) {} };
@@ -42,6 +48,9 @@
     $('cashSync').textContent = state.loading ? tr('updating') : tr('sync');
     $('cashCopy').textContent = tr('copy');
     $('cashPrivacy').setAttribute('aria-label', tr('privacy'));
+    $('cashSolAddress').placeholder = tr('solPlaceholder');
+    $('cashSolSave').textContent = tr('save');
+    $('cashSolStatus').textContent = state.solAddress ? tr('solConfigured') : tr('solMissing');
   };
   const readPrefs = () => {
     try {
@@ -59,19 +68,16 @@
   const updateStatus = () => {
     const el = $('cashStatus');
     const online = !state.error && state.lastSync > 0;
-    el.className = 'cash-pill ' + (state.error ? 'is-error' : online ? 'is-ok' : 'is-idle');
-    el.textContent = state.error ? tr('offline') : online ? tr('online') : tr('pending');
+    el.className = 'cash-pill ' + (state.error ? (state.partial ? 'is-partial' : 'is-error') : online ? 'is-ok' : 'is-idle');
+    el.textContent = state.error ? (state.partial ? tr('partial') : tr('offline')) : online ? tr('online') : tr('pending');
     $('cashSyncInfo').textContent = state.lastSync ? tr('updated') + ' ' + new Date(state.lastSync).toLocaleTimeString(state.lang === 'it'?'it-IT':'en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'}) : tr('pending');
-    $('cashError').textContent = state.error ? tr('failed') : '';
+    $('cashError').textContent = state.error ? (state.errorDetail || tr('failed')) : '';
   };
   function updateAmounts() {
-    if (!state.amounts) {
-      ['cashUsdc','cashUsdt','cashUsdcnb'].forEach(id => $(id).textContent = '—');
-      return;
+    for (const [id, key] of [['cashUsdc','usdcInj'],['cashUsdcSol','usdcSol'],['cashUsdtSol','usdtSol']]) {
+      const amount = state.amounts?.[key];
+      $(id).textContent = Number.isFinite(amount) ? shown(fmt(amount,2)) : '—';
     }
-    $('cashUsdc').textContent = shown(fmt(state.amounts.usdc,2));
-    $('cashUsdt').textContent = shown(fmt(state.amounts.usdt,2));
-    $('cashUsdcnb').textContent = shown(fmt(state.amounts.usdcnb,2));
   }
   const updateGoal = () => {
     const progress = state.target > 0 && state.usd != null ? Math.max(0, Math.min(100, state.usd / state.target * 100)) : 0;
@@ -87,7 +93,7 @@
     if (!last || Math.abs(last.v - state.usd) > 0.000001 || now - last.t > 3600000) {
       state.history.push({t:now,v:state.usd});
       state.history = state.history.slice(-1800);
-      store(KEY_HISTORY,state.history);
+      store(historyKey(),state.history);
     }
   };
   const updateChart = () => {
@@ -132,6 +138,42 @@
       return await result.json();
     } finally { clearTimeout(timer); }
   }
+  async function postRPC(payload, ms = 9000) {
+    const abort = new AbortController();
+    const timer = setTimeout(() => abort.abort(), ms);
+    try {
+      const result = await fetch(SOL_RPC, {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify(payload), cache: 'no-store', signal: abort.signal
+      });
+      if (!result.ok) throw new Error('Solana RPC HTTP ' + result.status);
+      const json = await result.json();
+      if (json.error) throw new Error(json.error.message || 'Solana RPC error');
+      if (!Array.isArray(json.result?.value)) throw new Error('Invalid Solana RPC response');
+      return json.result.value;
+    } finally { clearTimeout(timer); }
+  }
+  async function fetchSolanaBalances(address) {
+    const entries = await Promise.all(Object.entries(SOL_MINTS).map(async ([id,mint],index) => {
+      const accounts = await postRPC({
+        jsonrpc:'2.0', id:index+1, method:'getTokenAccountsByOwner',
+        params:[address,{mint},{encoding:'jsonParsed',commitment:'confirmed'}]
+      });
+      let total = 0n;
+      for (const account of accounts) {
+        const info = account?.account?.data?.parsed?.info;
+        const token = info?.tokenAmount;
+        if (info?.mint !== mint || token?.decimals !== 6 || !/^\\d+$/.test(String(token?.amount ?? ''))) {
+          throw new Error('Unexpected Solana mint/decimals response');
+        }
+        total += BigInt(token.amount);
+      }
+      const value = Number(total) / 1e6;
+      if (!Number.isFinite(value) || value < 0) throw new Error('Invalid Solana token balance');
+      return [id,value];
+    }));
+    return Object.fromEntries(entries);
+  }
   async function fetchBalances() {
     let lastError = null;
     for (const host of LCDS) {
@@ -161,36 +203,64 @@
   }
   async function sync() {
     if (state.loading || document.hidden) return;
-    state.loading=true;render();
-    try {
-      const balances = await fetchBalances();
-      const byDenom = new Map();
-      balances.forEach(b=>byDenom.set(String(b.denom || '').toLowerCase(),String(b.amount || '0')));
-      const amounts = {};
-      for (const asset of ASSETS) {
-        const amount = amt(byDenom.get(asset.denom) || '0',asset.decimals);
-        if (!Number.isFinite(amount) || amount < 0) throw new Error('Invalid token amount');
-        amounts[asset.id] = amount;
-      }
-      state.amounts = amounts;
-      state.usd = amounts.usdc + amounts.usdt + amounts.usdcnb;
-      state.lastSync = Date.now();
-      state.error = false;
-      saveSnapshot();
-    } catch (error) {
-      state.error = true;
-      console.warn('Cash Reserve sync failed',error);
-    } finally {
-      state.loading=false;
-      render();
+    state.loading = true; render();
+    const useSolana = Boolean(state.solAddress);
+    const addressAtStart = state.solAddress;
+    const [injective, solana] = await Promise.allSettled([
+      fetchBalances(),
+      useSolana ? fetchSolanaBalances(addressAtStart) : Promise.resolve(null)
+    ]);
+    // Never combine balances from a wallet that changed during an in-flight request.
+    if (addressAtStart !== state.solAddress) {
+      state.loading = false; render(); void sync(); return;
     }
+    const next = {usdcInj:null,usdcSol:null,usdtSol:null};
+    if (injective.status === 'fulfilled') {
+      const byDenom = new Map();
+      injective.value.forEach(b=>byDenom.set(String(b.denom||'').toLowerCase(),String(b.amount||'0')));
+      const value = amt(byDenom.get(INJ_USDC_DENOM) || '0',6);
+      if (Number.isFinite(value) && value >= 0) next.usdcInj = value;
+    }
+    if (useSolana && solana.status === 'fulfilled') {
+      next.usdcSol = solana.value.usdcSol;
+      next.usdtSol = solana.value.usdtSol;
+    }
+    const injOK = Number.isFinite(next.usdcInj);
+    const solOK = !useSolana || (Number.isFinite(next.usdcSol) && Number.isFinite(next.usdtSol));
+    state.amounts = next;
+    state.error = !injOK || !solOK;
+    state.partial = state.error && (injOK || (useSolana && solOK));
+    state.errorDetail = [!injOK && tr('injFailed'),useSolana && !solOK && tr('solFailed')].filter(Boolean).join(' ');
+    state.usd = injOK && solOK ? next.usdcInj + (useSolana ? next.usdcSol + next.usdtSol : 0) : null;
+    if (injOK || (useSolana && solOK)) state.lastSync = Date.now();
+    if (state.usd != null) saveSnapshot();
+    state.loading = false;
+    render();
   }
   function boot() {
-    state.history = (load(KEY_HISTORY,[]) || []).filter(p=>Number.isFinite(p?.t)&&Number.isFinite(p?.v)&&p.v>=0).slice(-1800);
+    state.solAddress = String(load(KEY_SOL_ADDRESS,'')||'');
+    state.history = (load(historyKey(),[]) || []).filter(p=>Number.isFinite(p?.t)&&Number.isFinite(p?.v)&&p.v>=0).slice(-1800);
+    $('cashSolAddress').value = state.solAddress;
     state.target = Math.max(0,Number(load(KEY_TARGET,0))||0);
     state.privacy = !!load(KEY_PRIVACY,false);
     $('cashWalletAddress').textContent = ADDRESS.slice(0,11)+'…'+ADDRESS.slice(-9);
     $('cashPrivacy').setAttribute('aria-pressed',String(state.privacy));
+    $('cashSolWalletForm').addEventListener('submit',event=>{
+      event.preventDefault();
+      const address = $('cashSolAddress').value.trim();
+      const error = $('cashSolAddressError');
+      if (address && !/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(address)) {
+        error.textContent = tr('solInvalid'); return;
+      }
+      error.textContent = '';
+      if (address === state.solAddress) return;
+      state.solAddress = address;
+      store(KEY_SOL_ADDRESS,address);
+      state.history = (load(historyKey(),[]) || []).filter(p=>Number.isFinite(p?.t)&&Number.isFinite(p?.v)&&p.v>=0).slice(-1800);
+      state.amounts = null; state.usd = null; state.lastSync = 0;
+      state.error = false; state.errorDetail = '';
+      render(); void sync();
+    });
     $('cashGoalForm').addEventListener('submit',event=>{
       event.preventDefault();
       const v = Number($('cashGoalAmount').value);
