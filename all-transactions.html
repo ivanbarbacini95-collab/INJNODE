@@ -86,6 +86,9 @@ var busy=false;
 var generation=0;
 var controllers=[];
 var dataQuality='idle';
+var hydrating=false;
+var hydratedHashKeys=new Set();
+var hydrationFailures=new Set();
 function setText(id,text){$(id).textContent=text;}
 function short(s){s=String(s||'');return s.length>20?s.slice(0,10)+'…'+s.slice(-6):s;}
 function normalizedTimestamp(value){
@@ -160,7 +163,7 @@ function loadWallets(){
 }
 function changeWallet(value){
  if(!isWallet(value))return;
- cancelled();generation++;busy=false;SOURCES=['indexer'];
+ cancelled();generation++;busy=false;hydrating=false;hydratedHashKeys.clear();hydrationFailures.clear();SOURCES=['indexer'];
  current=value;try{sessionStorage.setItem('inj_all_transaction_selected',value);}catch(_){}
  setText('atMask',lang('Indirizzo non mostrato · sola lettura','Address not displayed · read only'));
  setText('atNetwork',chainOf(value)==='solana'?'SOLANA':'INJECTIVE');
@@ -332,13 +335,14 @@ function render(){
  setText('atTotal',String(rows.length));setText('atIn',String(inCount));setText('atOut',String(outCount));
  setText('atCount',filtered.length+'/'+rows.length+' '+lang('caricate','loaded'));
  var host=$('atRows');host.replaceChildren();
+ var opened=new Set(Array.from(host.querySelectorAll('details.tx[open]')).map(function(el){return el.dataset.hash;}));
  if(!current){host.innerHTML='<p class="notice center">'+lang('Nessun wallet salvato disponibile.','No saved wallet available.')+'</p>';$('atMore').classList.add('hidden');return;}
  if(!filtered.length){
   var message=busy?lang('Caricamento delle transazioni...','Loading transactions...'):rows.length?lang('Nessun risultato con questi filtri.','No matches for these filters.'):dataQuality==='error'?lang('Impossibile recuperare lo storico in questo momento.','Unable to load transaction history right now.'):lang('Nessuna transazione disponibile dalle fonti interrogate.','No transactions available from queried sources.');
   host.innerHTML='<p class="notice center'+(dataQuality==='error'?' error':'')+'">'+esc(message)+'</p>';
  }
  filtered.forEach(function(item){
-  var detail=document.createElement('details');detail.className='tx';
+  var detail=document.createElement('details');detail.className='tx';detail.dataset.hash=item.hash;if(opened.has(item.hash))detail.open=true;
   var status=item.failed?lang('Non riuscita','Failed'):lang('Confermata','Confirmed');
   var amount=(item.dir==='in'?'+':item.dir==='out'?'−':'')+(item.amount||'—');
   var peer=item.peers&&item.peers.length?short(item.peers[0]):'—';
@@ -358,9 +362,9 @@ function render(){
  $('atMore').disabled=busy;
 }
 function cancelled(){controllers.forEach(function(c){try{c.abort();}catch(_){}});controllers=[];}
-async function requestJSON(url){
+async function requestJSON(url,timeoutMs){
  var controller=new AbortController();controllers.push(controller);
- var timeout=setTimeout(function(){controller.abort();},13000);
+ var timeout=setTimeout(function(){controller.abort();},timeoutMs||13000);
  try{var response=await fetch(url,{headers:{Accept:'application/json'},signal:controller.signal,cache:'no-store'});
   if(!response.ok)throw new Error('HTTP '+response.status);
   var data=await response.json();
@@ -435,6 +439,90 @@ async function querySource(source,page){
  }
  throw errors[0]||new Error('Network error');
 }
+function mergeIndexedDetails(base,detail){
+ if(!detail)return base;
+ var original=base||{},newer=detail||{};
+ var useNewCategory=(original.cat==='other'||!original.cat)&&newer.cat&&newer.cat!=='other';
+ var moved=useNewCategory?newer.dir:original.dir;
+ return Object.assign({},original,{
+  time:firstTimestamp(newer.time,original.time),
+  height:newer.height||original.height,
+  cat:useNewCategory?newer.cat:original.cat,
+  dir:moved||'neutral',
+  amount:newer.amount||original.amount||'',
+  asset:newer.asset||original.asset||'',
+  fee:newer.fee||original.fee||'',
+  peers:newer.peers&&newer.peers.length?newer.peers:original.peers||[],
+  msgs:Array.from(new Set((original.msgs||[]).concat(newer.msgs||[]))).slice(0,9),
+  failed:Boolean(original.failed||newer.failed)
+ });
+}
+async function blockTimeFromHeight(height){
+ if(!/^\d+$/.test(String(height||'')))return '';
+ var urlPath='/cosmos/base/tendermint/v1beta1/blocks/'+encodeURIComponent(height);
+ for(var i=0;i<2;i++){
+  try{
+   var data=await requestJSON(ENDPOINTS[i]+urlPath,6500);
+   var block=data.block||{},header=block.header||{};
+   var result=firstTimestamp(header.time,data.block&&data.block.time);
+   if(result)return result;
+  }catch(_){}
+ }
+ return '';
+}
+async function queryFullInjectiveTx(item){
+ var full='';
+ for(var i=0;i<2;i++){
+  try {
+   var data=await requestJSON(ENDPOINTS[i]+'/cosmos/tx/v1beta1/txs/'+encodeURIComponent(item.hash),6500);
+   var response=data.tx_response||data.txResponse||{};
+   response.txhash=response.txhash||item.hash;
+   var parsed=normalize(data.tx||{},response,current);
+   if(parsed){full=parsed;break;}
+  }catch(_){}
+ }
+ if(!full)full={};
+ if(!firstTimestamp(full.time,item.time)&&item.height){
+  var time=await blockTimeFromHeight(item.height);
+  if(time)full.time=time;
+ }
+ return full;
+}
+function needsHydration(item){
+ return item&&item.network!=='solana'&&
+  (!firstTimestamp(item.time)||!item.amount&&['received','sent','staking','reward','bridge','swap','defi'].includes(item.cat)||item.cat==='other');
+}
+async function enrichInjectiveRows(run){
+ if(hydrating)return;
+ var incomplete=rows.filter(function(item){return needsHydration(item)&&!hydratedHashKeys.has(item.hash)&&!hydrationFailures.has(item.hash);}).slice(0,45);
+ if(!incomplete.length)return;
+ hydrating=true;
+ var cursor=0,updates=0;
+ async function worker(){
+  while(cursor<incomplete.length&&run===generation){
+   var original=incomplete[cursor++];
+   if(!original)break;
+   try{
+    var details=await queryFullInjectiveTx(original);
+    if(run!==generation)break;
+    var idx=rows.findIndex(function(x){return x.hash===original.hash;});
+    if(idx>=0){
+     rows[idx]=mergeIndexedDetails(rows[idx],details);
+     if(!needsHydration(rows[idx]))hydratedHashKeys.add(original.hash);
+     else hydrationFailures.add(original.hash);
+     updates++;
+     if(updates%4===0){cacheWrite();render();}
+    }
+   }catch(_){hydrationFailures.add(original.hash);}
+  }
+ }
+ await Promise.all([worker(),worker(),worker()]);
+ if(run===generation&&updates){rows.sort(function(a,b){
+  var dateDelta=Date.parse(b.time||'')-Date.parse(a.time||'');
+  return Number.isFinite(dateDelta)&&dateDelta!==0?dateDelta:Number(b.height||0)-Number(a.height||0);
+ });cacheWrite();render();}
+ hydrating=false;
+}
 async function retrieveSolana(run){
  var controller=new AbortController();controllers.push(controller);
  try {
@@ -465,7 +553,7 @@ async function retrieve(more){
  if(busy)return;
  var run=++generation;
  if(!more){
-  cancelled();rows=[];offsetBySource={};doneBySource={};solCursors={};canLoad=true;
+  cancelled();hydrating=false;rows=[];offsetBySource={};doneBySource={};solCursors={};canLoad=true;
   var fromCache=cacheRead(current);
   if(fromCache.length){rows=fromCache;stateText('partial',lang('Storico salvato · sincronizzazione','Cached history · syncing'));}
  }else{cancelled();}
@@ -504,6 +592,7 @@ async function retrieve(more){
  }
  canLoad=sources.some(function(s){return !doneBySource[s];});
  busy=false;render();
+ if(succeeded&&chainOf(current)==='injective')void enrichInjectiveRows(run);
 }
 function start(){
  initializeTranslations();renderFilters();loadWallets();
