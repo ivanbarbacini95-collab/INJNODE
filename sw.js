@@ -9,8 +9,9 @@ const BOOT_ASSETS = [
   './inj-home-overrides-20261106.css?v=perf1',
   './app.js?v=wallet-single-card-20261105c',
   './navigation.js?v=20261106-multichart-tools-visibility2',
-  './home-bottom-tabs-20261030.js?v=20261108-all-transactions1',
-  './all-transactions.html?v=20261108a'
+  './home-bottom-tabs-20261030.js?v=20261108-all-transactions-solana2',
+  './all-transactions.html?v=20261108b-solana2',
+  './all-transactions-solana.js?v=20261108-1'
 ];
 const BOOT_FALLBACK = new URL('./index.html', self.registration.scope).href;
 
