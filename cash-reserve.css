@@ -127,3 +127,18 @@ html[data-theme="light"] .cash-reserve-box,html[data-theme="arctic"] .cash-reser
 .cash-yield-identity .cash-token-icon{width:31px;height:31px;flex-basis:31px}
 .cash-reserve-static-logo{width:17px;height:17px;object-fit:contain;border-radius:50%;vertical-align:middle;flex-shrink:0}
 .cash-reserve-asset #cashSolanaEarnDetail{line-height:1.35;overflow-wrap:anywhere}
+
+/* Interactive Cash Reserve history: scroll, event markers, accessible inspection. */
+.cash-chart-scroll{width:100%;max-width:100%;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;scrollbar-width:thin;scrollbar-color:rgba(73,220,199,.45) transparent;-webkit-overflow-scrolling:touch;border-radius:10px;touch-action:pan-x pan-y}
+.cash-chart-scroll .cash-reserve-chart-svg{display:block;max-width:none;min-width:660px;height:185px;margin:4px 0;cursor:crosshair;outline-offset:-3px}
+.cash-chart-scroll .cash-reserve-chart-svg:focus-visible{outline:2px solid #48dcc7;border-radius:6px}
+.cash-chart-history-tools{display:flex;align-items:center;justify-content:space-between;gap:9px;flex-wrap:wrap;margin:3px 0 8px}
+.cash-chart-history-tools>span{font-size:.61rem;color:var(--muted,#9bb1bc);line-height:1.4}
+.cash-chart-navigation{display:flex;align-items:center;gap:5px}
+.cash-chart-navigation button{border:1px solid rgba(92,190,182,.29);border-radius:8px;min-height:27px;min-width:29px;padding:2px 8px;background:rgba(87,178,164,.07);color:inherit;font:inherit;font-size:.74rem;font-weight:800;cursor:pointer}
+.cash-chart-navigation button:disabled{opacity:.35;cursor:default}
+.cash-chart-detail{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;min-height:44px;margin-bottom:7px;padding:9px 11px;border-radius:10px;background:rgba(114,161,169,.07);border:1px solid rgba(127,161,176,.16);font-size:.7rem;font-variant-numeric:tabular-nums}
+.cash-chart-detail strong{font-size:.69rem;font-weight:790}
+.cash-chart-detail span{font-size:.75rem;font-weight:760}
+.cash-history-positive{color:#52e7b0}.cash-history-negative{color:#ff8c91}
+@media(max-width:500px){.cash-chart-detail{align-items:flex-start;flex-direction:column}.cash-chart-history-tools>span{max-width:100%}}
