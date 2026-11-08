@@ -2,8 +2,9 @@
 (() => {
   'use strict';
   // Fixed address configuration is held in cash-portfolio-onchain.js; never rendered.
-  // V3 history is scoped to the two fixed, configured wallet accounts.
-  const KEY_HISTORY = 'inj_node_cash_reserve_history_v3';
+  // V4 starts a new, truthful history including invested principal and accrued yield.
+  // Old liquid-only snapshots are intentionally not mixed into the chart.
+  const KEY_HISTORY = 'inj_node_cash_reserve_history_v4_yield_included';
   const KEY_TARGET = 'inj_node_cash_reserve_goal_v1';
   const KEY_PRIVACY = 'inj_node_cash_reserve_privacy_v1';
   const $ = (id) => document.getElementById(id);
@@ -64,6 +65,23 @@
     if(value!=null)e.textContent=value;
     return e;
   }
+  function makeTokenIcon(url) {
+    const holder=makeNode('span','cash-token-icon');
+    holder.append(makeNode('span','cash-token-placeholder','◈'));
+    try {
+      const u=new URL(String(url));
+      // External images are only accepted over HTTPS, and never include wallet addresses.
+      if(u.protocol==='https:'&&!u.username&&!u.password&&url.length<1024){
+        const img=document.createElement('img');
+        img.className='cash-token-logo';img.alt='';img.loading='lazy';
+        img.decoding='async';img.referrerPolicy='no-referrer';
+        img.addEventListener('error',()=>img.remove(),{once:true});
+        img.src=u.href;
+        holder.prepend(img);
+      }
+    }catch(_){}
+    return holder;
+  }
   function renderAssetList(target,network) {
     const root=$(target);
     if(!root)return;
@@ -82,7 +100,7 @@
     }
     for(const entry of list) {
       const row=makeNode('div','cash-token-row');
-      const icon=makeNode('span','cash-token-icon',entry.symbol.slice(0,4).toUpperCase());
+      const icon=makeTokenIcon(entry.logoUrl);
       icon.setAttribute('aria-hidden','true');
       const main=makeNode('div','cash-token-name');
       main.append(makeNode('strong','',entry.name));
@@ -99,28 +117,48 @@
     const root=$('cashYieldList');
     if(!root)return;
     root.replaceChildren();
-    const report=state.portfolio?.yield;
-    if(!report) {
-      root.append(makeNode('p','cash-token-empty',state.lang==='it'?'Lettura posizioni di rendimento non disponibile.':'Yield position data unavailable.'));
-      return;
+    const base=state.portfolio?.yield;
+    const jupiter=state.portfolio?.jupiter;
+    const positions=[...(base?.positions||[]),...(jupiter?.positions||[])];
+    if(!positions.length){
+      const note=!jupiter?(state.lang==='it'
+        ?'Jupiter Earn non verificabile: posizioni e rendimento non disponibili (non significa saldo zero).'
+        :'Jupiter Earn unavailable: positions and yield could not be verified (not a zero balance).'):
+        (state.lang==='it'?'Nessuna posizione staking o Jupiter Earn rilevata.':'No Injective staking or Jupiter Earn positions detected.');
+      root.append(makeNode('p','cash-token-empty',note));
     }
-    if(!report.positions.length) {
-      root.append(makeNode('p','cash-token-empty',state.lang==='it'?'Nessuna delegazione staking nativa rilevata. Le posizioni in altre dApp richiedono integrazioni specifiche.':'No native staking delegations detected. Other dApps require dedicated integrations.'));
-    }
-    for(const p of report.positions) {
+    for(const p of positions) {
       const row=makeNode('article','cash-yield-position');
       const top=makeNode('div','cash-yield-heading');
-      top.append(makeNode('strong','',p.name));
-      top.append(makeNode('span','',p.apr!=null?fmt(p.apr,2)+'% APR '+(state.lang==='it'?'rete':'network'):'APR —'));
+      const identity=makeNode('div','cash-yield-identity');
+      identity.append(makeTokenIcon(p.logoUrl||null),makeNode('strong','',p.name));
+      top.append(identity);
+      const rate=p.apr!=null?fmt(p.apr,2)+'% '+(p.rateKind||'APR'):((state.lang==='it')?'Rendimento —':'Yield —');
+      top.append(makeNode('span','',rate));
       const info=makeNode('div','cash-yield-metrics');
-      function cell(label,val) {const wrapper=makeNode('div','');wrapper.append(makeNode('span','',label));wrapper.append(makeNode('strong','',shown(val)));return wrapper;}
-      info.append(cell(state.lang==='it'?'IN DELEGA':'STAKED',fmt(p.amount,4)+' '+p.asset));
-      info.append(cell(state.lang==='it'?'REWARD ON-CHAIN':'ON-CHAIN REWARDS',p.rewards==null?'—':fmt(p.rewards,6)+' '+p.asset));
+      function cell(label,val) {
+        const wrapper=makeNode('div','');
+        wrapper.append(makeNode('span','',label),makeNode('strong','',shown(val)));
+        return wrapper;
+      }
+      info.append(cell(p.kind==='jupiter'?(state.lang==='it'?'CAPITALE IN RENDITA':'EARNING BALANCE'):(state.lang==='it'?'IN DELEGA':'STAKED'),fmt(p.amount,4)+' '+p.asset));
+      info.append(cell(state.lang==='it'?'RENDIMENTO MATURATO':'ACCRUED EARNINGS',
+        p.rewards==null?'—':fmt(p.rewards,6)+' '+p.asset));
       info.append(cell(state.lang==='it'?'STIMA / GIORNO':'EST. / DAY',p.day==null?'—':fmt(p.day,6)+' '+p.asset));
-      row.append(top,info,makeNode('small','cash-yield-hint',state.lang==='it'?'APR di riferimento di rete, non rendimento garantito; reward confermate dalla blockchain.':'Reference network APR, not guaranteed; on-chain rewards shown separately.'));
+      const hint=p.kind==='jupiter'
+        ? (state.lang==='it'?'Jupiter Lend · saldo comprensivo degli interessi verificato; APY variabile, rendimento giornaliero stimato.':'Jupiter Lend · interest-inclusive verified balance; variable APY and estimated daily earnings.')
+        : (state.lang==='it'?'APR di riferimento di rete, non rendimento garantito; reward on-chain.':'Reference network APR, not guaranteed; on-chain rewards.');
+      row.append(top,info,makeNode('small','cash-yield-hint',hint));
       root.append(row);
     }
-    root.append(makeNode('p','cash-yield-disclaimer',state.lang==='it'?'Le posizioni in Hydro, vault, lending e altre dApp non possono essere ricostruite in modo affidabile dal solo saldo del wallet: servono adapter specifici per contratto e protocollo. Nessuna rendita viene inventata.':'Hydro, vaults, lending and other dApps require protocol-specific on-chain adapters. No unverified yield is invented.'));
+    if(!jupiter){
+      root.append(makeNode('p','cash-yield-disclaimer',state.lang==='it'
+        ?'Jupiter Earn non disponibile dalla fonte dati. La riserva viene indicata come parziale; il grafico non registra saldi incompleti.'
+        :'Jupiter Earn data source unavailable. Reserve is marked partial and no incomplete chart snapshots are recorded.'));
+    }
+    root.append(makeNode('p','cash-yield-disclaimer',state.lang==='it'
+      ?'Le posizioni Hydro o su altre dApp richiedono letture specifiche: mai attribuire rendimenti non verificati.'
+      :'Hydro and other dApps require individual adapters; unverified returns are never shown as confirmed.'));
   }
   function renderPortfolio() {
     renderAssetList('cashInjectiveTokens',state.portfolio?.inj);
@@ -128,9 +166,9 @@
     const inj=$('cashInjAssetsStatus'),sol=$('cashSolAssetsStatus');
     if(inj)inj.textContent=state.portfolio?.inj?(state.lang==='it'?'ONLINE':'ONLINE'):'OFFLINE';
     if(sol)sol.textContent=state.portfolio?.sol?(state.lang==='it'?'ONLINE':'ONLINE'):'OFFLINE';
-    const count=[state.portfolio?.inj,state.portfolio?.sol].filter(Boolean).reduce((sum,b)=>sum+b.assets.length,0);
+    const count=[state.portfolio?.inj,state.portfolio?.sol].filter(Boolean).reduce((sum,b)=>sum+b.assets.length,0)+(state.portfolio?.jupiter?.positions?.length||0);
     const counter=$('cashTokenCount');
-    if(counter)counter.textContent=count+(state.portfolio?.inj&&state.portfolio?.sol?'':' · PARZIALE');
+    if(counter)counter.textContent=count+(state.portfolio?.inj&&state.portfolio?.sol&&state.portfolio?.jupiter?'':' · PARZIALE');
     const solUnsupported=$('cashSolAssetsNote');
     if(solUnsupported)solUnsupported.textContent=state.portfolio?.sol?.unsupported?(state.lang==='it'?'Alcuni token con formato non leggibile: '+state.portfolio.sol.unsupported:'Unreadable token accounts: '+state.portfolio.sol.unsupported):'';
     renderYield();
@@ -177,8 +215,15 @@
     };
     [24,72,120,164].forEach(y => shape('line',{x1:8,x2:652,y1:y,y2:y,stroke:'currentColor','stroke-opacity':'.12','stroke-dasharray':'3 6'}));
     let d = 'M '+x(points[0]).toFixed(1)+' '+y(points[0]).toFixed(1);
-    // A stepped series represents on-chain deposits and withdrawals without fake interpolation.
-    points.slice(1).forEach(p => { d += ' H '+x(p).toFixed(1)+' V '+y(p).toFixed(1); });
+    // Interest increases are joined between verified snapshots; outflows are stepped.
+    // No projected yield, smoothing artefacts, or inferred deposits.
+    points.slice(1).forEach((p,i) => {
+      const px=x(p).toFixed(1),py=y(p).toFixed(1);
+      const prior=points[i];
+      const delta=p.v-prior.v;
+      const smallYield=delta>=0&&delta<=Math.max(0.05,prior.v*0.001);
+      d+=(smallYield?' L '+px+' '+py:' H '+px+' V '+py);
+    });
     shape('path',{d,fill:'none',stroke:'#45e5ce','stroke-width':2.6,'stroke-linejoin':'round','stroke-linecap':'round'});
     const end = points[points.length-1];
     shape('circle',{cx:x(end),cy:y(end),r:4,fill:'#45e5ce'});
@@ -208,19 +253,29 @@
     catch(e) {p={inj:null,sol:null,yield:null,errors:{inj:true,sol:true,yield:true}};}
     state.portfolio=p;
     const injOK=Boolean(p.inj),solOK=Boolean(p.sol);
+    const jupOK=Boolean(p.jupiter);
     state.amounts={
       usdcInj:injOK?p.inj.usdc:null,
-      usdcSol:solOK?p.sol.usdc:null,
-      usdtSol:solOK?p.sol.usdt:null
+      usdcSol:solOK?p.sol.usdc+(jupOK?p.jupiter.usdc:0):null,
+      usdtSol:solOK?p.sol.usdt+(jupOK?p.jupiter.usdt:0):null
     };
-    state.error=!injOK||!solOK;
-    state.partial=state.error&&(injOK||solOK);
+    const detail=$('cashSolanaEarnDetail');
+    if(detail) detail.textContent=solOK
+      ?(jupOK
+        ?(state.lang==='it'?'Disponibili '+fmt(p.sol.usdc)+' · Jupiter Earn '+fmt(p.jupiter.usdc):'Available '+fmt(p.sol.usdc)+' · Jupiter Earn '+fmt(p.jupiter.usdc))
+        :(state.lang==='it'?'Solo saldo disponibile · Jupiter da verificare':'Available only · Jupiter unavailable'))
+      : '—';
+    state.error=!injOK||!solOK||!jupOK;
+    state.partial=state.error&&(injOK||solOK||jupOK);
     state.errorDetail=[
       !injOK&&tr('injFailed'),
-      !solOK&&tr('solFailed')
+      !solOK&&tr('solFailed'),
+      !jupOK&&(state.lang==='it'?'Jupiter Earn non raggiungibile: posizione investita non verificabile.':'Jupiter Earn unavailable: invested balance could not be verified.')
     ].filter(Boolean).join(' ');
     // Do not call a partial total a complete reserve.
-    state.usd=injOK&&solOK?p.inj.usdc+p.sol.usdc+p.sol.usdt:null;
+    // Never mistake moving funds from liquid wallet into Jupiter Earn for an outflow.
+    // Do not commit incomplete snapshots when any source is temporarily unavailable.
+    state.usd=injOK&&solOK&&jupOK?p.inj.usdc+p.sol.usdc+p.sol.usdt+p.jupiter.usdc+p.jupiter.usdt:null;
     if(injOK||solOK)state.lastSync=Date.now();
     if(state.usd!=null)saveSnapshot();
     state.loading=false;
