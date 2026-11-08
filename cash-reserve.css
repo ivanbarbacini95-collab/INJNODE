@@ -51,3 +51,16 @@ html[data-theme="light"] .cash-reserve-panel,html[data-theme="arctic"] .cash-res
 html[data-theme="light"] .cash-reserve-box,html[data-theme="arctic"] .cash-reserve-box,html[data-theme="white"] .cash-reserve-box,html[data-theme="light"] .cash-reserve-asset,html[data-theme="arctic"] .cash-reserve-asset{background:rgba(60,103,120,.045)}
 @media(max-width:740px){.cash-reserve-grid{grid-template-columns:1fr}.cash-reserve-assets{grid-template-columns:repeat(2,minmax(0,1fr))}.cash-reserve-asset:last-child{grid-column:1/-1}.cash-reserve-head{align-items:flex-start;flex-wrap:wrap}.cash-reserve-chart-head{align-items:flex-start;flex-wrap:wrap}}
 @media(max-width:390px){.cash-reserve-panel{padding:14px}.cash-reserve-assets{gap:7px}.cash-reserve-asset{padding:11px}.cash-reserve-total{font-size:2.15rem}}
+
+/* Solana balance tracking configuration: public address only. */
+.cash-pill.is-partial{color:#ffd280;border-color:rgba(244,183,84,.46);background:rgba(244,183,84,.08)}
+.cash-reserve-dot.solana{background:#a48dfc}
+.cash-reserve-solana-config{margin-top:14px;padding:15px;border:1px solid rgba(127,161,176,.2);border-radius:15px;background:rgba(135,161,177,.055);min-width:0}
+.cash-reserve-solana-label{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
+.cash-reserve-solana-label strong{font-size:.82rem}
+.cash-reserve-solana-label small,.cash-reserve-sol-status{color:var(--muted,#9bb1bc);font-size:.68rem}
+.cash-reserve-solana-form{display:flex;gap:9px;margin-top:10px;min-width:0}
+.cash-reserve-solana-form input{flex:1;min-width:0;padding:9px 12px;font-size:16px}
+.cash-reserve-solana-form button{border:1px solid rgba(45,213,190,.5);background:rgba(45,213,190,.12);color:inherit;padding:8px 14px;border-radius:10px;cursor:pointer}
+.cash-reserve-sol-status{display:block;margin-top:7px}
+@media(max-width:540px){.cash-reserve-solana-form{flex-wrap:wrap}.cash-reserve-solana-form button{flex:0 0 auto}.cash-reserve-solana-form input{flex-basis:100%}}
