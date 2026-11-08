@@ -64,3 +64,51 @@ html[data-theme="light"] .cash-reserve-box,html[data-theme="arctic"] .cash-reser
 .cash-reserve-solana-form button{border:1px solid rgba(45,213,190,.5);background:rgba(45,213,190,.12);color:inherit;padding:8px 14px;border-radius:10px;cursor:pointer}
 .cash-reserve-sol-status{display:block;margin-top:7px}
 @media(max-width:540px){.cash-reserve-solana-form{flex-wrap:wrap}.cash-reserve-solana-form button{flex:0 0 auto}.cash-reserve-solana-form input{flex-basis:100%}}
+
+
+/* 2026-11-08 · Full view: public chain assets and verified yield.
+   Neither the layout nor tooltips expose wallet account identifiers. */
+.cash-reserve-networks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin-top:15px}
+.cash-network-card,.cash-reserve-yield{
+  min-width:0;padding:16px;border:1px solid rgba(127,161,176,.21);
+  border-radius:16px;background:rgba(135,161,177,.055);
+}
+.cash-network-head,.cash-yield-section-head{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  margin-bottom:12px;
+}
+.cash-network-head small,.cash-yield-section-head small{color:var(--muted,#98b1bb);letter-spacing:.13em;font-size:.55rem;font-weight:900}
+.cash-network-head h3,.cash-yield-section-head h3{font-size:.94rem;line-height:1.15;font-weight:950;color:var(--text,inherit);margin:4px 0 0}
+.cash-network-badge,.cash-token-count{color:#48dcc7;border:1px solid rgba(45,213,190,.30);border-radius:9px;padding:6px 8px;font-size:.58rem;letter-spacing:.03em;font-weight:850;white-space:nowrap}
+.cash-token-count{color:var(--muted,#9bb1bc);border-color:rgba(127,161,176,.18)}
+.cash-token-list{display:grid;min-width:0}
+.cash-token-row{display:flex;align-items:center;gap:10px;padding:13px 0;border-top:1px solid rgba(127,161,176,.17);min-width:0}
+.cash-token-icon{display:grid;place-items:center;flex:0 0 35px;width:35px;height:35px;
+  border:1px solid rgba(127,161,176,.20);border-radius:10px;
+  background:rgba(119,148,167,.08);color:var(--text,inherit);font-size:.52rem;font-weight:900}
+.cash-token-name{display:grid;gap:3px;flex:1;min-width:0}
+.cash-token-name strong{font-size:.78rem;line-height:1.2;font-weight:900;overflow-wrap:anywhere}
+.cash-token-name small{font-size:.61rem;color:var(--muted,#9bb1bc);line-height:1.35}
+.cash-token-amount{display:grid;gap:3px;justify-items:end;max-width:48%;min-width:0;text-align:right}
+.cash-token-amount strong{font-size:.8rem;font-weight:950;line-height:1.2;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.cash-token-amount small{color:var(--muted,#9bb1bc);font-size:.61rem}
+.cash-token-empty,.cash-network-note{margin:0;padding:8px 0;color:var(--muted,#9bb1bc);font-size:.72rem;line-height:1.5}
+.cash-reserve-yield{margin-top:13px}
+.cash-yield-list{display:grid;gap:10px}
+.cash-yield-position{padding:15px;border:1px solid rgba(127,161,176,.17);border-radius:12px;background:rgba(135,161,177,.045)}
+.cash-yield-heading{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.cash-yield-heading strong{font-size:.83rem;font-weight:900}
+.cash-yield-heading span{font-size:.8rem;font-weight:930;color:#48dcc7}
+.cash-yield-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:13px}
+.cash-yield-metrics>div{min-width:0;display:grid;gap:5px}
+.cash-yield-metrics span{font-size:.54rem;color:var(--muted,#9bb1bc);letter-spacing:.07em;font-weight:850}
+.cash-yield-metrics strong{font-size:.82rem;font-weight:900;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.cash-yield-hint,.cash-yield-disclaimer{display:block;margin:11px 0 0;color:var(--muted,#9bb1bc);font-size:.64rem;line-height:1.5}
+@media(max-width:860px){.cash-reserve-networks{grid-template-columns:1fr}}
+@media(max-width:550px){
+  .cash-network-card,.cash-reserve-yield{padding:13px}
+  .cash-token-row{gap:8px}
+  .cash-yield-metrics{gap:6px}
+  .cash-yield-metrics strong{font-size:.73rem}
+}
+@media(max-width:370px){.cash-yield-metrics{grid-template-columns:1fr 1fr}}
