@@ -20,6 +20,22 @@
    return card;
  }
  ensureMultiChartLauncher();
+
+ function ensureAllTransactionsLauncher(){
+   let card=document.getElementById('entryAllTransactionsButton');
+   if(!card){card=document.createElement('a');card.id='entryAllTransactionsButton';}
+   if(card.parentElement!==actions){
+     const after=document.getElementById('entryMultiChartButton');
+     if(after&&after.parentElement===actions)after.after(card);else actions.prepend(card);
+   }
+   card.className='entry-action entry-action-all-transactions';
+   card.href='./all-transactions.html?v=20261108a';
+   card.setAttribute('aria-label','Apri All Transaction');
+   card.innerHTML='<span aria-hidden="true" class="entry-action-icon"><svg viewBox="0 0 24 24" width="29" height="29" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3" width="17" height="18" rx="3"/><path d="M7.5 8h9M7.5 12h4m-4 4h9"/><path d="m14 12 2 2 3-3"/></svg></span><span><strong class="inj-home-tile-title" data-it="All Transaction" data-en="All Transaction">All Transaction</strong><small class="inj-tile-description" data-it="Storico e categorie wallet" data-en="Wallet history & categories">Storico e categorie wallet</small></span><svg aria-hidden="true" class="entry-action-arrow" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>';
+   return card;
+ }
+ ensureAllTransactionsLauncher();
+ 
  // Tools tile polish: preserve a compact 4-chart logo and remove every
  // anchor/title underline, including theme pseudo-elements and link states.
  // Works even if iOS PWA kept the previous Home markup in memory.
@@ -58,7 +74,7 @@
   {id:'etf',it:'ETF',en:'ETF',titleIt:'',titleEn:'',subIt:'',subEn:'',ids:[],icon:'<rect x="5" y="3.5" width="14" height="17" rx="2.7"/><path d="M9 8h6M9 11.5h4m-4 5.9 2.2-2.4 2 1.5 2.8-3.1"/>'},
   {id:'home',it:'Home',en:'Home',titleIt:'',titleEn:'',subIt:'',subEn:'',ids:['entryDashboardButton','entryLiveButton','entryTreasuryButton'],icon:'<path d="m3.5 10 8.5-6.6 8.5 6.6v9.3a1.2 1.2 0 0 1-1.2 1.2h-4.9v-6.1H9.6v6.1H4.7a1.2 1.2 0 0 1-1.2-1.2z"/>'},
   {id:'reward',it:'My Reward',en:'My Reward',titleIt:'MY REWARD',titleEn:'MY REWARD',subIt:'Staking e ricompense del wallet selezionato',subEn:'Selected wallet staking and rewards',ids:[],icon:'<circle cx="12" cy="12" r="8.5"/><path d="M15.1 9.3c-.6-.9-1.6-1.4-3-1.4-1.8 0-3 .8-3 2.1 0 2.8 6 1 6 3.7 0 1.3-1.2 2.2-3 2.2-1.5 0-2.6-.6-3.2-1.6M12 5.8v2M12 16.2v2"/>'},
-  {id:'altro',it:'Tools',en:'Tools',titleIt:'TOOLS',titleEn:'TOOLS',subIt:'Simulazioni, libertà finanziaria e altri strumenti',subEn:'Simulations, financial freedom and other tools',ids:['entryMultiChartButton','entryComparisonButton','entryVisualizeWealthButton','entryFreedomButton','entryWorkspaceButton','entryConverterButton','entryCommandCenterButton'],icon:'<path d="M4 6h8m4 0h4M4 12h3m4 0h9M4 18h11m4 0h1"/><circle cx="14" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/>'}
+  {id:'altro',it:'Tools',en:'Tools',titleIt:'TOOLS',titleEn:'TOOLS',subIt:'Simulazioni, libertà finanziaria e altri strumenti',subEn:'Simulations, financial freedom and other tools',ids:['entryMultiChartButton','entryAllTransactionsButton','entryComparisonButton','entryVisualizeWealthButton','entryFreedomButton','entryWorkspaceButton','entryConverterButton','entryCommandCenterButton'],icon:'<path d="M4 6h8m4 0h4M4 12h3m4 0h9M4 18h11m4 0h1"/><circle cx="14" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/>'}
  ];
  const originalDisplay=new WeakMap();
  const heading=document.createElement('header');
@@ -301,7 +317,8 @@
   });
  });
  observer.observe(actions,{childList:true});
- activate('home',false);
+ const returnToTools=new URLSearchParams(location.search).get('tab')==='tools';
+ activate(returnToTools?'altro':'home',false);
  requestAnimationFrame(()=>scheduleDockRefresh());
  window.addEventListener('injnode:languagechange',refreshLanguage);
  window.addEventListener('storage',event=>{if(event.key==='inj_node_language_v1')refreshLanguage();});
