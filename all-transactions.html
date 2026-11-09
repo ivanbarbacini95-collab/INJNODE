@@ -27,7 +27,8 @@ html[data-theme="arctic"]{--bg:#f1f7fa;--panel:#fff;--raised:#eaf3f7;--border:rg
 button,select,input{font:inherit}button{cursor:pointer}button:disabled{cursor:default;opacity:.42}a{color:var(--accent)}button:focus-visible,select:focus-visible,input:focus-visible,a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 .shell{max-width:1040px;margin:0 auto}.top{display:flex;align-items:center;gap:13px;padding:18px 0 22px}.back,.refresh{width:43px;height:43px;border-radius:14px;border:1px solid var(--border);background:var(--panel);color:var(--fg);display:grid;place-items:center;flex:none}.back svg,.refresh svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.refresh{margin-left:auto}.heading{min-width:0}.eyebrow{font-size:10px;letter-spacing:.17em;color:var(--accent);font-weight:800}.heading h1{font-size:clamp(21px,4vw,29px);margin:1px 0;font-weight:850;letter-spacing:-.045em}.heading p{margin:0;color:var(--muted);font-size:12px}
 .panel{background:var(--panel);border:1px solid var(--border);border-radius:19px;box-shadow:var(--shadow)}.wallet-panel{padding:18px;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:end}.input-label{display:block;color:var(--muted);font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:750;margin-bottom:7px}.wallet-select{width:100%;padding:13px;border:1px solid var(--border);border-radius:12px;background:var(--raised);color:var(--fg);font-weight:750;min-width:0}.wallet-mask{font-size:11px;color:var(--muted);overflow-wrap:anywhere;margin-top:7px}.network-tag{align-self:center;color:var(--accent);background:var(--raised);border:1px solid var(--border);padding:9px 12px;border-radius:30px;font-size:11px;font-weight:800}
-.metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:13px 0 17px}.metric{padding:17px 15px;min-height:82px}.metric small{color:var(--muted);font-size:10px;letter-spacing:.065em;text-transform:uppercase;font-weight:760;display:block}.metric strong{display:block;font-size:clamp(21px,4.6vw,29px);margin-top:7px;line-height:1.2;font-variant-numeric:tabular-nums}.positive{color:var(--up)}.negative{color:var(--down)}
+.metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:13px 0 17px}.metric{padding:17px 15px;min-height:82px}.metric small{color:var(--muted);font-size:10px;letter-spacing:.065em;text-transform:uppercase;font-weight:760;display:block}.metric strong{display:block;font-size:clamp(21px,4.6vw,29px);margin-top:7px;line-height:1.2;font-variant-numeric:tabular-nums}
+#atIn,#atOut{font-size:clamp(15px,3.8vw,22px);overflow-wrap:anywhere}.positive{color:var(--up)}.negative{color:var(--down)}
 .toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:8px 0 13px}.search{border:1px solid var(--border);border-radius:12px;background:var(--panel);padding:11px 12px;color:var(--fg);min-width:0;flex:1 1 210px}.search::placeholder{color:var(--muted)}.state{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px;font-weight:700}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--muted)}.dot.ok{background:var(--up)}.dot.partial{background:#eebf62}.date-range{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;margin:5px 0 15px}.date-range label{display:flex;flex-direction:column;gap:5px;color:var(--muted);font-size:11px;font-weight:700}.date-range input{background:var(--panel);color:var(--fg);border:1px solid var(--border);border-radius:9px;padding:9px 10px;max-width:170px;min-width:0}.filters{display:flex;gap:8px;overflow-x:auto;padding:3px 0 13px;scrollbar-width:thin;overscroll-behavior-x:contain}.filter{white-space:nowrap;border:1px solid var(--border);border-radius:10px;background:var(--panel);color:var(--muted);padding:10px 13px;font-size:12px;font-weight:750;flex:none}.filter.active{border-color:var(--accent);color:var(--accent);background:var(--raised)}
 .timeline{overflow:hidden}.timeline-head{padding:14px 17px;display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--border)}.timeline-head strong{font-size:12px;letter-spacing:.04em}.timeline-head span{font-size:11px;color:var(--muted)}.tx{border-bottom:1px solid var(--border)}.tx:last-child{border-bottom:0}.tx summary{list-style:none;display:flex;align-items:center;gap:13px;padding:15px 16px;cursor:pointer}.tx summary::-webkit-details-marker{display:none}.tx[open] summary{background:var(--raised)}.tx-icon{width:37px;height:37px;flex:none;border-radius:12px;display:grid;place-items:center;background:var(--raised);font-size:19px;color:var(--accent)}.tx-icon.in{color:var(--up)}.tx-icon.out{color:var(--down)}.tx-center{min-width:0;flex:1}.tx-name{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.tx-name strong{font-size:13px}.tx-info{margin-top:3px;display:block;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}.tx-right{text-align:right;min-width:0;max-width:43%}.tx-amount{font-weight:850;font-size:13px;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}.tx-amount.in{color:var(--up)}.tx-amount.out{color:var(--down)}.tx-status{font-size:10px;color:var(--muted)}.tx-status.failed{color:var(--down)}.tx-details{padding:5px 16px 16px;display:grid;grid-template-columns:1fr 1fr;gap:12px 20px;background:var(--raised)}.tx-field{min-width:0}.tx-field small{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.05em}.tx-field div{font-size:12px;font-weight:690;overflow-wrap:anywhere;margin-top:2px}.tx-link{display:inline-flex;gap:7px;align-items:center;padding:8px 0;font-size:12px;font-weight:750;text-decoration:none}.tx-link:hover{text-decoration:underline}.full{grid-column:1/-1}.notice{color:var(--muted);font-size:12px;line-height:1.65;padding:15px 17px}.notice.error{color:var(--down)}.center{text-align:center}.more{display:block;margin:18px auto 0;min-width:190px;border:1px solid var(--border);border-radius:12px;background:var(--panel);color:var(--fg);padding:12px 22px;font-weight:800}.disclaimer{color:var(--muted);margin:18px 4px;font-size:11px;line-height:1.6}.hidden{display:none!important}
 @media(max-width:560px){body{padding-left:12px;padding-right:12px}.top{padding-top:12px}.wallet-panel{padding:14px}.network-tag{padding:7px 9px}.metrics{gap:7px}.metric{padding:12px 10px;min-height:75px}.tx summary{padding:13px 11px;gap:9px}.tx-details{grid-template-columns:1fr;padding:13px}.tx-right{max-width:45%}}
@@ -339,42 +340,75 @@ function actionRows(){
  });
  return result;
 }
+function summaryNativeAmount(items,kind){
+ var matching=items.filter(function(item){return item.cat===kind;});
+ if(!matching.length)return '0 INJ';
+ var total=0n,found=false,missing=false;
+ matching.forEach(function(item){
+  if(!/^\d+$/.test(String(item.atoms||''))){missing=true;return;}
+  try{total+=BigInt(item.atoms);found=true;}catch(_){missing=true;}
+ });
+ if(!found)return '—';
+ return (missing?'≥ ':'')+formatNativeInj(total);
+}
 function render(){
- var filtered=rows.filter(function(item){
+ var all=actionRows(),from=$('atFrom').value,to=$('atTo').value,
+     needle=$('atSearch').value.trim().toLowerCase();
+ var filtered=all.filter(function(item){
   if(category!=='all'&&item.cat!==category)return false;
-  var from=$('atFrom').value,to=$('atTo').value,time=Date.parse(item.time||'');
+  var time=Date.parse(item.time||'');
   if(from&&(!Number.isFinite(time)||time<new Date(from+'T00:00:00').getTime()))return false;
   if(to&&(!Number.isFinite(time)||time>new Date(to+'T23:59:59.999').getTime()))return false;
-  var needle=$('atSearch').value.trim().toLowerCase();
-  return !needle||[item.hash,item.asset,titleFor(item),item.amount,item.height].concat(item.peers||[]).join(' ').toLowerCase().includes(needle);
+  return !needle||[item.hash,item.asset,titleFor(item),item.amount,item.height]
+   .concat(item.peers||[]).join(' ').toLowerCase().includes(needle);
  });
- var inCount=rows.filter(function(x){return x.dir==='in'&&!x.failed;}).length;
- var outCount=rows.filter(function(x){return x.dir==='out'&&!x.failed;}).length;
- setText('atTotal',String(rows.length));setText('atIn',String(inCount));setText('atOut',String(outCount));
- setText('atCount',filtered.length+'/'+rows.length+' '+lang('caricate','loaded'));
- var host=$('atRows');host.replaceChildren();
- var opened=new Set(Array.from(host.querySelectorAll('details.tx[open]')).map(function(el){return el.dataset.hash;}));
- if(!current){host.innerHTML='<p class="notice center">'+lang('Nessun wallet salvato disponibile.','No saved wallet available.')+'</p>';$('atMore').classList.add('hidden');return;}
+ setText('atTotal',String(all.length));
+ setText('atIn',summaryNativeAmount(all,'reward'));
+ setText('atOut',summaryNativeAmount(all,'staking'));
+ setText('atCount',filtered.length+'/'+all.length+' '+lang('operazioni','operations'));
+ var host=$('atRows');
+ var opened=new Set(Array.from(host.querySelectorAll('details.tx[open]')).map(function(el){return el.dataset.key;}));
+ host.replaceChildren();
+ if(!current){
+  host.innerHTML='<p class="notice center">'+lang('Nessun wallet Injective salvato.','No saved Injective wallet.')+'</p>';
+  $('atMore').classList.add('hidden');return;
+ }
  if(!filtered.length){
-  var message=busy?lang('Caricamento delle transazioni...','Loading transactions...'):rows.length?lang('Nessun risultato con questi filtri.','No matches for these filters.'):dataQuality==='error'?lang('Impossibile recuperare lo storico in questo momento.','Unable to load transaction history right now.'):lang('Nessuna transazione disponibile dalle fonti interrogate.','No transactions available from queried sources.');
+  var message=busy?lang('Ricerca di reward e staking...','Loading rewards and staking...'):
+   all.length?lang('Nessun risultato con questi filtri.','No matching operations for these filters.'):
+   dataQuality==='error'?lang('Impossibile recuperare lo storico in questo momento.','Unable to load history right now.'):
+   canLoad?lang('Nessun claim o deposito staking nelle transazioni esaminate. Puoi caricare le precedenti.',
+    'No claims or staking deposits in the scanned transactions. You can load older ones.'):
+   lang('Nessun reward riscosso o nuovo staking trovato nelle transazioni disponibili.',
+    'No claimed rewards or new staking deposits found in available transactions.');
   host.innerHTML='<p class="notice center'+(dataQuality==='error'?' error':'')+'">'+esc(message)+'</p>';
  }
  filtered.forEach(function(item){
-  var detail=document.createElement('details');detail.className='tx';detail.dataset.hash=item.hash;if(opened.has(item.hash))detail.open=true;
-  var status=item.failed?lang('Non riuscita','Failed'):lang('Confermata','Confirmed');
-  var unresolved=!firstTimestamp(item.time)||!item.amount&&['received','sent','staking','reward'].includes(item.cat);
-  var amount=item.amount?(item.dir==='in'?'+':item.dir==='out'?'−':'')+item.amount:lang('Importo n/d','Amount n/a');
+  var detail=document.createElement('details');detail.className='tx';detail.dataset.key=item.key;
+  if(opened.has(item.key))detail.open=true;
+  var status=lang('Confermata','Confirmed');
+  var unresolved=!firstTimestamp(item.time)||!item.atoms;
+  var amount=item.amount?(item.cat==='reward'?'+':'')+item.amount:
+   lang('Importo da verificare','Amount pending verification');
   var peer=item.peers&&item.peers.length?short(item.peers[0]):'—';
-  detail.innerHTML='<summary><span class="tx-icon '+(item.dir==='in'?'in':item.dir==='out'?'out':'')+'">'+iconFor(item)+'</span><span class="tx-center"><span class="tx-name"><strong>'+esc(titleFor(item))+'</strong></span><span class="tx-info">'+esc(firstTimestamp(item.time)?fmtDate(item.time):hydrationFailures.has(item.hash)?lang('Data non disponibile','Date unavailable'):lang('Data in verifica','Checking date'))+' · '+esc(short(item.hash))+'</span></span><span class="tx-right"><span class="tx-amount '+(item.dir==='in'?'in':item.dir==='out'?'out':'')+'">'+esc(amount)+'</span><br><span class="tx-status'+(item.failed?' failed':'')+'">'+esc(status)+(unresolved?' · '+esc(lang('Dati parziali','Partial data')):'')+'</span></span></summary>'+
+  detail.innerHTML='<summary><span class="tx-icon '+(item.dir==='in'?'in':'')+'">'+iconFor(item)+
+   '</span><span class="tx-center"><span class="tx-name"><strong>'+esc(titleFor(item))+'</strong></span>'+
+   '<span class="tx-info">'+esc(firstTimestamp(item.time)?fmtDate(item.time):
+     hydrationFailures.has(item.hash)?lang('Data non disponibile','Date unavailable'):lang('Data in verifica','Checking date'))+
+   ' · '+esc(short(item.hash))+'</span></span><span class="tx-right"><span class="tx-amount '+
+   (item.dir==='in'?'in':'')+'">'+esc(amount)+'</span><br><span class="tx-status">'+esc(status)+
+   (unresolved?' · '+esc(lang('Dati parziali','Partial data')):'')+'</span></span></summary>'+
    '<div class="tx-details"><div class="tx-field"><small>HASH</small><div>'+esc(item.hash)+'</div></div>'+
    '<div class="tx-field"><small>'+lang('BLOCCO','BLOCK')+'</small><div>'+esc(item.height||'—')+'</div></div>'+
-   '<div class="tx-field"><small>'+lang('CONTROPARTE','COUNTERPARTY')+'</small><div>'+esc(peer)+'</div></div>'+
+   '<div class="tx-field"><small>VALIDATOR</small><div>'+esc(peer)+'</div></div>'+
    '<div class="tx-field"><small>FEE</small><div>'+esc(item.fee||'—')+'</div></div>'+
-   '<div class="tx-field"><small>'+lang('RETE','NETWORK')+'</small><div>'+esc((item.network||chainOf(current)).toUpperCase())+'</div></div>'+ 
-   '<div class="tx-field"><small>'+lang('VALORE STORICO','HISTORICAL VALUE')+'</small><div>'+lang('Non disponibile','Unavailable')+'</div></div>'+ 
-   '<div class="tx-field full"><small>'+lang('MESSAGGI','MESSAGES')+'</small><div>'+esc((item.msgs||[]).join(', ')||'—')+'</div></div>'+ 
-   (item.note?'<div class="tx-field full"><small>DeFi</small><div>'+esc(item.note)+'</div></div>':'')+
-   '<div class="full"><a class="tx-link" target="_blank" rel="noopener noreferrer" href="'+(item.network==='solana'?'https://solscan.io/tx/':'https://explorer.injective.network/transaction/')+encodeURIComponent(item.hash)+'">'+(item.network==='solana'?'Solscan':lang('Apri su Injective Explorer','Open in Injective Explorer'))+' ↗</a></div></div>';
+   '<div class="tx-field"><small>'+lang('RETE','NETWORK')+'</small><div>INJECTIVE</div></div>'+
+   '<div class="tx-field"><small>'+lang('OPERAZIONE','OPERATION')+'</small><div>'+esc(titleFor(item))+'</div></div>'+
+   '<div class="tx-field full"><small>'+lang('MESSAGGI','MESSAGES')+'</small><div>'+
+    esc((item.msgs||[]).join(', ')||'—')+'</div></div>'+
+   '<div class="full"><a class="tx-link" target="_blank" rel="noopener noreferrer" href="https://explorer.injective.network/transaction/'+
+     encodeURIComponent(item.hash)+'">'+lang('Apri su Injective Explorer','Open in Injective Explorer')+
+     ' ↗</a></div></div>';
   host.appendChild(detail);
  });
  $('atMore').classList.toggle('hidden',!current||!canLoad);
