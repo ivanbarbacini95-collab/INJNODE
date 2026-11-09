@@ -239,27 +239,34 @@
       positions.push({
         kind:'jupiter',name:'Jupiter Earn · '+symbol,network:'Solana',asset:symbol,
         amount,apr,rateKind:'APY',rewards:null,day:apr==null?null:amount*(Math.pow(1+apr/100,1/365)-1),
-        logoUrl,assetMint:asset,stable,source:'Jupiter Lend · on-chain shares'
+        logoUrl,assetMint:asset,shareMint:String(rowToken.address||market?.address||''),decimals,stable,source:'Jupiter Lend · on-chain shares'
       });
       if(asset===USDC_SOL_MINT)usdc+=amount;
       if(asset===USDT_SOL_MINT)usdt+=amount;
     }
-    // Read accrued earnings separately; underlyingAssets already includes them.
+    // The Earnings API requires jlToken (share) mint addresses, not underlying USDC/USDT mints.
+    // The response is an array on the API, although the published schema also depicts one object.
+    // UnderlyingAssets already includes the interest: never add rewards to the reserve twice.
     if(positions.length){
-      try {
-        const mints=[...new Set(positions.map(p=>p.assetMint))];
-        const earn=await json(JUP_LEND+'/earnings?user='+encodeURIComponent(SOL_ACCOUNT)+'&positions='+encodeURIComponent(mints.join(',')),{},6500);
-        if(Array.isArray(earn)){
+      const shares=[...new Set(positions.map(p=>p.shareMint)
+        .filter(m=>/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(m)))];
+      if(shares.length){
+        try {
+          const earn=await json(JUP_LEND+'/earnings?user='+encodeURIComponent(SOL_ACCOUNT)+'&positions='+encodeURIComponent(shares.join(',')),{},6500);
+          const entries=Array.isArray(earn)?earn:Array.isArray(earn?.data)?earn.data:
+            earn&&typeof earn==='object'?[earn]:[];
           for(const p of positions){
-            const e=earn.find(x=>x.ownerAddress===SOL_ACCOUNT&&x.address===p.assetMint);
-            if(e&&Number.isFinite(Number(e.earnings))&&Number(e.earnings)>=0){
-              const decimals=p.assetMint===USDC_SOL_MINT||p.assetMint===USDT_SOL_MINT?6:
-                Number(rows.find(x=>(x.token?.address||x.token?.id)===p.assetMint)?.token?.decimals??9);
-              p.rewards=Number(e.earnings)/Math.pow(10,decimals);
-            }
+            const e=entries.find(x=>x&&(!x.ownerAddress||x.ownerAddress===SOL_ACCOUNT)&&
+              (x.address===p.shareMint||x.address===p.assetMint));
+            if(!e)continue;
+            const raw=Number(e.earnings);
+            if(!Number.isFinite(raw)||raw<0)continue;
+            const decimals=p.stable?6:p.decimals;
+            const earned=raw/Math.pow(10,decimals);
+            if(Number.isFinite(earned)&&earned>=0)p.rewards=earned;
           }
-        }
-      } catch (_) {/* Never invent accrued interest. */}
+        } catch (_) { /* Do not replace unavailable interest with invented zeroes. */ }
+      }
     }
     return {positions,usdc,usdt,available:true};
   }
