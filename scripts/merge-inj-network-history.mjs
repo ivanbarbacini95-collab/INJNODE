@@ -19,7 +19,9 @@ for(const row of [...(base.incidents||[]),...(incoming.incidents||[])]){
  const previous=incidents.get(row.id);
  if(!previous||(!previous.end&&row.end)||(!previous.end&&!row.end)||String(row.status)==='resolved'||String(row.status)==='completed')incidents.set(row.id,row);
 }
-const generatedAt=Date.parse(incoming.generatedAt)>=Date.parse(base.generatedAt||'')?incoming.generatedAt:base.generatedAt;
+const incomingTime=Date.parse(incoming.generatedAt||'');
+const previousTime=Date.parse(base.generatedAt||'');
+const generatedAt=Number.isFinite(incomingTime)&&(!Number.isFinite(previousTime)||incomingTime>=previousTime)?incoming.generatedAt:base.generatedAt;
 const merged={
  schemaVersion:1,chainId:'injective-1',intervalMinutes:15,
  generatedAt:generatedAt||null,
