@@ -197,6 +197,10 @@ if(main){
   if(event.origin!==location.origin)return;
   const fromSection=event.source===section?.contentWindow;
   if(fromSection && event.data?.type==='injnode:section:home')closeSection();
+  if(fromSection && event.data?.type==='injnode:section:tools'){
+   closeSection();window.INJ_BOTTOM_NAV?.select('altro');
+   try{sessionStorage.removeItem('inj_node_return_tools');}catch(_){}
+  }
  });
  window.addEventListener('popstate',()=>{if(history.state?.injGestureShield)return;if(section && !history.state?.injSection)closeSection(true);});
  window.addEventListener('keydown',event=>{if(section && event.key==='Escape')closeSection();});

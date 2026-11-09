@@ -752,7 +752,17 @@ function start(){
  $('atClearDates').addEventListener('click',function(){$('atFrom').value='';$('atTo').value='';period='all';visibleCount=VISIBLE_STEP;renderPeriods();render();});
  $('atMore').addEventListener('click',function(){if(busy)return;visibleCount+=VISIBLE_STEP;if(matchingCount<visibleCount&&canLoad)retrieve(true);else render();});
  $('atRefresh').addEventListener('click',function(){visibleCount=VISIBLE_STEP;SOURCES=['indexer'];hydrationFailures.clear();hydratedHashKeys.clear();retrieve(false);});
- $('atBack').addEventListener('click',function(){try{sessionStorage.setItem('inj_node_return_home','1');}catch(_){}location.assign('./index.html?tab=tools');});
+ function exitToTools(){
+  try{sessionStorage.setItem('inj_node_return_tools','1');}catch(_){}
+  // Standalone pages normally return to the existing Tools tab without remounting Home.
+  if(window.parent!==window){window.parent.postMessage({type:'injnode:section:tools'},location.origin);return;}
+  try{
+   const source=document.referrer?new URL(document.referrer):null;
+   if(source&&source.origin===location.origin&&/\\/(?:index\\.html)?$/i.test(source.pathname)&&history.length>1){history.back();return;}
+  }catch(_){}
+  location.replace('./index.html?tab=tools');
+ }
+ $('atBack').addEventListener('click',exitToTools);
  window.addEventListener('pageshow',function(){var next=readSaved();if(next.length!==saved.length){loadWallets();if(current)changeWallet(current);}});
  document.addEventListener('visibilitychange',function(){if(!document.hidden&&current&&!busy&&dataQuality!=='idle')retrieve(false);});
  window.setInterval(function(){if(!document.hidden&&navigator.onLine&&current&&!busy)retrieve(false);},60000);

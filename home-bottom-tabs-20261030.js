@@ -29,9 +29,9 @@
      if(after&&after.parentElement===actions)after.after(card);else actions.prepend(card);
    }
    card.className='entry-action entry-action-all-transactions';
-   card.href='./all-transactions.html?v=20261109-minimal-period-totals2';
+   card.href='./all-transactions.html?v=20261109-tools-return-motion1';
    card.setAttribute('aria-label','Apri All Transaction');
-   card.innerHTML='<span aria-hidden="true" class="entry-action-icon inj-transaction-icon"><svg viewBox="0 0 32 32" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="3.5" width="20" height="25" rx="4"/><path d="M11 9.5h10M11 14.5h6M11 24h10"/><path d="m16 18.5 3 3 4-4"/><circle cx="23" cy="10" r="1" fill="currentColor" stroke="none"/></svg></span><span><strong class="inj-home-tile-title" data-it="All Transaction" data-en="All Transaction">All Transaction</strong><small class="inj-tile-description" data-it="Storico e riepilogo on-chain" data-en="On-chain history and totals">Storico e riepilogo on-chain</small></span><svg aria-hidden="true" class="entry-action-arrow" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>';
+   card.innerHTML='<span aria-hidden="true" class="entry-action-icon inj-transaction-icon"><svg viewBox="0 0 32 32" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="3.5" width="20" height="25" rx="4"/><path class="inj-txn-row-a" d="M11 9.5h10"/><path class="inj-txn-row-b" d="M11 14.5h6"/><path d="M11 24h10"/><path class="inj-txn-check" d="m16 18.5 3 3 4-4"/><circle class="inj-txn-led" cx="23" cy="10" r="1.25" fill="currentColor" stroke="none"/></svg></span><span><strong class="inj-home-tile-title" data-it="All Transaction" data-en="All Transaction">All Transaction</strong><small class="inj-tile-description" data-it="Storico e riepilogo on-chain" data-en="On-chain history and totals">Storico e riepilogo on-chain</small></span><svg aria-hidden="true" class="entry-action-arrow" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>';
    return card;
  }
  ensureAllTransactionsLauncher();
@@ -44,9 +44,9 @@
    if(after&&after.parentElement===actions)after.after(card);else actions.prepend(card);
   }
   card.className='entry-action entry-action-network-status';
-  card.href='./network-status.html?v=20261109-history-ws1';
+  card.href='./network-status.html?v=20261109-tools-return-motion1';
   card.setAttribute('aria-label','Apri Status Network');
-  card.innerHTML='<span aria-hidden="true" class="entry-action-icon"><svg viewBox="0 0 32 32" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><rect x="3" y="6" width="26" height="20" rx="5"/><path d="M6 17h5l3-7 5 12 3-6h4"/><circle cx="24.5" cy="10" r="1.4" fill="currentColor" stroke="none"/></svg></span><span><strong class="inj-home-tile-title" data-it="Status Network" data-en="Status Network">Status Network</strong><small class="inj-tile-description" data-it="Blocchi, rete e segnalazioni" data-en="Blocks, network and incidents">Blocchi, rete e segnalazioni</small></span><svg aria-hidden="true" class="entry-action-arrow" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>';
+  card.innerHTML='<span aria-hidden="true" class="entry-action-icon"><svg viewBox="0 0 32 32" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><rect x="3" y="6" width="26" height="20" rx="5"/><path class="inj-net-wave" d="M6 17h5l3-7 5 12 3-6h4"/><circle class="inj-net-led" cx="24.5" cy="10" r="1.4" fill="currentColor" stroke="none"/></svg></span><span><strong class="inj-home-tile-title" data-it="Status Network" data-en="Status Network">Status Network</strong><small class="inj-tile-description" data-it="Blocchi, rete e segnalazioni" data-en="Blocks, network and incidents">Blocchi, rete e segnalazioni</small></span><svg aria-hidden="true" class="entry-action-arrow" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>';
   return card;
  }
  ensureNetworkStatusLauncher();
@@ -111,6 +111,13 @@
      '}'
    ].join('');
    document.head.appendChild(tileStyle);
+ }
+ // Two animated, accessible Tools icons; keep SVG motion decorative only.
+ if(!document.getElementById('injToolsStatusTransactionMotion')){
+  const style=document.createElement('style');
+  style.id='injToolsStatusTransactionMotion';
+  style.textContent="\n/* Tools · restrained, theme-colored micro-motion inside the two section icons. */\n#entryAllTransactionsButton .inj-txn-row-a{animation:injToolsTransactionRow 2.8s ease-in-out infinite}\n#entryAllTransactionsButton .inj-txn-row-b{animation:injToolsTransactionRow 2.8s ease-in-out .4s infinite}\n#entryAllTransactionsButton .inj-txn-check{stroke-dasharray:14;animation:injToolsTransactionCheck 3.2s ease-in-out infinite}\n#entryAllTransactionsButton .inj-txn-led{transform-box:fill-box;transform-origin:center;animation:injToolsStatusLed 2.8s ease-in-out infinite}\n#entryNetworkStatusButton .inj-net-wave{stroke-dasharray:24 12;animation:injToolsNetworkTrace 2.6s linear infinite}\n#entryNetworkStatusButton .inj-net-led{transform-box:fill-box;transform-origin:center;animation:injToolsStatusLed 2.6s ease-in-out infinite}\n@keyframes injToolsTransactionRow{0%,100%{opacity:.48;transform:translateX(0)}45%,65%{opacity:1;transform:translateX(1px)}}\n@keyframes injToolsTransactionCheck{0%,18%{stroke-dashoffset:14;opacity:.35}42%,82%{stroke-dashoffset:0;opacity:1}100%{stroke-dashoffset:-14;opacity:.35}}\n@keyframes injToolsStatusLed{0%,100%{opacity:.4;transform:scale(.7)}40%,60%{opacity:1;transform:scale(1.2)}}\n@keyframes injToolsNetworkTrace{from{stroke-dashoffset:0}to{stroke-dashoffset:-72}}\n@media (prefers-reduced-motion:reduce){\n #entryAllTransactionsButton .inj-txn-row-a,\n #entryAllTransactionsButton .inj-txn-row-b,\n #entryAllTransactionsButton .inj-txn-check,\n #entryAllTransactionsButton .inj-txn-led,\n #entryNetworkStatusButton .inj-net-wave,\n #entryNetworkStatusButton .inj-net-led{animation:none!important;stroke-dashoffset:0!important;opacity:1!important;transform:none!important}\n}\n";
+  document.head.appendChild(style);
  }
  const sections=[
   {id:'mercato',it:'Mercato',en:'Market',titleIt:'MERCATO',titleEn:'MARKET',subIt:'Prezzi, analisi e calendario macro',subEn:'Prices, research and macro calendar',ids:['entryGlobalMarketsButton','entryGlobalCryptoButton','entryLiveChartsButton','entryOrderBookButton','entryPerformanceButton','entryMacroCalendarButton'],icon:'<path d="M3.5 19.5h17M5 18V5.5M7.8 15l4-4 3 2 4.3-6M15.6 7h3.5v3.5"/>'},
@@ -360,11 +367,17 @@
   });
  });
  observer.observe(actions,{childList:true});
- const returnToTools=new URLSearchParams(location.search).get('tab')==='tools';
+ function consumeToolsReturn(){
+  try{
+   if(sessionStorage.getItem('inj_node_return_tools')!=='1')return false;
+   sessionStorage.removeItem('inj_node_return_tools');return true;
+  }catch(_){return false;}
+ }
+ const returnToTools=new URLSearchParams(location.search).get('tab')==='tools'||consumeToolsReturn();
  activate(returnToTools?'altro':'home',false);
  requestAnimationFrame(()=>scheduleDockRefresh());
  window.addEventListener('injnode:languagechange',refreshLanguage);
  window.addEventListener('storage',event=>{if(event.key==='inj_node_language_v1')refreshLanguage();});
- window.addEventListener('pageshow',refreshLanguage);
+ window.addEventListener('pageshow',()=>{refreshLanguage();if(consumeToolsReturn())activate('altro',false);});
  window.INJ_BOTTOM_NAV={select:id=>activate(id,true),active:()=>root.dataset.injHomeTab};
 })();

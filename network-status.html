@@ -225,7 +225,17 @@ html[data-theme="classic-white"]{color-scheme:light;--bg:#fff;--surface:#fafafa;
   wsSignals.set(node.name,node);
   if(pollingData)render(mergeLive(pollingData));
  });
- labels();$('back').addEventListener('click',()=>{location.href='./index.html?tab=tools';});
+ function exitToTools(){
+  try{sessionStorage.setItem('inj_node_return_tools','1');}catch(_){}
+  // Standalone pages normally return to the existing Tools tab without remounting Home.
+  if(window.parent!==window){window.parent.postMessage({type:'injnode:section:tools'},location.origin);return;}
+  try{
+   const source=document.referrer?new URL(document.referrer):null;
+   if(source&&source.origin===location.origin&&/\\/(?:index\\.html)?$/i.test(source.pathname)&&history.length>1){history.back();return;}
+  }catch(_){}
+  location.replace('./index.html?tab=tools');
+ }
+ labels();$('back').addEventListener('click',exitToTools);
  $('refresh').addEventListener('click',check);
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)check();});
  check();setInterval(check,10000);
