@@ -147,8 +147,8 @@ function loadLocal(){
   }catch(_){}
   try{const s=JSON.parse(localStorage.getItem('inj_monitor_summaries_v1')||'{}')[state.address]||{};state.available=n(s.available);state.staked=n(s.staked);state.rewards=n(s.rewards);state.total=n(s.total)||(state.available+state.staked+state.rewards);const age=Date.now()-Number(s.aprUpdated||0);
   const validApr=age>=0&&age<window.INJ_STAKING_APR.maxCacheMs;
-  state.apr=validApr&&Number.isFinite(Number(s.personalApr))?Number(s.personalApr):NaN;
-  state.networkApr=validApr&&Number.isFinite(Number(s.networkApr))?Number(s.networkApr):NaN;
+  state.apr=validApr&&s.personalApr!=null&&Number.isFinite(Number(s.personalApr))?Number(s.personalApr):NaN;
+  state.networkApr=validApr&&s.networkApr!=null&&Number.isFinite(Number(s.networkApr))?Number(s.networkApr):NaN;
   state.aprSyncAt=validApr?Number(s.aprUpdated):0;state.commission=n(s.weightedCommission);state.validators=Array.isArray(s.validators)?s.validators:[];state.lastSync=n(s.updated)}catch(_){}
   try{const a=JSON.parse(localStorage.getItem('inj_monitor_average_buy_price_v1')||'{}');state.avgPrice=n(a[state.address])}catch(_){}
 }
@@ -501,7 +501,7 @@ function renderWallet(){
   setLiveNumber('ccTotalPnl',state.avgPrice>0&&live>0?money(pnl):'—',state.avgPrice>0&&live>0?pnl:NaN);
   setLiveNumber('ccTotalPnlPct',state.avgPrice>0&&live>0?pct(pnlPct):'—',state.avgPrice>0&&live>0?pnlPct:NaN);
   setLiveNumber('ccApr',Number.isFinite(state.apr)&&state.aprSyncAt&&Date.now()-state.aprSyncAt<window.INJ_STAKING_APR.maxCacheMs?state.apr.toFixed(3)+'%':'—',Number.isFinite(state.apr)?state.apr:NaN);
-  setLiveNumber('ccNetworkApr',state.networkApr>0?state.networkApr.toFixed(3)+'%':'—',state.networkApr>0?state.networkApr:NaN);
+  setLiveNumber('ccNetworkApr',state.networkApr>0&&state.aprSyncAt&&Date.now()-state.aprSyncAt<window.INJ_STAKING_APR.maxCacheMs?state.networkApr.toFixed(3)+'%':'—',state.networkApr>0?state.networkApr:NaN);
   setLiveNumber('ccCommission',state.commission>0?(state.commission*100).toFixed(2)+'%':'—',state.commission>0?state.commission*100:NaN);
   const daily=state.staked>0&&state.apr>0?state.staked*state.apr/100/365:0;
   setLiveNumber('ccDailyReward',daily>0?fmtInj(daily,4):'—',daily>0?daily:NaN);
