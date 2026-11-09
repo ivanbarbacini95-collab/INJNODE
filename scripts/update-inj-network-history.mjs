@@ -37,7 +37,7 @@ function cleanIncident(item){
   status:String(item.status||'').slice(0,35),
   impact:type,
   planned,
-  url:/^https:\/\/(?:[\w-]+\.)?(?:quicknode\.com|statuspage\.io)(?:\/|$)/i.test(String(item.shortlink||''))?item.shortlink:'https://status.quicknode.com/'
+  url:'https://status.quicknode.com/incidents/'+encodeURIComponent(String(item.id))
  };
 }
 const old=JSON.parse(await fs.readFile(OUTPUT,'utf8'));
