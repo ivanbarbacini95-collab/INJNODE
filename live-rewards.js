@@ -10,7 +10,6 @@ const REWARD_COMPARE_TOLERANCE = 2e-8;
 const STATUS_REFRESH_MS = 30000;
 const CLAIM_DROP_EPSILON = 1e-9;
 const CLAIM_REBOUND_GUARD_MS = 45000;
-const OFFICIAL_APR_ENDPOINT = 'https://api.ui.injective.network/api/v1/cache/stats/apr';
 const LCD_ENDPOINTS = [
   'https://sentry.lcd.injective.network:443',
   'https://lcd.injective.network',
@@ -25,8 +24,6 @@ const MANAGED_ADDRESSES = Object.freeze([
 ]);
 const LABELS_KEY = 'inj_node_treasury_wallet_labels_v1';
 const SAVED_WALLETS_KEY = 'inj_monitor_wallets_v1';
-const VALIDATOR_COMMISSION_CACHE_MS = 120000;
-const validatorCommissionCache = new Map();
 
 const state = {
   rows: MANAGED_ADDRESSES.map((address, index) => ({
@@ -466,26 +463,6 @@ async function loadPendingRewardConfirmed(address,row){
   return {address,rewards:first,confidence:'verified'};
 }
 
-function commissionPercentFromValidator(data){
-  const fee=data?.validator?.commission?.commission_rates?.rate;
-  if(fee===undefined||fee===null)return NaN;
-  const raw=Number(fee);
-  if(!Number.isFinite(raw)||raw<0||raw>1)return NaN;
-  // Cosmos SDK espone la commissione come decimale: 0.10 = 10%.
-  return Math.min(100, raw<=1 ? raw*100 : raw);
-}
-async function validatorCommissionPercent(validatorAddress){
-  const cached=validatorCommissionCache.get(validatorAddress);
-  const now=Date.now();
-  if(cached&&now-cached.at<VALIDATOR_COMMISSION_CACHE_MS)return cached.value;
-  const data=await lcd(`/cosmos/staking/v1beta1/validators/${validatorAddress}`);
-  const value=commissionPercentFromValidator(data);
-  const validator=data?.validator;
-  if(!Number.isFinite(value)||!validator?.status)throw new Error('Validator metadata unavailable');
-  const result={value,active:!validator.jailed&&['BOND_STATUS_BONDED','3'].includes(String(validator.status))};
-  validatorCommissionCache.set(validatorAddress,{value:result,at:now});
-  return result;
-}
 async function loadDelegation(address,networkApr){
   // One verified wallet/validator APR source across Dashboard, Reward and Workspace.
   const data=await window.INJ_STAKING_APR.wallet(address);
