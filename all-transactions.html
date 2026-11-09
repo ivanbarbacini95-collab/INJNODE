@@ -30,8 +30,9 @@ button,select,input{font:inherit}button{cursor:pointer}button:disabled{cursor:de
 .metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:13px 0 17px}.metric{padding:17px 15px;min-height:82px}.metric small{color:var(--muted);font-size:10px;letter-spacing:.065em;text-transform:uppercase;font-weight:760;display:block}.metric strong{display:block;font-size:clamp(21px,4.6vw,29px);margin-top:7px;line-height:1.2;font-variant-numeric:tabular-nums}
 #atIn,#atOut{font-size:clamp(15px,3.8vw,22px);overflow-wrap:anywhere}.positive{color:var(--up)}.negative{color:var(--down)}
 .toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:8px 0 13px}.search{border:1px solid var(--border);border-radius:12px;background:var(--panel);padding:11px 12px;color:var(--fg);min-width:0;flex:1 1 210px}.search::placeholder{color:var(--muted)}.state{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px;font-weight:700}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--muted)}.dot.ok{background:var(--up)}.dot.partial{background:#eebf62}.date-range{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;margin:5px 0 15px}.date-range label{display:flex;flex-direction:column;gap:5px;color:var(--muted);font-size:11px;font-weight:700}.date-range input{background:var(--panel);color:var(--fg);border:1px solid var(--border);border-radius:9px;padding:9px 10px;max-width:170px;min-width:0}.filters{display:flex;gap:8px;overflow-x:auto;padding:3px 0 13px;scrollbar-width:thin;overscroll-behavior-x:contain}.filter{white-space:nowrap;border:1px solid var(--border);border-radius:10px;background:var(--panel);color:var(--muted);padding:10px 13px;font-size:12px;font-weight:750;flex:none}.filter.active{border-color:var(--accent);color:var(--accent);background:var(--raised)}
-.timeline{overflow:hidden}.timeline-head{padding:14px 17px;display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--border)}.timeline-head strong{font-size:12px;letter-spacing:.04em}.timeline-head span{font-size:11px;color:var(--muted)}.tx{border-bottom:1px solid var(--border)}.tx:last-child{border-bottom:0}.tx summary{list-style:none;display:flex;align-items:center;gap:13px;padding:15px 16px;cursor:pointer}.tx summary::-webkit-details-marker{display:none}.tx[open] summary{background:var(--raised)}.tx-icon{width:37px;height:37px;flex:none;border-radius:12px;display:grid;place-items:center;background:var(--raised);font-size:19px;color:var(--accent)}.tx-icon.in{color:var(--up)}.tx-icon.out{color:var(--down)}.tx-center{min-width:0;flex:1}.tx-name{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.tx-name strong{font-size:13px}.tx-info{margin-top:3px;display:block;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}.tx-right{text-align:right;min-width:0;max-width:43%}.tx-amount{font-weight:850;font-size:13px;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}.tx-amount.in{color:var(--up)}.tx-amount.out{color:var(--down)}.tx-status{font-size:10px;color:var(--muted)}.tx-status.failed{color:var(--down)}.tx-details{padding:5px 16px 16px;display:grid;grid-template-columns:1fr 1fr;gap:12px 20px;background:var(--raised)}.tx-field{min-width:0}.tx-field small{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.05em}.tx-field div{font-size:12px;font-weight:690;overflow-wrap:anywhere;margin-top:2px}.tx-link{display:inline-flex;gap:7px;align-items:center;padding:8px 0;font-size:12px;font-weight:750;text-decoration:none}.tx-link:hover{text-decoration:underline}.full{grid-column:1/-1}.notice{color:var(--muted);font-size:12px;line-height:1.65;padding:15px 17px}.notice.error{color:var(--down)}.center{text-align:center}.more{display:block;margin:18px auto 0;min-width:190px;border:1px solid var(--border);border-radius:12px;background:var(--panel);color:var(--fg);padding:12px 22px;font-weight:800}.disclaimer{color:var(--muted);margin:18px 4px;font-size:11px;line-height:1.6}.hidden{display:none!important}
-@media(max-width:560px){body{padding-left:12px;padding-right:12px}.top{padding-top:12px}.wallet-panel{padding:14px}.network-tag{padding:7px 9px}.metrics{gap:7px}.metric{padding:12px 10px;min-height:75px}.tx summary{padding:13px 11px;gap:9px}.tx-details{grid-template-columns:1fr;padding:13px}.tx-right{max-width:45%}}
+.timeline{overflow:hidden}.timeline-head{padding:14px 17px;display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--border)}.timeline-head strong{font-size:12px;letter-spacing:.04em}.timeline-head span{font-size:11px;color:var(--muted)}.tx{border-bottom:1px solid var(--border)}.tx:last-child{border-bottom:0}.tx summary{list-style:none;display:flex;align-items:center;gap:13px;padding:15px 16px;cursor:pointer}.tx summary::-webkit-details-marker{display:none}.tx[open] summary{background:var(--raised)}.tx-icon{width:37px;height:37px;flex:none;border-radius:12px;display:grid;place-items:center;background:var(--raised);font-size:19px;color:var(--accent)}.tx-icon.in{color:var(--up)}.tx-icon.out{color:var(--down)}.tx-center{min-width:0;flex:1}.tx-name{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.tx-name strong{font-size:13px}.tx-info{margin-top:3px;display:block;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}.tx-right{text-align:right;min-width:0;max-width:43%}.tx-amount{font-weight:850;font-size:13px;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}.tx-amount.in{color:var(--up)}.tx-amount.out{color:var(--down)}.tx-status{font-size:10px;color:var(--muted)}.tx-status.failed{color:var(--down)}.tx-details{padding:5px 16px 16px;display:grid;grid-template-columns:1fr 1fr;gap:12px 20px;background:var(--raised)}.tx-field{min-width:0}.tx-field small{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.05em}.tx-field div{font-size:12px;font-weight:690;overflow-wrap:anywhere;margin-top:2px}.tx-link{display:inline-flex;gap:7px;align-items:center;padding:8px 0;font-size:12px;font-weight:750;text-decoration:none}.tx-link:hover{text-decoration:underline}.full{grid-column:1/-1}.notice{color:var(--muted);font-size:12px;line-height:1.65;padding:15px 17px}.notice.error{color:var(--down)}.center{text-align:center}.more{display:block;margin:18px auto 0;min-width:190px;border:1px solid var(--border);border-radius:12px;background:var(--panel);color:var(--fg);padding:12px 22px;font-weight:800}.disclaimer{color:var(--muted);margin:18px 4px;font-size:11px;line-height:1.6}.period-heading{font-size:11px;font-weight:850;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:16px 2px 6px}.period-filters{padding-bottom:5px}.date-range{margin:8px 0 14px}.range-caption{font-size:11px;color:var(--muted);margin:-7px 2px 15px}
+.at-overview{padding:17px;margin:0 0 17px}.overview-title{font-size:13px;font-weight:850;margin:0 0 11px}.overview-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.overview-card{min-width:0;background:var(--raised);border:1px solid var(--border);border-radius:13px;padding:12px}.overview-card h3{font-size:11px;color:var(--accent);margin:0 0 10px;font-weight:850}.overview-line{display:flex;flex-direction:column;gap:2px;min-width:0;margin:9px 0}.overview-line small{font-size:10px;color:var(--muted);font-weight:750}.overview-line strong{font-size:12px;overflow-wrap:anywhere;font-weight:850;font-variant-numeric:tabular-nums}.overview-count{font-size:10px;color:var(--muted)}.overview-note{font-size:11px;line-height:1.5;color:var(--muted);margin:12px 1px 0}.overview-note.partial{color:#d9b36d}.hidden{display:none!important}
+@media(max-width:800px){.overview-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:560px){.at-overview{padding:12px}.overview-card{padding:10px}.overview-line strong{font-size:11px}body{padding-left:12px;padding-right:12px}.top{padding-top:12px}.wallet-panel{padding:14px}.network-tag{padding:7px 9px}.metrics{gap:7px}.metric{padding:12px 10px;min-height:75px}.tx summary{padding:13px 11px;gap:9px}.tx-details{grid-template-columns:1fr;padding:13px}.tx-right{max-width:45%}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 </style>
 </head>
@@ -44,12 +45,22 @@ button,select,input{font:inherit}button{cursor:pointer}button:disabled{cursor:de
 </header>
 <section class="panel wallet-panel"><div><label class="input-label" for="atWallet" id="atWalletLabel">Wallet salvato</label><select id="atWallet" class="wallet-select" aria-label="Wallet salvato"></select><div class="wallet-mask" id="atMask"></div></div><span class="network-tag" id="atNetwork">INJECTIVE</span></section>
 <section class="metrics">
-<div class="metric panel"><small id="atTotalLabel">Operazioni visualizzate</small><strong id="atTotal">—</strong></div>
+<div class="metric panel"><small id="atTotalLabel">Operazioni nel filtro</small><strong id="atTotal">—</strong></div>
 <div class="metric panel"><small id="atInLabel">Reward riscossi · INJ</small><strong class="positive" id="atIn">—</strong></div>
 <div class="metric panel"><small id="atOutLabel">INJ messi in staking</small><strong id="atOut">—</strong></div>
 </section>
+<p class="range-caption" id="atScope">Intero storico disponibile</p>
+<section class="panel at-overview" aria-labelledby="atOverviewTitle">
+<h2 class="overview-title" id="atOverviewTitle">Riepilogo reward e staking</h2>
+<div class="overview-grid" id="atOverviewGrid"></div>
+<p class="overview-note" id="atOverviewNote" role="status"></p>
+</section>
 <div class="toolbar"><input class="search" id="atSearch" type="search" autocomplete="off" placeholder="Cerca reward, staking o hash..." aria-label="Cerca transazioni"><span class="state" id="atState"><i class="dot"></i><span id="atStateText">In attesa</span></span></div>
-<div class="date-range"><label><span id="atFromLabel">Dal</span><input type="date" id="atFrom" aria-label="Data iniziale"></label><label><span id="atToLabel">Al</span><input type="date" id="atTo" aria-label="Data finale"></label><button class="filter" id="atClearDates" type="button">Azzera date</button></div><nav class="filters" id="atFilters" aria-label="Filtra transazioni"></nav>
+<div class="period-heading" id="atPeriodLabel">Seleziona periodo</div>
+<nav class="filters period-filters" id="atPeriods" aria-label="Seleziona periodo"></nav>
+<div class="date-range hidden" id="atDateRange"><label><span id="atFromLabel">Dal</span><input type="date" id="atFrom" aria-label="Data iniziale"></label><label><span id="atToLabel">Al</span><input type="date" id="atTo" aria-label="Data finale"></label><button class="filter" id="atClearDates" type="button">Azzera date</button></div>
+<div class="period-heading" id="atTypeLabel">Tipologia di operazione</div>
+<nav class="filters" id="atFilters" aria-label="Filtra per tipologia"></nav>
 <section class="panel timeline"><div class="timeline-head"><strong id="atHistory">CRONOLOGIA</strong><span id="atCount"></span></div><div id="atRows" role="feed" aria-live="polite"></div></section>
 <button class="more hidden" type="button" id="atMore">Carica precedenti</button>
 <p class="disclaimer" id="atDisclaimer">Solo reward riscossi e INJ realmente messi in staking su Injective. Le redeleghe tra validator non sono nuovi depositi. Se una quantità non è disponibile, viene indicata come non verificata.</p>
@@ -66,12 +77,19 @@ var CACHE_KEY='inj_all_transactions_staking_v1';
 var CATEGORY=[
  ['all','Tutte','All'],['reward','Reward riscossi','Claimed rewards'],['staking','INJ in staking','Staked INJ']
 ];
+var PERIODS=[
+ ['7d','7 giorni','7 days',7],['30d','30 giorni','30 days',30],
+ ['90d','90 giorni','90 days',90],['365d','1 anno','1 year',365],
+ ['all','Tutto','All',0],['custom','Personalizzato','Custom',null]
+];
+var SNAPSHOTS=PERIODS.slice(0,4);
 var $=function(id){return document.getElementById(id);};
 var en=document.documentElement.lang==='en';
 var lang=function(it,english){return en?english:it;};
 var saved=[];
 var current='';
 var category='all';
+var period='all';
 var rows=[];
 var offsetBySource={};
 var doneBySource={};
@@ -160,7 +178,7 @@ function changeWallet(value){
  current=value;try{sessionStorage.setItem('inj_all_transaction_selected',value);}catch(_){}
  setText('atMask',lang('Indirizzo non mostrato · sola lettura','Address not displayed · read only'));
  setText('atNetwork','INJECTIVE');
- category='all';$('atSearch').value='';$('atFrom').value='';$('atTo').value='';renderFilters();
+ category='all';period='all';$('atSearch').value='';$('atFrom').value='';$('atTo').value='';renderFilters();renderPeriods();
  retrieve(false);
 }
 function stateText(status,message){
@@ -171,9 +189,12 @@ function stateText(status,message){
 function initializeTranslations(){
  setText('atSubtitle',lang('Reward riscossi e INJ aggiunti allo staking','Claimed rewards and INJ added to staking'));
  setText('atWalletLabel',lang('Wallet salvato','Saved wallet'));
- setText('atTotalLabel',lang('Operazioni visualizzate','Displayed operations'));
- setText('atInLabel',lang('Reward riscossi · INJ','Claimed rewards · INJ'));
- setText('atOutLabel',lang('INJ messi in staking','INJ added to staking'));
+ setText('atTotalLabel',lang('Operazioni nel filtro','Operations in filter'));
+ setText('atPeriodLabel',lang('Seleziona periodo','Select period'));
+ setText('atTypeLabel',lang('Tipologia di operazione','Operation type'));
+ setText('atOverviewTitle',lang('Riepilogo reward e staking','Reward and staking summary'));
+ setText('atInLabel',lang('Reward riscossi · periodo','Claimed rewards · period'));
+ setText('atOutLabel',lang('INJ in staking · periodo','Staked INJ · period'));
  setText('atHistory',lang('CRONOLOGIA','HISTORY'));
  setText('atFromLabel',lang('Dal','From'));
  setText('atToLabel',lang('Al','To'));
@@ -189,6 +210,63 @@ function initializeTranslations(){
 function renderFilters(){
  var root=$('atFilters');root.replaceChildren();
  CATEGORY.forEach(function(item){var b=document.createElement('button');b.className='filter'+(category===item[0]?' active':'');b.type='button';b.textContent=en?item[2]:item[1];b.setAttribute('aria-pressed',category===item[0]?'true':'false');b.addEventListener('click',function(){category=item[0];renderFilters();render();});root.appendChild(b);});
+}
+function renderPeriods(){
+ var root=$('atPeriods');root.replaceChildren();
+ PERIODS.forEach(function(item){
+  var active=period===item[0],b=document.createElement('button');
+  b.className='filter'+(active?' active':'');b.type='button';
+  b.textContent=en?item[2]:item[1];b.setAttribute('aria-pressed',active?'true':'false');
+  b.addEventListener('click',function(){
+   period=item[0];if(period!=='custom'){$('atFrom').value='';$('atTo').value='';}
+   renderPeriods();render();
+  });root.appendChild(b);
+ });
+ $('atDateRange').classList.toggle('hidden',period!=='custom');
+}
+function periodBounds(value,now){
+ if(value==='custom'){
+  var from=$('atFrom').value,to=$('atTo').value;
+  return {from:from?new Date(from+'T00:00:00').getTime():null,
+          to:to?new Date(to+'T23:59:59.999').getTime():null};
+ }
+ var setting=PERIODS.find(function(item){return item[0]===value;});
+ return setting&&setting[3]?{from:now-setting[3]*86400000,to:now}:{from:null,to:null};
+}
+function isWithin(item,bounds){
+ if(bounds.from===null&&bounds.to===null)return true;
+ var time=Date.parse(item.time||'');
+ return Number.isFinite(time)&&(bounds.from===null||time>=bounds.from)&&(bounds.to===null||time<=bounds.to);
+}
+function periodLabel(){
+ var item=PERIODS.find(function(entry){return entry[0]===period;});
+ return item?(en?item[2]:item[1]):'';
+}
+function renderOverview(all,now){
+ var grid=$('atOverviewGrid');grid.replaceChildren();
+ SNAPSHOTS.forEach(function(item){
+  var subset=all.filter(function(row){return isWithin(row,periodBounds(item[0],now));});
+  var rewards=subset.filter(function(row){return row.cat==='reward';});
+  var stakes=subset.filter(function(row){return row.cat==='staking';});
+  var card=document.createElement('article');card.className='overview-card';
+  card.innerHTML='<h3>'+esc(en?item[2]:item[1])+'</h3>'+
+   '<div class="overview-line"><small>'+lang('Reward prelevati','Rewards claimed')+'</small>'+
+   '<strong class="positive">'+esc(summaryNativeAmount(rewards,'reward'))+'</strong>'+
+   '<span class="overview-count">'+rewards.length+' '+lang('operazioni','operations')+'</span></div>'+
+   '<div class="overview-line"><small>'+lang('INJ in staking','INJ staked')+'</small>'+
+   '<strong>'+esc(summaryNativeAmount(stakes,'staking'))+'</strong>'+
+   '<span class="overview-count">'+stakes.length+' '+lang('operazioni','operations')+'</span></div>';
+  grid.appendChild(card);
+ });
+ var partial=busy||canLoad||dataQuality==='error'||dataQuality==='partial'||all.some(function(row){
+  return !firstTimestamp(row.time)||!/^\d+$/.test(String(row.atoms||''));
+ });
+ $('atOverviewNote').classList.toggle('partial',partial);
+ setText('atOverviewNote',partial?
+  lang('Dati provvisori: lo storico o alcuni importi non sono completi. Usa «Carica precedenti» per ampliare la copertura; i totali riguardano solo le operazioni trovate.',
+       'Provisional data: history or some amounts are incomplete. Use “Load older transactions” to expand coverage; totals include only found operations.'):
+  lang('Conteggi riferiti alle operazioni recuperate on-chain. La copertura storica dipende dagli indexer pubblici.',
+       'Counts are based on on-chain operations retrieved. Historical coverage depends on public indexers.'));
 }
 function cacheRead(address){
  try{var all=JSON.parse(localStorage.getItem(CACHE_KEY)||'{}');var item=all[address];return item&&Array.isArray(item.rows)?item.rows:[];}catch(_){return [];}
@@ -348,20 +426,21 @@ function summaryNativeAmount(items,kind){
  return (missing?'≥ ':'')+formatNativeInj(total);
 }
 function render(){
- var all=actionRows(),from=$('atFrom').value,to=$('atTo').value,
+ var all=actionRows(),now=Date.now(),bounds=periodBounds(period,now),
      needle=$('atSearch').value.trim().toLowerCase();
- var filtered=all.filter(function(item){
+ var within=all.filter(function(item){return isWithin(item,bounds);});
+ var filtered=within.filter(function(item){
   if(category!=='all'&&item.cat!==category)return false;
-  var time=Date.parse(item.time||'');
-  if(from&&(!Number.isFinite(time)||time<new Date(from+'T00:00:00').getTime()))return false;
-  if(to&&(!Number.isFinite(time)||time>new Date(to+'T23:59:59.999').getTime()))return false;
   return !needle||[item.hash,item.asset,titleFor(item),item.amount,item.height]
    .concat(item.peers||[]).join(' ').toLowerCase().includes(needle);
  });
- setText('atTotal',String(all.length));
- setText('atIn',summaryNativeAmount(all,'reward'));
- setText('atOut',summaryNativeAmount(all,'staking'));
- setText('atCount',filtered.length+'/'+all.length+' '+lang('operazioni','operations'));
+ renderOverview(all,now);
+ setText('atScope',lang('Periodo: ','Period: ')+periodLabel()+
+  (period==='custom'&&($('atFrom').value||$('atTo').value)?' · '+($('atFrom').value||'…')+' → '+($('atTo').value||'…'):''));
+ setText('atTotal',String(filtered.length));
+ setText('atIn',summaryNativeAmount(within,'reward'));
+ setText('atOut',summaryNativeAmount(within,'staking'));
+ setText('atCount',filtered.length+'/'+within.length+' '+lang('operazioni nel periodo','operations in period'));
  var host=$('atRows');
  var opened=new Set(Array.from(host.querySelectorAll('details.tx[open]')).map(function(el){return el.dataset.key;}));
  host.replaceChildren();
@@ -637,13 +716,13 @@ async function retrieve(more){
  if(succeeded)void enrichInjectiveRows(run);
 }
 function start(){
- initializeTranslations();renderFilters();loadWallets();
+ initializeTranslations();renderFilters();renderPeriods();loadWallets();
  if(current)changeWallet(current);else{canLoad=false;stateText('idle',lang('Nessun wallet salvato','No saved wallet'));render();}
  $('atWallet').addEventListener('change',function(){changeWallet(this.value);});
  $('atSearch').addEventListener('input',render);
- $('atFrom').addEventListener('change',render);
- $('atTo').addEventListener('change',render);
- $('atClearDates').addEventListener('click',function(){$('atFrom').value='';$('atTo').value='';render();});
+ $('atFrom').addEventListener('change',function(){period='custom';renderPeriods();render();});
+ $('atTo').addEventListener('change',function(){period='custom';renderPeriods();render();});
+ $('atClearDates').addEventListener('click',function(){$('atFrom').value='';$('atTo').value='';period='all';renderPeriods();render();});
  $('atMore').addEventListener('click',function(){retrieve(true);});
  $('atRefresh').addEventListener('click',function(){SOURCES=['indexer'];hydrationFailures.clear();hydratedHashKeys.clear();retrieve(false);});
  $('atBack').addEventListener('click',function(){location.href='./index.html?tab=tools';});
