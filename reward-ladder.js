@@ -138,8 +138,9 @@ function addGoal(event) {
       const age = Date.now() - (finite(row.updated) || 0);
       const reward = age < 30 * 60_000 ? finite(row.rewards) : null;
       const stake = age < 30 * 60_000 ? finite(row.staked) : null;
-      const storedApr = finite(row.personalApr);
-      const commission = finite(row.weightedCommission);
+      const aprAge=Date.now()-(finite(row.aprUpdated)||0);
+      const storedApr=aprAge>=0&&aprAge<30*60_000?finite(row.personalApr):null;
+      const commission=aprAge>=0&&aprAge<30*60_000?finite(row.weightedCommission):null;
       state.rows[wallet.address] = {
         address: wallet.address, reward: reward !== null && reward >= 0 ? reward : null,
         stake: stake !== null && stake >= 0 ? stake : null,
@@ -282,17 +283,14 @@ function addGoal(event) {
   async function fetchOfficialApr(){
     if(Date.now()-state.aprAt<5*60_000)return;
     state.aprAt=Date.now();
-    try{
-      const data=await getJSON('https://api.ui.injective.network/api/v1/cache/stats/apr',6500);
-      const value=finite(data?.apr);
-      if(value!==null && value>0){
-        const percent=value<=1?value*100:value;
-        if(percent>0 && percent<=100)state.officialApr=percent;
-      }
-    }catch(_){}
+    const checked=await window.INJ_STAKING_APR.load();
+    state.officialApr=checked?.apr||null;
   }
   function aprFor(row){
-    if(state.officialApr!==null && row.commission!==null) return state.officialApr*(1-row.commission);
+    // Independent on-chain-verified network rate, with a fresh wallet-specific
+    // validator commission; otherwise retain only a recent saved net APR.
+    if(state.officialApr!==null && row.commission!==null)
+      return state.officialApr*(1-row.commission);
     return row.apr;
   }
   async function syncNetwork(){
