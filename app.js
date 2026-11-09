@@ -175,42 +175,30 @@ let freedomAprSyncing=false;
 let freedomAprLastAttempt=0;
 window.INJ_FINANCIAL_FREEDOM_ENRICH_APR = async function () {
   if(freedomAprSyncing||Date.now()-freedomAprLastAttempt<60_000)return;
-  const pending=state.wallets
-    .filter(wallet=>{
-      const row=state.walletSummaries[wallet.address];
-      return number(row?.staked)>0 &&
-        !Number(row?.aprUpdated) || Date.now()-Number(row.aprUpdated)>10*60_000;
-    }).map(wallet=>wallet.address);
+  const pending=state.wallets.filter(wallet=>{
+    const row=state.walletSummaries[wallet.address];
+    const age=Date.now()-Number(row?.aprUpdated||0);
+    return number(row?.staked)>0 && (!(age>=0&&age<120000)||
+      row?.personalApr==null||!Number.isFinite(Number(row.personalApr)));
+  }).map(wallet=>wallet.address);
   if(!pending.length)return;
   freedomAprSyncing=true;
   freedomAprLastAttempt=Date.now();
   try{
-    if(!(state.networkApr>0)||Date.now()-state.networkAprUpdated>5*60_000){
-      try{await ensureNetworkApr(false);}catch(_){}
-    }
-    if(!(state.networkApr>0)||Date.now()-state.networkAprUpdated>window.INJ_STAKING_APR.maxCacheMs)return;
     let cursor=0;
     const worker=async()=>{
       while(cursor<pending.length){
         const address=pending[cursor++];
         try{
-          const raw=await lcd('/cosmos/staking/v1beta1/delegations/'+address);
-          const delegated=delegationRows(raw);
-          if(!delegated.length)continue;
-          const validators=await Promise.all(delegated.map(loadValidator));
-          // Unknown commission is not a 0%-fee validator.
-          if(validators.some(v=>!Number.isFinite(validatorNetApr(v))))continue;
-          const amount=validators.reduce((sum,v)=>sum+number(v.amount),0);
-          const annual=validators.reduce((sum,v)=>
-            sum+number(v.amount)*(validatorNetApr(v)/100),0);
-          if(!(amount>0))continue;
-          const apr=annual/amount*100;
-          if(!Number.isFinite(apr)||apr<0||apr>200)continue;
+          const verified=await window.INJ_STAKING_APR.wallet(address);
+          if(!verified||verified.stale||!Number.isFinite(verified.apr))continue;
           const current=state.walletSummaries[address];
           if(!current)continue;
-          const weightedCommission=validators.reduce((sum,v)=>sum+v.amount*v.commission,0)/amount;
-          state.walletSummaries[address]={...current,personalApr:apr,validators,networkApr:state.networkApr,
-            weightedCommission,aprUpdated:state.networkAprUpdated,aprSource:state.networkAprSource};
+          state.walletSummaries[address]={...current,
+            personalApr:verified.apr,validators:verified.validators,
+            networkApr:verified.networkApr,
+            weightedCommission:verified.weightedCommission,
+            aprUpdated:verified.aprUpdated,aprSource:verified.source};
           try{saveWalletSummaries();}catch(_){}
         }catch(_){}
       }
@@ -5162,27 +5150,34 @@ async function loadWallet(showFeedback = true, requestedAddress = '', requestedL
     renderWalletCards();
     setStatus('', 'Dati principali aggiornati…');
 
-    // Secondo stadio: dettagli più costosi. Sono cache-izzati e non bloccano il cambio wallet.
-    const [validators] = await Promise.all([
-      Promise.all(validatorRows.map(loadValidator)),
-      aprPromise
-    ]);
+    // The identical validator-weighted APR source is used on every page.
+    // The APR request stays separate so a slow validator never blocks balances.
+    const checked=await window.INJ_STAKING_APR.wallet(address);
     if (requestId !== state.walletRequest) return;
-
-    state.validators = validators;
     await aprPromise;
     if (requestId !== state.walletRequest) return;
-    calculatePersonalApr();
 
+    const valid=Boolean(checked&&!checked.stale&&Number.isFinite(checked.apr));
+    state.validators=checked?.validators||await Promise.all(validatorRows.map(loadValidator));
+    state.personalApr=valid?checked.apr:NaN;
+    state.weightedCommission=valid?checked.weightedCommission:NaN;
+    if(checked&&!checked.stale){
+      state.networkApr=checked.networkApr;
+      state.networkAprUpdated=checked.aprUpdated;
+      state.networkAprSource=checked.source;
+      state.staked=checked.staked;
+    }
     state.walletSummaries[address] = {
       ...state.walletSummaries[address],
-      validators,
-      personalApr: Number.isFinite(state.personalApr)?state.personalApr:null,
-      weightedCommission: Number.isFinite(state.weightedCommission)?state.weightedCommission:null,
-      networkApr: state.networkApr,
-      aprUpdated: Number.isFinite(state.personalApr)?state.networkAprUpdated:0,
-      aprSource: state.networkAprSource,
-      updated: Date.now()
+      staked:state.staked,
+      total:state.available+state.staked+state.rewards,
+      validators:state.validators,
+      personalApr:valid?state.personalApr:null,
+      weightedCommission:Number.isFinite(state.weightedCommission)?state.weightedCommission:null,
+      networkApr:state.networkApr,
+      aprUpdated:valid?state.networkAprUpdated:0,
+      aprSource:valid?state.networkAprSource:'',
+      updated:Date.now()
     };
     state.lastWalletUpdate = state.walletSummaries[address].updated;
     saveWalletSummaries();
