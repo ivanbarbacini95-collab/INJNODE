@@ -281,6 +281,10 @@
     if(!empty.hidden)empty.textContent=state.lang==='it'?
       (points.length===1?'Una sola rilevazione nel periodo: l’andamento apparirà dopo nuovi dati.':'Nessuna rilevazione nel periodo selezionato. I dati non vengono ricostruiti artificialmente.'):
       (points.length===1?'Only one reading in this period. The trend will appear as more data arrives.':'No readings in the selected period. Missing history is never fabricated.');
+    const allRange=state.range==='ALL';
+    // ALL is an overview: show the entire chronological series inside the card,
+    // regardless of point count. Other ranges retain their detailed scrolling.
+    viewport.classList.toggle('cash-chart-all',allRange);
     const previousLeft=viewport.scrollLeft;
     const navPrev=$('cashChartPrev'),navNext=$('cashChartNext');
     if(points.length<=1) {
@@ -297,8 +301,10 @@
       $('cashChartLast').textContent=points[0]?new Date(points[0].t).toLocaleDateString(locale):'—';
       state.chartSelect=null;
       chart.onpointermove=null;chart.onpointerdown=null;chart.onkeydown=null;
+      chart.setAttribute('viewBox','0 0 660 180');
+      chart.style.width=allRange?'100%':'660px';
+      if(allRange)viewport.scrollLeft=0;
       if(points.length===1){
-        chart.setAttribute('viewBox','0 0 660 180');chart.style.width='660px';
         const ns='http://www.w3.org/2000/svg';
         const dot=document.createElementNS(ns,'circle');
         dot.setAttribute('cx','330');dot.setAttribute('cy','90');dot.setAttribute('r','4.5');
@@ -306,9 +312,9 @@
       }
       return;
     }
-    const w=Math.max(660,Math.min(12000,points.length*30));
+    const w=allRange?660:Math.max(660,Math.min(12000,points.length*30));
     chart.setAttribute('viewBox','0 0 '+w+' 180');
-    chart.style.width=w+'px';
+    chart.style.width=allRange?'100%':w+'px';
     const minT=points[0].t,maxT=Math.max(points[points.length-1].t,minT+1000);
     const values=points.map(p=>p.v);
     const lo=Math.min(...values),hi=Math.max(...values);
@@ -402,7 +408,7 @@
       ?points.reduce((best,p,i)=>Math.abs(p.t-state.selectedTime)<Math.abs(points[best].t-state.selectedTime)?i:best,0)
       :points.length-1;
     selectPoint(selected);
-    viewport.scrollLeft=state.chartExploring?previousLeft:viewport.scrollWidth;
+    viewport.scrollLeft=allRange?0:(state.chartExploring?previousLeft:viewport.scrollWidth);
     $('cashChartFirst').textContent=new Date(minT).toLocaleDateString(locale);
     $('cashChartLast').textContent=new Date(maxT).toLocaleDateString(locale);
   };
