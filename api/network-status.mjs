@@ -13,7 +13,7 @@ async function jsonWithTimeout(url, ms=6500) {
     return await response.json();
   } finally {clearTimeout(timer);}
 }
-async function inspectNode(source,now) {
+async function inspectNode(source) {
   try {
     const data=await jsonWithTimeout(source.url);
     const info=data?.result?.sync_info;
@@ -21,6 +21,7 @@ async function inspectNode(source,now) {
     const height=Number(info?.latest_block_height);
     const timestamp=Date.parse(info?.latest_block_time||'');
     if(chain!=='injective-1'||!Number.isSafeInteger(height)||height<=0||!Number.isFinite(timestamp))throw Error('Invalid chain status');
+    const now=Date.now();
     const age=Math.max(0,Math.floor((now-timestamp)/1000));
     if(timestamp>now+30000)throw Error('Future block time');
     return {name:source.name,available:true,height,blockTime:new Date(timestamp).toISOString(),ageSeconds:age,catchingUp:Boolean(info.catching_up)};
@@ -40,19 +41,20 @@ export default async function handler(req,res){
   res.setHeader('Cache-Control','public, max-age=0, s-maxage=5, must-revalidate');
   res.setHeader('Content-Type','application/json; charset=utf-8');
   if(req.method!=='GET'){res.setHeader('Allow','GET');return res.status(405).json({error:'Method not allowed'});}
+  const [nodes,provider]=await Promise.all([Promise.all(RPCS.map(source=>inspectNode(source))),providerStatus()]);
   const now=Date.now();
-  const [nodes,provider]=await Promise.all([Promise.all(RPCS.map(source=>inspectNode(source,now))),providerStatus()]);
   const valid=nodes.filter(n=>n.available);
-  const fresh=valid.filter(n=>n.ageSeconds<=40&&!n.catchingUp);
-  const delayed=valid.filter(n=>n.ageSeconds>40&&n.ageSeconds<=120);
+  const fresh=valid.filter(n=>n.ageSeconds<=20&&!n.catchingUp);
+  const delayed=valid.filter(n=>n.ageSeconds>20&&n.ageSeconds<=120);
   const stale=valid.filter(n=>n.ageSeconds>120);
   let state='unknown';
   if(fresh.length>=2)state='online';
   else if(fresh.length===1||delayed.length||valid.some(n=>n.catchingUp))state='degraded';
   else if(stale.length>=2)state='halted';
   else if(stale.length===1)state='degraded';
-  const heights=valid.map(n=>n.height);
-  if(state==='online' && Math.max(...heights)-Math.min(...heights)>100)state='degraded';
+  // A lagging third-party endpoint must not disqualify two agreeing, fresh nodes.
+  const freshHeights=fresh.map(n=>n.height);
+  if(state==='online' && Math.max(...freshHeights)-Math.min(...freshHeights)>100)state='degraded';
   // Provider notices are separate from observed chain health.
   return res.status(200).json({
     chainId:'injective-1',state,checkedAt:new Date(now).toISOString(),
