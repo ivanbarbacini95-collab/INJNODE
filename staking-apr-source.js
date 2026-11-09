@@ -192,6 +192,28 @@
     const cached = base ? storedWallet(id, base) : null;
     return cached ? { ...cached, stale: Date.now() - cached.updatedAt >= WALLET_REFRESH_MS || base.stale } : null;
   }
+  // Keep independently open pages / embedded Workspace in sync. Storage
+  // broadcasts never manufacture new APR; they only relay verified snapshots.
+  global.addEventListener?.('storage', (event) => {
+    if (event.key === STORE && event.newValue) {
+      try {
+        const received = JSON.parse(event.newValue);
+        if (bounded(Number(received?.apr)) && Number(received?.at) > Number(current?.at || 0) &&
+            Date.now() - received.at >= 0 && Date.now() - received.at < MAX_CACHE_MS)
+          current = received;
+      } catch (_) {}
+    }
+    if (event.key === WALLET_STORE && event.newValue) {
+      try {
+        const received = JSON.parse(event.newValue);
+        if (!received || typeof received !== 'object') return;
+        for (const [address, row] of Object.entries(received)) {
+          if (Number(row?.updatedAt) > Number(walletRows[address]?.updatedAt || 0))
+            walletRows[address] = row;
+        }
+      } catch (_) {}
+    }
+  });
   global.INJ_STAKING_APR = Object.freeze({
     load, snapshot, wallet, walletSnapshot, validatorNetApr, maxCacheMs: MAX_CACHE_MS
   });
