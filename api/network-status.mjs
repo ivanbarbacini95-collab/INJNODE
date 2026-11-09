@@ -37,7 +37,7 @@ async function providerStatus(){
   }catch(_){return {source:'QuickNode',level:'unknown',available:false,incident:null};}
 }
 export default async function handler(req,res){
-  res.setHeader('Cache-Control','public, max-age=0, s-maxage=8, stale-while-revalidate=10');
+  res.setHeader('Cache-Control','public, max-age=0, s-maxage=5, must-revalidate');
   res.setHeader('Content-Type','application/json; charset=utf-8');
   if(req.method!=='GET'){res.setHeader('Allow','GET');return res.status(405).json({error:'Method not allowed'});}
   const now=Date.now();
