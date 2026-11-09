@@ -378,7 +378,8 @@ function renderFrame(frameNow = 0) {
   if($('rewardsTotalStaked'))$('rewardsTotalStaked').textContent=totalStaked>0?`${formatStaked(totalStaked)} INJ`:'—';
   const weightedAprNumerator=state.rows.reduce((sum,row)=>sum + Math.max(0,number(row.staked))*Math.max(0,number(row.apr)),0);
   const weightedApr=totalStaked>0?weightedAprNumerator/totalStaked:0;
-  if($('rewardsApr'))$('rewardsApr').textContent=weightedApr>0?`${weightedApr.toFixed(3)}%`:'—';
+  const complete=state.rows.every(row=>!(row.staked>0)||row.aprVerified);
+  if($('rewardsApr'))$('rewardsApr').textContent=complete&&weightedApr>0?`${weightedApr.toFixed(3)}%`:'—';
 }
 async function fetchJson(url,timeout=7000){const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),timeout);try{const response=await fetch(url,{cache:'no-store',signal:controller.signal});if(!response.ok)throw new Error(`HTTP ${response.status}`);return await response.json();}finally{clearTimeout(timer)}}
 let preferredLcd=null;
@@ -403,29 +404,9 @@ async function lcd(path){
 }
 function delegationTotal(data){return (data?.delegation_responses||[]).reduce((sum,row)=>sum+fromWei(row?.balance?.amount),0)}
 function rewardTotal(data){return (data?.total||[]).filter((coin)=>coin?.denom==='inj').reduce((sum,coin)=>sum+fromWei(coin.amount),0)}
-function aprPercent(value){const n=number(value);if(n<=0)return 0;return n<=1?n*100:n}
-let aprRequest=null;
 async function loadApr(){
-  if(aprRequest)return aprRequest;
-  aprRequest=(async()=>{
-    try{
-      const official=await fetchJson(OFFICIAL_APR_ENDPOINT,4200);
-      const apr=aprPercent(official?.apr);
-      if(apr>0)return apr;
-    }catch(_){}
-    try{
-      const [mint,pool,params]=await Promise.all([
-        lcd('/cosmos/mint/v1beta1/annual_provisions'),
-        lcd('/cosmos/staking/v1beta1/pool'),
-        lcd('/cosmos/distribution/v1beta1/params')
-      ]);
-      const annual=number(mint?.annual_provisions),bonded=number(pool?.pool?.bonded_tokens);
-      const tax=number(params?.params?.community_tax);
-      if(annual>0&&bonded>0)return annual/bonded*100*Math.max(0,1-tax);
-    }catch(_){}
-    return state.apr;
-  })();
-  try{return await aprRequest;}finally{aprRequest=null;}
+  const checked=await window.INJ_STAKING_APR.load();
+  return checked?.apr||0;
 }
 async function rewardFromEndpoint(base,address){
   const path=`/cosmos/distribution/v1beta1/delegators/${address}/rewards`;
@@ -486,8 +467,10 @@ async function loadPendingRewardConfirmed(address,row){
 }
 
 function commissionPercentFromValidator(data){
-  const raw=number(data?.validator?.commission?.commission_rates?.rate);
-  if(!Number.isFinite(raw)||raw<0)return NaN;
+  const fee=data?.validator?.commission?.commission_rates?.rate;
+  if(fee===undefined||fee===null)return NaN;
+  const raw=Number(fee);
+  if(!Number.isFinite(raw)||raw<0||raw>1)return NaN;
   // Cosmos SDK espone la commissione come decimale: 0.10 = 10%.
   return Math.min(100, raw<=1 ? raw*100 : raw);
 }
@@ -497,9 +480,11 @@ async function validatorCommissionPercent(validatorAddress){
   if(cached&&now-cached.at<VALIDATOR_COMMISSION_CACHE_MS)return cached.value;
   const data=await lcd(`/cosmos/staking/v1beta1/validators/${validatorAddress}`);
   const value=commissionPercentFromValidator(data);
-  if(!Number.isFinite(value))throw new Error('Validator commission unavailable');
-  validatorCommissionCache.set(validatorAddress,{value,at:now});
-  return value;
+  const validator=data?.validator;
+  if(!Number.isFinite(value)||!validator?.status)throw new Error('Validator metadata unavailable');
+  const result={value,active:!validator.jailed&&['BOND_STATUS_BONDED','3'].includes(String(validator.status))};
+  validatorCommissionCache.set(validatorAddress,{value:result,at:now});
+  return result;
 }
 async function loadDelegation(address,networkApr){
   const data=await lcd(`/cosmos/staking/v1beta1/delegations/${address}`);
@@ -513,7 +498,7 @@ async function loadDelegation(address,networkApr){
 
   const details=await Promise.all(rows.map(async(entry)=>{
     const commission=await validatorCommissionPercent(entry.validator);
-    const effectiveApr=Math.max(0,number(networkApr)) * Math.max(0,1-commission/100);
+    const effectiveApr=commission.active?Math.max(0,number(networkApr))*Math.max(0,1-commission.value/100):0;
     return {...entry,commission,effectiveApr};
   }));
   const weightedApr=details.reduce((sum,entry)=>sum+entry.amount*entry.effectiveApr,0)/staked;
@@ -592,7 +577,13 @@ async function syncStatus(force=false){
   state.statusLoading=true;
   try{
     const apr=await loadApr();
-    if(apr>0)state.apr=apr;
+    state.apr=apr>0?apr:0;
+    if(!(state.apr>0)){
+      state.rows.forEach(row=>{row.aprVerified=false;row.apr=0;row.ratePerMs=0;});
+      state.lastStatusSync=Date.now();
+      renderRows();
+      return;
+    }
     const effectiveNetworkApr=state.apr;
     const settled=await Promise.all(
       MANAGED_ADDRESSES.map((address)=>
