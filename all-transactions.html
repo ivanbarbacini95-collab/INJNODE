@@ -89,6 +89,7 @@ var ENDPOINTS=['https://sentry.lcd.injective.network','https://lcd.injective.net
 var SOURCES=['indexer'];
 var LCD_SOURCES=['message.sender','transfer.recipient','coin_received.receiver'];
 var PAGE_SIZE=30;
+var VISIBLE_STEP=5;
 var CACHE_KEY='inj_all_transactions_movements_v2';
 var CATEGORY=[
  ['all','Tutte','All'],['deposit','Deposit','Deposits'],['withdraw','Withdraw','Withdrawals'],['reward','Reward riscossi','Claimed rewards'],['staking','INJ in staking','Staked INJ']
@@ -105,6 +106,8 @@ var saved=[];
 var current='';
 var category='all';
 var period='all';
+var visibleCount=VISIBLE_STEP;
+var matchingCount=0;
 var rows=[];
 var offsetBySource={};
 var doneBySource={};
@@ -193,7 +196,7 @@ function changeWallet(value){
  current=value;try{sessionStorage.setItem('inj_all_transaction_selected',value);}catch(_){}
  setText('atMask',lang('Indirizzo non mostrato · sola lettura','Address not displayed · read only'));
  setText('atNetwork','INJECTIVE');
- category='all';period='all';$('atSearch').value='';$('atFrom').value='';$('atTo').value='';renderFilters();renderPeriods();
+ category='all';period='all';visibleCount=VISIBLE_STEP;$('atSearch').value='';$('atFrom').value='';$('atTo').value='';renderFilters();renderPeriods();
  retrieve(false);
 }
 function stateText(status,message){
@@ -212,7 +215,7 @@ function initializeTranslations(){
  setText('atToLabel',lang('Al','To'));
  setText('atClearDates',lang('Azzera date','Clear dates'));
  $('atSearch').placeholder=lang('Cerca operazioni...','Search transactions...');
- setText('atMore',lang('Carica precedenti','Load older transactions'));
+ setText('atMore',lang('Carica altre 5','Load 5 more'));
  setText('atDisclaimer',lang(
   'Deposit e Withdraw indicano trasferimenti reali del wallet. Claim e Staking non vengono conteggiati due volte. Le redeleghe sono escluse. I dati dipendono dagli indexer.',
   'Deposits and withdrawals are wallet transfers. Reward claims and staking are not counted again as transfers. Redelegations are excluded. Data depends on indexers.'));
@@ -221,7 +224,7 @@ function initializeTranslations(){
 }
 function renderFilters(){
  var root=$('atFilters');root.replaceChildren();
- CATEGORY.forEach(function(item){var b=document.createElement('button');b.className='filter'+(category===item[0]?' active':'');b.type='button';b.textContent=en?item[2]:item[1];b.setAttribute('aria-pressed',category===item[0]?'true':'false');b.addEventListener('click',function(){category=item[0];renderFilters();render();});root.appendChild(b);});
+ CATEGORY.forEach(function(item){var b=document.createElement('button');b.className='filter'+(category===item[0]?' active':'');b.type='button';b.textContent=en?item[2]:item[1];b.setAttribute('aria-pressed',category===item[0]?'true':'false');b.addEventListener('click',function(){category=item[0];visibleCount=VISIBLE_STEP;renderFilters();render();});root.appendChild(b);});
 }
 function renderPeriods(){
  var root=$('atPeriods');root.replaceChildren();
@@ -230,7 +233,7 @@ function renderPeriods(){
   b.className='filter'+(active?' active':'');b.type='button';
   b.textContent=en?item[2]:item[1];b.setAttribute('aria-pressed',active?'true':'false');
   b.addEventListener('click',function(){
-   period=item[0];if(period!=='custom'){$('atFrom').value='';$('atTo').value='';}
+   period=item[0];visibleCount=VISIBLE_STEP;if(period!=='custom'){$('atFrom').value='';$('atTo').value='';}
    renderPeriods();render();
   });root.appendChild(b);
  });
@@ -460,10 +463,11 @@ function render(){
   return !needle||[item.hash,item.asset,titleFor(item),item.amount,item.height]
    .concat(item.peers||[]).join(' ').toLowerCase().includes(needle);
  });
+ matchingCount=filtered.length;
  renderOverview(all,now);
  setText('atScope',periodLabel()+
   (period==='custom'&&($('atFrom').value||$('atTo').value)?' · '+($('atFrom').value||'…')+' → '+($('atTo').value||'…'):''));
- setText('atCount',filtered.length+'/'+within.length+' '+lang('operazioni nel periodo','operations in period'));
+ setText('atCount',Math.min(visibleCount,filtered.length)+' / '+filtered.length+' '+lang('operazioni trovate','matching operations'));
  var host=$('atRows');
  var opened=new Set(Array.from(host.querySelectorAll('details.tx[open]')).map(function(el){return el.dataset.key;}));
  host.replaceChildren();
@@ -481,7 +485,7 @@ function render(){
     'No deposits, withdrawals, rewards or staking found in available history.');
   host.innerHTML='<p class="notice center'+(dataQuality==='error'?' error':'')+'">'+esc(message)+'</p>';
  }
- filtered.forEach(function(item){
+ filtered.slice(0,visibleCount).forEach(function(item){
   var detail=document.createElement('details');detail.className='tx';detail.dataset.key=item.key;
   if(opened.has(item.key))detail.open=true;
   var status=lang('Confermata','Confirmed');
@@ -509,7 +513,7 @@ function render(){
      ' ↗</a></div></div>';
   host.appendChild(detail);
  });
- $('atMore').classList.toggle('hidden',!current||!canLoad);
+ $('atMore').classList.toggle('hidden',!current||(filtered.length<=visibleCount&&!canLoad));
  $('atMore').disabled=busy;
 }
 function cancelled(){controllers.forEach(function(c){try{c.abort();}catch(_){}});controllers=[];}
@@ -742,12 +746,12 @@ function start(){
  initializeTranslations();renderFilters();renderPeriods();loadWallets();
  if(current)changeWallet(current);else{canLoad=false;stateText('idle',lang('Nessun wallet salvato','No saved wallet'));render();}
  $('atWallet').addEventListener('change',function(){changeWallet(this.value);});
- $('atSearch').addEventListener('input',render);
- $('atFrom').addEventListener('change',function(){period='custom';renderPeriods();render();});
- $('atTo').addEventListener('change',function(){period='custom';renderPeriods();render();});
- $('atClearDates').addEventListener('click',function(){$('atFrom').value='';$('atTo').value='';period='all';renderPeriods();render();});
- $('atMore').addEventListener('click',function(){retrieve(true);});
- $('atRefresh').addEventListener('click',function(){SOURCES=['indexer'];hydrationFailures.clear();hydratedHashKeys.clear();retrieve(false);});
+ $('atSearch').addEventListener('input',function(){visibleCount=VISIBLE_STEP;render();});
+ $('atFrom').addEventListener('change',function(){period='custom';visibleCount=VISIBLE_STEP;renderPeriods();render();});
+ $('atTo').addEventListener('change',function(){period='custom';visibleCount=VISIBLE_STEP;renderPeriods();render();});
+ $('atClearDates').addEventListener('click',function(){$('atFrom').value='';$('atTo').value='';period='all';visibleCount=VISIBLE_STEP;renderPeriods();render();});
+ $('atMore').addEventListener('click',function(){if(busy)return;visibleCount+=VISIBLE_STEP;if(matchingCount<visibleCount&&canLoad)retrieve(true);else render();});
+ $('atRefresh').addEventListener('click',function(){visibleCount=VISIBLE_STEP;SOURCES=['indexer'];hydrationFailures.clear();hydratedHashKeys.clear();retrieve(false);});
  $('atBack').addEventListener('click',function(){try{sessionStorage.setItem('inj_node_return_home','1');}catch(_){}location.assign('./index.html?tab=tools');});
  window.addEventListener('pageshow',function(){var next=readSaved();if(next.length!==saved.length){loadWallets();if(current)changeWallet(current);}});
  document.addEventListener('visibilitychange',function(){if(!document.hidden&&current&&!busy&&dataQuality!=='idle')retrieve(false);});
