@@ -17,7 +17,6 @@ const INJ_HISTORY_ORIGIN = Date.UTC(2020,0,1); // Before the first listed INJ/US
 const INJ_LISTING_START=Date.UTC(2020,9,21,4); // Binance INJ/USDT trading launch.
 const INJ_DECIMALS = 1e18;
 const LCD_ENDPOINTS = ['https://sentry.lcd.injective.network:443','https://lcd.injective.network','https://1rpc.io/inj-lcd'];
-const APR_ENDPOINT = 'https://api.ui.injective.network/api/v1/cache/stats/apr';
 const privacy = localStorage.getItem('inj_monitor_privacy') === '1';
 const currency = localStorage.getItem('inj_monitor_currency') === 'EUR' ? 'EUR' : 'USD';
 const ranges = {
