@@ -1916,7 +1916,7 @@ function render() {
   const data = state.data;
   setLiveValue('treasuryHeaderPrice', state.price > 0 ? money(state.price,state.price<10?4:3) : '—', state.price || NaN, true);
   if (!data) { renderWalletOwnership();renderSparkline(); renderWorthSparkline(); return; }
-  const total=number(data.total),available=number(data.available),staked=number(data.staked),rewards=number(data.rewards),apr=state.aprUpdatedAt&&Date.now()-state.aprUpdatedAt<window.INJ_STAKING_APR.maxCacheMs?Number(data.apr):NaN,worth=total*state.price;
+  const total=number(data.total),available=number(data.available),staked=number(data.staked),rewards=number(data.rewards),apr=state.aprUpdatedAt&&data.apr!=null&&Date.now()-state.aprUpdatedAt<window.INJ_STAKING_APR.maxCacheMs&&Number.isFinite(Number(data.apr))?Number(data.apr):NaN,worth=total*state.price;
   const allocation=treasuryAllocationPercentages(staked,available,rewards,2);
   const stakedPct=allocation.display.staked,availablePct=allocation.display.available,rewardsPct=allocation.display.rewards;
   const daily=staked>0&&apr>0?staked*(apr/100)/365:0;
@@ -2161,8 +2161,9 @@ async function refreshTreasuryChainRewards(force=false){
 let aprRequest=null;
 async function loadApr(force=false){
   // Treasury must show the same weighted NET APR as Reward for these wallets.
-  if(!force&&state.aprUpdatedAt&&Date.now()-state.aprUpdatedAt<120000)
-    return Number(state.data?.apr);
+  if(!force&&state.aprUpdatedAt&&Date.now()-state.aprUpdatedAt<120000&&
+     state.data?.apr!=null&&Number.isFinite(Number(state.data.apr)))
+    return Number(state.data.apr);
   if(aprRequest)return aprRequest;
   aprRequest=(async()=>{
     const rates=await Promise.all(TREASURY_ADDRESSES.map(address=>
@@ -2185,8 +2186,9 @@ async function loadTreasury(force=false) {
   const badge=$('treasuryLiveBadge');badge.classList.add('sync');badge.classList.remove('error');
   try {
     const batchStartedAt=Date.now();
-    let latestApr=state.aprUpdatedAt&&Date.now()-state.aprUpdatedAt<window.INJ_STAKING_APR.maxCacheMs?
-      Number(state.data?.apr):null;
+    let latestApr=state.aprUpdatedAt&&state.data?.apr!=null&&
+      Date.now()-state.aprUpdatedAt<window.INJ_STAKING_APR.maxCacheMs?
+      Number(state.data.apr):null;
     // APR is optional for balances: a slow APR host cannot blank the Treasury.
     void loadApr().then(next=>{
       if(Number.isFinite(next)&&next>=0){
