@@ -65,6 +65,7 @@ button,select,input{font:inherit}button{cursor:pointer}button:disabled{cursor:de
 <button class="more hidden" type="button" id="atMore">Carica precedenti</button>
 <p class="disclaimer" id="atDisclaimer">Solo reward riscossi e INJ realmente messi in staking su Injective. Le redeleghe tra validator non sono nuovi depositi. Se una quantità non è disponibile, viene indicata come non verificata.</p>
 </main>
+<script src="./all-transactions-movements.js"></script>
 <script>
 (function(){
 'use strict';
@@ -73,9 +74,9 @@ var ENDPOINTS=['https://sentry.lcd.injective.network','https://lcd.injective.net
 var SOURCES=['indexer'];
 var LCD_SOURCES=['message.sender','transfer.recipient','coin_received.receiver'];
 var PAGE_SIZE=30;
-var CACHE_KEY='inj_all_transactions_staking_v1';
+var CACHE_KEY='inj_all_transactions_movements_v2';
 var CATEGORY=[
- ['all','Tutte','All'],['reward','Reward riscossi','Claimed rewards'],['staking','INJ in staking','Staked INJ']
+ ['all','Tutte','All'],['deposit','Deposit','Deposits'],['withdraw','Withdraw','Withdrawals'],['reward','Reward riscossi','Claimed rewards'],['staking','INJ in staking','Staked INJ']
 ];
 var PERIODS=[
  ['7d','7 giorni','7 days',7],['30d','30 giorni','30 days',30],
@@ -365,11 +366,11 @@ function extractStakingActions(messages,events,addr){
    var a=attrs(event),atoms=nativeInjAtoms(a.amount||a.rewards);
    if(atoms!==null){rewardTotal+=atoms;rewardKnown=true;}
   });
-  actions.push({cat:'reward',action:'claim',atoms:rewardKnown?String(rewardTotal):'',amount:rewardKnown?formatNativeInj(rewardTotal):''});
+  actions.push({cat:'reward',action:'claim',denom:'inj',asset:'INJ',atoms:rewardKnown?String(rewardTotal):'',amount:rewardKnown?formatNativeInj(rewardTotal):''});
  }
  if(stakeSeen){
   var valid=stakeKnown&&stakeAtoms>0n;
-  actions.push({cat:'staking',action:restaking?'restake':'delegate',atoms:valid?String(stakeAtoms):'',
+  actions.push({cat:'staking',action:restaking?'restake':'delegate',denom:'inj',asset:'INJ',atoms:valid?String(stakeAtoms):'',
    amount:valid?formatNativeInj(stakeAtoms):''});
  }
  return actions;
@@ -378,8 +379,9 @@ function normalize(tx,response,addr){
  var hash=String(response.txhash||response.hash||'').trim().replace(/^0x/i,'').toUpperCase();
  if(!/^[0-9A-F]{64}$/.test(hash)||Number(response.code||0)!==0)return null;
  var messages=getMessageList(tx),events=flattenEvents(response);
- var actions=extractStakingActions(messages,events,addr);
- if(!actions.length)return null;
+ var transfer=window.INJ_NODE_TX_MOVEMENTS.extract(messages,events,addr,attrs,en);
+ var actions=extractStakingActions(messages,events,addr).concat(transfer.actions);
+ if(!actions.length&&!transfer.candidate)return null;
  var fee=tx&&tx.auth_info&&tx.auth_info.fee&&tx.auth_info.fee.amount;
  var peers=[];
  messages.forEach(function(m){
@@ -389,33 +391,37 @@ function normalize(tx,response,addr){
   });
  });
  return {hash:hash,time:firstTimestamp(response.timestamp,response.block_timestamp,response.block_unix_timestamp),
-  height:String(response.height||''),cat:actions[0].cat,actions:actions,dir:actions[0].cat==='reward'?'in':'neutral',
-  amount:actions[0].amount,asset:'INJ',failed:false,
+  height:String(response.height||''),cat:actions[0]?.cat||'',actions:actions,
+  dir:actions[0]&&['reward','deposit'].includes(actions[0].cat)?'in':actions[0]?.cat==='withdraw'?'out':'neutral',
+  amount:actions[0]?.amount||'',asset:actions[0]?.asset||'INJ',failed:false,
   fee:amountParts(Array.isArray(fee)?fee.map(function(v){return String(v.amount||'')+String(v.denom||'');}):[])
    .map(function(x){return x.n+' '+x.symbol;}).join(', '),
   peers:peers.slice(0,4),
   msgs:messages.map(function(m){return String(m['@type']||m.type||'').split('.').pop();}).slice(0,9)};
 }
 function titleFor(item){
+ if(item.cat==='deposit')return lang('Deposit ricevuto','Deposit received');
+ if(item.cat==='withdraw')return lang('Withdraw inviato','Withdrawal sent');
  if(item.cat==='reward')return lang('Reward riscosso','Claimed reward');
  if(item.action==='restake')return lang('INJ rimessi in staking','INJ returned to staking');
  return lang('INJ messi in staking','INJ added to staking');
 }
-function iconFor(item){return item.cat==='reward'?'✧':'⬡';}
+function iconFor(item){return item.cat==='deposit'?'↓':item.cat==='withdraw'?'↑':item.cat==='reward'?'✧':'⬡';}
 function actionRows(){
  var result=[];
  rows.forEach(function(tx){
   if(tx.failed||!Array.isArray(tx.actions))return;
   tx.actions.forEach(function(action,i){
-   if(!['reward','staking'].includes(action.cat))return;
-   result.push(Object.assign({},tx,action,{key:tx.hash+':'+action.cat+':'+i,
-    dir:action.cat==='reward'?'in':'neutral',asset:'INJ'}));
+   if(!['reward','staking','deposit','withdraw'].includes(action.cat))return;
+   result.push(Object.assign({},tx,action,{key:tx.hash+':'+action.cat+':'+(action.denom||'inj')+':'+i,
+    dir:action.cat==='reward'||action.cat==='deposit'?'in':action.cat==='withdraw'?'out':'neutral',
+    asset:action.asset||'INJ',peers:action.peers&&action.peers.length?action.peers:tx.peers}));
   });
  });
  return result;
 }
 function summaryNativeAmount(items,kind){
- var matching=items.filter(function(item){return item.cat===kind;});
+ var matching=items.filter(function(item){return item.cat===kind&&(!item.denom||String(item.denom).toLowerCase()==='inj');});
  if(!matching.length)return '0 INJ';
  var total=0n,found=false,missing=false;
  matching.forEach(function(item){
@@ -463,7 +469,7 @@ function render(){
   if(opened.has(item.key))detail.open=true;
   var status=lang('Confermata','Confirmed');
   var unresolved=!firstTimestamp(item.time)||!item.atoms;
-  var amount=item.amount?(item.cat==='reward'?'+':'')+item.amount:
+  var amount=item.amount?(item.dir==='in'?'+':item.dir==='out'?'−':'')+item.amount:
    lang('Importo da verificare','Amount pending verification');
   var peer=item.peers&&item.peers.length?short(item.peers[0]):'—';
   detail.innerHTML='<summary><span class="tx-icon '+(item.dir==='in'?'in':'')+'">'+iconFor(item)+
@@ -471,11 +477,11 @@ function render(){
    '<span class="tx-info">'+esc(firstTimestamp(item.time)?fmtDate(item.time):
      hydrationFailures.has(item.hash)?lang('Data non disponibile','Date unavailable'):lang('Data in verifica','Checking date'))+
    ' · '+esc(short(item.hash))+'</span></span><span class="tx-right"><span class="tx-amount '+
-   (item.dir==='in'?'in':'')+'">'+esc(amount)+'</span><br><span class="tx-status">'+esc(status)+
+   (item.dir==='in'?'in':item.dir==='out'?'out':'')+'">'+esc(amount)+'</span><br><span class="tx-status">'+esc(status)+
    (unresolved?' · '+esc(lang('Dati parziali','Partial data')):'')+'</span></span></summary>'+
    '<div class="tx-details"><div class="tx-field"><small>HASH</small><div>'+esc(item.hash)+'</div></div>'+
    '<div class="tx-field"><small>'+lang('BLOCCO','BLOCK')+'</small><div>'+esc(item.height||'—')+'</div></div>'+
-   '<div class="tx-field"><small>VALIDATOR</small><div>'+esc(peer)+'</div></div>'+
+   '<div class="tx-field"><small>'+(item.cat==='deposit'||item.cat==='withdraw'?lang('CONTROPARTE','COUNTERPARTY'):'VALIDATOR')+'</small><div>'+esc(peer)+'</div></div>'+
    '<div class="tx-field"><small>FEE</small><div>'+esc(item.fee||'—')+'</div></div>'+
    '<div class="tx-field"><small>'+lang('RETE','NETWORK')+'</small><div>INJECTIVE</div></div>'+
    '<div class="tx-field"><small>'+lang('OPERAZIONE','OPERATION')+'</small><div>'+esc(titleFor(item))+'</div></div>'+
@@ -571,12 +577,12 @@ function mergeIndexedDetails(base,detail){
  if(!detail)return base;
  var original=base||{},newer=detail||{};
  var byKey=new Map();
- (original.actions||[]).forEach(function(op){if(['reward','staking'].includes(op.cat))byKey.set(op.cat,op);});
+ (original.actions||[]).forEach(function(op){if(['reward','staking','deposit','withdraw'].includes(op.cat))byKey.set(op.cat+':'+(op.denom||'inj'),op);});
  (newer.actions||[]).forEach(function(op){
-  if(!['reward','staking'].includes(op.cat))return;
-  var previous=byKey.get(op.cat)||{};
+  if(!['reward','staking','deposit','withdraw'].includes(op.cat))return;
+  var key=op.cat+':'+(op.denom||'inj'),previous=byKey.get(key)||{};
   // Never replace an exact verified amount with an incomplete indexer snapshot.
-  byKey.set(op.cat,Object.assign({},previous,op,{
+  byKey.set(key,Object.assign({},previous,op,{
    amount:op.atoms?op.amount:(previous.amount||''),
    atoms:op.atoms||previous.atoms||''
   }));
@@ -589,7 +595,7 @@ function mergeIndexedDetails(base,detail){
   cat:actions[0]?.cat||original.cat||newer.cat||'',
   amount:actions[0]?.amount||original.amount||'',
   asset:'INJ',
-  dir:actions[0]?.cat==='reward'?'in':'neutral',
+  dir:actions[0]&&['reward','deposit'].includes(actions[0].cat)?'in':actions[0]?.cat==='withdraw'?'out':'neutral',
   fee:newer.fee||original.fee||'',
   peers:newer.peers&&newer.peers.length?newer.peers:original.peers||[],
   msgs:Array.from(new Set((original.msgs||[]).concat(newer.msgs||[]))).slice(0,9),
@@ -628,7 +634,7 @@ async function queryFullInjectiveTx(item){
  return full;
 }
 function needsHydration(item){
- return item&&(!firstTimestamp(item.time)||!Array.isArray(item.actions)||
+ return item&&(!firstTimestamp(item.time)||!Array.isArray(item.actions)||!item.actions.length||
    item.actions.some(function(action){return !/^\d+$/.test(String(action.atoms||''));}));
 }
 async function enrichInjectiveRows(run){
