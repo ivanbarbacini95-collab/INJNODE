@@ -255,9 +255,21 @@
     const detail = $('cashChartDetail');
     if(!chart||!viewport||!detail)return;
     const now = Date.now();
-    const windows = {'1M':30*86400000,'3M':90*86400000,'6M':180*86400000,'1Y':365*86400000,'ALL':Infinity};
-    const saved = state.history.filter(p=>p.t>=now-windows[state.range]);
+    const windows = {'1D':86400000,'1M':30*86400000,'1Y':365*86400000,'ALL':Infinity};
+    const windowMs=windows[state.range]??Infinity;
+    const saved = state.history.filter(p=>p.t>=now-windowMs);
     const points = saved.slice();
+    // Timeframe filters only the observations; total always refers to the whole reserve.
+    const total=Number.isFinite(state.usd)?state.usd:state.history.at(-1)?.v;
+    const totalEl=$('cashChartTotal');
+    if(totalEl)totalEl.textContent=Number.isFinite(total)?shown('$ '+fmt(total,4)+' USD'):'—';
+    const periodEl=$('cashChartPeriodInfo');
+    if(periodEl){
+      const labels=state.lang==='it'?{'1D':'Ultime 24 ore','1M':'Ultimi 30 giorni','1Y':'Ultimi 12 mesi','ALL':'Dall’inizio delle rilevazioni'}:
+        {'1D':'Last 24 hours','1M':'Last 30 days','1Y':'Last 12 months','ALL':'Since tracking began'};
+      periodEl.textContent=labels[state.range]+' · '+saved.length+' '+
+        (state.lang==='it'?(saved.length===1?'lettura':'letture'):(saved.length===1?'reading':'readings'));
+    }
     if(state.usd!=null&&!state.error&&!state.reconciling&&now-state.lastSync<120000) {
       const last=points[points.length-1];
       if(!last||now-last.t>5000)points.push({t:now,v:state.usd,kind:'live',delta:last?state.usd-last.v:0});
@@ -266,15 +278,32 @@
     chart.replaceChildren();
     const empty=$('cashChartEmpty');
     empty.hidden=points.length>1;
+    if(!empty.hidden)empty.textContent=state.lang==='it'?
+      (points.length===1?'Una sola rilevazione nel periodo: l’andamento apparirà dopo nuovi dati.':'Nessuna rilevazione nel periodo selezionato. I dati non vengono ricostruiti artificialmente.'):
+      (points.length===1?'Only one reading in this period. The trend will appear as more data arrives.':'No readings in the selected period. Missing history is never fabricated.');
     const previousLeft=viewport.scrollLeft;
     const navPrev=$('cashChartPrev'),navNext=$('cashChartNext');
     if(points.length<=1) {
-      detail.textContent=state.lang==='it'?'Lo storico apparirà dopo le prime rilevazioni complete.':'History appears after the first complete observations.';
+      const locale=state.lang==='it'?'it-IT':'en-US';
+      detail.replaceChildren();
+      const label=makeNode('strong','',points[0]?new Date(points[0].t).toLocaleString(locale,{
+        day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'
+      }):(state.lang==='it'?'Nessun dato nel periodo':'No data in this period'));
+      const value=makeNode('span','',points[0]?shown('$ '+fmt(points[0].v,4)+' USD'):'—');
+      detail.append(label,value);
       if(navPrev)navPrev.disabled=true;
       if(navNext)navNext.disabled=true;
-      $('cashChartFirst').textContent=points[0]?new Date(points[0].t).toLocaleDateString(state.lang==='it'?'it-IT':'en-US'):'—';
-      $('cashChartLast').textContent='—';
+      $('cashChartFirst').textContent=points[0]?new Date(points[0].t).toLocaleDateString(locale):'—';
+      $('cashChartLast').textContent=points[0]?new Date(points[0].t).toLocaleDateString(locale):'—';
       state.chartSelect=null;
+      chart.onpointermove=null;chart.onpointerdown=null;chart.onkeydown=null;
+      if(points.length===1){
+        chart.setAttribute('viewBox','0 0 660 180');chart.style.width='660px';
+        const ns='http://www.w3.org/2000/svg';
+        const dot=document.createElementNS(ns,'circle');
+        dot.setAttribute('cx','330');dot.setAttribute('cy','90');dot.setAttribute('r','4.5');
+        dot.setAttribute('fill','#45e5ce');chart.appendChild(dot);
+      }
       return;
     }
     const w=Math.max(660,Math.min(12000,points.length*30));
@@ -283,7 +312,8 @@
     const minT=points[0].t,maxT=Math.max(points[points.length-1].t,minT+1000);
     const values=points.map(p=>p.v);
     const lo=Math.min(...values),hi=Math.max(...values);
-    const padding=Math.max((hi-lo)*.12,hi*.015,1);
+    // Adaptive range makes genuine small daily interest visible without implying growth.
+    const padding=Math.max((hi-lo)*.14,hi*.00035,.0005);
     const yMin=Math.max(0,lo-padding),yMax=hi+padding;
     const x=p=>12+(p.t-minT)/(maxT-minT)*(w-24);
     const y=p=>164-(p.v-yMin)/(yMax-yMin)*146;
@@ -328,12 +358,13 @@
       const previous=points[i-1];
       const delta=Number.isFinite(p.delta)?p.delta:(previous?p.v-previous.v:0);
       const sign=delta>0?'+':'';
-      const suffix=p.kind==='start'?'':(' · '+(state.privacy?'••••••':sign+money(delta)));
+      const deltaDisplay=(state.privacy?'••••••':sign+'$ '+fmt(delta,Math.abs(delta)<.01?6:4));
+      const suffix=p.kind==='start'?'':' · '+deltaDisplay;
       detail.replaceChildren();
       const label=document.createElement('strong');
       label.textContent=stamp+' · '+describe(p);
       const amount=document.createElement('span');
-      amount.textContent=shown(money(p.v))+' USD'+suffix;
+      amount.textContent=shown('$ '+fmt(p.v,4))+' USD'+suffix;
       amount.className=delta<0?'cash-history-negative':delta>0?'cash-history-positive':'';
       detail.append(label,amount);
       if(navPrev)navPrev.disabled=i===0;
@@ -482,6 +513,9 @@
         updateChart();
       });
     });
+    // Start each session in Total, regardless of which timeframe was inspected before.
+    state.range='ALL';
+    document.querySelectorAll('[data-cash-range]').forEach(el=>el.setAttribute('aria-pressed',String(el.dataset.cashRange==='ALL')));
     window.addEventListener('storage',event=>{
       if (['inj_node_language_v1','inj_monitor_currency'].includes(event.key)) render();
     });
