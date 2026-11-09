@@ -18,7 +18,6 @@
   });
   const INJ_LCD = ['https://sentry.lcd.injective.network:443','https://lcd.injective.network','https://1rpc.io/inj-lcd'];
   const SOL_RPC = ['https://public.rpc.solanavibestation.com','https://api.mainnet-beta.solana.com','https://rpc.solanatracker.io/public','https://solana-rpc.publicnode.com'];
-  const APR_URL = 'https://api.ui.injective.network/api/v1/cache/stats/apr';
   const JUP_LEND = 'https://api.jup.ag/lend/v1/earn';
   const JUP_TOKENS = 'https://api.jup.ag/tokens/v2/search?query=';
   const USDC_SOL_MINT = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
@@ -271,10 +270,10 @@
     return {positions,usdc,usdt,available:true};
   }
   async function injectiveYield() {
-    const [delegated,rewards,aprResponse]=await Promise.allSettled([
+    const [delegated,rewards,stakingRate]=await Promise.allSettled([
       lcd('/cosmos/staking/v1beta1/delegations/'+encodeURIComponent(INJ_ACCOUNT)+'?pagination.limit=200'),
       lcd('/cosmos/distribution/v1beta1/delegators/'+encodeURIComponent(INJ_ACCOUNT)+'/rewards'),
-      json(APR_URL,{},5000)
+      window.INJ_STAKING_APR.wallet(INJ_ACCOUNT)
     ]);
     if(delegated.status==='rejected')throw new Error('Staking Injective non verificabile');
     const delegations=delegated.value?.delegation_responses;
@@ -286,14 +285,14 @@
     const totalRewards=rewards.status==='fulfilled' ? (rewards.value.total||[])
       .filter(x=>x.denom==='inj')
       .reduce((acc,x)=>acc+(qty(String(x.amount||'0').split('.')[0],18).value||0),0) : null;
-    const v=aprResponse.status==='fulfilled'?Number(aprResponse.value?.apr):NaN;
-    const apr=Number.isFinite(v)&&v>0&&v<=100?(v<=1?v*100:v):null;
+    const verified=stakingRate.status==='fulfilled'&&!stakingRate.value?.stale?stakingRate.value:null;
+    const apr=verified&&Number.isFinite(verified.apr)?verified.apr:null;
     return {
       positions:staked>0?[{
         name:'Staking Injective',network:'Injective',amount:staked,asset:'INJ',
         apr, rewards:totalRewards,
         day:apr==null?null:staked*(apr/100)/365,
-        rewardNote:'Reward osservate on-chain · stima giornaliera con APR di rete'
+        rewardNote:'Reward osservate on-chain · APR netto per validatore verificato'
       }]:[],
       stakingObserved:staked>0,
       aprAvailable:apr!=null,
