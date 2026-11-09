@@ -122,5 +122,77 @@
         typeof status !== 'string' || !status) return NaN;
     return jailed || !validStatus ? 0 : Number(baseApr) * (1 - fee);
   }
-  global.INJ_STAKING_APR = Object.freeze({ load, snapshot, validatorNetApr, maxCacheMs: MAX_CACHE_MS });
+  // The same wallet-level computation is reused by every INJ Node page.
+  // A wallet APR is a weighted net APR, NEVER an unrelated network quote.
+  const WALLET_STORE = 'inj_node_verified_wallet_apr_v1';
+  const WALLET_REFRESH_MS = 2 * 60_000;
+  let walletRows = {};
+  const walletPending = new Map();
+  try { walletRows = JSON.parse(localStorage.getItem(WALLET_STORE) || '{}') || {}; } catch (_) {}
+  function storedWallet(address, base) {
+    const row = walletRows[address];
+    const age = Date.now() - Number(row?.updatedAt);
+    if (!row || !Number.isFinite(age) || age < 0 || age >= MAX_CACHE_MS ||
+        !Number.isFinite(Number(row.networkApr)) || !close(row.networkApr, base.apr, .000001) ||
+        !Array.isArray(row.validators) || !Number.isFinite(Number(row.staked))) return null;
+    return row;
+  }
+  async function readWallet(address, base) {
+    const delegation = await lcd('/cosmos/staking/v1beta1/delegations/' + address + '?pagination.limit=1000');
+    if (!Array.isArray(delegation?.delegation_responses) || delegation?.pagination?.next_key)
+      throw new Error('Delegations not complete');
+    const delegated = delegation.delegation_responses.map(row => ({
+      operator: String(row?.delegation?.validator_address || ''),
+      amount: Number(row?.balance?.amount) / 1e18
+    })).filter(row => row.operator && Number.isFinite(row.amount) && row.amount > 0);
+    const rows = await Promise.all(delegated.map(async row => {
+      const response = await lcd('/cosmos/staking/v1beta1/validators/' + row.operator);
+      const v = response?.validator;
+      const commission = Number(v?.commission?.commission_rates?.rate);
+      const status = String(v?.status || '');
+      if (!v || !Number.isFinite(commission) || commission < 0 ||
+          commission > 1 || !status) throw new Error('Validator metadata missing');
+      const netApr = validatorNetApr(base.apr, commission, status, Boolean(v.jailed));
+      if (!Number.isFinite(netApr)) throw new Error('Validator net APR missing');
+      return {
+        ...row, moniker: String(v?.description?.moniker || row.operator),
+        commission, status, jailed: Boolean(v.jailed), netApr,
+        updated: Date.now()
+      };
+    }));
+    const staked = rows.reduce((sum, row) => sum + row.amount, 0);
+    const result = {
+      address, apr: staked > 0 ? rows.reduce((sum, row) => sum + row.amount * row.netApr, 0) / staked : null,
+      staked, validators: rows,
+      weightedCommission: staked > 0 ? rows.reduce((sum, row) => sum + row.amount * row.commission, 0) / staked : null,
+      networkApr: base.apr, aprUpdated: base.at, updatedAt: Date.now(),
+      source: base.source, stale: Boolean(base.stale)
+    };
+    walletRows[address] = result;
+    try { localStorage.setItem(WALLET_STORE, JSON.stringify(walletRows)); } catch (_) {}
+    return result;
+  }
+  async function wallet(address, force = false) {
+    const id = String(address || '').trim().toLowerCase();
+    if (!/^inj1[0-9a-z]{38,60}$/.test(id)) return null;
+    const base = await load(force);
+    if (!base) return null;
+    const cached = storedWallet(id, base);
+    if (!force && cached && Date.now() - cached.updatedAt < WALLET_REFRESH_MS)
+      return { ...cached, stale: Boolean(base.stale) };
+    if (!walletPending.has(id)) {
+      walletPending.set(id, readWallet(id, base).finally(() => walletPending.delete(id)));
+    }
+    try { return await walletPending.get(id); }
+    catch (_) { return cached ? { ...cached, stale: true } : null; }
+  }
+  function walletSnapshot(address) {
+    const base = snapshot();
+    const id = String(address || '').trim().toLowerCase();
+    const cached = base ? storedWallet(id, base) : null;
+    return cached ? { ...cached, stale: Date.now() - cached.updatedAt >= WALLET_REFRESH_MS || base.stale } : null;
+  }
+  global.INJ_STAKING_APR = Object.freeze({
+    load, snapshot, wallet, walletSnapshot, validatorNetApr, maxCacheMs: MAX_CACHE_MS
+  });
 })(window);
