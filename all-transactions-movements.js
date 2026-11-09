@@ -60,11 +60,25 @@
     if(from===wallet&&to&&to!==wallet){hasExplicit=true;add('withdraw',m.amount,to);}
     else if(to===wallet&&from&&from!==wallet){hasExplicit=true;add('deposit',m.amount,from);}
    }else if(/msgmultisend$/.test(type)){
+    var balance=new Map();
     (Array.isArray(m.inputs)?m.inputs:[]).forEach(function(v){
-     if(String(v.address||'').toLowerCase()===wallet){hasExplicit=true;add('withdraw',v.coins||v.amount,'');}
+     if(String(v.address||'').toLowerCase()!==wallet)return;
+     hasExplicit=true;
+     coinEntries(v.coins||v.amount).forEach(function(coin){
+      var k=coin.denom.toLowerCase(),old=balance.get(k)||{denom:coin.denom,net:0n};
+      old.net-=coin.atoms;balance.set(k,old);
+     });
     });
     (Array.isArray(m.outputs)?m.outputs:[]).forEach(function(v){
-     if(String(v.address||'').toLowerCase()===wallet){hasExplicit=true;add('deposit',v.coins||v.amount,'');}
+     if(String(v.address||'').toLowerCase()!==wallet)return;
+     hasExplicit=true;
+     coinEntries(v.coins||v.amount).forEach(function(coin){
+      var k=coin.denom.toLowerCase(),old=balance.get(k)||{denom:coin.denom,net:0n};
+      old.net+=coin.atoms;balance.set(k,old);
+     });
+    });
+    balance.forEach(function(v){
+     if(v.net===0n)return;add(v.net>0n?'deposit':'withdraw',[{denom:v.denom,amount:String(v.net>0n?v.net:-v.net)}],'');
     });
    }else if(/msgtransfer$/.test(type)){
     // IBC MsgTransfer initiated by this wallet is outgoing; receipt events are not guessed.
