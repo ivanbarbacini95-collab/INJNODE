@@ -9,6 +9,7 @@
  const COIN_CACHE='inj_node_comparison_coins_v1';
  const QUERY_CACHE='inj_node_comparison_recent_v1';
  const STOCK_CACHE='inj_node_comparison_us_caps_v2';
+ const INDEX_CACHE='inj_node_comparison_index_caps_v1';
  const SELECTED_KEY='inj_node_comparison_selected_wallet_v1';
  const NASDAQ_URL='https://raw.githubusercontent.com/zyhe16/top-us-stock-tickers/main/tickers/all.csv';
  const usMarketCaps=new Map(),usStockNames=new Map(), estimatedIndexCaps=new Map();
@@ -263,6 +264,19 @@
    localStorage.setItem(STOCK_CACHE,JSON.stringify({savedAt:usCapUpdated,rows}));
   }catch(_){}
  }
+ function restoreIndexCaps(){
+  try{
+   const saved=JSON.parse(localStorage.getItem(INDEX_CACHE)||'null');
+   if(!saved||!Array.isArray(saved.rows))return;
+   for(const [symbol,row] of saved.rows){
+    if(INDEX_DATASETS[symbol]&&row&&positive(row.cap)&&Number.isFinite(row.updated)
+       &&Date.now()-row.updated<48*3600000)estimatedIndexCaps.set(symbol,row);
+   }
+  }catch(_){}
+ }
+ function persistIndexCaps(){
+  try{localStorage.setItem(INDEX_CACHE,JSON.stringify({rows:[...estimatedIndexCaps]}));}catch(_){}
+ }
  // Public Nasdaq screener snapshot, republished on weekdays via GitHub.
  // This is updated daily, not a live exchange tick.
  async function loadUsStockCaps(){
@@ -286,6 +300,10 @@
     for(const [symbol,cap] of fresh)usMarketCaps.set(symbol,cap);
     for(const [symbol,name] of names)usStockNames.set(symbol,name);
     usCapUpdated=Date.now();usCapFailure='';persistUsStockCaps();
+   }catch(error){
+    // Never erase previously verified stock data when the external feed fails.
+    if(usMarketCaps.size<100)throw error;
+    usCapFailure='Using last saved Nasdaq snapshot';
    }finally{clearTimeout(timer);usCapDownload=null;}
   })();
   return usCapDownload;
@@ -335,7 +353,7 @@
    if(matched/symbols.length<.85)throw Error('Insufficient coverage');
    const cap=[...unique.values()].reduce((sum,v)=>sum+v,0);
    if(!positive(cap))throw Error('Empty capitalization');
-   estimatedIndexCaps.set(selected.symbol,{cap,matched,total:symbols.length,updated:Date.now()});
+   estimatedIndexCaps.set(selected.symbol,{cap,matched,total:symbols.length,updated:Date.now()});persistIndexCaps();
   }catch(error){if(request===indexRequestSeq)indexError=String(error?.message||error);}
   finally{if(request===indexRequestSeq){indexPending=false;render();}}
  }
@@ -705,7 +723,7 @@
  }
 
  function boot(){
-  restoreQuotes();restoreUsStockCaps();localize();setKind('crypto');render();
+  restoreQuotes();restoreUsStockCaps();restoreIndexCaps();localize();setKind('crypto');render();
   $('comparisonRetry')?.addEventListener('click',()=>{
    state.quoteRetryAfter=0;
    void refreshQuotes(true);
