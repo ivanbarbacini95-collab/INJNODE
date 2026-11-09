@@ -10,8 +10,10 @@ const BOOT_ASSETS = [
   './staking-apr-source.js?v=20261109-verified1',
   './app.js?v=20261109-verified-apr1',
   './navigation.js?v=20261106-multichart-tools-visibility2',
-  './home-bottom-tabs-20261030.js?v=20261109-network-status1',
-  './network-status.html?v=20261109-network1',
+  './home-bottom-tabs-20261030.js?v=20261109-history-live1',
+  './network-status.html?v=20261109-history-live1',
+  './network-history.js?v=20261109-uptime-bars1',
+  './network-history.css?v=20261109-uptime-bars1',
   './all-transactions.html?v=20261109-reward-staking1'
 ];
 const BOOT_FALLBACK = new URL('./index.html', self.registration.scope).href;
