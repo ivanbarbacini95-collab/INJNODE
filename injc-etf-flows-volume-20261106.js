@@ -149,7 +149,7 @@
    if(!old||priority>=old.priority)dailyPrice.set(date,{price:n,priority});
  }
  let volumeDays=[],volumeFirst=true,volumeLoading=false,volumeRaf=0,volumeSnapshot='',lastVolumeSource='';
- let volumeMode='session',intradayPoints=[],intradaySource='';
+ let volumeMode='history',intradayPoints=[],intradaySource='';
  function validVolume(k,value){
    return /^\d{4}-\d{2}-\d{2}$/.test(k)&&k>='2026-11-05'&&k<=nyDay(Date.now())&&
      Number.isSafeInteger(value)&&value>=0;
@@ -293,21 +293,15 @@
        '" y="210" text-anchor="middle" fill="currentColor" opacity=".72" font-size="10">'+
        (session?formatNYTime(pts[i].time):dateFmt(pts[i].date))+'</text>'
    ).join('');
-   // Bar height is shares traded, colour reflects quote direction if known.
+   // Each bar shows nonnegative shares traded, not the direction of the share price.
    // No bar is rendered when volume is unreported.
    const candleWidth=session
      ?Math.max(8,Math.min(19,(width-leftMargin-rightMargin)/Math.max(1,pts.length)*.62))
      :24;
-   let prevPrice=null;
    const bars=pts.map((p,i)=>{
-     if(!Number.isFinite(p.volume))return '';
-     const hasPrice=Number.isFinite(p.price)&&p.price>0;
-     const direction=hasPrice&&prevPrice!==null
-       ?(p.price>prevPrice?'is-up':p.price<prevPrice?'is-down':'is-neutral')
-       :'is-neutral';
-     if(hasPrice)prevPrice=p.price;
+    if(!Number.isFinite(p.volume))return '';
      const upper=Math.min(bottom-2,y(p.volume));
-     return '<rect class="injc-volume-bar '+direction+'" x="'+(x(i)-candleWidth/2).toFixed(2)+
+     return '<rect class="injc-volume-bar is-neutral" x="'+(x(i)-candleWidth/2).toFixed(2)+
        '" y="'+upper.toFixed(2)+'" width="'+candleWidth.toFixed(2)+
        '" height="'+Math.max(2,bottom-upper).toFixed(2)+'" rx="2.5"/>';
    }).join('');
