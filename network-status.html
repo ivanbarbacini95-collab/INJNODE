@@ -149,7 +149,7 @@ html[data-theme="classic-white"]{color-scheme:light;--bg:#fff;--surface:#fafafa;
   let provider={level:'unknown',available:false,incident:null};
   try{
    const quick=await timedJson('https://quicknode.statuspage.io/api/v2/summary.json',4500);
-   const component=(quick.components||[]).find(x=>/injective\\s*[-–]\\s*mainnet/i.test(x.name||''));
+   const component=(quick.components||[]).find(x=>/injective\s*[-–]\s*mainnet/i.test(x.name||''));
    const incident=(quick.incidents||[]).find(x=>/injective.*mainnet/i.test(x.name||''));
    provider={level:component?.status||'unknown',available:Boolean(component),
     incident:incident?{name:incident.name,url:'https://status.quicknode.com/incidents/'+encodeURIComponent(incident.id),status:incident.status}:null};
