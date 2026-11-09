@@ -231,7 +231,7 @@ html[data-theme="classic-white"]{color-scheme:light;--bg:#fff;--surface:#fafafa;
   if(window.parent!==window){window.parent.postMessage({type:'injnode:section:tools'},location.origin);return;}
   try{
    const source=document.referrer?new URL(document.referrer):null;
-   if(source&&source.origin===location.origin&&/\\/(?:index\\.html)?$/i.test(source.pathname)&&history.length>1){history.back();return;}
+   if(source&&source.origin===location.origin&&(source.pathname.endsWith('/')||source.pathname.endsWith('/index.html'))&&history.length>1){history.back();return;}
   }catch(_){}
   location.replace('./index.html?tab=tools');
  }
