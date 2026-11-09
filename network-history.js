@@ -111,8 +111,9 @@
   $('uptimeCoverageNote').textContent=tr('Campioni RPC salvati: ','Stored RPC samples: ')+observations+
    ' · '+tr('incidenti QuickNode: ','QuickNode incidents: ')+incidentsInRange+
    (history.generatedAt?' · '+tr('Archivio al ','Archive as of ')+fmtDate(Date.parse(history.generatedAt))+' '+fmtTime(Date.parse(history.generatedAt)): ' · '+tr('Archivio non ancora popolato','Archive not yet populated'));
-  $('uptimeLive').dataset.live=String(Boolean(isFresh(latestLive,35000)));
-  $('uptimeLiveText').textContent=isFresh(latestLive,35000)?'LIVE · 10s':tr('LIVE IN ATTESA','AWAITING LIVE');
+  const verifiedLive=Boolean(isFresh(latestLive,35000)&&latestLive?.state!=='unknown');
+  $('uptimeLive').dataset.live=String(verifiedLive);
+  $('uptimeLiveText').textContent=verifiedLive?'LIVE · 10s':tr('VERIFICA IN CORSO','CHECKING LIVE');
   $('uptimeSourceNote').textContent=tr(
    'Verde solo con campioni RPC sufficienti. Giallo anche per incidenti segnalati da QuickNode. Grigio = periodo non misurato (non presume rete operativa). Lo storico inizia dal primo controllo archiviato.',
    'Green only with sufficient RPC samples. Yellow can indicate QuickNode reported incidents. Gray = unmeasured (never assumed online). Historical monitoring starts with the first archived check.'
