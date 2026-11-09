@@ -44,7 +44,7 @@
    if(after&&after.parentElement===actions)after.after(card);else actions.prepend(card);
   }
   card.className='entry-action entry-action-network-status';
-  card.href='./network-status.html?v=20261109-network1';
+  card.href='./network-status.html?v=20261109-history-live1';
   card.setAttribute('aria-label','Apri Status Network');
   card.innerHTML='<span aria-hidden="true" class="entry-action-icon"><svg viewBox="0 0 32 32" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><rect x="3" y="6" width="26" height="20" rx="5"/><path d="M6 17h5l3-7 5 12 3-6h4"/><circle cx="24.5" cy="10" r="1.4" fill="currentColor" stroke="none"/></svg></span><span><strong class="inj-home-tile-title" data-it="Status Network" data-en="Status Network">Status Network</strong><small class="inj-tile-description" data-it="Blocchi, rete e segnalazioni" data-en="Blocks, network and incidents">Blocchi, rete e segnalazioni</small></span><svg aria-hidden="true" class="entry-action-arrow" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>';
   return card;
