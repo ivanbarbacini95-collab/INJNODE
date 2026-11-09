@@ -1,7 +1,6 @@
 'use strict';
 
 const INJ_DECIMALS = 1e18;
-const OFFICIAL_APR_ENDPOINT = 'https://api.ui.injective.network/api/v1/cache/stats/apr';
 const LCD_ENDPOINTS = [
   'https://sentry.lcd.injective.network:443',
   'https://lcd.injective.network',
