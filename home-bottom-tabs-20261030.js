@@ -29,9 +29,9 @@
      if(after&&after.parentElement===actions)after.after(card);else actions.prepend(card);
    }
    card.className='entry-action entry-action-all-transactions';
-   card.href='./all-transactions.html?v=20261108c-tx-details3';
+   card.href='./all-transactions.html?v=20261109-reward-staking1';
    card.setAttribute('aria-label','Apri All Transaction');
-   card.innerHTML='<span aria-hidden="true" class="entry-action-icon"><svg viewBox="0 0 24 24" width="29" height="29" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3" width="17" height="18" rx="3"/><path d="M7.5 8h9M7.5 12h4m-4 4h9"/><path d="m14 12 2 2 3-3"/></svg></span><span><strong class="inj-home-tile-title" data-it="All Transaction" data-en="All Transaction">All Transaction</strong><small class="inj-tile-description" data-it="Storico e categorie wallet" data-en="Wallet history & categories">Storico e categorie wallet</small></span><svg aria-hidden="true" class="entry-action-arrow" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>';
+   card.innerHTML='<span aria-hidden="true" class="entry-action-icon"><svg viewBox="0 0 24 24" width="29" height="29" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3" width="17" height="18" rx="3"/><path d="M7.5 8h9M7.5 12h4m-4 4h9"/><path d="m14 12 2 2 3-3"/></svg></span><span><strong class="inj-home-tile-title" data-it="All Transaction" data-en="All Transaction">All Transaction</strong><small class="inj-tile-description" data-it="Reward riscossi e INJ in staking" data-en="Claimed rewards & INJ staking">Reward riscossi e INJ in staking</small></span><svg aria-hidden="true" class="entry-action-arrow" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>';
    return card;
  }
  ensureAllTransactionsLauncher();
