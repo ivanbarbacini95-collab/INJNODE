@@ -487,8 +487,6 @@ function create(api){
  function hydrate(){const saved=read('inj_node_intel_summary_cache_v1',{});if(saved.coin&&saved.at>state.coinAt){const c=saved.coin,md=c.market_data;state.coin=md?{id:'injective-protocol',market_cap:md.market_cap?.usd,total_volume:md.total_volume?.usd,circulating_supply:md.circulating_supply,fully_diluted_valuation:md.fully_diluted_valuation?.usd,low_24h:md.low_24h?.usd,high_24h:md.high_24h?.usd}:c;state.coinAt=saved.at;}const g=read('inj_node_crypto_global_v1',{});if(g.data&&g.updatedAt>state.globalAt){state.global=g.data;state.globalAt=g.updatedAt}if(!state.global&&saved.global){state.global=saved.global;state.globalAt=saved.at}}
  function record(items){if(Date.now()-state.historyAt<30000)return;state.historyAt=Date.now();let changed=false;for(const i of items.filter(i=>['treasurygrowth','worthhistory','treasuryperformance'].includes(i.type))){const m=metrics(i);if(!m)continue;const key=addresses(i).sort().join('|'),rows=state.histories[key]||[],last=rows.at(-1),at=m.at;if(!at||Date.now()-at>120000||last&&Date.now()-last.t<30000)continue;rows.push({t:Date.now(),total:m.total,worth:product(m.total,api.price())});state.histories[key]=rows.slice(-10000);changed=true}if(changed){try{localStorage.setItem('inj_node_workspace_histories_v1',JSON.stringify(state.histories))}catch(_){}state.version++;}}
 
- const validatorMeta=new Map();let networkApr=null,networkAprAt=0;
- async function validator(operator){const saved=validatorMeta.get(operator);if(saved&&Date.now()-saved.at<600000)return saved;const d=await api.lcd('/cosmos/staking/v1beta1/validators/'+operator),v=d.validator,rate=Number(v?.commission?.commission_rates?.rate);if(!v||!Number.isFinite(rate))throw Error('Validator');const result={moniker:v.description?.moniker||operator,commission:rate,at:Date.now()};validatorMeta.set(operator,result);return result;}
  function refreshWalletDetails(items){
   const needs=items.filter(i=>['usdc','validators','unbonding','apr','hourly','daily','weekly','monthly','yearly','production','potentialincome','growth','growthsimple','target','velocity','rewardoverview','treasuryproduction','productionlevel','incomeperiods','rewardwallets','ladder','ladderall'].includes(i.type));
   const groups=new Map();for(const i of needs)for(const address of addresses(i)){if(!groups.has(address))groups.set(address,new Set());groups.get(address).add(i.type)}
@@ -496,14 +494,19 @@ function create(api){
    const existing=api.row(address),patch={};if(!existing)return;
    if(kinds.has('usdc')){const d=await api.lcd('/cosmos/bank/v1beta1/balances/'+address+'?pagination.limit=1000');if(Array.isArray(d.balances)&&!d.pagination?.next_key)patch.nativeUsdc=Number(d.balances.find(c=>String(c.denom).toLowerCase()==='erc20:0xa00c59ff5a080d2b954d0c75e46e22a0c371235a')?.amount||0)/1e6;} 
    if(kinds.has('unbonding')){const d=await api.lcd('/cosmos/staking/v1beta1/delegators/'+address+'/unbonding_delegations?pagination.limit=1000');if(Array.isArray(d.unbonding_responses)&&!d.pagination?.next_key)patch.unbonding=d.unbonding_responses.reduce((n,r)=>n+(r.entries||[]).reduce((s,e)=>s+Number(e.balance||0)/1e18,0),0);}
-   if(kinds.has('validators')||!(existing.personalApr>0)){
-    const d=await api.lcd('/cosmos/staking/v1beta1/delegations/'+address+'?pagination.limit=1000');if(Array.isArray(d.delegation_responses)&&!d.pagination?.next_key){
-     const rows=d.delegation_responses.map(r=>({operator:r.delegation?.validator_address,amount:Number(r.balance?.amount||0)/1e18})).filter(r=>r.operator&&r.amount>0);
-     const results=await Promise.allSettled(rows.map(async r=>({...r,...await validator(r.operator)})));patch.validators=results.map((v,j)=>v.status==='fulfilled'?v.value:rows[j]);
-     if(!(existing.personalApr>0)&&rows.length&&results.every(v=>v.status==='fulfilled')){
-      if(networkApr===null||Date.now()-networkAprAt>300000){try{const a=await json('https://api.ui.injective.network/api/v1/cache/stats/apr'),n=Number(a.apr);if(n>0&&n<=100){networkApr=n<=1?n*100:n;networkAprAt=Date.now()}}catch(_){}}
-      const total=rows.reduce((n,r)=>n+r.amount,0);if(networkApr!==null&&total>0)patch.personalApr=networkApr*(1-patch.validators.reduce((n,r)=>n+r.amount*r.commission,0)/total);
-     }
+   if(kinds.has('validators')||Date.now()-Number(existing.aprUpdated||0)>120000){
+    const staking=await window.INJ_STAKING_APR.wallet(address);
+    if(staking && !staking.stale){
+      patch.validators=staking.validators;
+      patch.personalApr=staking.apr;
+      patch.networkApr=staking.networkApr;
+      patch.weightedCommission=staking.weightedCommission;
+      patch.aprUpdated=staking.aprUpdated;
+      patch.aprSource=staking.source;
+    }else{
+      // Never adopt a gross network quote or a previous legacy wallet APR.
+      patch.personalApr=null;
+      patch.aprUpdated=0;
     }
    }
    if(Object.keys(patch).length)api.supplement(address,patch);state['detail:'+address+'At']=Date.now();
