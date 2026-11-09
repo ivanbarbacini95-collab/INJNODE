@@ -238,92 +238,106 @@ function amountParts(v){
  });
  return output;
 }
-function amountFromMessages(messages,cat,addr){
- for(var i=0;i<messages.length;i++){
-  var m=messages[i],type=String(m['@type']||m.type||'').toLowerCase();
-  if(type.includes('msgsend')){
-   var isRelated=[m.from_address,m.to_address].some(function(v){return String(v||'').toLowerCase()===addr;});
-   if(isRelated&&Array.isArray(m.amount)&&m.amount.length)return amountParts(m.amount.map(function(x){return String(x.amount||'')+String(x.denom||'');}));
+function nativeInjAtoms(raw){
+ // Injective uses 18 decimal places for native INJ. Keep amounts exact in atomic units.
+ var parts=Array.isArray(raw)?raw:[raw],total=0n,found=false;
+ function ingest(value){
+  if(value==null)return;
+  if(Array.isArray(value)){value.forEach(ingest);return;}
+  if(typeof value==='object'){
+   if(value.amount!==undefined&&String(value.denom||'').toLowerCase()==='inj'){
+    var num=String(value.amount);
+    if(/^\d+$/.test(num)){total+=BigInt(num);found=true;}
+   }else if(value.amount!==undefined)ingest(value.amount);
+   return;
   }
-  if((cat==='staking'||cat==='bridge')&&m.amount&&m.amount.amount&&m.amount.denom)return amountParts(String(m.amount.amount)+String(m.amount.denom));
-  if(cat==='bridge'&&m.token&&m.token.amount&&m.token.denom)return amountParts(String(m.token.amount)+String(m.token.denom));
+  String(value).split(',').forEach(function(piece){
+   var match=piece.trim().match(/^(\d+)inj$/i);
+   if(match){total+=BigInt(match[1]);found=true;}
+  });
  }
- return [];
+ parts.forEach(ingest);
+ return found?total:null;
 }
-function transfersFromEvents(events,addr,cat){
- var transfers=[];
- events.forEach(function(event){
-  if(!['transfer','coin_received','coin_spent','withdraw_rewards','delegate','unbond','redelegate'].includes(event.type))return;
-  var a=attrs(event);
-  if(event.type==='transfer'){
-   if(a.recipient!==addr&&a.sender!==addr)return;
-   transfers.push({incoming:a.recipient===addr,outgoing:a.sender===addr,amount:a.amount});
-  }else if(event.type==='coin_received'&&a.receiver===addr)transfers.push({incoming:true,outgoing:false,amount:a.amount});
-  else if(event.type==='coin_spent'&&a.spender===addr)transfers.push({incoming:false,outgoing:true,amount:a.amount});
-  else if(event.type==='withdraw_rewards'&&cat==='reward')transfers.push({incoming:true,outgoing:false,amount:a.amount||a.rewards});
-  else if(['delegate','unbond','redelegate'].includes(event.type)&&cat==='staking')transfers.push({incoming:false,outgoing:false,amount:a.amount});
+function formatNativeInj(atoms){
+ if(atoms===null||atoms===undefined)return '';
+ var n=typeof atoms==='bigint'?atoms:BigInt(atoms),whole=n/1000000000000000000n;
+ var fraction=(n%1000000000000000000n).toString().padStart(18,'0').slice(0,12).replace(/0+$/,'');
+ var integer=whole.toString().replace(/\B(?=(\d{3})+(?!\d))/g,en?',':'.');
+ return integer+(fraction?(en?'.':',')+fraction:'')+' INJ';
+}
+function extractStakingActions(messages,events,addr){
+ var claim=false,stakeSeen=false,stakeAtoms=0n,stakeKnown=true,restaking=false;
+ messages.forEach(function(m){
+  var type=String(m&& (m['@type']||m.type)||'').toLowerCase();
+  var sender=String(m.delegator_address||m.delegatorAddress||'').toLowerCase();
+  if(sender&&sender!==addr)return;
+  if(/msgwithdrawdelegatorreward$/.test(type)){claim=true;return;}
+  // Redelegation changes the validator, not the amount of newly staked INJ.
+  if(/msgdelegate$/.test(type)||/msgcancelunbondingdelegation$/.test(type)){
+   stakeSeen=true;
+   if(/cancelunbonding/.test(type))restaking=true;
+   var atoms=nativeInjAtoms(m.amount);
+   if(atoms===null)stakeKnown=false;
+   else stakeAtoms+=atoms;
+  }
  });
- return transfers;
-}
-function categorize(messages,events,addr){
- var types=messages.map(function(m){return String(m['@type']||m.type||'').toLowerCase();});
- var combined=types.join(' '), eventNames=events.map(function(e){return String(e.type||'').toLowerCase();}).join(' ');
- if(/withdrawdelegatorreward|withdrawvalidatorcommission/.test(combined))return 'reward';
- if(/delegate|undelegate|redelegate|cancelunbonding|restake/.test(combined))return 'staking';
- if(/ibc|msgtransfer|recvpacket|acknowledgement|msgtimeout|msgsendtoprotocol/.test(combined))return 'bridge';
- if(/swap|route|exacts|exchange/.test(combined)&&/swap/.test(combined+' '+eventNames))return 'swap';
- if(/msgcreate.*order|msgcancel.*order|msgbatchupdateorders|msgliquidateposition/.test(combined))return 'trading';
- if(/msgvote|msgsubmitproposal|msgdeposit/.test(combined))return 'governance';
- if(/swap/.test(eventNames))return 'swap';
- if(/msgexecutecontract|msginstantiatecontract/.test(combined))return 'defi';
- if(/msgsend|msgmultisend/.test(combined)){
-  var sent=messages.some(function(m){return String(m.from_address||'').toLowerCase()===addr;});
-  var received=messages.some(function(m){return String(m.to_address||'').toLowerCase()===addr;});
-  if(received&&!sent)return 'received';
-  if(sent)return 'sent';
+ var actions=[];
+ if(claim){
+  var rewardTotal=0n,rewardKnown=false;
+  events.forEach(function(event){
+   if(String(event.type||'').toLowerCase()!=='withdraw_rewards')return;
+   var a=attrs(event),atoms=nativeInjAtoms(a.amount||a.rewards);
+   if(atoms!==null){rewardTotal+=atoms;rewardKnown=true;}
+  });
+  actions.push({cat:'reward',action:'claim',atoms:rewardKnown?String(rewardTotal):'',amount:rewardKnown?formatNativeInj(rewardTotal):''});
  }
- var transfers=transfersFromEvents(events,addr,'other');
- if(transfers.some(function(x){return x.outgoing;}))return 'sent';
- if(transfers.some(function(x){return x.incoming;}))return 'received';
- return 'other';
+ if(stakeSeen){
+  var valid=stakeKnown&&stakeAtoms>0n;
+  actions.push({cat:'staking',action:restaking?'restake':'delegate',atoms:valid?String(stakeAtoms):'',
+   amount:valid?formatNativeInj(stakeAtoms):''});
+ }
+ return actions;
 }
 function normalize(tx,response,addr){
  var hash=String(response.txhash||response.hash||'').trim().replace(/^0x/i,'').toUpperCase();
- if(!/^[0-9A-F]{64}$/.test(hash))return null;
- var messages=getMessageList(tx);
- var events=flattenEvents(response);
- var cat=categorize(messages,events,addr);
- var transferList=transfersFromEvents(events,addr,cat);
- var amounts=amountFromMessages(messages,cat,addr);
- if(!amounts.length && transferList.length){
-  var matched=transferList.filter(function(t){return cat==='received'||cat==='reward'?t.incoming:cat==='sent'?t.outgoing:true;});
-  amounts=amountParts((matched[0]||transferList[0]).amount);
- }
- var inValue=cat==='received'||cat==='reward';
- var outValue=cat==='sent';
- var direction=inValue?'in':outValue?'out':'neutral';
- var first=amounts[0];
- var formatAmount=first&&isFinite(first.n)?(new Intl.NumberFormat(en?'en-US':'it-IT',{maximumFractionDigits:6}).format(first.n)+' '+(first.symbol.length>18?first.symbol.slice(0,13)+'…':first.symbol)):'';
- var failures=Number(response.code||0)!==0;
+ if(!/^[0-9A-F]{64}$/.test(hash)||Number(response.code||0)!==0)return null;
+ var messages=getMessageList(tx),events=flattenEvents(response);
+ var actions=extractStakingActions(messages,events,addr);
+ if(!actions.length)return null;
  var fee=tx&&tx.auth_info&&tx.auth_info.fee&&tx.auth_info.fee.amount;
  var peers=[];
- messages.forEach(function(m){['from_address','to_address','sender','receiver','delegator_address','validator_address','contract','recipient'].forEach(function(k){var v=m[k];if(typeof v==='string'&&v!==addr&&!peers.includes(v)&&v.length>10)peers.push(v);});});
- return {hash:hash,time:firstTimestamp(response.timestamp,response.block_timestamp,response.block_unix_timestamp),height:String(response.height||''),cat:cat,dir:direction,amount:formatAmount,asset:first?first.symbol:'',failed:failures,fee:amountParts(Array.isArray(fee)?fee.map(function(v){return String(v.amount||'')+String(v.denom||'');}):[]).map(function(x){return x.n+' '+x.symbol;}).join(', '),peers:peers.slice(0,4),msgs:messages.map(function(m){return String(m['@type']||m.type||'').split('.').pop();}).slice(0,6)};
+ messages.forEach(function(m){
+  ['delegator_address','validator_address','validator_src_address','validator_dst_address','sender'].forEach(function(k){
+   var v=m&&m[k];
+   if(typeof v==='string'&&v!==addr&&!peers.includes(v)&&v.length>10)peers.push(v);
+  });
+ });
+ return {hash:hash,time:firstTimestamp(response.timestamp,response.block_timestamp,response.block_unix_timestamp),
+  height:String(response.height||''),cat:actions[0].cat,actions:actions,dir:actions[0].cat==='reward'?'in':'neutral',
+  amount:actions[0].amount,asset:'INJ',failed:false,
+  fee:amountParts(Array.isArray(fee)?fee.map(function(v){return String(v.amount||'')+String(v.denom||'');}):[])
+   .map(function(x){return x.n+' '+x.symbol;}).join(', '),
+  peers:peers.slice(0,4),
+  msgs:messages.map(function(m){return String(m['@type']||m.type||'').split('.').pop();}).slice(0,9)};
 }
 function titleFor(item){
- var signatures=(item.msgs||[]).join(' ').toLowerCase();
- if(item.cat==='staking'){
-  if(/beginredelegate|redelegate/.test(signatures))return lang('Redelega INJ','Redelegate INJ');
-  if(/undelegate|unbond/.test(signatures))return lang('Sblocco staking','Unstake INJ');
-  if(/cancelunbond/.test(signatures))return lang('Annulla sblocco','Cancel unstaking');
-  if(/delegate/.test(signatures))return lang('Delega INJ','Stake INJ');
- }
- if(item.cat==='reward'&&/withdraw/.test(signatures))return lang('Riscossione reward','Claim rewards');
- var types={received:lang('Ricevuta','Received'),sent:lang('Invio','Sent'),staking:'Staking',reward:'Reward',swap:'Swap',defi:'DeFi',bridge:'Bridge / IBC',trading:'Trading',governance:'Governance',other:lang('Operazione on-chain','On-chain activity')};
- return types[item.cat]||types.other;
+ if(item.cat==='reward')return lang('Reward riscosso','Claimed reward');
+ if(item.action==='restake')return lang('INJ rimessi in staking','INJ returned to staking');
+ return lang('INJ messi in staking','INJ added to staking');
 }
-function iconFor(item){
- return {received:'↙',sent:'↗',staking:'⬡',reward:'✧',swap:'⇄',defi:'▣',bridge:'⇢',trading:'≋',governance:'◈',other:'•'}[item.cat]||'•';
+function iconFor(item){return item.cat==='reward'?'✧':'⬡';}
+function actionRows(){
+ var result=[];
+ rows.forEach(function(tx){
+  if(tx.failed||!Array.isArray(tx.actions))return;
+  tx.actions.forEach(function(action,i){
+   if(!['reward','staking'].includes(action.cat))return;
+   result.push(Object.assign({},tx,action,{key:tx.hash+':'+action.cat+':'+i,
+    dir:action.cat==='reward'?'in':'neutral',asset:'INJ'}));
+  });
+ });
+ return result;
 }
 function render(){
  var filtered=rows.filter(function(item){
