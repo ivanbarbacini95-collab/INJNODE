@@ -23,7 +23,7 @@ const incomingTime=Date.parse(incoming.generatedAt||'');
 const previousTime=Date.parse(base.generatedAt||'');
 const generatedAt=Number.isFinite(incomingTime)&&(!Number.isFinite(previousTime)||incomingTime>=previousTime)?incoming.generatedAt:base.generatedAt;
 const merged={
- schemaVersion:1,chainId:'injective-1',intervalMinutes:15,
+ schemaVersion:1,chainId:'injective-1',intervalMinutes:5,
  generatedAt:generatedAt||null,
  samples:[...sampleMap.values()].sort((a,b)=>a[0]-b[0]),
  incidents:[...incidents.values()].sort((a,b)=>String(b.start).localeCompare(String(a.start))).slice(0,250)
