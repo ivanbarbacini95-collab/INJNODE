@@ -38,22 +38,21 @@ button,select,input{font:inherit}button{cursor:pointer}button:disabled{cursor:de
 <main class="shell">
 <header class="top">
 <button class="back" id="atBack" type="button" aria-label="Torna a Tools"><svg viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></svg></button>
-<div class="heading"><div class="eyebrow">INJ NODE / TOOLS</div><h1>All Transaction</h1><p id="atSubtitle">Storico on-chain dei wallet salvati</p></div>
+<div class="heading"><div class="eyebrow">INJ NODE / TOOLS</div><h1>All Transaction</h1><p id="atSubtitle">Reward riscossi e INJ aggiunti allo staking</p></div>
 <button class="refresh" id="atRefresh" type="button" aria-label="Aggiorna transazioni"><svg viewBox="0 0 24 24"><path d="M19.5 8a8 8 0 1 0 1 7M20 3v5h-5"/></svg></button>
 </header>
 <section class="panel wallet-panel"><div><label class="input-label" for="atWallet" id="atWalletLabel">Wallet salvato</label><select id="atWallet" class="wallet-select" aria-label="Wallet salvato"></select><div class="wallet-mask" id="atMask"></div></div><span class="network-tag" id="atNetwork">INJECTIVE</span></section>
 <section class="metrics">
-<div class="metric panel"><small id="atTotalLabel">Operazioni caricate</small><strong id="atTotal">—</strong></div>
-<div class="metric panel"><small id="atInLabel">In entrata</small><strong class="positive" id="atIn">—</strong></div>
-<div class="metric panel"><small id="atOutLabel">In uscita</small><strong class="negative" id="atOut">—</strong></div>
+<div class="metric panel"><small id="atTotalLabel">Operazioni visualizzate</small><strong id="atTotal">—</strong></div>
+<div class="metric panel"><small id="atInLabel">Reward riscossi · INJ</small><strong class="positive" id="atIn">—</strong></div>
+<div class="metric panel"><small id="atOutLabel">INJ messi in staking</small><strong id="atOut">—</strong></div>
 </section>
-<div class="toolbar"><input class="search" id="atSearch" type="search" autocomplete="off" placeholder="Cerca hash, categoria, token..." aria-label="Cerca transazioni"><span class="state" id="atState"><i class="dot"></i><span id="atStateText">In attesa</span></span></div>
+<div class="toolbar"><input class="search" id="atSearch" type="search" autocomplete="off" placeholder="Cerca reward, staking o hash..." aria-label="Cerca transazioni"><span class="state" id="atState"><i class="dot"></i><span id="atStateText">In attesa</span></span></div>
 <div class="date-range"><label><span id="atFromLabel">Dal</span><input type="date" id="atFrom" aria-label="Data iniziale"></label><label><span id="atToLabel">Al</span><input type="date" id="atTo" aria-label="Data finale"></label><button class="filter" id="atClearDates" type="button">Azzera date</button></div><nav class="filters" id="atFilters" aria-label="Filtra transazioni"></nav>
 <section class="panel timeline"><div class="timeline-head"><strong id="atHistory">CRONOLOGIA</strong><span id="atCount"></span></div><div id="atRows" role="feed" aria-live="polite"></div></section>
 <button class="more hidden" type="button" id="atMore">Carica precedenti</button>
-<p class="disclaimer" id="atDisclaimer">Solo operazioni confermate e indicizzate sulla rete Injective. Eventi DeFi interni, operazioni off-chain e transazioni non più indicizzate dagli endpoint pubblici possono non essere disponibili. Non sono necessarie chiavi private.</p>
+<p class="disclaimer" id="atDisclaimer">Solo reward riscossi e INJ realmente messi in staking su Injective. Le redeleghe tra validator non sono nuovi depositi. Se una quantità non è disponibile, viene indicata come non verificata.</p>
 </main>
-<script src="./all-transactions-solana.js?v=20261108-2"></script>
 <script>
 (function(){
 'use strict';
@@ -65,12 +64,10 @@ var ENDPOINTS=['https://sentry.lcd.injective.network','https://lcd.injective.net
 var SOURCES=['indexer'];
 var LCD_SOURCES=['message.sender','transfer.recipient','coin_received.receiver'];
 var PAGE_SIZE=30;
-var CACHE_KEY='inj_all_transactions_cache_v3';
+var CACHE_KEY='inj_all_transactions_staking_v1';
 var solCursors={};
 var CATEGORY=[
- ['all','Tutte','All'],['received','Ricevute','Received'],['sent','Inviate','Sent'],
- ['staking','Staking','Staking'],['reward','Reward','Rewards'],['swap','Swap','Swap'],['defi','DeFi','DeFi'],
- ['bridge','Bridge / IBC','Bridge / IBC'],['trading','Trading','Trading'],['governance','Governance','Governance'],['other','Altro','Other']
+ ['all','Tutte','All'],['reward','Reward riscossi','Claimed rewards'],['staking','INJ in staking','Staked INJ']
 ];
 var $=function(id){return document.getElementById(id);};
 var en=document.documentElement.lang==='en';
@@ -142,13 +139,12 @@ function readSaved(){
  if(addressPattern.test(legacy)&&!values.some(function(v){return String(v.address||'').toLowerCase()===legacy.toLowerCase();}))
   values.push({address:legacy,label:lang('Wallet attivo','Active wallet')});
  values.push({address:'inj1nj4ahf4p96ulu7r7n3h27u4rlud5qlc2jy3zyg',label:'Injective · Cash Reserve'});
- values.push({address:'5atuLUBzVvj8EBJKt4oeTd1Ci9cZqcX6LKELSypNQGpK',label:'Solana · Cash Reserve'});
  var unique=new Set();
  return values.map(function(v,i){
   var address=String(v.address||'').trim();
   if(addressPattern.test(address))address=address.toLowerCase();
   return {address:address,label:String(v.label||'Wallet '+(i+1)).slice(0,36)};
- }).filter(function(v){if(!isWallet(v.address)||unique.has(v.address))return false;unique.add(v.address);return true;});
+ }).filter(function(v){if(!addressPattern.test(v.address)||unique.has(v.address))return false;unique.add(v.address);return true;});
 }
 function loadWallets(){
  saved=readSaved();
@@ -176,20 +172,20 @@ function stateText(status,message){
  setText('atStateText',message);
 }
 function initializeTranslations(){
- setText('atSubtitle',lang('Storico on-chain dei wallet salvati','On-chain history of saved wallets'));
+ setText('atSubtitle',lang('Reward riscossi e INJ aggiunti allo staking','Claimed rewards and INJ added to staking'));
  setText('atWalletLabel',lang('Wallet salvato','Saved wallet'));
- setText('atTotalLabel',lang('Operazioni caricate','Loaded transactions'));
- setText('atInLabel',lang('In entrata','Incoming'));
- setText('atOutLabel',lang('In uscita','Outgoing'));
+ setText('atTotalLabel',lang('Operazioni visualizzate','Displayed operations'));
+ setText('atInLabel',lang('Reward riscossi · INJ','Claimed rewards · INJ'));
+ setText('atOutLabel',lang('INJ messi in staking','INJ added to staking'));
  setText('atHistory',lang('CRONOLOGIA','HISTORY'));
  setText('atFromLabel',lang('Dal','From'));
  setText('atToLabel',lang('Al','To'));
  setText('atClearDates',lang('Azzera date','Clear dates'));
- $('atSearch').placeholder=lang('Cerca hash, categoria, token...','Search hash, category, token...');
+ $('atSearch').placeholder=lang('Cerca reward, staking o hash...','Search reward, staking or hash...');
  setText('atMore',lang('Carica precedenti','Load older transactions'));
  setText('atDisclaimer',lang(
- 'Storico on-chain parziale quando gli indexer pubblici non espongono tutte le transazioni: su Solana gli account token già chiusi e alcune operazioni DeFi interne possono mancare. Depositi, staking e bridge non sono necessariamente uscite dal patrimonio. Controvalori storici non disponibili senza un feed dedicato. Nessuna chiave privata necessaria.',
- 'On-chain history can be incomplete when public indexers do not expose all transactions: closed Solana token accounts and some internal DeFi actions may be missing. Deposits, staking and bridges are not necessarily portfolio withdrawals. Historical fiat values require a dedicated feed. No private keys needed.'));
+  'Solo reward riscossi e INJ realmente delegati su Injective, quando identificabili on-chain. Le redeleghe fra validator non aggiungono nuovo capitale. Gli importi mancanti restano da verificare; la cronologia dipende dagli indexer pubblici.',
+  'Only claimed rewards and INJ delegated on Injective, when identifiable on-chain. Switching validators does not add new principal. Missing amounts remain unverified; history depends on public indexers.'));
  $('atBack').setAttribute('aria-label',lang('Torna a Tools','Back to Tools'));
  $('atRefresh').setAttribute('aria-label',lang('Aggiorna transazioni','Refresh transactions'));
 }
