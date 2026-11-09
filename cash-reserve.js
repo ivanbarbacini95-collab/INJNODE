@@ -133,7 +133,8 @@
       const identity=makeNode('div','cash-yield-identity');
       identity.append(makeTokenIcon(p.logoUrl||null),makeNode('strong','',p.name));
       top.append(identity);
-      const rate=p.apr!=null?fmt(p.apr,2)+'% '+(p.rateKind||'APR'):((state.lang==='it')?'Rendimento —':'Yield —');
+      const rate=p.apr!=null?fmt(p.apr,2)+'% '+(p.rateKind||'APR'):
+        (state.lang==='it'?'Rendimento —':'Yield —');
       top.append(makeNode('span','',rate));
       const info=makeNode('div','cash-yield-metrics');
       function cell(label,val) {
@@ -141,16 +142,50 @@
         wrapper.append(makeNode('span','',label),makeNode('strong','',shown(val)));
         return wrapper;
       }
-      info.append(cell(p.kind==='jupiter'?(state.lang==='it'?'CAPITALE IN RENDITA':'EARNING BALANCE'):(state.lang==='it'?'IN DELEGA':'STAKED'),fmt(p.amount,4)+' '+p.asset));
-      info.append(cell(state.lang==='it'?'RENDIMENTO MATURATO':'ACCRUED EARNINGS',
-        p.rewards==null?'—':fmt(p.rewards,6)+' '+p.asset));
-      info.append(cell(state.lang==='it'?'STIMA / GIORNO':'EST. / DAY',p.day==null?'—':fmt(p.day,6)+' '+p.asset));
-      const hint=p.kind==='jupiter'
-        ? (state.lang==='it'?'Jupiter Lend · saldo comprensivo degli interessi verificato; APY variabile, rendimento giornaliero stimato.':'Jupiter Lend · interest-inclusive verified balance; variable APY and estimated daily earnings.')
-        : (state.lang==='it'?'APR di riferimento di rete, non rendimento garantito; reward on-chain.':'Reference network APR, not guaranteed; on-chain rewards.');
-      row.append(top,info,makeNode('small','cash-yield-hint',hint));
+      if(p.kind==='jupiter'){
+        info.classList.add('cash-yield-metrics-jupiter');
+        const earned=Number.isFinite(p.rewards)&&p.rewards>=0?p.rewards:null;
+        // Net principal is only reconstructible when Jupiter supplies accrued earnings.
+        // Do not infer wallet deposits or lifetime profit from an arbitrary first snapshot.
+        const principal=earned!=null&&earned<=p.amount+0.000001?
+          Math.max(0,p.amount-earned):null;
+        const earnedDigits=earned!=null&&earned>0&&earned<0.000001?9:6;
+        info.append(cell(state.lang==='it'?'SALDO ATTUALE':'CURRENT BALANCE',fmt(p.amount,4)+' '+p.asset));
+        info.append(cell(state.lang==='it'?'CAPITALE NETTO':'NET PRINCIPAL',
+          principal==null?'—':fmt(principal,6)+' '+p.asset));
+        info.append(cell(state.lang==='it'?'INTERESSI MATURATI':'ACCRUED INTEREST',
+          earned==null?'—':fmt(earned,earnedDigits)+' '+p.asset));
+        info.append(cell(state.lang==='it'?'STIMA / GIORNO':'EST. / DAY',
+          p.day==null?'—':fmt(p.day,6)+' '+p.asset));
+        const meta=makeNode('div','cash-yield-meta');
+        meta.append(makeNode('span','cash-yield-compound',
+          state.lang==='it'?'✓ Compound automatico':'✓ Automatic compounding'));
+        if(Number.isFinite(p.day)&&p.day>=0){
+          const live=makeNode('span','cash-yield-live');
+          live.dataset.cashLiveDay=String(p.day);
+          meta.append(live);
+        }
+        const hint=earned==null?
+          (state.lang==='it'?
+            'Saldo comprensivo degli interessi; il capitale netto e il maturato non sono disponibili finché Jupiter non conferma i dati. APY variabile.':
+            'Balance includes interest; net principal and earnings remain unavailable until confirmed by Jupiter. Variable APY.'):
+          (state.lang==='it'?
+            'Capitale netto = saldo meno interessi maturati comunicati da Jupiter; non è lo storico di tutti i depositi. Gli interessi restano nelle quote jlToken. Stima live non accreditata, APY variabile.':
+            'Net principal = balance minus accrued earnings reported by Jupiter; not lifetime deposits. Yield stays in jlToken shares. Live estimate is not credited; APY varies.');
+        row.append(top,info,meta,makeNode('small','cash-yield-hint',hint));
+      } else {
+        info.append(cell(state.lang==='it'?'IN DELEGA':'STAKED',fmt(p.amount,4)+' '+p.asset));
+        info.append(cell(state.lang==='it'?'REWARD MATURATI':'ACCRUED REWARDS',
+          p.rewards==null?'—':fmt(p.rewards,6)+' '+p.asset));
+        info.append(cell(state.lang==='it'?'STIMA / GIORNO':'EST. / DAY',
+          p.day==null?'—':fmt(p.day,6)+' '+p.asset));
+        row.append(top,info,makeNode('small','cash-yield-hint',
+          state.lang==='it'?'APR di riferimento di rete, non rendimento garantito; reward on-chain.':
+            'Reference network APR, not guaranteed; on-chain rewards.'));
+      }
       root.append(row);
     }
+    updateYieldLive();
     if(!jupiter){
       root.append(makeNode('p','cash-yield-disclaimer',state.lang==='it'
         ?'Jupiter Earn non disponibile dalla fonte dati. La riserva viene indicata come parziale; il grafico non registra saldi incompleti.'
@@ -159,6 +194,17 @@
     root.append(makeNode('p','cash-yield-disclaimer',state.lang==='it'
       ?'Le posizioni Hydro o su altre dApp richiedono letture specifiche: mai attribuire rendimenti non verificati.'
       :'Hydro and other dApps require individual adapters; unverified returns are never shown as confirmed.'));
+  }
+  function updateYieldLive() {
+    // Animation of an *estimate* since the last sync, not a recorded on-chain reward.
+    const elapsed=state.lastSync>0?Math.max(0,Math.min(Date.now()-state.lastSync,120000)):0;
+    document.querySelectorAll('.cash-yield-live[data-cash-live-day]').forEach(node=>{
+      const daily=Number(node.dataset.cashLiveDay);
+      const estimate=Number.isFinite(daily)&&daily>=0?daily*elapsed/86400000:null;
+      const number=estimate==null?'—':fmt(estimate,9)+' '+(node.closest('.cash-yield-position')?.querySelector('.cash-yield-metrics-jupiter strong')?.textContent?.split(' ').pop()||'');
+      node.textContent=state.lang==='it'?'Stima live da ultima lettura: +'+shown(number):
+        'Live estimate since last sync: +'+shown(number);
+    });
   }
   function renderPortfolio() {
     renderAssetList('cashInjectiveTokens',state.portfolio?.inj);
@@ -443,6 +489,7 @@
     window.addEventListener('online',()=>void sync());
     render();void sync();void refreshFX();
     setInterval(()=>{ if (!document.hidden) void sync(); },30000);
+    setInterval(()=>{ if (!document.hidden) updateYieldLive(); },5000);
     setInterval(()=>{ if (!document.hidden) void refreshFX(); },3600000);
   }
   if (document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
