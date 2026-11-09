@@ -180,8 +180,8 @@
         info.append(cell(state.lang==='it'?'STIMA / GIORNO':'EST. / DAY',
           p.day==null?'—':fmt(p.day,6)+' '+p.asset));
         row.append(top,info,makeNode('small','cash-yield-hint',
-          state.lang==='it'?'APR di riferimento di rete, non rendimento garantito; reward on-chain.':
-            'Reference network APR, not guaranteed; on-chain rewards.'));
+          state.lang==='it'?'APR netto stimato in base ai validatori effettivi; reward verificati on-chain.':
+            'Estimated net APR based on actual validators; rewards verified on-chain.'));
       }
       root.append(row);
     }
