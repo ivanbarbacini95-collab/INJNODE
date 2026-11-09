@@ -35,6 +35,27 @@ button,select,input{font:inherit}button{cursor:pointer}button:disabled{cursor:de
 @media(max-width:800px){.overview-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:560px){.at-overview{padding:12px}.overview-card{padding:10px}.overview-line strong{font-size:11px}body{padding-left:12px;padding-right:12px}.top{padding-top:12px}.wallet-panel{padding:14px}.network-tag{padding:7px 9px}.metrics{gap:7px}.metric{padding:12px 10px;min-height:75px}.tx summary{padding:13px 11px;gap:9px}.tx-details{grid-template-columns:1fr;padding:13px}.tx-right{max-width:45%}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 </style>
+<style id="at-minimal-20261109">
+html[data-inj-page="all-transactions"] .wallet-panel{padding:13px 15px}
+html[data-inj-page="all-transactions"] .wallet-mask{margin-top:4px}
+html[data-inj-page="all-transactions"] .period-heading{margin:15px 2px 5px;letter-spacing:.065em}
+html[data-inj-page="all-transactions"] .filters{gap:6px;padding-bottom:6px}
+html[data-inj-page="all-transactions"] .filter{padding:9px 12px;border-radius:10px}
+html[data-inj-page="all-transactions"] .toolbar{margin:10px 0 13px}
+html[data-inj-page="all-transactions"] .at-overview{margin:18px 0 6px;padding:16px;box-shadow:none}
+html[data-inj-page="all-transactions"] .overview-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+html[data-inj-page="all-transactions"] .overview-title{font-size:14px;margin:0;font-weight:800}
+html[data-inj-page="all-transactions"] .overview-period{color:var(--muted);font-size:11px;font-weight:700}
+html[data-inj-page="all-transactions"] .overview-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+html[data-inj-page="all-transactions"] .overview-card{padding:12px;background:var(--raised);border:1px solid var(--border);border-radius:12px;min-width:0}
+html[data-inj-page="all-transactions"] .overview-category{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);font-weight:750;line-height:1.35}
+html[data-inj-page="all-transactions"] .overview-symbol{color:var(--accent);font-size:15px}
+html[data-inj-page="all-transactions"] .overview-amount{display:block;font-size:clamp(13px,1.6vw,18px);line-height:1.3;margin-top:8px;font-weight:850;overflow-wrap:anywhere;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+html[data-inj-page="all-transactions"] .overview-note{font-size:10px;margin:11px 2px 0}
+html[data-inj-page="all-transactions"] .disclaimer{font-size:10px;margin:15px 3px}
+@media(max-width:760px){html[data-inj-page="all-transactions"] .overview-grid{grid-template-columns:repeat(2,minmax(0,1fr))}html[data-inj-page="all-transactions"] .overview-amount{font-size:clamp(15px,4vw,20px)}}
+@media(max-width:390px){html[data-inj-page="all-transactions"] .overview-grid{gap:7px}html[data-inj-page="all-transactions"] .overview-card{padding:10px}html[data-inj-page="all-transactions"] .overview-amount{font-size:14px}}
+</style>
 </head>
 <body>
 <main class="shell">
@@ -44,26 +65,20 @@ button,select,input{font:inherit}button{cursor:pointer}button:disabled{cursor:de
 <button class="refresh" id="atRefresh" type="button" aria-label="Aggiorna transazioni"><svg viewBox="0 0 24 24"><path d="M19.5 8a8 8 0 1 0 1 7M20 3v5h-5"/></svg></button>
 </header>
 <section class="panel wallet-panel"><div><label class="input-label" for="atWallet" id="atWalletLabel">Wallet salvato</label><select id="atWallet" class="wallet-select" aria-label="Wallet salvato"></select><div class="wallet-mask" id="atMask"></div></div><span class="network-tag" id="atNetwork">INJECTIVE</span></section>
-<section class="metrics">
-<div class="metric panel"><small id="atTotalLabel">Operazioni nel filtro</small><strong id="atTotal">—</strong></div>
-<div class="metric panel"><small id="atInLabel">Reward riscossi · INJ</small><strong class="positive" id="atIn">—</strong></div>
-<div class="metric panel"><small id="atOutLabel">INJ messi in staking</small><strong id="atOut">—</strong></div>
-</section>
-<p class="range-caption" id="atScope">Intero storico disponibile</p>
+<div class="period-heading" id="atPeriodLabel">Periodo</div>
+<nav class="filters period-filters" id="atPeriods" aria-label="Seleziona periodo"></nav>
+<div class="date-range hidden" id="atDateRange"><label><span id="atFromLabel">Dal</span><input type="date" id="atFrom" aria-label="Data iniziale"></label><label><span id="atToLabel">Al</span><input type="date" id="atTo" aria-label="Data finale"></label><button class="filter" id="atClearDates" type="button">Azzera date</button></div>
+<div class="period-heading" id="atTypeLabel">Tipo</div>
+<nav class="filters" id="atFilters" aria-label="Filtra per tipologia"></nav>
+<div class="toolbar"><input class="search" id="atSearch" type="search" autocomplete="off" placeholder="Cerca operazioni..." aria-label="Cerca transazioni"><span class="state" id="atState"><i class="dot"></i><span id="atStateText">In attesa</span></span></div>
+<section class="panel timeline"><div class="timeline-head"><strong id="atHistory">CRONOLOGIA</strong><span id="atCount"></span></div><div id="atRows" role="feed" aria-live="polite"></div></section>
+<button class="more hidden" type="button" id="atMore">Carica precedenti</button>
 <section class="panel at-overview" aria-labelledby="atOverviewTitle">
-<h2 class="overview-title" id="atOverviewTitle">Riepilogo movimenti</h2>
+<div class="overview-head"><h2 class="overview-title" id="atOverviewTitle">Totali del periodo</h2><span class="overview-period" id="atScope">Tutto</span></div>
 <div class="overview-grid" id="atOverviewGrid"></div>
 <p class="overview-note" id="atOverviewNote" role="status"></p>
 </section>
-<div class="toolbar"><input class="search" id="atSearch" type="search" autocomplete="off" placeholder="Cerca deposit, withdraw, reward, staking o hash..." aria-label="Cerca transazioni"><span class="state" id="atState"><i class="dot"></i><span id="atStateText">In attesa</span></span></div>
-<div class="period-heading" id="atPeriodLabel">Seleziona periodo</div>
-<nav class="filters period-filters" id="atPeriods" aria-label="Seleziona periodo"></nav>
-<div class="date-range hidden" id="atDateRange"><label><span id="atFromLabel">Dal</span><input type="date" id="atFrom" aria-label="Data iniziale"></label><label><span id="atToLabel">Al</span><input type="date" id="atTo" aria-label="Data finale"></label><button class="filter" id="atClearDates" type="button">Azzera date</button></div>
-<div class="period-heading" id="atTypeLabel">Tipologia di operazione</div>
-<nav class="filters" id="atFilters" aria-label="Filtra per tipologia"></nav>
-<section class="panel timeline"><div class="timeline-head"><strong id="atHistory">CRONOLOGIA</strong><span id="atCount"></span></div><div id="atRows" role="feed" aria-live="polite"></div></section>
-<button class="more hidden" type="button" id="atMore">Carica precedenti</button>
-<p class="disclaimer" id="atDisclaimer">Deposit e Withdraw indicano trasferimenti reali del wallet. Claim e Staking non vengono contati una seconda volta. Redeleghe escluse. Lo storico può essere parziale.</p>
+<p class="disclaimer" id="atDisclaimer">Depositi e prelievi sono trasferimenti reali. Reward e staking non contati due volte. Storico eventualmente parziale.</p>
 </main>
 <script src="./all-transactions-movements.js"></script>
 <script>
@@ -83,7 +98,6 @@ var PERIODS=[
  ['90d','90 giorni','90 days',90],['365d','1 anno','1 year',365],
  ['all','Tutto','All',0],['custom','Personalizzato','Custom',null]
 ];
-var SNAPSHOTS=PERIODS.slice(0,4);
 var $=function(id){return document.getElementById(id);};
 var en=document.documentElement.lang==='en';
 var lang=function(it,english){return en?english:it;};
@@ -190,17 +204,14 @@ function stateText(status,message){
 function initializeTranslations(){
  setText('atSubtitle',lang('Deposit, Withdraw, Reward e Staking','Deposits, Withdrawals, Rewards and Staking'));
  setText('atWalletLabel',lang('Wallet salvato','Saved wallet'));
- setText('atTotalLabel',lang('Operazioni nel filtro','Operations in filter'));
- setText('atPeriodLabel',lang('Seleziona periodo','Select period'));
- setText('atTypeLabel',lang('Tipologia di operazione','Operation type'));
- setText('atOverviewTitle',lang('Riepilogo movimenti','Transaction summary'));
- setText('atInLabel',lang('Reward riscossi · periodo','Claimed rewards · period'));
- setText('atOutLabel',lang('INJ in staking · periodo','Staked INJ · period'));
+ setText('atPeriodLabel',lang('Periodo','Period'));
+ setText('atTypeLabel',lang('Tipo','Type'));
+ setText('atOverviewTitle',lang('Totali del periodo','Period totals'));
  setText('atHistory',lang('CRONOLOGIA','HISTORY'));
  setText('atFromLabel',lang('Dal','From'));
  setText('atToLabel',lang('Al','To'));
  setText('atClearDates',lang('Azzera date','Clear dates'));
- $('atSearch').placeholder=lang('Cerca deposit, withdraw, reward, staking o hash...','Search deposits, withdrawals, rewards, staking or hash...');
+ $('atSearch').placeholder=lang('Cerca operazioni...','Search transactions...');
  setText('atMore',lang('Carica precedenti','Load older transactions'));
  setText('atDisclaimer',lang(
   'Deposit e Withdraw indicano trasferimenti reali del wallet. Claim e Staking non vengono conteggiati due volte. Le redeleghe sono escluse. I dati dipendono dagli indexer.',
@@ -245,31 +256,38 @@ function periodLabel(){
 }
 function renderOverview(all,now){
  var grid=$('atOverviewGrid');grid.replaceChildren();
- SNAPSHOTS.forEach(function(item){
-  var subset=all.filter(function(row){return isWithin(row,periodBounds(item[0],now));});
-  var card=document.createElement('article');card.className='overview-card';
-  var body='<h3>'+esc(en?item[2]:item[1])+'</h3>';
-  [['deposit','Deposit · INJ','Deposits · INJ'],
-   ['withdraw','Withdraw · INJ','Withdrawals · INJ'],
-   ['reward','Reward riscossi','Rewards claimed'],
-   ['staking','INJ in staking','INJ staked']].forEach(function(entry){
-    var matching=subset.filter(function(row){return row.cat===entry[0];});
-    body+='<div class="overview-line"><small>'+lang(entry[1],entry[2])+'</small>'+
-     '<strong'+(['deposit','reward'].includes(entry[0])?' class="positive"':'')+'>'+
-      esc(summaryNativeAmount(matching,entry[0]))+'</strong>'+
-     '<span class="overview-count">'+matching.length+' '+lang('operazioni','operations')+'</span></div>';
-  });
-  card.innerHTML=body;grid.appendChild(card);
+ var subset=all.filter(function(row){return isWithin(row,periodBounds(period,now));});
+ [['reward','Reward riscossi','Rewards claimed','✧'],['staking','INJ in staking','INJ staked','⬡'],
+  ['withdraw','Prelievi','Withdrawals','↑'],['deposit','Depositi','Deposits','↓']].forEach(function(entry){
+  var matching=subset.filter(function(row){return row.cat===entry[0];}),card=document.createElement('article');
+  card.className='overview-card';
+  var exact=summaryNativeAmount(matching,entry[0]);
+  card.innerHTML='<div class="overview-category"><span class="overview-symbol" aria-hidden="true">'+entry[3]+'</span><span>'+
+   esc(lang(entry[1],entry[2]))+'</span></div><strong class="overview-amount'+
+   (entry[0]==='reward'?' positive':'')+'" title="'+esc(exact)+'">'+esc(compactNativeAmount(matching,entry[0]))+'</strong>';
+  grid.appendChild(card);
  });
- var partial=busy||canLoad||dataQuality==='error'||dataQuality==='partial'||all.some(function(row){
+ var partial=busy||canLoad||dataQuality==='error'||dataQuality==='partial'||subset.some(function(row){
   return !firstTimestamp(row.time)||!/^\d+$/.test(String(row.atoms||''));
  });
  $('atOverviewNote').classList.toggle('partial',partial);
  setText('atOverviewNote',partial?
-  lang('Dati provvisori: storico e importi potrebbero essere incompleti. Carica le transazioni precedenti per ampliare la copertura. Somme espresse solo in INJ.',
-       'Provisional data: transaction history and amounts may be incomplete. Load older history to expand coverage. Amount totals are INJ only.'):
-  lang('Riepilogo delle operazioni on-chain recuperate. Gli altri token compaiono nella cronologia ma non vengono sommati agli INJ.',
-       'Summary of recovered on-chain transactions. Other assets appear in history but are not included in INJ totals.'));
+  lang('Storico parziale · Carica precedenti per ampliare i totali','Partial history · Load older transactions to expand totals'):
+  lang('Totali delle operazioni disponibili · INJ','Totals from available transactions · INJ'));
+}
+function compactNativeAmount(items,kind){
+ var matching=items.filter(function(item){return item.cat===kind&&(!item.denom||String(item.denom).toLowerCase()==='inj');});
+ if(!matching.length)return '0 INJ';
+ var total=0n,known=false,missing=false;
+ matching.forEach(function(item){if(!/^\d+$/.test(String(item.atoms||''))){missing=true;return;}
+  try{total+=BigInt(item.atoms);known=true;}catch(_){missing=true;}
+ });
+ if(!known)return '—';
+ var value=Number(total)/1e18,precision=value>0&&value<0.00001?10:5,divisor=10n**BigInt(18-precision);
+ var rounded=(total+divisor/2n)/divisor,integer=rounded/(10n**BigInt(precision));
+ var decimal=(rounded%(10n**BigInt(precision))).toString().padStart(precision,'0').replace(/0+$/,'');
+ var formatted=integer.toString().replace(/\B(?=(\d{3})+(?!\d))/g,en?',':'.')+(decimal?(en?'.':',')+decimal:'');
+ return (missing?'≥ ':total%divisor!==0n?'≈ ':'')+formatted+' INJ';
 }
 function cacheRead(address){
  try{var all=JSON.parse(localStorage.getItem(CACHE_KEY)||'{}');var item=all[address];return item&&Array.isArray(item.rows)?item.rows:[];}catch(_){return [];}
@@ -443,11 +461,8 @@ function render(){
    .concat(item.peers||[]).join(' ').toLowerCase().includes(needle);
  });
  renderOverview(all,now);
- setText('atScope',lang('Periodo: ','Period: ')+periodLabel()+
+ setText('atScope',periodLabel()+
   (period==='custom'&&($('atFrom').value||$('atTo').value)?' · '+($('atFrom').value||'…')+' → '+($('atTo').value||'…'):''));
- setText('atTotal',String(filtered.length));
- setText('atIn',summaryNativeAmount(within,'reward'));
- setText('atOut',summaryNativeAmount(within,'staking'));
  setText('atCount',filtered.length+'/'+within.length+' '+lang('operazioni nel periodo','operations in period'));
  var host=$('atRows');
  var opened=new Set(Array.from(host.querySelectorAll('details.tx[open]')).map(function(el){return el.dataset.key;}));
@@ -733,7 +748,7 @@ function start(){
  $('atClearDates').addEventListener('click',function(){$('atFrom').value='';$('atTo').value='';period='all';renderPeriods();render();});
  $('atMore').addEventListener('click',function(){retrieve(true);});
  $('atRefresh').addEventListener('click',function(){SOURCES=['indexer'];hydrationFailures.clear();hydratedHashKeys.clear();retrieve(false);});
- $('atBack').addEventListener('click',function(){location.href='./index.html?tab=tools';});
+ $('atBack').addEventListener('click',function(){try{sessionStorage.setItem('inj_node_return_home','1');}catch(_){}location.assign('./index.html?tab=tools');});
  window.addEventListener('pageshow',function(){var next=readSaved();if(next.length!==saved.length){loadWallets();if(current)changeWallet(current);}});
  document.addEventListener('visibilitychange',function(){if(!document.hidden&&current&&!busy&&dataQuality!=='idle')retrieve(false);});
  window.setInterval(function(){if(!document.hidden&&navigator.onLine&&current&&!busy)retrieve(false);},60000);
