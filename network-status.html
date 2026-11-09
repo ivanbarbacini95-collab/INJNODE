@@ -146,7 +146,15 @@ html[data-theme="classic-white"]{color-scheme:light;--bg:#fff;--surface:#fafafa;
   }));
   const good=nodes.filter(n=>n.available),fresh=good.filter(n=>n.ageSeconds<=40&&!n.catchingUp);
   const state=fresh.length>=2?'online':fresh.length||good.some(n=>n.ageSeconds<=120||n.catchingUp)||good.length===1?'degraded':good.length>=2?'halted':'unknown';
-  return {state,checkedAt:new Date(now).toISOString(),nodes,latest:good.length?good.reduce((a,b)=>a.blockTime>b.blockTime?a:b):null,provider:{level:'unknown',available:false,incident:null},source:'direct'};
+  let provider={level:'unknown',available:false,incident:null};
+  try{
+   const quick=await timedJson('https://quicknode.statuspage.io/api/v2/summary.json',4500);
+   const component=(quick.components||[]).find(x=>/injective\\s*[-–]\\s*mainnet/i.test(x.name||''));
+   const incident=(quick.incidents||[]).find(x=>/injective.*mainnet/i.test(x.name||''));
+   provider={level:component?.status||'unknown',available:Boolean(component),
+    incident:incident?{name:incident.name,url:'https://status.quicknode.com/incidents/'+encodeURIComponent(incident.id),status:incident.status}:null};
+  }catch(_){}
+  return {state,checkedAt:new Date(now).toISOString(),nodes,latest:good.length?good.reduce((a,b)=>a.blockTime>b.blockTime?a:b):null,provider,source:'direct'};
  }
  function advice(state){
   const sets={
