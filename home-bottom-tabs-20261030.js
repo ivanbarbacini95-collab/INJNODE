@@ -36,6 +36,27 @@
  }
  ensureAllTransactionsLauncher();
 
+ function ensureNetworkStatusLauncher(){
+  let card=document.getElementById('entryNetworkStatusButton');
+  if(!card){card=document.createElement('a');card.id='entryNetworkStatusButton';}
+  if(card.parentElement!==actions){
+   const after=document.getElementById('entryAllTransactionsButton');
+   if(after&&after.parentElement===actions)after.after(card);else actions.prepend(card);
+  }
+  card.className='entry-action entry-action-network-status';
+  card.href='./network-status.html?v=20261109-network1';
+  card.setAttribute('aria-label','Apri Status Network');
+  card.innerHTML='<span aria-hidden="true" class="entry-action-icon"><svg viewBox="0 0 32 32" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><rect x="3" y="6" width="26" height="20" rx="5"/><path d="M6 17h5l3-7 5 12 3-6h4"/><circle cx="24.5" cy="10" r="1.4" fill="currentColor" stroke="none"/></svg></span><span><strong class="inj-home-tile-title" data-it="Status Network" data-en="Status Network">Status Network</strong><small class="inj-tile-description" data-it="Blocchi, rete e segnalazioni" data-en="Blocks, network and incidents">Blocchi, rete e segnalazioni</small></span><svg aria-hidden="true" class="entry-action-arrow" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>';
+  return card;
+ }
+ ensureNetworkStatusLauncher();
+ if(!document.getElementById('injNetworkStatusToolsTileStyle')){
+  const style=document.createElement('style');
+  style.id='injNetworkStatusToolsTileStyle';
+  style.textContent='#entryNetworkStatusButton,#entryNetworkStatusButton:link,#entryNetworkStatusButton:visited{text-decoration:none!important}#entryNetworkStatusButton .inj-home-tile-title{text-decoration:none!important;border-bottom:0!important}#entryNetworkStatusButton .inj-home-tile-title::after{content:none!important;display:none!important}#entryNetworkStatusButton > .entry-action-icon{display:grid!important;place-items:center!important;flex:none!important;width:42px!important;height:42px!important;border:1px solid color-mix(in srgb,var(--accent) 28%,transparent)!important;border-radius:13px!important;background:color-mix(in srgb,var(--accent) 10%,var(--surface-strong))!important;color:var(--accent)!important}#entryNetworkStatusButton .entry-action-icon svg{display:block!important;width:30px!important;height:30px!important;visibility:visible!important;opacity:1!important;fill:none!important;stroke:currentColor!important}';
+  document.head.appendChild(style);
+ }
+
  // Ensure premium icon/title remain visible without browser link underlines.
  if(!document.getElementById('injAllTransactionsToolsTilePolish')){
    const style=document.createElement('style');
@@ -96,7 +117,7 @@
   {id:'etf',it:'ETF',en:'ETF',titleIt:'',titleEn:'',subIt:'',subEn:'',ids:[],icon:'<rect x="5" y="3.5" width="14" height="17" rx="2.7"/><path d="M9 8h6M9 11.5h4m-4 5.9 2.2-2.4 2 1.5 2.8-3.1"/>'},
   {id:'home',it:'Home',en:'Home',titleIt:'',titleEn:'',subIt:'',subEn:'',ids:['entryDashboardButton','entryLiveButton','entryTreasuryButton'],icon:'<path d="m3.5 10 8.5-6.6 8.5 6.6v9.3a1.2 1.2 0 0 1-1.2 1.2h-4.9v-6.1H9.6v6.1H4.7a1.2 1.2 0 0 1-1.2-1.2z"/>'},
   {id:'reward',it:'My Reward',en:'My Reward',titleIt:'MY REWARD',titleEn:'MY REWARD',subIt:'Staking e ricompense del wallet selezionato',subEn:'Selected wallet staking and rewards',ids:[],icon:'<circle cx="12" cy="12" r="8.5"/><path d="M15.1 9.3c-.6-.9-1.6-1.4-3-1.4-1.8 0-3 .8-3 2.1 0 2.8 6 1 6 3.7 0 1.3-1.2 2.2-3 2.2-1.5 0-2.6-.6-3.2-1.6M12 5.8v2M12 16.2v2"/>'},
-  {id:'altro',it:'Tools',en:'Tools',titleIt:'TOOLS',titleEn:'TOOLS',subIt:'Simulazioni, libertà finanziaria e altri strumenti',subEn:'Simulations, financial freedom and other tools',ids:['entryMultiChartButton','entryAllTransactionsButton','entryComparisonButton','entryVisualizeWealthButton','entryFreedomButton','entryWorkspaceButton','entryConverterButton','entryCommandCenterButton'],icon:'<path d="M4 6h8m4 0h4M4 12h3m4 0h9M4 18h11m4 0h1"/><circle cx="14" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/>'}
+  {id:'altro',it:'Tools',en:'Tools',titleIt:'TOOLS',titleEn:'TOOLS',subIt:'Simulazioni, libertà finanziaria e altri strumenti',subEn:'Simulations, financial freedom and other tools',ids:['entryMultiChartButton','entryAllTransactionsButton','entryNetworkStatusButton','entryComparisonButton','entryVisualizeWealthButton','entryFreedomButton','entryWorkspaceButton','entryConverterButton','entryCommandCenterButton'],icon:'<path d="M4 6h8m4 0h4M4 12h3m4 0h9M4 18h11m4 0h1"/><circle cx="14" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/>'}
  ];
  const originalDisplay=new WeakMap();
  const heading=document.createElement('header');
