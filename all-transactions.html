@@ -495,15 +495,26 @@ async function querySource(source,page){
 function mergeIndexedDetails(base,detail){
  if(!detail)return base;
  var original=base||{},newer=detail||{};
- var useNewCategory=(original.cat==='other'||!original.cat)&&newer.cat&&newer.cat!=='other';
- var moved=useNewCategory?newer.dir:original.dir;
+ var byKey=new Map();
+ (original.actions||[]).forEach(function(op){if(['reward','staking'].includes(op.cat))byKey.set(op.cat,op);});
+ (newer.actions||[]).forEach(function(op){
+  if(!['reward','staking'].includes(op.cat))return;
+  var previous=byKey.get(op.cat)||{};
+  // Never replace an exact verified amount with an incomplete indexer snapshot.
+  byKey.set(op.cat,Object.assign({},previous,op,{
+   amount:op.atoms?op.amount:(previous.amount||''),
+   atoms:op.atoms||previous.atoms||''
+  }));
+ });
+ var actions=Array.from(byKey.values());
  return Object.assign({},original,{
   time:firstTimestamp(newer.time,original.time),
   height:newer.height||original.height,
-  cat:useNewCategory?newer.cat:original.cat,
-  dir:moved||'neutral',
-  amount:newer.amount||original.amount||'',
-  asset:newer.asset||original.asset||'',
+  actions:actions,
+  cat:actions[0]?.cat||original.cat||newer.cat||'',
+  amount:actions[0]?.amount||original.amount||'',
+  asset:'INJ',
+  dir:actions[0]?.cat==='reward'?'in':'neutral',
   fee:newer.fee||original.fee||'',
   peers:newer.peers&&newer.peers.length?newer.peers:original.peers||[],
   msgs:Array.from(new Set((original.msgs||[]).concat(newer.msgs||[]))).slice(0,9),
@@ -543,7 +554,8 @@ async function queryFullInjectiveTx(item){
 }
 function needsHydration(item){
  return item&&item.network!=='solana'&&
-  (!firstTimestamp(item.time)||!item.amount&&['received','sent','staking','reward','bridge','swap','defi'].includes(item.cat)||item.cat==='other');
+  (!firstTimestamp(item.time)||!Array.isArray(item.actions)||
+   item.actions.some(function(action){return !/^\d+$/.test(String(action.atoms||''));}));
 }
 async function enrichInjectiveRows(run){
  if(hydrating)return;
@@ -640,7 +652,10 @@ async function retrieve(more){
  }
  if(succeeded){
   var seen=new Map();
-  rows.concat(fresh).forEach(function(item){if(item&&item.hash)seen.set(item.hash,item);});
+  rows.concat(fresh).forEach(function(item){
+    if(!item||!item.hash)return;
+    seen.set(item.hash,seen.has(item.hash)?mergeIndexedDetails(seen.get(item.hash),item):item);
+   });
   rows=Array.from(seen.values()).sort(function(a,b){var d=Date.parse(b.time||'')-Date.parse(a.time||'');return isFinite(d)&&d!==0?d:Number(b.height||0)-Number(a.height||0);});
   cacheWrite();
   var incomplete=rows.some(needsHydration);
