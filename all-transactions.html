@@ -40,7 +40,7 @@ button,select,input{font:inherit}button{cursor:pointer}button:disabled{cursor:de
 <main class="shell">
 <header class="top">
 <button class="back" id="atBack" type="button" aria-label="Torna a Tools"><svg viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></svg></button>
-<div class="heading"><div class="eyebrow">INJ NODE / TOOLS</div><h1>All Transaction</h1><p id="atSubtitle">Reward riscossi e INJ aggiunti allo staking</p></div>
+<div class="heading"><div class="eyebrow">INJ NODE / TOOLS</div><h1>All Transaction</h1><p id="atSubtitle">Deposit, Withdraw, Reward e Staking</p></div>
 <button class="refresh" id="atRefresh" type="button" aria-label="Aggiorna transazioni"><svg viewBox="0 0 24 24"><path d="M19.5 8a8 8 0 1 0 1 7M20 3v5h-5"/></svg></button>
 </header>
 <section class="panel wallet-panel"><div><label class="input-label" for="atWallet" id="atWalletLabel">Wallet salvato</label><select id="atWallet" class="wallet-select" aria-label="Wallet salvato"></select><div class="wallet-mask" id="atMask"></div></div><span class="network-tag" id="atNetwork">INJECTIVE</span></section>
@@ -51,11 +51,11 @@ button,select,input{font:inherit}button{cursor:pointer}button:disabled{cursor:de
 </section>
 <p class="range-caption" id="atScope">Intero storico disponibile</p>
 <section class="panel at-overview" aria-labelledby="atOverviewTitle">
-<h2 class="overview-title" id="atOverviewTitle">Riepilogo reward e staking</h2>
+<h2 class="overview-title" id="atOverviewTitle">Riepilogo movimenti</h2>
 <div class="overview-grid" id="atOverviewGrid"></div>
 <p class="overview-note" id="atOverviewNote" role="status"></p>
 </section>
-<div class="toolbar"><input class="search" id="atSearch" type="search" autocomplete="off" placeholder="Cerca reward, staking o hash..." aria-label="Cerca transazioni"><span class="state" id="atState"><i class="dot"></i><span id="atStateText">In attesa</span></span></div>
+<div class="toolbar"><input class="search" id="atSearch" type="search" autocomplete="off" placeholder="Cerca deposit, withdraw, reward, staking o hash..." aria-label="Cerca transazioni"><span class="state" id="atState"><i class="dot"></i><span id="atStateText">In attesa</span></span></div>
 <div class="period-heading" id="atPeriodLabel">Seleziona periodo</div>
 <nav class="filters period-filters" id="atPeriods" aria-label="Seleziona periodo"></nav>
 <div class="date-range hidden" id="atDateRange"><label><span id="atFromLabel">Dal</span><input type="date" id="atFrom" aria-label="Data iniziale"></label><label><span id="atToLabel">Al</span><input type="date" id="atTo" aria-label="Data finale"></label><button class="filter" id="atClearDates" type="button">Azzera date</button></div>
@@ -63,7 +63,7 @@ button,select,input{font:inherit}button{cursor:pointer}button:disabled{cursor:de
 <nav class="filters" id="atFilters" aria-label="Filtra per tipologia"></nav>
 <section class="panel timeline"><div class="timeline-head"><strong id="atHistory">CRONOLOGIA</strong><span id="atCount"></span></div><div id="atRows" role="feed" aria-live="polite"></div></section>
 <button class="more hidden" type="button" id="atMore">Carica precedenti</button>
-<p class="disclaimer" id="atDisclaimer">Solo reward riscossi e INJ realmente messi in staking su Injective. Le redeleghe tra validator non sono nuovi depositi. Se una quantità non è disponibile, viene indicata come non verificata.</p>
+<p class="disclaimer" id="atDisclaimer">Deposit e Withdraw indicano trasferimenti reali del wallet. Claim e Staking non vengono contati una seconda volta. Redeleghe escluse. Lo storico può essere parziale.</p>
 </main>
 <script src="./all-transactions-movements.js"></script>
 <script>
@@ -188,23 +188,23 @@ function stateText(status,message){
  setText('atStateText',message);
 }
 function initializeTranslations(){
- setText('atSubtitle',lang('Reward riscossi e INJ aggiunti allo staking','Claimed rewards and INJ added to staking'));
+ setText('atSubtitle',lang('Deposit, Withdraw, Reward e Staking','Deposits, Withdrawals, Rewards and Staking'));
  setText('atWalletLabel',lang('Wallet salvato','Saved wallet'));
  setText('atTotalLabel',lang('Operazioni nel filtro','Operations in filter'));
  setText('atPeriodLabel',lang('Seleziona periodo','Select period'));
  setText('atTypeLabel',lang('Tipologia di operazione','Operation type'));
- setText('atOverviewTitle',lang('Riepilogo reward e staking','Reward and staking summary'));
+ setText('atOverviewTitle',lang('Riepilogo movimenti','Transaction summary'));
  setText('atInLabel',lang('Reward riscossi · periodo','Claimed rewards · period'));
  setText('atOutLabel',lang('INJ in staking · periodo','Staked INJ · period'));
  setText('atHistory',lang('CRONOLOGIA','HISTORY'));
  setText('atFromLabel',lang('Dal','From'));
  setText('atToLabel',lang('Al','To'));
  setText('atClearDates',lang('Azzera date','Clear dates'));
- $('atSearch').placeholder=lang('Cerca reward, staking o hash...','Search reward, staking or hash...');
+ $('atSearch').placeholder=lang('Cerca deposit, withdraw, reward, staking o hash...','Search deposits, withdrawals, rewards, staking or hash...');
  setText('atMore',lang('Carica precedenti','Load older transactions'));
  setText('atDisclaimer',lang(
-  'Solo reward riscossi e INJ realmente delegati su Injective, quando identificabili on-chain. Le redeleghe fra validator non aggiungono nuovo capitale. Gli importi mancanti restano da verificare; la cronologia dipende dagli indexer pubblici.',
-  'Only claimed rewards and INJ delegated on Injective, when identifiable on-chain. Switching validators does not add new principal. Missing amounts remain unverified; history depends on public indexers.'));
+  'Deposit e Withdraw indicano trasferimenti reali del wallet. Claim e Staking non vengono conteggiati due volte. Le redeleghe sono escluse. I dati dipendono dagli indexer.',
+  'Deposits and withdrawals are wallet transfers. Reward claims and staking are not counted again as transfers. Redelegations are excluded. Data depends on indexers.'));
  $('atBack').setAttribute('aria-label',lang('Torna a Tools','Back to Tools'));
  $('atRefresh').setAttribute('aria-label',lang('Aggiorna transazioni','Refresh transactions'));
 }
@@ -247,27 +247,29 @@ function renderOverview(all,now){
  var grid=$('atOverviewGrid');grid.replaceChildren();
  SNAPSHOTS.forEach(function(item){
   var subset=all.filter(function(row){return isWithin(row,periodBounds(item[0],now));});
-  var rewards=subset.filter(function(row){return row.cat==='reward';});
-  var stakes=subset.filter(function(row){return row.cat==='staking';});
   var card=document.createElement('article');card.className='overview-card';
-  card.innerHTML='<h3>'+esc(en?item[2]:item[1])+'</h3>'+
-   '<div class="overview-line"><small>'+lang('Reward prelevati','Rewards claimed')+'</small>'+
-   '<strong class="positive">'+esc(summaryNativeAmount(rewards,'reward'))+'</strong>'+
-   '<span class="overview-count">'+rewards.length+' '+lang('operazioni','operations')+'</span></div>'+
-   '<div class="overview-line"><small>'+lang('INJ in staking','INJ staked')+'</small>'+
-   '<strong>'+esc(summaryNativeAmount(stakes,'staking'))+'</strong>'+
-   '<span class="overview-count">'+stakes.length+' '+lang('operazioni','operations')+'</span></div>';
-  grid.appendChild(card);
+  var body='<h3>'+esc(en?item[2]:item[1])+'</h3>';
+  [['deposit','Deposit · INJ','Deposits · INJ'],
+   ['withdraw','Withdraw · INJ','Withdrawals · INJ'],
+   ['reward','Reward riscossi','Rewards claimed'],
+   ['staking','INJ in staking','INJ staked']].forEach(function(entry){
+    var matching=subset.filter(function(row){return row.cat===entry[0];});
+    body+='<div class="overview-line"><small>'+lang(entry[1],entry[2])+'</small>'+
+     '<strong'+(['deposit','reward'].includes(entry[0])?' class="positive"':'')+'>'+
+      esc(summaryNativeAmount(matching,entry[0]))+'</strong>'+
+     '<span class="overview-count">'+matching.length+' '+lang('operazioni','operations')+'</span></div>';
+  });
+  card.innerHTML=body;grid.appendChild(card);
  });
  var partial=busy||canLoad||dataQuality==='error'||dataQuality==='partial'||all.some(function(row){
   return !firstTimestamp(row.time)||!/^\d+$/.test(String(row.atoms||''));
  });
  $('atOverviewNote').classList.toggle('partial',partial);
  setText('atOverviewNote',partial?
-  lang('Dati provvisori: lo storico o alcuni importi non sono completi. Usa «Carica precedenti» per ampliare la copertura; i totali riguardano solo le operazioni trovate.',
-       'Provisional data: history or some amounts are incomplete. Use “Load older transactions” to expand coverage; totals include only found operations.'):
-  lang('Conteggi riferiti alle operazioni recuperate on-chain. La copertura storica dipende dagli indexer pubblici.',
-       'Counts are based on on-chain operations retrieved. Historical coverage depends on public indexers.'));
+  lang('Dati provvisori: storico e importi potrebbero essere incompleti. Carica le transazioni precedenti per ampliare la copertura. Somme espresse solo in INJ.',
+       'Provisional data: transaction history and amounts may be incomplete. Load older history to expand coverage. Amount totals are INJ only.'):
+  lang('Riepilogo delle operazioni on-chain recuperate. Gli altri token compaiono nella cronologia ma non vengono sommati agli INJ.',
+       'Summary of recovered on-chain transactions. Other assets appear in history but are not included in INJ totals.'));
 }
 function cacheRead(address){
  try{var all=JSON.parse(localStorage.getItem(CACHE_KEY)||'{}');var item=all[address];return item&&Array.isArray(item.rows)?item.rows:[];}catch(_){return [];}
@@ -455,13 +457,13 @@ function render(){
   $('atMore').classList.add('hidden');return;
  }
  if(!filtered.length){
-  var message=busy?lang('Ricerca di reward e staking...','Loading rewards and staking...'):
+  var message=busy?lang('Ricerca transazioni...','Loading transactions...'):
    all.length?lang('Nessun risultato con questi filtri.','No matching operations for these filters.'):
    dataQuality==='error'?lang('Impossibile recuperare lo storico in questo momento.','Unable to load history right now.'):
-   canLoad?lang('Nessun claim o deposito staking nelle transazioni esaminate. Puoi caricare le precedenti.',
-    'No claims or staking deposits in the scanned transactions. You can load older ones.'):
-   lang('Nessun reward riscosso o nuovo staking trovato nelle transazioni disponibili.',
-    'No claimed rewards or new staking deposits found in available transactions.');
+   canLoad?lang('Nessuna operazione corrispondente nello storico esaminato. Puoi caricare le precedenti.',
+    'No matching operations in scanned history. You can load older ones.'):
+   lang('Nessun Deposit, Withdraw, Reward o Staking trovato nello storico disponibile.',
+    'No deposits, withdrawals, rewards or staking found in available history.');
   host.innerHTML='<p class="notice center'+(dataQuality==='error'?' error':'')+'">'+esc(message)+'</p>';
  }
  filtered.forEach(function(item){
