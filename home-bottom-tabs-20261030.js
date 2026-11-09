@@ -31,7 +31,7 @@
    card.className='entry-action entry-action-all-transactions';
    card.href='./all-transactions.html?v=20261109-tools-return-motion1';
    card.setAttribute('aria-label','Apri All Transaction');
-   card.innerHTML='<span aria-hidden="true" class="entry-action-icon inj-transaction-icon"><svg viewBox="0 0 32 32" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="3.5" width="20" height="25" rx="4"/><path class="inj-txn-row-a" d="M11 9.5h10"/><path class="inj-txn-row-b" d="M11 14.5h6"/><path d="M11 24h10"/><path class="inj-txn-check" d="m16 18.5 3 3 4-4"/><circle class="inj-txn-led" cx="23" cy="10" r="1.25" fill="currentColor" stroke="none"/></svg></span><span><strong class="inj-home-tile-title" data-it="All Transaction" data-en="All Transaction">All Transaction</strong><small class="inj-tile-description" data-it="Storico e riepilogo on-chain" data-en="On-chain history and totals">Storico e riepilogo on-chain</small></span><svg aria-hidden="true" class="entry-action-arrow" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>';
+   card.innerHTML="<span><strong class=\"inj-home-tile-title\" data-it=\"All Transaction\" data-en=\"All Transaction\">All Transaction</strong><small class=\"inj-tile-description\" data-it=\"Storico e riepilogo on-chain\" data-en=\"On-chain history and totals\">Storico e riepilogo on-chain</small></span><span aria-hidden=\"true\" data-premium-artwork=\"luxury-b\" class=\"inj-tile-scene inj-precision-icon inj-luxury-icon inj-tools-art inj-transaction-art\"><svg viewBox=\"0 0 120 68\" xmlns=\"http://www.w3.org/2000/svg\" focusable=\"false\" aria-hidden=\"true\"><rect class=\"pi-panel\" x=\"31\" y=\"7\" width=\"58\" height=\"53\" rx=\"8\"/><path class=\"pi-hair\" d=\"M42 19h37M42 27h21M42 35h16M42 53h35\"/><path class=\"pi-detail inj-txn-row-a\" d=\"M42 20h27\"/><path class=\"pi-detail inj-txn-row-b\" d=\"M42 28h19\"/><path class=\"pi-strong inj-txn-check\" d=\"m65 39 6 6 12-14\"/><circle class=\"pi-led inj-txn-led\" cx=\"81\" cy=\"16\" r=\"2.7\"/></svg></span><svg aria-hidden=\"true\" class=\"entry-action-arrow\" viewBox=\"0 0 24 24\"><path d=\"m9 6 6 6-6 6\"/></svg>";
    return card;
  }
  ensureAllTransactionsLauncher();
@@ -46,7 +46,7 @@
   card.className='entry-action entry-action-network-status';
   card.href='./network-status.html?v=20261109-tools-return-motion1';
   card.setAttribute('aria-label','Apri Status Network');
-  card.innerHTML='<span aria-hidden="true" class="entry-action-icon"><svg viewBox="0 0 32 32" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><rect x="3" y="6" width="26" height="20" rx="5"/><path class="inj-net-wave" d="M6 17h5l3-7 5 12 3-6h4"/><circle class="inj-net-led" cx="24.5" cy="10" r="1.4" fill="currentColor" stroke="none"/></svg></span><span><strong class="inj-home-tile-title" data-it="Status Network" data-en="Status Network">Status Network</strong><small class="inj-tile-description" data-it="Blocchi, rete e segnalazioni" data-en="Blocks, network and incidents">Blocchi, rete e segnalazioni</small></span><svg aria-hidden="true" class="entry-action-arrow" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>';
+  card.innerHTML="<span><strong class=\"inj-home-tile-title\" data-it=\"Status Network\" data-en=\"Status Network\">Status Network</strong><small class=\"inj-tile-description\" data-it=\"Blocchi, rete e segnalazioni\" data-en=\"Blocks, network and incidents\">Blocchi, rete e segnalazioni</small></span><span aria-hidden=\"true\" data-premium-artwork=\"luxury-b\" class=\"inj-tile-scene inj-precision-icon inj-luxury-icon inj-tools-art inj-network-art\"><svg viewBox=\"0 0 120 68\" xmlns=\"http://www.w3.org/2000/svg\" focusable=\"false\" aria-hidden=\"true\"><rect class=\"pi-panel\" x=\"13\" y=\"14\" width=\"94\" height=\"40\" rx=\"8\"/><path class=\"pi-hair\" d=\"M23 43h74M25 25h12M85 25h10\"/><path class=\"pi-strong inj-net-wave\" d=\"M22 36h15l9-13 13 27 14-23 8 9h17\"/><circle class=\"pi-led inj-net-led\" cx=\"94\" cy=\"22\" r=\"3\"/><path class=\"pi-detail\" d=\"M45 59h30\"/></svg></span><svg aria-hidden=\"true\" class=\"entry-action-arrow\" viewBox=\"0 0 24 24\"><path d=\"m9 6 6 6-6 6\"/></svg>";
   return card;
  }
  ensureNetworkStatusLauncher();
@@ -117,6 +117,46 @@
   const style=document.createElement('style');
   style.id='injToolsStatusTransactionMotion';
   style.textContent="\n/* Tools · restrained, theme-colored micro-motion inside the two section icons. */\n#entryAllTransactionsButton .inj-txn-row-a{animation:injToolsTransactionRow 2.8s ease-in-out infinite}\n#entryAllTransactionsButton .inj-txn-row-b{animation:injToolsTransactionRow 2.8s ease-in-out .4s infinite}\n#entryAllTransactionsButton .inj-txn-check{stroke-dasharray:14;animation:injToolsTransactionCheck 3.2s ease-in-out infinite}\n#entryAllTransactionsButton .inj-txn-led{transform-box:fill-box;transform-origin:center;animation:injToolsStatusLed 2.8s ease-in-out infinite}\n#entryNetworkStatusButton .inj-net-wave{stroke-dasharray:24 12;animation:injToolsNetworkTrace 2.6s linear infinite}\n#entryNetworkStatusButton .inj-net-led{transform-box:fill-box;transform-origin:center;animation:injToolsStatusLed 2.6s ease-in-out infinite}\n@keyframes injToolsTransactionRow{0%,100%{opacity:.48;transform:translateX(0)}45%,65%{opacity:1;transform:translateX(1px)}}\n@keyframes injToolsTransactionCheck{0%,18%{stroke-dashoffset:14;opacity:.35}42%,82%{stroke-dashoffset:0;opacity:1}100%{stroke-dashoffset:-14;opacity:.35}}\n@keyframes injToolsStatusLed{0%,100%{opacity:.4;transform:scale(.7)}40%,60%{opacity:1;transform:scale(1.2)}}\n@keyframes injToolsNetworkTrace{from{stroke-dashoffset:0}to{stroke-dashoffset:-72}}\n@media (prefers-reduced-motion:reduce){\n #entryAllTransactionsButton .inj-txn-row-a,\n #entryAllTransactionsButton .inj-txn-row-b,\n #entryAllTransactionsButton .inj-txn-check,\n #entryAllTransactionsButton .inj-txn-led,\n #entryNetworkStatusButton .inj-net-wave,\n #entryNetworkStatusButton .inj-net-led{animation:none!important;stroke-dashoffset:0!important;opacity:1!important;transform:none!important}\n}\n";
+  document.head.appendChild(style);
+ }
+
+ // These launchers must use the same illustrated scene as the other Tools cards.
+ // The compact .entry-action-icon variant is hidden by the premium tile layout.
+ if(!document.getElementById('injToolsPremiumArtLayout2')){
+  const style=document.createElement('style');
+  style.id='injToolsPremiumArtLayout2';
+  style.textContent=`
+html[data-inj-page="index"][data-inj-home-tab="altro"] body #entryGate#entryGate#entryGate
+.entry-actions.entry-flat-v44 > :is(#entryAllTransactionsButton,#entryNetworkStatusButton) > .inj-tools-art{
+ display:block!important;visibility:visible!important;opacity:.96!important;
+ position:absolute!important;z-index:1!important;pointer-events:none!important;
+ box-sizing:border-box!important;overflow:visible!important;
+ top:7px!important;bottom:auto!important;left:50%!important;right:auto!important;
+ width:80px!important;min-width:0!important;max-width:80px!important;
+ height:43px!important;min-height:0!important;
+ margin:0!important;padding:0!important;
+ transform:translateX(-50%)!important;
+ color:color-mix(in srgb,var(--tile-accent,var(--accent,#d7c6a9)) 25%,var(--accent,#d7c6a9))!important;
+}
+html[data-inj-page="index"][data-inj-home-tab="altro"] body #entryGate#entryGate#entryGate
+.entry-actions.entry-flat-v44 > :is(#entryAllTransactionsButton,#entryNetworkStatusButton) > .inj-tools-art > svg{
+ display:block!important;visibility:visible!important;opacity:1!important;
+ width:100%!important;height:100%!important;
+ fill:none!important;stroke:none!important;overflow:visible!important;
+}
+html[data-inj-page="index"] body #entryGate
+ :is(#entryAllTransactionsButton,#entryNetworkStatusButton) > .inj-tools-art :is(.pi-panel,.pi-hair,.pi-detail,.pi-strong,.pi-led){
+ vector-effect:non-scaling-stroke;
+}
+@media (min-width:800px){
+ html[data-inj-page="index"][data-inj-home-tab="altro"] body #entryGate#entryGate#entryGate
+ .entry-actions.entry-flat-v44 > :is(#entryAllTransactionsButton,#entryNetworkStatusButton) > .inj-tools-art{
+  top:50%!important;bottom:auto!important;left:auto!important;right:17px!important;
+  width:77px!important;max-width:77px!important;height:49px!important;
+  transform:translateY(-50%)!important;
+ }
+}
+`;
   document.head.appendChild(style);
  }
  const sections=[
