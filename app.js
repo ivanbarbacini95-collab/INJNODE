@@ -185,10 +185,10 @@ window.INJ_FINANCIAL_FREEDOM_ENRICH_APR = async function () {
   freedomAprSyncing=true;
   freedomAprLastAttempt=Date.now();
   try{
-    if(!(state.networkApr>0)){
+    if(!(state.networkApr>0)||Date.now()-state.networkAprUpdated>5*60_000){
       try{await ensureNetworkApr(false);}catch(_){}
     }
-    if(!(state.networkApr>0))return;
+    if(!(state.networkApr>0)||Date.now()-state.networkAprUpdated>window.INJ_STAKING_APR.maxCacheMs)return;
     let cursor=0;
     const worker=async()=>{
       while(cursor<pending.length){
@@ -208,8 +208,9 @@ window.INJ_FINANCIAL_FREEDOM_ENRICH_APR = async function () {
           if(!Number.isFinite(apr)||apr<0||apr>200)continue;
           const current=state.walletSummaries[address];
           if(!current)continue;
+          const weightedCommission=validators.reduce((sum,v)=>sum+v.amount*v.commission,0)/amount;
           state.walletSummaries[address]={...current,personalApr:apr,validators,networkApr:state.networkApr,
-            aprUpdated:state.networkAprUpdated,aprSource:state.networkAprSource};
+            weightedCommission,aprUpdated:state.networkAprUpdated,aprSource:state.networkAprSource};
           try{saveWalletSummaries();}catch(_){}
         }catch(_){}
       }
@@ -4044,6 +4045,14 @@ async function refreshWalletSummaries(force = false) {
   state.summariesLoading = false;
   renderAggregate();
   renderWalletCards();
+  // Keep every saved wallet's displayed net APR in sync with its OWN
+  // validators; do not reuse the currently selected wallet's commission.
+  if(Date.now()-freedomAprLastAttempt>5*60_000){
+    void window.INJ_FINANCIAL_FREEDOM_ENRICH_APR?.().then(()=>{
+      renderEntryGate();
+      renderWalletCards();
+    }).catch(()=>{});
+  }
 }
 
 function aggregateCollapsedPreference() {
