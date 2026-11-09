@@ -287,10 +287,8 @@ function addGoal(event) {
     state.officialApr=checked?.apr||null;
   }
   function aprFor(row){
-    // Independent on-chain-verified network rate, with a fresh wallet-specific
-    // validator commission; otherwise retain only a recent saved net APR.
-    if(state.officialApr!==null && row.commission!==null)
-      return state.officialApr*(1-row.commission);
+    // Validator activity and commission are already accounted for in the
+    // common wallet APR: never recalculate an approximate gross yield.
     return row.apr;
   }
   async function syncNetwork(){
@@ -300,19 +298,25 @@ function addGoal(event) {
     render();
     try{
       await fetchOfficialApr();
-      const list=await Promise.all(state.wallets.map(w=>getWalletNetwork(w.address)));
+      const list=await Promise.all(state.wallets.map(async w=>({
+        chain:await getWalletNetwork(w.address),
+        staking:await window.INJ_STAKING_APR.wallet(w.address)
+      })));
       const now=Date.now();
-      list.forEach((data,i)=>{
-        if(!data)return;
+      list.forEach(({chain,staking},i)=>{
+        if(!chain)return;
         const address=state.wallets[i].address;
         const row=state.rows[address];
         if(!row)return;
-        row.reward=data.reward;
-        row.stake=data.stake;
+        row.reward=chain.reward;
+        row.stake=staking?.staked ?? chain.stake;
+        row.apr=staking && Number.isFinite(staking.apr) && !staking.stale ? staking.apr : null;
+        row.commission=staking && Number.isFinite(staking.weightedCommission)
+          ? staking.weightedCommission : null;
         row.at=now;
         row.verified=true;
       });
-      if(list.some(Boolean))state.networkAt=now;
+      if(list.some(item=>item.chain))state.networkAt=now;
     }finally{
       state.syncing=false;
       $('ladderRefresh').disabled=false;
