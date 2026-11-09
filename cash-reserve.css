@@ -151,3 +151,13 @@ html[data-theme="light"] .cash-reserve-box,html[data-theme="arctic"] .cash-reser
 .cash-yield-live{font-variant-numeric:tabular-nums;font-size:.65rem;font-weight:760;color:var(--muted,#9bb1bc);overflow-wrap:anywhere}
 @media(max-width:650px){.cash-yield-metrics.cash-yield-metrics-jupiter{grid-template-columns:repeat(2,minmax(0,1fr));gap:13px 9px}}
 @media(max-width:390px){.cash-yield-metrics-jupiter strong{font-size:.7rem}}
+
+/* Cash Reserve history · total-first with 1D / 1M / 1Y / Total filters */
+.cash-reserve-chart-ranges{flex-wrap:nowrap;gap:5px;max-width:100%}
+.cash-reserve-chart-ranges button{padding:5px 9px;min-width:36px;white-space:nowrap;font-weight:850}
+.cash-chart-overview{margin:7px 0 10px;display:flex;align-items:end;justify-content:space-between;gap:8px 14px;flex-wrap:wrap}
+.cash-chart-overview-total{display:grid;gap:2px;min-width:0}
+.cash-chart-overview-total>span{color:var(--muted,#9bb1bc);font-size:.57rem;letter-spacing:.095em;font-weight:800}
+.cash-chart-overview-total strong{font-size:clamp(.9rem,2vw,1.15rem);letter-spacing:-.02em;font-weight:930;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.cash-chart-period-info{font-size:.63rem;font-weight:750;color:var(--muted,#9bb1bc)}
+@media(max-width:390px){.cash-reserve-chart-ranges button{padding:4px 6px;min-width:32px;font-size:.62rem}.cash-reserve-chart-ranges{gap:3px}}
