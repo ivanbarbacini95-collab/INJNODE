@@ -120,9 +120,12 @@
   const coverage=Math.min(100,Math.round(100*observations/expectedTotal));
   $('uptimeCoverage').textContent=tr('Copertura misurazioni: ','Measurement coverage: ')+coverage+'%';
   const incidentsInRange=new Set(incidents.filter(i=>i._start<=timeNow&&i._end>=start).map(i=>i.id)).size;
+  const archiveAge=Date.now()-Date.parse(history.generatedAt||'');
+  const archiveLate=!Number.isFinite(archiveAge)||archiveAge>20*MINUTE;
   $('uptimeCoverageNote').textContent=tr('Campioni RPC salvati: ','Stored RPC samples: ')+observations+
    ' · '+tr('incidenti QuickNode: ','QuickNode incidents: ')+incidentsInRange+
-   (history.generatedAt?' · '+tr('Archivio al ','Archive as of ')+fmtDate(Date.parse(history.generatedAt))+' '+fmtTime(Date.parse(history.generatedAt)): ' · '+tr('Archivio non ancora popolato','Archive not yet populated'));
+   (history.generatedAt?' · '+tr('Archivio al ','Archive as of ')+fmtDate(Date.parse(history.generatedAt))+' '+fmtTime(Date.parse(history.generatedAt)): ' · '+tr('Archivio non ancora popolato','Archive not yet populated'))+
+   (archiveLate?' · '+tr('ARCHIVIO IN RITARDO','ARCHIVE DELAYED'):'');
   const verifiedLive=Boolean(isFresh(latestLive,35000)&&latestLive?.state!=='unknown');
   $('uptimeLive').dataset.live=String(verifiedLive);
   $('uptimeLiveText').textContent=verifiedLive?'LIVE · 10s':tr('VERIFICA IN CORSO','CHECKING LIVE');
