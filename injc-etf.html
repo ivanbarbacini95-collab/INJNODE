@@ -173,7 +173,7 @@ html[data-inj-etf-embedded="1"],html[data-inj-etf-embedded="1"] body{
 <script src="./inj-six-themes-20261103.js?v=families30-classic-v2"></script>
 <link rel="stylesheet" href="./injc-etf-market-terminal-20261105.css?v=etf-session-inspect-20261106a">
 <link rel="stylesheet" href="./injc-etf-live-refinement-20261106.css?v=compact-live-quote-final2">
-<link rel="stylesheet" href="./injc-etf-flows-volume-20261106.css?v=netflow-volume-20261106value2">
+<link rel="stylesheet" href="./injc-etf-flows-volume-20261106.css?v=20261109-share-candles-v1">
 </head>
 <body>
 <div class="etf-shell">
@@ -281,6 +281,9 @@ html[data-inj-etf-embedded="1"],html[data-inj-etf-embedded="1"] body{
   <div class="injc-flow-graph" id="etfFlowGraph" aria-label="Grafico dei flussi INJC con linea zero centrale">
     <div class="injc-flow-zero-grid" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
     <div class="injc-flow-scroller" id="etfFlowHistory" tabindex="0" role="region" aria-label="Flussi ETF INJC per seduta, scorrimento orizzontale" title="Scorri per consultare le sedute precedenti"></div>
+    <div class="injc-flow-empty" id="etfFlowEmpty" hidden aria-live="polite"
+      data-it="Nessun flusso INJC verificato: gli importi non sono ancora disponibili. Le sedute senza report non rappresentano $0."
+      data-en="No verified INJC fund flows: amounts are not available yet. Sessions without reports do not represent $0.">Nessun flusso INJC verificato: gli importi non sono ancora disponibili. Le sedute senza report non rappresentano $0.</div>
     <div class="injc-flow-right-axis" id="etfFlowRightAxis" aria-label="Scala USD dei flussi">
       <span data-y-axis>—</span><span data-y-axis>—</span><span data-y-axis>0</span><span data-y-axis>—</span><span data-y-axis>—</span>
     </div>
@@ -339,8 +342,8 @@ html[data-inj-etf-embedded="1"],html[data-inj-etf-embedded="1"] body{
 <footer class="brand-footer"><strong>INJ NODE</strong> / BY B CAPITAL GROUP</footer>
 </main>
 </div>
-<script defer src="./injc-etf-flows-volume-20261106.js?v=netflow-volume-20261106value2"></script>
-<script defer src="./injc-etf-market-terminal-20261105.js?v=compact-live-quote-final2"></script>
+<script defer src="./injc-etf-flows-volume-20261106.js?v=20261109-share-candles-v1"></script>
+<script defer src="./injc-etf-market-terminal-20261105.js?v=20261109-flow-report-state-v1"></script>
 <script defer src="./injc-etf-session-inspector-20261106.js?v=etf-session-inspect-20261106a"></script>
 
 </body>
