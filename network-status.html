@@ -90,13 +90,38 @@ html[data-theme="classic-white"]{color-scheme:light;--bg:#fff;--surface:#fafafa;
  const clock=t=>new Intl.DateTimeFormat(en?'en-GB':'it-IT',{hour:'2-digit',minute:'2-digit',second:'2-digit'}).format(new Date(t));
  const age=s=>s<60?number(s)+' s':s<3600?number(Math.floor(s/60))+' min':number(Math.floor(s/3600))+' h '+number(Math.floor((s%3600)/60))+' min';
  const RPCS=[{name:'Injective',url:'https://sentry.tm.injective.network/status'},{name:'PublicNode',url:'https://injective-rpc.publicnode.com/status'},{name:'Polkachu',url:'https://injective-rpc.polkachu.com/status'}];
- let pending=false,lastResult=null;
+ let pending=false,lastResult=null,pollingData=null;
+ const wsSignals=new Map();
+ function mergeLive(snapshot){
+  const now=Date.now();
+  const nodes=(Array.isArray(snapshot.nodes)?snapshot.nodes:RPCS.map(x=>({name:x.name,available:false}))).map(node=>{
+   const ws=wsSignals.get(node.name);
+   if(!ws||now-ws.seenAt>23000)return node;
+   const wsTime=Date.parse(ws.blockTime),rpcTime=Date.parse(node.blockTime||'');
+   if(node.available&&Number.isFinite(rpcTime)&&rpcTime>wsTime)return node;
+   return {...ws,ageSeconds:Math.max(0,Math.floor((now-wsTime)/1000))};
+  });
+  const valid=nodes.filter(n=>n.available&&Number.isFinite(n.ageSeconds));
+  const fresh=valid.filter(n=>n.ageSeconds<=40&&!n.catchingUp);
+  const delayed=valid.filter(n=>n.ageSeconds>40&&n.ageSeconds<=120);
+  const stale=valid.filter(n=>n.ageSeconds>120);
+  let state='unknown';
+  if(fresh.length>=2)state='online';
+  else if(fresh.length===1||delayed.length||valid.some(n=>n.catchingUp))state='degraded';
+  else if(stale.length>=2)state='halted';
+  else if(stale.length===1)state='degraded';
+  if(state==='online'&&Math.max(...fresh.map(n=>n.height))-Math.min(...fresh.map(n=>n.height))>100)state='degraded';
+  const latest=valid.length?valid.reduce((a,b)=>a.blockTime>b.blockTime?a:b):null;
+  const wsRecent=[...wsSignals.values()].some(x=>now-x.seenAt<=23000);
+  return {...snapshot,nodes,latest,state,checkedAt:wsRecent?new Date(now).toISOString():snapshot.checkedAt};
+ }
+
  function labels(){
   $('refreshLabel').textContent=tr('Aggiorna','Refresh');
   $('back').setAttribute('aria-label',tr('Torna a Tools','Back to Tools'));
   $('labelBlock').textContent=tr('Ultimo blocco','Latest block');$('labelAge').textContent=tr('Età ultimo blocco','Block age');
   $('labelNodes').textContent=tr('Nodi raggiungibili','Reachable nodes');$('labelChecked').textContent=tr('Ultimo controllo','Last checked');
-  $('nodeTotal').textContent=tr('su 3 verificati','out of 3 checked');$('pollingNote').textContent=tr('Ogni 20 secondi','Every 20 seconds');
+  $('nodeTotal').textContent=tr('su 3 verificati','out of 3 checked');$('pollingNote').textContent=tr('Ogni 10 secondi','Every 10 seconds');
   $('nodesTitle').textContent=tr('Verifica nodi RPC','RPC node checks');$('incidentsTitle').textContent=tr('Segnalazioni del provider','Provider notices');
   $('operationsTitle').textContent=tr('Prelievo reward / transazioni','Claim rewards / transactions');
   $('officialLink').textContent=tr('Stato endpoint Injective ↗','Injective endpoint status ↗');
@@ -181,10 +206,17 @@ html[data-theme="classic-white"]{color-scheme:light;--bg:#fff;--surface:#fafafa;
    let data;
    try{data=await timedJson('./api/network-status?at='+Date.now(),9500);if(!Array.isArray(data.nodes))throw Error('Missing nodes');}
    catch(_){data=await fallback();}
-   render(data);
-  }catch(_){render({state:'unknown',nodes:RPCS.map(x=>({name:x.name,available:false})),provider:{level:'unknown'},checkedAt:new Date().toISOString()});}
+   pollingData=data;
+   render(mergeLive(data));
+  }catch(_){pollingData={state:'unknown',nodes:RPCS.map(x=>({name:x.name,available:false})),provider:{level:'unknown'},checkedAt:new Date().toISOString()};render(mergeLive(pollingData));}
   finally{pending=false;$('refresh').disabled=false;$('refresh').querySelector('svg').classList.remove('spin');}
  }
+ window.addEventListener('injnode:network-ws-block',event=>{
+  const node=event.detail;
+  if(!node||!['Injective','PublicNode'].includes(node.name)||node.available!==true)return;
+  wsSignals.set(node.name,node);
+  if(pollingData)render(mergeLive(pollingData));
+ });
  labels();$('back').addEventListener('click',()=>{location.href='./index.html?tab=tools';});
  $('refresh').addEventListener('click',check);
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)check();});
@@ -192,4 +224,5 @@ html[data-theme="classic-white"]{color-scheme:light;--bg:#fff;--surface:#fafafa;
 })();
 </script>
 <script src="./network-history.js?v=20261109-uptime-bars1"></script>
+<script src="./network-live-ws.js?v=20261109-uptime-ws1"></script>
 </body></html>
