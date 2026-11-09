@@ -487,22 +487,14 @@ async function validatorCommissionPercent(validatorAddress){
   return result;
 }
 async function loadDelegation(address,networkApr){
-  const data=await lcd(`/cosmos/staking/v1beta1/delegations/${address}`);
-  const delegations=Array.isArray(data?.delegation_responses)?data.delegation_responses:[];
-  const rows=delegations.map((entry)=>({
-    validator:String(entry?.delegation?.validator_address||''),
-    amount:fromWei(entry?.balance?.amount)
-  })).filter((entry)=>entry.validator&&entry.amount>0);
-  const staked=rows.reduce((sum,entry)=>sum+entry.amount,0);
-  if(!(staked>0))return {address,staked:0,apr:0,validatorCount:0,aprVerified:true};
-
-  const details=await Promise.all(rows.map(async(entry)=>{
-    const commission=await validatorCommissionPercent(entry.validator);
-    const effectiveApr=commission.active?Math.max(0,number(networkApr))*Math.max(0,1-commission.value/100):0;
-    return {...entry,commission,effectiveApr};
-  }));
-  const weightedApr=details.reduce((sum,entry)=>sum+entry.amount*entry.effectiveApr,0)/staked;
-  return {address,staked,apr:weightedApr,validatorCount:details.length,aprVerified:true};
+  // One verified wallet/validator APR source across Dashboard, Reward and Workspace.
+  const data=await window.INJ_STAKING_APR.wallet(address);
+  if(!data||!(data.networkApr>0))throw new Error('Wallet APR not verified');
+  if(!(data.staked>0))return {address,staked:0,apr:0,validatorCount:0,aprVerified:true};
+  if(!Number.isFinite(data.apr)||Math.abs(data.networkApr-networkApr)>1e-8)
+    throw new Error('Inconsistent network APR');
+  return {address,staked:data.staked,apr:data.apr,
+    validatorCount:data.validators.length,aprVerified:!data.stale};
 }
 
 /*
