@@ -29,9 +29,9 @@
      if(after&&after.parentElement===actions)after.after(card);else actions.prepend(card);
    }
    card.className='entry-action entry-action-all-transactions';
-   card.href='./all-transactions.html?v=20261109-reward-staking1';
+   card.href='./all-transactions.html?v=20261109-minimal-period-totals2';
    card.setAttribute('aria-label','Apri All Transaction');
-   card.innerHTML='<span aria-hidden="true" class="entry-action-icon"><svg viewBox="0 0 24 24" width="29" height="29" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3" width="17" height="18" rx="3"/><path d="M7.5 8h9M7.5 12h4m-4 4h9"/><path d="m14 12 2 2 3-3"/></svg></span><span><strong class="inj-home-tile-title" data-it="All Transaction" data-en="All Transaction">All Transaction</strong><small class="inj-tile-description" data-it="Reward riscossi e INJ in staking" data-en="Claimed rewards & INJ staking">Reward riscossi e INJ in staking</small></span><svg aria-hidden="true" class="entry-action-arrow" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>';
+   card.innerHTML='<span aria-hidden="true" class="entry-action-icon inj-transaction-icon"><svg viewBox="0 0 32 32" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="3.5" width="20" height="25" rx="4"/><path d="M11 9.5h10M11 14.5h6M11 24h10"/><path d="m16 18.5 3 3 4-4"/><circle cx="23" cy="10" r="1" fill="currentColor" stroke="none"/></svg></span><span><strong class="inj-home-tile-title" data-it="All Transaction" data-en="All Transaction">All Transaction</strong><small class="inj-tile-description" data-it="Storico e riepilogo on-chain" data-en="On-chain history and totals">Storico e riepilogo on-chain</small></span><svg aria-hidden="true" class="entry-action-arrow" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>';
    return card;
  }
  ensureAllTransactionsLauncher();
@@ -49,8 +49,10 @@
      '{text-decoration:none!important;text-decoration-line:none!important;border-bottom:0!important;box-shadow:none!important;}',
      'html[data-inj-page="index"] body #entryGate#entryGate#entryGate #entryAllTransactionsButton .inj-home-tile-title::after',
      '{display:none!important;content:none!important;}',
+     'html[data-inj-page="index"] body #entryGate#entryGate#entryGate #entryAllTransactionsButton > .inj-transaction-icon',
+     '{display:grid!important;place-items:center!important;visibility:visible!important;opacity:1!important;flex:none!important;width:42px!important;height:42px!important;border:1px solid color-mix(in srgb,var(--accent) 28%,transparent)!important;border-radius:13px!important;background:color-mix(in srgb,var(--accent) 10%,var(--surface-strong))!important;color:var(--accent)!important;}',
      'html[data-inj-page="index"] body #entryGate#entryGate#entryGate #entryAllTransactionsButton .entry-action-icon svg',
-     '{display:block!important;width:29px!important;height:29px!important;fill:none!important;stroke:currentColor!important;opacity:1!important;}'
+     '{display:block!important;width:30px!important;height:30px!important;fill:none!important;stroke:currentColor!important;opacity:1!important;visibility:visible!important;}'
    ].join('');
    document.head.appendChild(style);
  }
