@@ -1,4 +1,4 @@
-/* Persistent Injective health measurements, every 15 minutes via GitHub Actions.
+/* Persistent Injective health measurements, every 5 minutes via GitHub Actions.
  * Historical "online" means actual verified RPC observations, not assumed uptime.
  * QuickNode incidents are kept separately and never masquerade as RPC measurements.
  */
@@ -88,7 +88,7 @@ const cleanIncidents=incidents.filter(x=>{
  return Number.isFinite(start)&&Number.isFinite(end)&&end>=cutoff;
 }).sort((a,b)=>b.start.localeCompare(a.start)).slice(0,250);
 const output={
- schemaVersion:1,chainId:'injective-1',intervalMinutes:15,
+ schemaVersion:1,chainId:'injective-1',intervalMinutes:5,
  generatedAt:new Date(now).toISOString(),
  samples:uniqueSamples,
  incidents:cleanIncidents
