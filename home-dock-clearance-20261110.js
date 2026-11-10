@@ -110,6 +110,8 @@
     attributes:true,attributeFilter:['popover','style']
    });
   }
+  // Popover visibility changes do not mutate its attributes on iOS Safari.
+  nav.addEventListener('toggle',schedule,{passive:true});
   ['pageshow','orientationchange','resize'].forEach(type=>
    window.addEventListener(type,schedule,{passive:true}));
   window.visualViewport?.addEventListener('resize',schedule,{passive:true});
