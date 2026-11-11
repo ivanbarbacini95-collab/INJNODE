@@ -14,7 +14,7 @@
    if(!card){card=document.createElement('a');card.id='entryMultiChartButton';}
    if(card.parentElement!==actions)actions.insertBefore(card,document.getElementById('entryComparisonButton')||actions.firstChild);
    card.className='entry-action entry-action-multi-chart';
-   card.href='./multi-chart.html?v=20261106-vertical4-price1';
+   card.href='./multi-chart.html?v=20261110-external-candles1';
    card.setAttribute('aria-label','Apri INJ Multi Chart');
    card.innerHTML='<span><strong class="inj-home-tile-title" data-it="INJ Multi Chart" data-en="INJ Multi Chart">INJ Multi Chart</strong></span><span aria-hidden="true" data-premium-artwork="luxury-b" class="inj-tile-scene inj-precision-icon inj-luxury-icon inj-multichart-art"><svg viewBox="0 0 120 68" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><rect class="pi-panel" x="11" y="8" width="44" height="23" rx="4"/><rect class="pi-panel" x="65" y="8" width="44" height="23" rx="4"/><rect class="pi-panel" x="11" y="37" width="44" height="23" rx="4"/><rect class="pi-panel" x="65" y="37" width="44" height="23" rx="4"/><path class="pi-strong" d="m16 24 8-6 7 4 8-9 10 3M70 24l7-7 7 4 8-8 11 4M16 52l7-8 8 3 8-6 10 4M70 53l7-5 7 2 9-9 10 3"/><path class="pi-hair" d="M16 27h34M70 27h34M16 56h34M70 56h34"/><circle class="pi-led" cx="49" cy="16" r="2"/><circle class="pi-led" cx="103" cy="44" r="2"/></svg></span><svg aria-hidden="true" class="entry-action-arrow" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>';
    return card;
@@ -50,6 +50,12 @@
   return card;
  }
  ensureNetworkStatusLauncher();
+
+ // Remove any Market Reactor tile retained by an older cached Home shell.
+ document.getElementById('entryMarketReactorButton')?.remove();
+
+ // Night View has moved into Live View; remove any pre-existing Tools tile.
+ document.getElementById('entryNightViewButton')?.remove();
  if(!document.getElementById('injNetworkStatusToolsTileStyle')){
   const style=document.createElement('style');
   style.id='injNetworkStatusToolsTileStyle';
@@ -164,7 +170,7 @@ html[data-inj-page="index"] body #entryGate
   {id:'etf',it:'ETF',en:'ETF',titleIt:'',titleEn:'',subIt:'',subEn:'',ids:[],icon:'<rect x="5" y="3.5" width="14" height="17" rx="2.7"/><path d="M9 8h6M9 11.5h4m-4 5.9 2.2-2.4 2 1.5 2.8-3.1"/>'},
   {id:'home',it:'Home',en:'Home',titleIt:'',titleEn:'',subIt:'',subEn:'',ids:['entryDashboardButton','entryLiveButton','entryTreasuryButton'],icon:'<path d="m3.5 10 8.5-6.6 8.5 6.6v9.3a1.2 1.2 0 0 1-1.2 1.2h-4.9v-6.1H9.6v6.1H4.7a1.2 1.2 0 0 1-1.2-1.2z"/>'},
   {id:'reward',it:'My Reward',en:'My Reward',titleIt:'MY REWARD',titleEn:'MY REWARD',subIt:'Staking e ricompense del wallet selezionato',subEn:'Selected wallet staking and rewards',ids:[],icon:'<circle cx="12" cy="12" r="8.5"/><path d="M15.1 9.3c-.6-.9-1.6-1.4-3-1.4-1.8 0-3 .8-3 2.1 0 2.8 6 1 6 3.7 0 1.3-1.2 2.2-3 2.2-1.5 0-2.6-.6-3.2-1.6M12 5.8v2M12 16.2v2"/>'},
-  {id:'altro',it:'Tools',en:'Tools',titleIt:'TOOLS',titleEn:'TOOLS',subIt:'Simulazioni, libertà finanziaria e altri strumenti',subEn:'Simulations, financial freedom and other tools',ids:['entryMultiChartButton','entryAllTransactionsButton','entryNetworkStatusButton','entryComparisonButton','entryVisualizeWealthButton','entryFreedomButton','entryWorkspaceButton','entryConverterButton','entryCommandCenterButton'],icon:'<path d="M4 6h8m4 0h4M4 12h3m4 0h9M4 18h11m4 0h1"/><circle cx="14" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/>'}
+  {id:'altro',it:'Tools',en:'Tools',titleIt:'TOOLS',titleEn:'TOOLS',subIt:'Simulazioni, libertà finanziaria e altri strumenti',subEn:'Simulations, financial freedom and other tools',ids:['entryMultiChartButton','entryAllTransactionsButton','entryNetworkStatusButton','entryValidatorsButton','entryComparisonButton','entryVisualizeWealthButton','entryFreedomButton','entryWorkspaceButton','entryConverterButton','entryCommandCenterButton'],icon:'<path d="M4 6h8m4 0h4M4 12h3m4 0h9M4 18h11m4 0h1"/><circle cx="14" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/>'}
  ];
  const originalDisplay=new WeakMap();
  const heading=document.createElement('header');
