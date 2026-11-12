@@ -159,11 +159,12 @@
    const css=getComputedStyle(node),maxFont=parseFloat(css.fontSize);
    const available=frame.clientWidth-12;
    if(!(maxFont>0&&available>0))return;
-   const canvas=fitPriceToWidth.canvas||(fitPriceToWidth.canvas=document.createElement('canvas'));
-   const ctx=canvas.getContext('2d');
-   if(!ctx)return;
-   ctx.font=css.fontWeight+' '+css.fontSize+' '+css.fontFamily;
-   const span=ctx.measureText(node.textContent).width+(node.dataset.injQuoteDirection?maxFont*.48:0);
+   // Measure the rendered numeral spans, including the added letter spacing.
+   // Always leave room for the direction arrow to avoid a size jump on live ticks.
+   const range=document.createRange();
+   range.selectNodeContents(node);
+   const measured=range.getBoundingClientRect().width;
+   const span=measured+maxFont*.22;
    if(span>available)node.style.fontSize=Math.max(22,maxFont*available/span)+'px';
   });
  }
