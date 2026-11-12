@@ -190,6 +190,32 @@ button:focus-visible{outline:2px solid var(--nv-accent);outline-offset:4px}
 @media(prefers-reduced-motion:reduce){
  .price-value,.price-value::after{transition:none!important}
 }
+
+/* Live View numeric typography 2026-11-12
+   Airier numerals, less visual bloom, normal tracking and reliable width fitting.
+   The sizing of individual screen breakpoints is otherwise preserved. */
+html[data-inj-page="night-view"] .price-value{
+ font-weight:570!important;
+ letter-spacing:.005em!important;
+ font-variant-numeric:tabular-nums lining-nums;
+ font-feature-settings:"tnum" 1,"lnum" 1;
+ text-shadow:0 0 10px rgba(126,192,178,.02);
+}
+html[data-inj-page="night-view"] .holding strong{
+ font-weight:580!important;
+ letter-spacing:.008em!important;
+ font-variant-numeric:tabular-nums lining-nums;
+}
+html[data-inj-page="night-view"] .reward strong{
+ font-weight:580!important;
+ letter-spacing:.008em!important;
+ font-variant-numeric:tabular-nums lining-nums;
+}
+html[data-inj-page="night-view"] :is(.holding,.reward) .unit{
+ font-weight:450!important;
+ letter-spacing:.025em;
+ margin-inline-start:.08em;
+}
 </style>
 <script defer src="./night-view.js?v=20261111-digits-only1"></script>
 <link rel="stylesheet" href="./inj-rubik-unified-20261110.css?v=rubik-ui1">
