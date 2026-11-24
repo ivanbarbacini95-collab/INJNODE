@@ -14,6 +14,7 @@ const session=time=>{
  const d=parts(new Date(time)),minutes=(Number(d.hour)%24)*60+Number(d.minute);
  return minutes>=240&&minutes<570?'pre':minutes>=570&&minutes<960?'regular':'other';
 };
+const previous=JSON.parse(await fs.readFile(path,'utf8'));
 let payload;
 for(const host of ['query1.finance.yahoo.com','query2.finance.yahoo.com']){
  try{
@@ -27,6 +28,13 @@ for(const host of ['query1.finance.yahoo.com','query2.finance.yahoo.com']){
    const time=new Date(Number(timestamp)*1000).toISOString();
    return {time,session:session(Date.parse(time)),open:safe(q.open?.[i]),high:safe(q.high?.[i]),low:safe(q.low?.[i]),close:safe(q.close?.[i]),volume:safe(q.volume?.[i])};
   }).filter(p=>p.close!==null&&p.close>0&&nyKey(new Date(p.time))===date&&(p.session==='pre'||p.session==='regular'));
+  // Some illiquid ETF responses have a last-sale timestamp but no minute bars.
+  for(const [pf,tf,phase] of [['regularMarketPrice','regularMarketTime','regular'],['preMarketPrice','preMarketTime','pre']]){
+    const close=safe(meta[pf]),t=Number(meta[tf])*1000;
+    if(close>0&&Number.isFinite(t)&&t<=now.getTime()+120000&&nyKey(new Date(t))===date&&session(t)===phase&&!pts.some(p=>Date.parse(p.time)===t))
+      pts.push({time:new Date(t).toISOString(),session:phase,close,open:null,high:null,low:null,volume:null});
+  }
+  pts.sort((a,b)=>Date.parse(a.time)-Date.parse(b.time));
   const regular=pts.filter(p=>p.session==='regular'),pre=pts.filter(p=>p.session==='pre');
   const active=regular.length?'regular':pre.length?'pre':null;
   if(!active)throw Error('No actual pre-market or regular-market INJC prints for '+date);
@@ -37,16 +45,16 @@ for(const host of ['query1.finance.yahoo.com','query2.finance.yahoo.com']){
   if(Number.isFinite(reportedPrice)&&reportedPrice>0&&Number.isFinite(reportedTime)&&reportedTime>quoteTime
     &&nyKey(new Date(reportedTime))===date&&session(reportedTime)===active){
     price=reportedPrice;quoteTime=reportedTime;
-    pts.push({...selected,time:new Date(quoteTime).toISOString(),close:price,session:active});
+    pts.push({time:new Date(quoteTime).toISOString(),close:price,session:active,open:null,high:null,low:null,volume:null});
   }
   const prev=safe(meta.chartPreviousClose)??safe(meta.previousClose);
   payload={schemaVersion:1,ticker:'INJC',generatedAt:now.toISOString(),source:'Yahoo Finance · quotes may be delayed',
    quote:{price,quoteTime:new Date(quoteTime).toISOString(),session:active,
     previous:prev,change:prev&&prev>0?(price-prev)/prev*100:null,
-    open:regular[0]?.open??null,
+    open:regular.length?(safe(meta.regularMarketOpen)??regular.find(p=>p.open!==null)?.open??null):null,
     high:regular.length?(safe(meta.regularMarketDayHigh)??Math.max(...regular.map(p=>p.high??p.close))):null,
     low:regular.length?(safe(meta.regularMarketDayLow)??Math.min(...regular.map(p=>p.low??p.close))):null,
-    volume:regular.length?(safe(meta.regularMarketVolume)??regular.reduce((sum,p)=>sum+(p.volume??0),0)):null},
+    volume:regular.length?(safe(meta.regularMarketVolume)??(regular.some(p=>p.volume!==null)?regular.reduce((sum,p)=>sum+(p.volume??0),0):null)):null},
    points:pts.slice(-500)};
   break;
  }catch(e){console.warn(host+': '+e.message);}
@@ -104,11 +112,32 @@ try{
 }catch(e){console.warn('Nasdaq public quote unavailable; using timestamped Yahoo backup: '+e.message);}
 
 if(!payload){console.log('No real INJC prints yet. Preserve previous verified snapshot.');process.exit(0);}
-const previous=JSON.parse(await fs.readFile(path,'utf8'));
+// Preserve same-session verified bars and fill missing metrics without inventing volume.
+const currentSession=payload.quote.session;
+const sameDay=previous.quote?.quoteTime&&nyKey(new Date(previous.quote.quoteTime))===date;
+const oldRows=sameDay?(previous.points||[]):[];
+const rows=new Map(oldRows.map(p=>[Date.parse(p.time),p]));
+for(const p of payload.points||[]){
+ const t=Date.parse(p.time),old=rows.get(t);
+ rows.set(t,old?{...old,...Object.fromEntries(Object.entries(p).filter(([,v])=>v!==null&&v!==undefined))}:p);
+}
+const latestTime=Date.parse(payload.quote.quoteTime);
+if(['pre','regular'].includes(currentSession)&&!rows.has(latestTime))
+ rows.set(latestTime,{time:payload.quote.quoteTime,session:currentSession,close:payload.quote.price,open:null,high:null,low:null,volume:null});
+payload.points=[...rows.values()].filter(p=>nyKey(new Date(p.time))===date).sort((a,b)=>Date.parse(a.time)-Date.parse(b.time)).slice(-600);
+if(sameDay&&previous.quote.session==='regular'&&currentSession==='regular'){
+ for(const k of ['open','high','low','volume','previous']){
+   const a=payload.quote[k],b=previous.quote[k];
+   if(a==null)payload.quote[k]=b??null;
+   else if(b!=null&&k==='high')payload.quote[k]=Math.max(a,b);
+   else if(b!=null&&k==='low')payload.quote[k]=Math.min(a,b);
+   else if(b!=null&&k==='volume')payload.quote[k]=Math.max(a,b);
+ }
+}
 if(previous.quote&&Date.parse(previous.quote.quoteTime)>Date.parse(payload.quote.quoteTime)){
  console.log('Stored verified quote is newer; skipping.');process.exit(0);
 }
-if(previous.quote&&previous.quote.quoteTime===payload.quote.quoteTime&&previous.quote.price===payload.quote.price&&previous.quote.volume===payload.quote.volume){
+if(previous.quote&&JSON.stringify(previous.quote)===JSON.stringify(payload.quote)&&JSON.stringify(previous.points)===JSON.stringify(payload.points)){
  console.log('No new quote; no repository commit needed.');process.exit(0);
 }
 await fs.writeFile(path,JSON.stringify(payload,null,2)+'\n');
