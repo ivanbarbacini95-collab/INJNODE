@@ -118,7 +118,8 @@
       pages++;
       if(pages===25&&key)throw new Error('Injective balances truncated');
     }while(key);
-    const active=items.filter(b=>/^\d+$/.test(String(b.amount))&&BigInt(b.amount)>0n);
+    if(items.some(b=>!b?.denom||!/^\d+$/.test(String(b.amount))))throw new Error('Invalid Injective balance row');
+    const active=items.filter(b=>BigInt(b.amount)>0n);
     const results=await Promise.all(active.map(async(b,i)=>{
       const denom=String(b.denom||'');
       if(denom==='inj')return token('Injective','INJ','native',b.amount,18,'Disponibile',LOGOS.inj,'inj');
@@ -154,7 +155,7 @@
     }
     if(!responses)throw error||new Error('Solana unavailable');
     const assets=[];
-    const lamports=String(responses[0].value??'0');
+    const lamports=String(responses[0].value??'');
     if(qty(lamports,9).positive)assets.push(token('Solana','SOL','native',lamports,9,'SOL disponibile',LOGOS.sol,'SOL'));
     const byMint=new Map();
     let unsupported=0;
@@ -164,7 +165,9 @@
         const mint=info?.mint;
         const bal=info?.tokenAmount;
         if(!mint||!bal||!/^\d+$/.test(String(bal.amount))){unsupported++;continue;}
-        const dec=Number(bal.decimals)||0, existing=byMint.get(mint);
+        const dec=Number(bal.decimals), existing=byMint.get(mint);
+        if(!Number.isInteger(dec)||dec<0||dec>30||bal.decimals==null){unsupported++;continue;}
+        if((mint===USDC_SOL_MINT||mint===USDT_SOL_MINT)&&dec!==6)throw new Error('Invalid stablecoin decimals');
         if(existing&&existing.dec!==dec)throw new Error('Inconsistent token decimals');
         byMint.set(mint,{dec,raw:(existing?.raw||0n)+BigInt(bal.amount)});
       }
@@ -192,11 +195,10 @@
     };
   }
   function asRatePercent(raw) {
-    // Jupiter REST data has historically used fractions (0.06=6%) and 1e4 basis points.
+    // Jupiter Earn REST totalRate is a decimal fraction (0.06 = 6%).
+    if(raw==null||raw==='')return null;
     const n=Number(raw);
-    if(!Number.isFinite(n)||n<0)return null;
-    const v=n>100?n/100:n<=1?n*100:n;
-    return v>=0&&v<=100?v:null;
+    return Number.isFinite(n)&&n>=0?n*100:null;
   }
   function marketMint(market) {
     return String(market?.assetAddress||market?.asset?.address||market?.asset?.id||'');
@@ -223,16 +225,19 @@
       const rowToken=row?.token||{};
       const tokenId=String(rowToken.address||rowToken.id||'');
       const market=markets?.find(x=>x.address===tokenId||marketMint(x)===tokenId);
-      const asset=String(rowToken.assetAddress||rowToken.asset?.address||marketMint(market)||tokenId);
-      const decimals=Number(rowToken.decimals??market?.asset?.decimals??market?.decimals);
-      if(!Number.isInteger(decimals)||decimals<0||decimals>30)continue;
-      let amount;
-      try { amount=qty(String(row.underlyingAssets),decimals).value; } catch (_) {continue;}
-      if(!Number.isFinite(amount)||amount<=0)continue;
+      const knownAsset=MINTS[tokenId]?.kind==='receipt'&&MINTS[tokenId]?.symbol==='jlUSDC'?USDC_SOL_MINT:'';
+      const asset=String(rowToken.assetAddress||rowToken.asset?.address||marketMint(market)||knownAsset||tokenId);
+      const decimals=Number(asset===USDC_SOL_MINT||asset===USDT_SOL_MINT?6:(rowToken.asset?.decimals??market?.asset?.decimals??rowToken.decimals??market?.decimals));
+      if(!Number.isInteger(decimals)||decimals<0||decimals>30)throw new Error('Unknown Jupiter position decimals');
+      if(!market&&!knownAsset&&!rowToken.assetAddress&&!rowToken.asset?.address&&asset!==USDC_SOL_MINT&&asset!==USDT_SOL_MINT)
+        throw new Error('Unresolved Jupiter underlying asset');
+      let amount=qty(String(row.underlyingAssets),decimals).value;
+      if(!Number.isFinite(amount)||amount<0)throw new Error('Invalid Jupiter underlying balance');
+      if(amount===0)continue;
       const symbol=asset===USDC_SOL_MINT?'USDC':asset===USDT_SOL_MINT?'USDT':
         String(market?.asset?.symbol||rowToken.symbol||'TOKEN').replace(/^jl/i,'').slice(0,15);
       const stable=asset===USDC_SOL_MINT||asset===USDT_SOL_MINT;
-      const apr=asRatePercent(market?.totalRate);
+      const apr=asRatePercent(market?.totalRate??rowToken.totalRate);
       const logoUrl=stable?(asset===USDC_SOL_MINT?LOGOS.usdc:LOGOS.usdt):
         validLogo(market?.asset?.logo_url)||null;
       positions.push({
@@ -258,6 +263,7 @@
             const e=entries.find(x=>x&&(!x.ownerAddress||x.ownerAddress===SOL_ACCOUNT)&&
               (x.address===p.shareMint||x.address===p.assetMint));
             if(!e)continue;
+            if(e.earnings==null||e.earnings==='')continue;
             const raw=Number(e.earnings);
             if(!Number.isFinite(raw)||raw<0)continue;
             const decimals=p.stable?6:p.decimals;
@@ -273,7 +279,7 @@
     const [delegated,rewards,stakingRate]=await Promise.allSettled([
       lcd('/cosmos/staking/v1beta1/delegations/'+encodeURIComponent(INJ_ACCOUNT)+'?pagination.limit=200'),
       lcd('/cosmos/distribution/v1beta1/delegators/'+encodeURIComponent(INJ_ACCOUNT)+'/rewards'),
-      window.INJ_STAKING_APR.wallet(INJ_ACCOUNT)
+      Promise.resolve().then(()=>window.INJ_STAKING_APR.wallet(INJ_ACCOUNT))
     ]);
     if(delegated.status==='rejected')throw new Error('Staking Injective non verificabile');
     const delegations=delegated.value?.delegation_responses;
@@ -301,16 +307,21 @@
   }
   async function scan() {
     const done=await Promise.allSettled([injectiveBank(),solanaBank(),injectiveYield(),jupiterEarn()]);
+    // A known nonzero Earn receipt without a matching position is incomplete,
+    // not proof of an empty lending balance (API indexing may lag RPC).
+    const sol=done[1].status==='fulfilled'?done[1].value:null;
+    let jupiter=done[3].status==='fulfilled'?done[3].value:null;
+    if(jupiter&&sol?.assets.some(a=>a.kind==='receipt'&&a.amount.positive&&!jupiter.positions.some(p=>p.shareMint===a.mint||p.assetMint===USDC_SOL_MINT)))jupiter=null;
     return {
       inj:done[0].status==='fulfilled'?done[0].value:null,
-      sol:done[1].status==='fulfilled'?done[1].value:null,
+      sol,
       yield:done[2].status==='fulfilled'?done[2].value:null,
-      jupiter:done[3].status==='fulfilled'?done[3].value:null,
+      jupiter,
       errors:{
         inj:done[0].status==='rejected',
         sol:done[1].status==='rejected',
         yield:done[2].status==='rejected',
-        jupiter:done[3].status==='rejected'
+        jupiter:!jupiter
       }
     };
   }
