@@ -42,11 +42,11 @@
     $('cashCurrency').value = c;
     const value = state.usd == null ? null : (c === 'EUR' && state.fx != null ? state.usd * state.fx : c === 'USD' ? state.usd : null);
     $('cashTotal').textContent = state.usd == null ? '—' : (value == null ? '—' : shown(money(value,c)));
-    $('cashFxNote').textContent = c === 'EUR' && state.fx == null ? tr('noFX') : c === 'EUR' ? tr('fx') : tr('note');
+    $('cashFxNote').textContent = (state.reserveIncomplete&&state.usd!=null?(state.lang==='it'?'Ultimo saldo completo verificato · non live. ':'Last verified complete balance · not live. '):'')+(c === 'EUR' && state.fx == null ? tr('noFX') : c === 'EUR' ? tr('fx') : tr('note'));
   };
   const updateStatus = () => {
     const el = $('cashStatus');
-    const online = !state.error && state.lastSync > 0;
+    const online = !state.error && state.lastSync > 0 && !state.reconciling;
     el.className = 'cash-pill ' + (state.error ? (state.partial ? 'is-partial' : 'is-error') : online ? 'is-ok' : 'is-idle');
     el.textContent = state.error ? (state.partial ? tr('partial') : tr('offline')) : online ? tr('online') : tr('pending');
     $('cashSyncInfo').textContent = state.reconciling?(state.lang==='it'?'Riconciliazione movimenti in corso':'Reconciling wallet movements'):(state.lastSync ? tr('updated') + ' ' + new Date(state.lastSync).toLocaleTimeString(state.lang === 'it'?'it-IT':'en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'}) : tr('pending'));
@@ -186,6 +186,9 @@
       root.append(row);
     }
     updateYieldLive();
+    if(!base||base.aprAvailable===false&&base.stakingObserved||base.rewardsAvailable===false&&base.stakingObserved){
+      root.append(makeNode('p','cash-yield-disclaimer',state.lang==='it'?'Dati staking Injective non completamente verificabili.':'Injective staking data could not be fully verified.'));
+    }
     if(!jupiter){
       root.append(makeNode('p','cash-yield-disclaimer',state.lang==='it'
         ?'Jupiter Earn non disponibile dalla fonte dati. La riserva viene indicata come parziale; il grafico non registra saldi incompleti.'
@@ -214,9 +217,13 @@
     if(sol)sol.textContent=state.portfolio?.sol?(state.lang==='it'?'ONLINE':'ONLINE'):'OFFLINE';
     const count=[state.portfolio?.inj,state.portfolio?.sol].filter(Boolean).reduce((sum,b)=>sum+b.assets.length,0)+(state.portfolio?.jupiter?.positions?.length||0);
     const counter=$('cashTokenCount');
-    if(counter)counter.textContent=count+(state.portfolio?.inj&&state.portfolio?.sol&&state.portfolio?.jupiter?'':' · PARZIALE');
+    if(counter)counter.textContent=count+(state.portfolio?.inj&&state.portfolio?.sol&&state.portfolio?.jupiter&&!state.portfolio.sol.unsupported?'':(state.lang==='it'?' · PARZIALE':' · PARTIAL'));
     const solUnsupported=$('cashSolAssetsNote');
     if(solUnsupported)solUnsupported.textContent=state.portfolio?.sol?.unsupported?(state.lang==='it'?'Alcuni token con formato non leggibile: '+state.portfolio.sol.unsupported:'Unreadable token accounts: '+state.portfolio.sol.unsupported):'';
+    const detail=$('cashSolanaEarnDetail'),p=state.portfolio;
+    if(detail)detail.textContent=state.privacy?'••••••':p?.sol?(p.jupiter
+      ?(state.lang==='it'?'Disponibili '+fmt(p.sol.usdc)+' · Jupiter Earn '+fmt(p.jupiter.usdc):'Available '+fmt(p.sol.usdc)+' · Jupiter Earn '+fmt(p.jupiter.usdc))
+      :(state.lang==='it'?'Solo saldo disponibile · Jupiter da verificare':'Available only · Jupiter unavailable')):'—';
     renderYield();
   }
   const updateGoal = () => {
@@ -224,7 +231,7 @@
     $('cashProgressBar').style.width = progress + '%';
     $('cashGoalProgress').textContent = state.target > 0 ? (state.usd != null ? shown(fmt(progress,1)+'% '+tr('ofGoal')) : (state.lang==='it'?'Saldi in sincronizzazione':'Waiting for balances')) : tr('noGoal');
     $('cashGoalTotal').textContent = state.target > 0 ? shown(money(state.target)) : '—';
-    $('cashGoalAmount').value = state.target > 0 ? String(state.target) : '';
+    if(document.activeElement!==$('cashGoalAmount')) $('cashGoalAmount').value = state.target > 0 ? String(state.target) : '';
   };
   // Periodic samples are throttled to preserve months/years of history.
   // Meaningful movements create distinct event points, while earned interest
@@ -238,7 +245,7 @@
     } else {
       const delta = state.usd - last.v;
       const elapsed = Math.max(0,now-last.t);
-      const daily = (state.portfolio?.jupiter?.positions||[]).reduce((sum,p)=>sum+(Number(p.day)||0),0);
+      const daily = (state.portfolio?.jupiter?.positions||[]).filter(p=>p.stable).reduce((sum,p)=>sum+(Number(p.day)||0),0);
       const expectedYield = daily*Math.min(elapsed/86400000,14);
       const eventLimit = Math.max(0.02,last.v*0.00002,delta>0?expectedYield*2.5+0.02:0);
       const kind = delta < -eventLimit ? 'out' : delta > eventLimit ? 'in' : 'sample';
@@ -262,7 +269,7 @@
     // Timeframe filters only the observations; total always refers to the whole reserve.
     const total=Number.isFinite(state.usd)?state.usd:state.history.at(-1)?.v;
     const totalEl=$('cashChartTotal');
-    if(totalEl)totalEl.textContent=Number.isFinite(total)?shown('$ '+fmt(total,4)+' USD'):'—';
+    if(totalEl)totalEl.textContent=Number.isFinite(total)?shown('$ '+fmt(total,4)+' USD')+(state.reserveIncomplete?(state.lang==='it'?' · ultimo verificato':' · last verified'):''):'—';
     const periodEl=$('cashChartPeriodInfo');
     if(periodEl){
       const labels=state.lang==='it'?{'1D':'Ultime 24 ore','1M':'Ultimi 30 giorni','1Y':'Ultimi 12 mesi','ALL':'Dall’inizio delle rilevazioni'}:
@@ -270,9 +277,9 @@
       periodEl.textContent=labels[state.range]+' · '+saved.length+' '+
         (state.lang==='it'?(saved.length===1?'lettura':'letture'):(saved.length===1?'reading':'readings'));
     }
-    if(state.usd!=null&&!state.error&&!state.reconciling&&now-state.lastSync<120000) {
+    if(state.usd!=null&&!state.reserveIncomplete&&!state.reconciling&&now-state.lastSync<120000) {
       const last=points[points.length-1];
-      if(!last||now-last.t>5000)points.push({t:now,v:state.usd,kind:'live',delta:last?state.usd-last.v:0});
+      if(!last||state.lastSync-last.t>5000)points.push({t:state.lastSync,v:state.usd,kind:'live',delta:last?state.usd-last.v:0});
     }
     state.chartPoints=points;
     chart.replaceChildren();
@@ -348,7 +355,7 @@
     const describe=p=>{
       if(p.kind==='in')return state.lang==='it'?'Aumento rilevato':'Detected increase';
       if(p.kind==='out')return state.lang==='it'?'Diminuzione rilevata':'Detected decrease';
-      if(p.kind==='live')return state.lang==='it'?'Saldo in tempo reale':'Live balance';
+      if(p.kind==='live')return state.lang==='it'?'Ultima lettura verificata':'Latest verified reading';
       if(p.kind==='start')return state.lang==='it'?'Inizio rilevazioni':'History start';
       return state.lang==='it'?'Rilevazione verificata':'Verified observation';
     };
@@ -429,35 +436,41 @@
   }
   async function sync() {
     if(state.loading||document.hidden)return;
-    state.loading=true;render();
+    state.loading=true;
+    try {
+    render();
     let p;
     try {p=await window.INJ_CASH_PORTFOLIO.scan();}
     catch(e) {p={inj:null,sol:null,yield:null,errors:{inj:true,sol:true,yield:true}};}
     state.portfolio=p;
     const injOK=Boolean(p.inj),solOK=Boolean(p.sol);
-    const jupOK=Boolean(p.jupiter);
+    const jupOK=Boolean(p.jupiter),solComplete=solOK&&!p.sol.unsupported;
+    const yieldOK=Boolean(p.yield)&&(!p.yield.stakingObserved||(p.yield.aprAvailable&&p.yield.rewardsAvailable));
     state.amounts={
       usdcInj:injOK?p.inj.usdc:null,
       usdcSol:solOK?p.sol.usdc+(jupOK?p.jupiter.usdc:0):null,
       usdtSol:solOK?p.sol.usdt+(jupOK?p.jupiter.usdt:0):null
     };
     const detail=$('cashSolanaEarnDetail');
-    if(detail) detail.textContent=solOK
+    if(detail) detail.textContent=state.privacy?'••••••':solOK
       ?(jupOK
         ?(state.lang==='it'?'Disponibili '+fmt(p.sol.usdc)+' · Jupiter Earn '+fmt(p.jupiter.usdc):'Available '+fmt(p.sol.usdc)+' · Jupiter Earn '+fmt(p.jupiter.usdc))
         :(state.lang==='it'?'Solo saldo disponibile · Jupiter da verificare':'Available only · Jupiter unavailable'))
       : '—';
-    state.error=!injOK||!solOK||!jupOK;
+    state.reserveIncomplete=!injOK||!solComplete||!jupOK;
+    state.error=state.reserveIncomplete||!yieldOK;
     state.partial=state.error&&(injOK||solOK||jupOK);
     state.errorDetail=[
       !injOK&&tr('injFailed'),
       !solOK&&tr('solFailed'),
+      solOK&&!solComplete&&(state.lang==='it'?'Alcuni conti SPL non sono leggibili: totale non confermato.':'Some SPL accounts are unreadable: total not confirmed.'),
+      !yieldOK&&(state.lang==='it'?'Staking Injective non completamente verificabile.':'Injective staking data incomplete.'),
       !jupOK&&(state.lang==='it'?'Jupiter Earn non raggiungibile: posizione investita non verificabile.':'Jupiter Earn unavailable: invested balance could not be verified.')
     ].filter(Boolean).join(' ');
     // Do not call a partial total a complete reserve.
     // Never mistake moving funds from liquid wallet into Jupiter Earn for an outflow.
     // Do not commit incomplete snapshots when any source is temporarily unavailable.
-    const candidate=injOK&&solOK&&jupOK
+    const candidate=injOK&&solComplete&&jupOK
       ?p.inj.usdc+p.sol.usdc+p.sol.usdt+p.jupiter.usdc+p.jupiter.usdt:null;
     const last=state.history[state.history.length-1];
     state.reconciling=false;
@@ -476,16 +489,22 @@
         state.pendingDrop=null;
       }
     } else {
-      state.usd=candidate;
+      state.usd=candidate??last?.v??null;
       state.pendingDrop=null;
     }
-    if(injOK||solOK)state.lastSync=Date.now();
-    if(state.usd!=null&&!state.reconciling)saveSnapshot();
-    state.loading=false;
-    render();
+    if(candidate!=null&&!state.reconciling){state.lastSync=Date.now();saveSnapshot();}
+    }catch(e){
+      state.error=true;state.partial=Boolean(state.portfolio?.inj||state.portfolio?.sol);
+      state.reserveIncomplete=true;state.reconciling=false;state.pendingDrop=null;
+      state.usd=state.history.at(-1)?.v??null;state.errorDetail=tr('failed');
+    }finally{
+      state.loading=false;
+      render();
+    }
   }
   function boot() {
-    state.history = (load(historyKey(),[]) || []).filter(p=>Number.isFinite(p?.t)&&Number.isFinite(p?.v)&&p.v>=0).sort((a,b)=>a.t-b.t).slice(-12000);
+    const storedHistory=load(historyKey(),[]);
+    state.history = (Array.isArray(storedHistory)?storedHistory:[]).filter(p=>Number.isFinite(p?.t)&&Number.isFinite(p?.v)&&p.v>=0).sort((a,b)=>a.t-b.t).slice(-12000);
     state.target = Math.max(0,Number(load(KEY_TARGET,0))||0);
     state.privacy = !!load(KEY_PRIVACY,false);
     $('cashPrivacy').setAttribute('aria-pressed',String(state.privacy));
@@ -527,6 +546,8 @@
     });
     document.addEventListener('visibilitychange',()=>{ if (!document.hidden) void sync(); });
     window.addEventListener('online',()=>void sync());
+    window.addEventListener('pageshow',()=>void sync());
+    if(state.history.length){state.usd=state.history.at(-1).v;state.reserveIncomplete=true;}
     render();void sync();void refreshFX();
     setInterval(()=>{ if (!document.hidden) void sync(); },30000);
     setInterval(()=>{ if (!document.hidden) updateYieldLive(); },5000);
