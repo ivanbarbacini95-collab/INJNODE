@@ -155,7 +155,7 @@
      if(caption&&lastQuote?.quoteTime)
        caption.textContent=tr('ULTIMO PREZZO · '+nyKey(new Date(lastQuote.quoteTime))+' · USD',
          'LAST REPORTED PRICE · '+nyKey(new Date(lastQuote.quoteTime))+' · USD');
-     if(timeframe==='1d'){graphPoints=[];drawGraph();}
+     if(timeframe==='1d'){drawGraph();}
      if(selectedPriceRange==='1d'){priceRangeSnapshot=null;priceRangeLastFetched=0;renderPriceRange();}
      if(!document.hidden){refreshMarket();refreshPriceRange(true);}
    }
@@ -195,12 +195,19 @@
      return await res.json();
    }finally{clearTimeout(timer);}
  }
- function parseYahoo(json){
+ function parseYahoo(json,period=timeframe){
    const obj=json?.chart?.result?.[0];if(!obj||json?.chart?.error)throw Error('Quote not ready');
    const meta=obj.meta||{},q=obj.indicators?.quote?.[0]||{},ts=obj.timestamp||[];
    const raw=ts.map((time,i)=>({time:Number(time)*1000,close:numeric(q.close?.[i]),open:numeric(q.open?.[i]),high:numeric(q.high?.[i]),low:numeric(q.low?.[i]),volume:numeric(q.volume?.[i])}))
      .filter(p=>Number.isFinite(p.time)&&p.time>0&&Number.isFinite(p.close)&&p.close>0)
      .map(p=>({...p,session:pointSession(p.time)}));
+   if(meta.symbol&&meta.symbol!=='INJC')throw Error('Yahoo symbol mismatch');
+   for(const [pf,tf,phase] of [['regularMarketPrice','regularMarketTime','regular'],['preMarketPrice','preMarketTime','pre']]){
+     const close=numeric(meta[pf]),time=Number(meta[tf])*1000;
+     if(close>0&&Number.isFinite(time)&&time<=Date.now()+120000&&pointSession(time)===phase&&!raw.some(p=>p.time===time))
+       raw.push({time,close,open:null,high:null,low:null,volume:null,session:phase});
+   }
+   raw.sort((a,b)=>a.time-b.time);
    if(!raw.length)throw Error('No confirmed ETF trades');
    const nowKey=nyKey(new Date()),dayRaw=raw.filter(p=>nyKey(new Date(p.time))===nowKey);
    const dayRegular=dayRaw.filter(p=>p.session==='regular'),dayPre=dayRaw.filter(p=>p.session==='pre');
@@ -209,7 +216,7 @@
    const allRegular=raw.filter(p=>p.session==='regular');
    const priorClose=allRegular.filter(p=>nyKey(new Date(p.time))<nowKey).at(-1);
    const lastRegularDay=allRegular.length?nyKey(new Date(allRegular.at(-1).time)):null;
-   const points=timeframe==='1d'
+   const points=period==='1d'
      ?dayRaw.filter(p=>p.session==='regular'||p.session==='pre')
      :allRegular;
    const selected=(session==='pre'?dayPre.at(-1):dayRegular.at(-1))??raw.filter(p=>p.session==='regular').at(-1)??raw.at(-1);
@@ -219,22 +226,22 @@
      const prePrice=numeric(meta.preMarketPrice),preTime=Number(meta.preMarketTime)*1000;
      if(Number.isFinite(prePrice)&&prePrice>0&&Number.isFinite(preTime)&&preTime>quoteTime&&nyKey(new Date(preTime))===nowKey){
        price=prePrice;quoteTime=preTime;
-       if(timeframe==='1d')points.push({...selected,time:preTime,close:prePrice,session:'pre'});
+       if(period==='1d')points.push({...selected,time:preTime,close:prePrice,session:'pre'});
      }
    } else if(session==='regular'){
      const regularTime=Number(meta.regularMarketTime)*1000,regularPrice=numeric(meta.regularMarketPrice);
      if(Number.isFinite(regularTime)&&Number.isFinite(regularPrice)&&regularPrice>0&&regularTime>quoteTime&&pointSession(regularTime)==='regular'){
        price=regularPrice;quoteTime=regularTime;
-       if(timeframe==='1d')points.push({...selected,time:regularTime,close:regularPrice,session:'regular'});
+       if(period==='1d')points.push({...selected,time:regularTime,close:regularPrice,session:'regular'});
      }
    }
    if(!Number.isFinite(price)||price<=0||!Number.isFinite(quoteTime))throw Error('No valid ETF prints');
    const previous=numeric(meta.chartPreviousClose)??numeric(meta.previousClose);
-   const volume=dayRegular.length?(numeric(meta.regularMarketVolume)??dayRegular.reduce((sum,p)=>sum+(p.volume??0),0)):null;
+   const volume=dayRegular.length?(numeric(meta.regularMarketVolume)??(dayRegular.some(p=>Number.isFinite(p.volume))?dayRegular.reduce((sum,p)=>sum+(p.volume??0),0):null)):null;
    const dayHigh=dayRegular.length?(numeric(meta.regularMarketDayHigh)??Math.max(...dayRegular.map(p=>p.high??p.close))):null;
    const dayLow=dayRegular.length?(numeric(meta.regularMarketDayLow)??Math.min(...dayRegular.map(p=>p.low??p.close))):null;
    return {price,previous,change:Number.isFinite(previous)&&previous>0?(price-previous)/previous*100:null,quoteTime,
-     open:dayRegular[0]?.open??null,high:dayHigh,low:dayLow,volume,points,
+     open:dayRegular.length?(numeric(meta.regularMarketOpen)??dayRegular.find(p=>Number.isFinite(p.open))?.open??null):null,high:dayHigh,low:dayLow,volume,points,
      session:dayPre.length&&!dayRegular.length?'pre':'regular',currency:meta.currency||'USD',isDelayed:true,updatedAt:Date.now()};
  }
 
@@ -304,6 +311,7 @@
    const sameDay=Boolean(reference&&quoteDay===nyKey(new Date(reference.quoteTime)));
    let points=Array.isArray(reference?.points)?reference.points.slice():[];
    if(timeframe==='1d'){
+     const fallbackPoints=points;
      points=points.filter(p=>Number.isFinite(p?.time)&&nyKey(new Date(p.time))===quoteDay&&
        ['pre','regular'].includes(pointSession(p.time)));
      if(['pre','regular'].includes(pointSession(quote.quoteTime)))
@@ -312,6 +320,7 @@
      const unique=new Map();
      for(const p of points)unique.set(p.time,p);
      points=[...unique.values()].sort((a,b)=>a.time-b.time);
+     if(!points.length)points=fallbackPoints;
    }
    return {...quote,points,
      open:sameDay?reference.open:null,high:sameDay?reference.high:null,
@@ -327,28 +336,32 @@
    return {price,quoteTime,previous:numeric(q.previous),change:numeric(q.change),open:numeric(q.open),high:numeric(q.high),low:numeric(q.low),volume:numeric(q.volume),points,session:q.session||pointSession(quoteTime),isDelayed:true,updatedAt:Date.parse(data.generatedAt)||0};
  }
  async function getQuote(){
-   const [range,interval]=ranges[timeframe];
+   const requestedPeriod=timeframe,[range,interval]=ranges[requestedPeriod];
    // Check Nasdaq public last-sale concurrently with intraday bars to avoid unnecessary waiting.
    const primary=getNasdaq();
-   const chart=(async()=>{
-     for(const host of ['query1.finance.yahoo.com','query2.finance.yahoo.com']){
-       try{return parseYahoo(await getJson(yahooUrl(range,interval,host),7000));}catch(_){}
-     }
-     return null;
-   })();
+   async function fetchChart(r,i,period){
+     const direct=host=>'https://'+host+'/v8/finance/chart/INJC?range='+encodeURIComponent(r)+'&interval='+encodeURIComponent(i)+'&includePrePost='+((r==='1d'||r==='5d')?'true':'false');
+     const urls=[yahooUrl(r,i),direct('query1.finance.yahoo.com'),direct('query2.finance.yahoo.com'),yahooUrl(r,i,'query2.finance.yahoo.com'),'https://proxy.cors.dev/'+direct('query1.finance.yahoo.com')];
+     const results=await Promise.allSettled(urls.map(url=>getJson(url,6500).then(json=>parseYahoo(json,period))));
+     return results.filter(x=>x.status==='fulfilled').map(x=>x.value).sort((a,b)=>b.quoteTime-a.quoteTime||b.points.length-a.points.length)[0]||null;
+   }
+   const chart=fetchChart(range,interval,requestedPeriod);
+   const intraday=requestedPeriod==='1d'?chart:fetchChart('1d','1m','1d');
    const backup=(async()=>{
      try{
        const snap=await getJson('./market-data/injc-etf-quotes.json?t='+Date.now(),5000);
        return {data:parseSnapshot(snap),source:'Cached INJC quote · last verified snapshot',cacheOnly:true};
      }catch(_){return null;}
    })();
-   const [nasdaq,yahoo,snapshot]=await Promise.all([primary,chart,backup]);
+   const [nasdaq,history,snapshot,day]=await Promise.all([primary,chart,backup,intraday]);
+   if(requestedPeriod!==timeframe)throw Error('Chart period changed');
+   const yahoo=day?{...day,points:requestedPeriod==='1d'?day.points:history?.points||[]}:history;
    const bestOther=[yahoo?{data:yahoo,source:'Yahoo Finance · '+tr('possibile ritardo','potential delay')}:null,snapshot]
      .filter(Boolean).sort((a,b)=>b.data.quoteTime-a.data.quoteTime)[0]||null;
    // A stale Nasdaq page must not displace a newer actual trade from another provider.
    if(nasdaq&&(!bestOther||nasdaq.quoteTime>=bestOther.data.quoteTime-60000)){
      return {
-       data:withChart(nasdaq,yahoo||snapshot?.data),
+       data:withChart(nasdaq,yahoo?.points?.length?yahoo:snapshot?.data||yahoo),
        source:nasdaq.providerRealTime?'Nasdaq.com · '+tr('quotazione dichiarata real-time','provider marks real-time'):
          'Nasdaq.com · '+tr('ultima quotazione pubblicata','last published quote')
      };
@@ -471,8 +484,10 @@
  function drawGraph(){
    const wrap=$('etfSvgWrap');if(!wrap)return;
    const sessionKey=nyKey(new Date());
-   const points=graphPoints.filter(p=>Number.isFinite(p?.close)&&p.close>0&&
-     (timeframe!=='1d'||nyKey(new Date(p.time))===sessionKey));
+   const valid=graphPoints.filter(p=>Number.isFinite(p?.close)&&p.close>0);
+   const latestDay=valid.length?nyKey(new Date(valid.at(-1).time)):sessionKey;
+   const chartDay=timeframe==='1d'&&valid.some(p=>nyKey(new Date(p.time))===sessionKey)?sessionKey:latestDay;
+   const points=valid.filter(p=>timeframe!=='1d'||nyKey(new Date(p.time))===chartDay);
    if(!points.length){
      wrap.replaceChildren();
      $('etfChartWaiting')?.classList.remove('hidden');
@@ -554,19 +569,21 @@
      'INJC · '+points.length+' verified price points · '+(points.length>=2?'touch or hover to inspect':'more data pending')+
        (hasOvernightTail?' · yellow dashed = last close, not new trades':'')+' · public market feeds may be delayed'
    ));
+   if(timeframe==='1d'&&chartDay!==sessionKey)
+     setText('etfChartDataLabel',tr('Ultima seduta disponibile · '+chartDay+' · in attesa di scambi odierni verificati','Last available session · '+chartDay+' · awaiting verified trades today'));
  }
  function renderPerformance(){
    const data=lastQuote, today=nyKey(new Date());
    const sameDay=Boolean(data?.quoteTime&&nyKey(new Date(data.quoteTime))===today);
-   const regular=sameDay&&data?.session==='regular';
+   const regular=data?.session==='regular',dataDay=data?.quoteTime?nyKey(new Date(data.quoteTime)):today;
    setText('etfVolume',regular?count(data.volume):'—');
    setText('etfNotional',regular&&Number.isFinite(data.volume)?shortUsd(data.volume*data.price):'—');
    setText('etfDayHigh',regular?usd(data.high):'—');
    setText('etfDayLow',regular?usd(data.low):'—');
    setText('etfDayOpen',regular?usd(data.open):'—');
-   setText('etfPreviousClose',sameDay?usd(data.previous):'—');
+   setText('etfPreviousClose',data?usd(data.previous):'—');
    setText('etfPerformanceSessionLabel',regular
-     ?tr('SEDUTA '+today+' · NASDAQ','SESSION '+today+' · NASDAQ')
+     ?sameDay?tr('SEDUTA '+today+' · NASDAQ','SESSION '+today+' · NASDAQ'):tr('ULTIMA SEDUTA DISPONIBILE · '+dataDay,'LAST AVAILABLE SESSION · '+dataDay)
      :tr('SEDUTA '+today+' · IN ATTESA DI SCAMBI',
          'SESSION '+today+' · AWAITING TRADES'));
  }
@@ -638,13 +655,15 @@
      .filter(p=>Number.isFinite(p?.time)&&Number.isFinite(p?.close)&&p.close>0);
    if(timeframe==='1d'){
      const rows=[...graphPoints,...incomingRows,...observedPrePrints]
-       .filter(p=>nyKey(new Date(p.time))===today&&['pre','regular'].includes(pointSession(p.time)));
+       .filter(p=>['pre','regular'].includes(pointSession(p.time)));
      if(quoteDay===today&&['pre','regular'].includes(pointSession(data.quoteTime)))
        rows.push({time:data.quoteTime,close:data.price,session:pointSession(data.quoteTime),
          open:null,high:null,low:null,volume:null});
      const byTime=new Map();
      for(const p of rows)byTime.set(p.time,p);
-     graphPoints=[...byTime.values()].sort((a,b)=>a.time-b.time).slice(-600);
+     const sorted=[...byTime.values()].sort((a,b)=>a.time-b.time);
+      const activeDay=sorted.some(p=>nyKey(new Date(p.time))===today)?today:sorted.length?nyKey(new Date(sorted.at(-1).time)):today;
+      graphPoints=sorted.filter(p=>nyKey(new Date(p.time))===activeDay).slice(-600);
    }else if(incomingRows.length){
      graphPoints=incomingRows;
    }
