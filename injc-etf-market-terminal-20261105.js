@@ -134,10 +134,19 @@
    const current=lastQuote&&!lastQuote.closeOnly&&nyKey(new Date(lastQuote.quoteTime))===nyKey(new Date())&&
      (state!=='open'||lastQuote.session==='regular')&&Date.now()-lastQuote.quoteTime<20*60000;
    el.dataset.feed=open&&current?'online':state==='closed'?'closed':'stale';
-   textNode.textContent=open?(current?'OPEN · DATA':'OPEN · DATA DELAYED'):state==='pre'?'PRE-MARKET':'CLOSE';
+   textNode.textContent=open?(current?'OPEN · DATA':'OPEN · DELAYED'):state==='pre'?'PRE-MARKET':'CLOSE';
    const details=open?(current?tr('Nasdaq aperto · ultimo dato ricevuto','Nasdaq open · last data received'):tr('Nasdaq aperto · dati mancanti o ritardati','Nasdaq open · missing or delayed data')):
      state==='pre'?tr('Pre-market Nasdaq','Nasdaq pre-market'):tr('Nasdaq chiuso · New York','Nasdaq closed · New York');
    el.title=details;textNode.title=details;el.setAttribute('aria-label',details);
+   const q=lastQuote,sourceNode=$('etfQuoteSource');
+   if(sourceNode&&q){
+     const date=nyKey(new Date(q.quoteTime));
+     const when=q.closeOnly?date+' · '+tr('orario ultimo scambio non disponibile','last trade time unavailable'):
+       date+' '+fmtTime(q.quoteTime)+' NY';
+     sourceNode.textContent=quoteSource+' · '+when+
+       (open&&!current?' · '+tr('nessuna quotazione recente','no recent quote'):'');
+     sourceNode.style.color=open&&!current?'var(--etf-down,#f4777f)':'var(--etf-muted)';
+   }
  }
  function changeClass(id,value){const el=$(id);if(!el)return;el.classList.toggle('up',Number.isFinite(value)&&value>0);el.classList.toggle('down',Number.isFinite(value)&&value<0);}
  function status(value,extra){
@@ -399,12 +408,13 @@
      return results.filter(x=>x.status==='fulfilled').map(x=>x.value).sort((a,b)=>b.quoteTime-a.quoteTime||b.points.length-a.points.length)[0]||null;
    }
    const chart=fetchChart(range,interval,requestedPeriod);
+   const recoveryPromise=fetchChart('5d','5m','1d');
    const intraday=(async()=>{
       const minute=await (requestedPeriod==='1d'?chart:fetchChart('1d','1m','1d'));
       const today=nyKey(new Date());
       if(minute&&minute.points.length>1&&nyKey(new Date(minute.quoteTime))===today&&
          (marketState()!=='open'||minute.session==='regular'))return minute;
-      const recovery=await fetchChart('5d','5m','1d');
+      const recovery=await recoveryPromise;
       if(!minute)return recovery;
       if(!recovery)return minute;
       const same=nyKey(new Date(minute.quoteTime))===nyKey(new Date(recovery.quoteTime));
@@ -698,7 +708,7 @@
    }
    // A delayed request (including one caused by changing chart periods) cannot
    // replace a newer verified exchange trade.
-   if(prevTime&&data.quoteTime<prevTime&&!prior?.chartOnly){
+   if(prevTime&&data.quoteTime<prevTime){
      if(Array.isArray(data.points)&&data.points.length){
        const valid=data.points.filter(p=>Number.isFinite(p?.time)&&Number.isFinite(p?.close)&&p.close>0);
        if(timeframe==='1d'){
@@ -718,7 +728,7 @@
      return;
    }
    lastQuote=data;quoteSource=source;lastGoodAt=Date.now();
-   if(data.session==='regular'&&quoteDay===today&&Number.isSafeInteger(data.volume)&&data.volume>=0){
+   if(!data.closeOnly&&data.session==='regular'&&quoteDay===today&&Number.isSafeInteger(data.volume)&&data.volume>=0){
      window.dispatchEvent(new CustomEvent('injc:market-volume',{detail:{date:quoteDay,volume:data.volume,price:data.price,time:data.quoteTime}}));
    }
    const pre=data.session==='pre'&&nyKey(new Date(data.quoteTime))===nyKey(new Date());
@@ -780,8 +790,7 @@
      const fresh=await getNasdaq();
      if(!fresh)return;
      lastFeedSuccessAt=Date.now();
-     if(!lastQuote||fresh.quoteTime>=lastQuote.quoteTime||
-       (lastQuote.chartOnly&&nyKey(new Date(fresh.quoteTime))===nyKey(new Date(lastQuote.quoteTime)))){
+     if(!lastQuote||fresh.quoteTime>=lastQuote.quoteTime){
        const merged=lastQuote?withChart(fresh,lastQuote):fresh;
        displayQuote(merged,fresh.providerRealTime
          ?'Nasdaq.com · exchange timestamp · real-time flag'
@@ -886,7 +895,8 @@
    document.querySelectorAll('[data-etf-range]').forEach(b=>b.addEventListener('click',()=>{
       timeframe=b.dataset.etfRange;
       document.querySelectorAll('[data-etf-range]').forEach(btn=>{btn.classList.toggle('active',btn===b);btn.setAttribute('aria-pressed',String(btn===b))});
-      graphPoints=[];window.__injcEtfSelectedTradeTime=null;drawGraph();refreshMarket();
+      graphPoints=[];window.__injcEtfSelectedTradeTime=null;drawGraph();
+      if(busy){const selected=timeframe;const retry=()=>{if(timeframe!==selected||document.hidden)return;if(busy)setTimeout(retry,300);else refreshMarket();};setTimeout(retry,300);}else refreshMarket();
    }));
    document.querySelectorAll('[data-etf-price-range]').forEach(button=>{
      button.addEventListener('click',()=>{
