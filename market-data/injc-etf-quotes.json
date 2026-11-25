@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "ticker": "INJC",
-  "generatedAt": "2026-11-25T13:44:20.835Z",
+  "generatedAt": "2026-11-25T15:29:17.659Z",
   "source": "Yahoo Finance · quotes may be delayed",
   "quote": {
     "price": 19.22,
@@ -22,7 +22,8 @@
       "high": 19.53,
       "low": 19.53,
       "close": 19.53,
-      "volume": 0
+      "volume": 0,
+      "chartSample": false
     },
     {
       "time": "2026-11-24T14:29:00.000Z",
@@ -31,7 +32,8 @@
       "high": 19.22,
       "low": 19.22,
       "close": 19.22,
-      "volume": 0
+      "volume": 0,
+      "chartSample": false
     }
   ]
 }
