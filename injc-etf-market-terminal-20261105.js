@@ -606,7 +606,7 @@
    setText('etfDayHigh',regular?usd(data.high):'—');
    setText('etfDayLow',regular?usd(data.low):'—');
    setText('etfDayOpen',regular?usd(data.open):'—');
-   setText('etfPreviousClose',data?usd(data.previous):'—');
+   setText('etfPreviousClose',useHistory?usd(shared?.previous):data?usd(data.previous):'—');
    setText('etfPerformanceSessionLabel',regular||useHistory
      ?sameDay?tr('SEDUTA '+today+' · NASDAQ','SESSION '+today+' · NASDAQ'):tr('ULTIMA SEDUTA DISPONIBILE · '+dataDay,'LAST AVAILABLE SESSION · '+dataDay)
      :tr('SEDUTA '+today+' · IN ATTESA DI SCAMBI',
@@ -648,6 +648,9 @@
      return;
    }
    lastQuote=data;quoteSource=source;lastGoodAt=Date.now();
+   if(data.session==='regular'&&quoteDay===today&&Number.isSafeInteger(data.volume)&&data.volume>=0){
+     window.dispatchEvent(new CustomEvent('injc:market-volume',{detail:{date:quoteDay,volume:data.volume,price:data.price,time:data.quoteTime}}));
+   }
    const pre=data.session==='pre'&&nyKey(new Date(data.quoteTime))===nyKey(new Date());
    const priceCaption=$('etfQuoteCaption');
    if(priceCaption)priceCaption.textContent=quoteDay===today
