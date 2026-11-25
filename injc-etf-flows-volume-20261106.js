@@ -155,6 +155,7 @@
      Number.isSafeInteger(value)&&value>=0;
  }
  function mergeVolume(k,v,priority=0){
+   if(v===null||v===undefined||v==='')return;
    const volume=Number(v);
    if(!validVolume(k,volume))return;
    const previous=byDay.get(k);
@@ -371,10 +372,18 @@
    volumeLoading=true;
    try{
      const loadYahoo=async(range,interval)=>{
-       try{return await fetchJson('./api/injc-market-data?provider=yahoo&range='+range+'&interval='+interval,8500);}
-       catch(_){return await fetchJson('https://proxy.cors.dev/https://query2.finance.yahoo.com/v8/finance/chart/INJC?range='+range+'&interval='+interval+'&includePrePost=false',10500);}
-     };
-     const results=await Promise.allSettled([
+        const suffix='/v8/finance/chart/INJC?range='+range+'&interval='+interval+'&includePrePost=false';
+        const urls=['./api/injc-market-data?provider=yahoo&range='+range+'&interval='+interval,
+          'https://query1.finance.yahoo.com'+suffix,'https://query2.finance.yahoo.com'+suffix,
+          'https://proxy.cors.dev/https://query2.finance.yahoo.com'+suffix];
+        const all=await Promise.allSettled(urls.map(url=>fetchJson(url,7000).then(d=>{
+          const o=d?.chart?.result?.[0];if(o?.meta?.symbol?.toUpperCase()!=='INJC'||!o.timestamp?.length)throw Error('Invalid volume feed');return d;
+        })));
+        const valid=all.filter(x=>x.status==='fulfilled').map(x=>x.value);
+        valid.sort((a,b)=>{const x=a.chart.result[0],y=b.chart.result[0];return (y.timestamp.at(-1)||0)-(x.timestamp.at(-1)||0)||y.timestamp.length-x.timestamp.length;});
+        if(!valid.length)throw Error('No verified volume feed');return valid[0];
+      };
+      const results=await Promise.allSettled([
        loadYahoo('1y','1d'),
        fetchJson('./market-data/injc-etf-volume.json?t='+Date.now(),8000),
        fetchJson('./market-data/injc-etf-quotes.json?t='+Date.now(),8000),
@@ -407,17 +416,26 @@
      }
      let yahooPts=[];
      if(results[3].status==='fulfilled')yahooPts=yahooIntraday(results[3].value);
-     if(yahooPts.length>=2&&yahooPts.at(-1).date>=(snapshotPts.at(-1)?.date||'')){
-       intradayPoints=yahooPts;
-       intradaySource=tr('Volumi intraday Yahoo · feed potenzialmente ritardato','Yahoo intraday volumes · potentially delayed');
+     if(yahooPts.length&&yahooPts.at(-1).date>=(snapshotPts.at(-1)?.date||'')){
+       if(!intradayPoints.length||yahooPts.at(-1).time>=intradayPoints.at(-1).time){intradayPoints=yahooPts;intradaySource=tr('Volumi intraday Yahoo · feed potenzialmente ritardato','Yahoo intraday volumes · potentially delayed');}
      }else if(snapshotPts.length){
-       intradayPoints=snapshotPts;
-       intradaySource=tr('Volumi intraday snapshot · feed potenzialmente ritardato','Intraday snapshot volume · potentially delayed');
+       if(!intradayPoints.length||snapshotPts.at(-1).time>=intradayPoints.at(-1).time){intradayPoints=snapshotPts;intradaySource=tr('Volumi intraday snapshot · feed potenzialmente ritardato','Intraday snapshot volume · potentially delayed');}
      }else if(yahooPts.length){
-       intradayPoints=yahooPts;
-       intradaySource=tr('Volumi intraday Yahoo · feed potenzialmente ritardato','Yahoo intraday volumes · potentially delayed');
+       if(!intradayPoints.length||yahooPts.at(-1).time>=intradayPoints.at(-1).time){intradayPoints=yahooPts;intradaySource=tr('Volumi intraday Yahoo · feed potenzialmente ritardato','Yahoo intraday volumes · potentially delayed');}
      }
-     const today=nyDay(Date.now()),start=new Date('2026-11-05T12:00:00Z'),keys=[];
+     const latest=intradayPoints.at(-1);
+      if(latest&&validVolume(latest.date,latest.volume)){
+        const daily=byDay.get(latest.date);
+        if(!daily||latest.volume>daily.volume)mergeVolume(latest.date,latest.volume,daily?.priority??0);
+        if(!dailyPrice.has(latest.date))rememberPrice(latest.date,latest.price,0);
+      }
+      const lastDate=[...byDay.keys()].sort().at(-1);
+      if(lastDate){
+        const detail={date:lastDate,volume:byDay.get(lastDate).volume,price:dailyPrice.get(lastDate)?.price??null};
+        window.__injcVolumeSession=detail;
+        window.dispatchEvent(new CustomEvent('injc:volume-session',{detail}));
+      }
+      const today=nyDay(Date.now()),start=new Date('2026-11-05T12:00:00Z'),keys=[];
      const weekdays=new Set();
      for(let i=0;i<2500&&start.toISOString().slice(0,10)<=today;i++,start.setUTCDate(start.getUTCDate()+1)){
        const day=start.getUTCDay(),key=start.toISOString().slice(0,10);
@@ -455,8 +473,10 @@
    $('etfRefresh')?.addEventListener('click',refreshVolume);
    document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshVolume();});
    window.addEventListener('pageshow',refreshVolume);
+   window.addEventListener('injc:refresh-volume',refreshVolume);
+   window.addEventListener('online',refreshVolume);
    refreshVolume();
-   setInterval(()=>{if(!document.hidden)refreshVolume();},30000);
+   setInterval(()=>{if(!document.hidden)refreshVolume();},15000);
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind,{once:true});
  else bind();
