@@ -390,10 +390,10 @@
  function parseSnapshot(data){
    if(data?.schemaVersion!==1||data?.ticker!=='INJC'||!data?.quote)throw Error('No valid backup');
    const q=data.quote,price=numeric(q.price),quoteTime=Date.parse(q.quoteTime);
-   if(!Number.isFinite(price)||price<=0||!Number.isFinite(quoteTime))throw Error('Backup not traded');
-   const points=(data.points||[]).map(p=>({time:Date.parse(p.time),close:numeric(p.close),open:numeric(p.open),high:numeric(p.high),low:numeric(p.low),volume:numeric(p.volume)}))
+   if(!Number.isFinite(price)||price<=0||!Number.isFinite(quoteTime)||quoteTime>Date.now()+120000)throw Error('Invalid backup observation');
+   const points=(data.points||[]).map(p=>({time:Date.parse(p.time),close:numeric(p.close),open:numeric(p.open),high:numeric(p.high),low:numeric(p.low),volume:numeric(p.volume),chartSample:p.chartSample===true}))
      .filter(p=>Number.isFinite(p.time)&&Number.isFinite(p.close)&&p.close>0).map(p=>({...p,session:pointSession(p.time)}));
-   return {price,quoteTime,previous:numeric(q.previous),change:numeric(q.change),open:numeric(q.open),high:numeric(q.high),low:numeric(q.low),volume:numeric(q.volume),points,session:q.session||pointSession(quoteTime),isDelayed:true,updatedAt:Date.parse(data.generatedAt)||0};
+   return {price,quoteTime,previous:numeric(q.previous),change:numeric(q.change),open:numeric(q.open),high:numeric(q.high),low:numeric(q.low),volume:numeric(q.volume),points,session:q.session||pointSession(quoteTime),chartOnly:q.chartOnly===true,isDelayed:true,updatedAt:Date.parse(data.generatedAt)||0};
  }
  async function getQuote(){
    const requestedPeriod=timeframe,[range,interval]=ranges[requestedPeriod];
@@ -424,7 +424,7 @@
    const backup=(async()=>{
      try{
        const snap=await getJson('./market-data/injc-etf-quotes.json?t='+Date.now(),5000);
-       return {data:parseSnapshot(snap),source:'Cached INJC quote · last verified snapshot',cacheOnly:true};
+       return {data:parseSnapshot(snap),source:snap.quote?.chartOnly?'Nasdaq.com · '+tr('snapshot del grafico, non singoli scambi','chart snapshot, not individual trades'):tr('Snapshot INJC · ultimo dato pubblicato','INJC snapshot · last published data'),cacheOnly:true};
      }catch(_){return null;}
    })();
    const [nasdaq,history,snapshot,day,exchangeChart,dailyClose]=await Promise.all([primary,chart,backup,intraday,nasdaqChart,daily]);
