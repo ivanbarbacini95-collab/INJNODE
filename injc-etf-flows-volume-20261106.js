@@ -367,6 +367,14 @@
    renderValuation(good.length?good.at(-1):null);
    volumeFirst=false;
  }
+ function publishVolumeSession(){
+   const days=[...byDay.keys()].sort(),date=days.at(-1);
+   if(!date)return;
+   const detail={date,volume:byDay.get(date).volume,price:dailyPrice.get(date)?.price??null,
+      previous:dailyPrice.get(days.at(-2))?.price??null};
+   window.__injcVolumeSession=detail;
+   window.dispatchEvent(new CustomEvent('injc:volume-session',{detail}));
+ }
  async function refreshVolume(){
    if(volumeLoading||document.hidden)return;
    volumeLoading=true;
@@ -429,12 +437,7 @@
         if(!daily||latest.volume>daily.volume)mergeVolume(latest.date,latest.volume,daily?.priority??0);
         if(!dailyPrice.has(latest.date))rememberPrice(latest.date,latest.price,0);
       }
-      const lastDate=[...byDay.keys()].sort().at(-1);
-      if(lastDate){
-        const detail={date:lastDate,volume:byDay.get(lastDate).volume,price:dailyPrice.get(lastDate)?.price??null};
-        window.__injcVolumeSession=detail;
-        window.dispatchEvent(new CustomEvent('injc:volume-session',{detail}));
-      }
+      publishVolumeSession();
       const today=nyDay(Date.now()),start=new Date('2026-11-05T12:00:00Z'),keys=[];
      const weekdays=new Set();
      for(let i=0;i<2500&&start.toISOString().slice(0,10)<=today;i++,start.setUTCDate(start.getUTCDate()+1)){
@@ -474,6 +477,14 @@
    document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshVolume();});
    window.addEventListener('pageshow',refreshVolume);
    window.addEventListener('injc:refresh-volume',refreshVolume);
+   window.addEventListener('injc:market-volume',event=>{
+     const p=event.detail;
+     if(!p||p.date!==nyDay(Date.now())||!validVolume(p.date,p.volume)||!(p.price>0))return;
+     mergeVolume(p.date,p.volume,byDay.get(p.date)?.priority??0);
+     if(!dailyPrice.has(p.date))rememberPrice(p.date,p.price,0);
+     if(!volumeDays.includes(p.date)){volumeDays.push(p.date);volumeDays.sort();}
+     publishVolumeSession();queueVolumeDraw();
+   });
    window.addEventListener('online',refreshVolume);
    refreshVolume();
    setInterval(()=>{if(!document.hidden)refreshVolume();},15000);
