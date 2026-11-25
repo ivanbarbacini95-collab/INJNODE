@@ -1,7 +1,7 @@
 /* INJ Node PWA | Cross-platform lean cache (2026-11-06)
    One cache entry per asset path: query-string build aliases no longer
    occupy multiple CacheStorage slots. Auth/API requests are never cached. */
-const CACHE_NAME = 'inj-node-v20261111-scroll-perf1';
+const CACHE_NAME = 'inj-node-v20261125-etf-market3';
 const BOOT_ASSETS = [
   './index.html',
   './inj-rubik-unified-20261110.css?v=rubik-ui1',
@@ -95,11 +95,12 @@ self.addEventListener('fetch', event => {
   }
 
   const navigation = request.mode === 'navigate';
+  const etfAsset = /\/injc-etf-[^/]+\.js$/i.test(url.pathname);
   // Documents must be revalidated; regular static files use
   // HTTP caching and a single offline fallback, without duplicated variants.
   event.respondWith((async () => {
     try {
-      const response = await fetch(request, navigation ? { cache: 'no-store' } : undefined);
+      const response = await fetch(request, navigation || etfAsset ? { cache: 'no-store' } : undefined);
       schedulePut(event, url, response);
       return response;
     } catch (_) {
