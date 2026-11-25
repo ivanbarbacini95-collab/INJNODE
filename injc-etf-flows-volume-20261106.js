@@ -159,7 +159,10 @@
    const volume=Number(v);
    if(!validVolume(k,volume))return;
    const previous=byDay.get(k);
-   if(!previous||priority>previous.priority||(priority===previous.priority&&volume>previous.volume))
+   // Today's reported cumulative volume must not decrease on a slower provider response.
+   if(k===nyDay(Date.now())&&previous){
+     byDay.set(k,{volume:Math.max(previous.volume,volume),priority:Math.max(previous.priority,priority)});
+   }else if(!previous||priority>previous.priority||(priority===previous.priority&&volume>previous.volume))
      byDay.set(k,{volume,priority});
  }
  function parseYahooVolume(data){
@@ -197,7 +200,7 @@
  const formatNYTime=ms=>new Date(ms).toLocaleTimeString(lang()==='en'?'en-US':'it-IT',
    {timeZone:'America/New_York',hour:'2-digit',minute:'2-digit'});
  function cumulativeVolumeRows(rows){
-   const valid=rows.filter(p=>Number.isFinite(p.time)&&Number.isSafeInteger(p.volume)&&p.volume>=0
+   const valid=rows.filter(p=>Number.isFinite(p.time)&&p.time<=Date.now()+120000&&Number.isSafeInteger(p.volume)&&p.volume>=0
       &&Number(p.close)>0&&nyHour(p.time)>=570&&nyHour(p.time)<960&&nyDay(p.time)>='2026-11-05')
      .sort((a,b)=>a.time-b.time);
    if(!valid.length)return [];
@@ -212,10 +215,10 @@
  function snapshotIntraday(json){
    if(json?.ticker!=='INJC'||!Array.isArray(json.points))return [];
    const raw=json.points.filter(p=>p.session==='regular').map(p=>({
-     time:Date.parse(p.time),close:p.close,volume:p.volume===null?NaN:Number(p.volume)
+     time:Date.parse(p.time),close:p.close,volume:p.volume==null||p.volume===''?NaN:Number(p.volume)
    }));
    const points=cumulativeVolumeRows(raw),last=points.at(-1),q=json.quote;
-   const time=Date.parse(q?.quoteTime||''),volume=Number(q?.volume);
+   const time=Date.parse(q?.quoteTime||''),volume=q?.volume==null||q.volume===''?NaN:Number(q.volume);
    if(last&&Number.isFinite(time)&&nyDay(time)===last.date&&nyHour(time)>=570&&nyHour(time)<960
      &&Number.isSafeInteger(volume)&&volume>last.volume){
      const row={date:last.date,time:Math.max(time,last.time),volume,price:Number(q?.price)>0?Number(q.price):last.price};
@@ -380,7 +383,7 @@
    volumeLoading=true;
    try{
      const loadYahoo=async(range,interval)=>{
-        const suffix='/v8/finance/chart/INJC?range='+range+'&interval='+interval+'&includePrePost=false';
+        const suffix='/v8/finance/chart/INJC?range='+range+'&interval='+interval+'&includePrePost=false&cacheBust='+Date.now();
         const urls=['./api/injc-market-data?provider=yahoo&range='+range+'&interval='+interval,
           'https://query1.finance.yahoo.com'+suffix,'https://query2.finance.yahoo.com'+suffix,
           'https://proxy.cors.dev/https://query2.finance.yahoo.com'+suffix];
@@ -395,7 +398,8 @@
        loadYahoo('1y','1d'),
        fetchJson('./market-data/injc-etf-volume.json?t='+Date.now(),8000),
        fetchJson('./market-data/injc-etf-quotes.json?t='+Date.now(),8000),
-       loadYahoo('5d','5m')
+       loadYahoo('5d','5m'),
+       loadYahoo('1d','1m')
      ]);
      if(results[1].status==='fulfilled'){
        const d=results[1].value;
@@ -417,13 +421,16 @@
        if(d?.ticker==='INJC'&&q?.quoteTime&&q.price&&q.session==='regular')
          rememberPrice(nyDay(Date.parse(q.quoteTime)),q.price,0);
        if(d?.ticker==='INJC'&&q&&Number.isFinite(Date.parse(q.quoteTime))
-           &&Number.isSafeInteger(Number(q.volume))&&Number(q.volume)>=0){
+           &&q.volume!=null&&q.volume!==''&&Number.isSafeInteger(Number(q.volume))&&Number(q.volume)>=0){
          mergeVolume(nyDay(Date.parse(q.quoteTime)),q.volume,0);
          if(!lastVolumeSource)lastVolumeSource=tr('Snapshot INJC · dati potenzialmente ritardati','INJC snapshot · potential delay');
        }
      }
      let yahooPts=[];
-     if(results[3].status==='fulfilled')yahooPts=yahooIntraday(results[3].value);
+     const intradayCandidates=[results[3],results[4]].filter(r=>r.status==='fulfilled')
+       .map(r=>yahooIntraday(r.value)).filter(rows=>rows.length);
+     intradayCandidates.sort((a,b)=>b.at(-1).time-a.at(-1).time||b.at(-1).volume-a.at(-1).volume||b.length-a.length);
+     yahooPts=intradayCandidates[0]||[];
      if(yahooPts.length&&yahooPts.at(-1).date>=(snapshotPts.at(-1)?.date||'')){
        if(!intradayPoints.length||yahooPts.at(-1).time>=intradayPoints.at(-1).time){intradayPoints=yahooPts;intradaySource=tr('Volumi intraday Yahoo · feed potenzialmente ritardato','Yahoo intraday volumes · potentially delayed');}
      }else if(snapshotPts.length){
@@ -476,6 +483,7 @@
    $('etfRefresh')?.addEventListener('click',refreshVolume);
    document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshVolume();});
    window.addEventListener('pageshow',refreshVolume);
+   window.addEventListener('focus',refreshVolume);
    window.addEventListener('injc:refresh-volume',refreshVolume);
    window.addEventListener('injc:market-volume',event=>{
      const p=event.detail;
