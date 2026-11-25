@@ -55,7 +55,7 @@ for(const [host,range] of [['query1.finance.yahoo.com','1d'],['query2.finance.ya
     pts.push({time:new Date(quoteTime).toISOString(),close:price,session:active,open:null,high:null,low:null,volume:null});
   }
   const prev=priorClose??(metaDay?safe(meta.previousClose):null)??(range==='1d'?safe(meta.chartPreviousClose):null);
-  payload={schemaVersion:1,ticker:'INJC',generatedAt:now.toISOString(),source:'Yahoo Finance · quotes may be delayed',
+  const candidate={schemaVersion:1,ticker:'INJC',generatedAt:now.toISOString(),source:'Yahoo Finance · quotes may be delayed',
    quote:{price,quoteTime:new Date(quoteTime).toISOString(),session:active,
     previous:prev,change:prev&&prev>0?(price-prev)/prev*100:null,
     open:regular.length?((metaDay?safe(meta.regularMarketOpen):null)??regular.find(p=>p.open!==null)?.open??null):null,
@@ -63,8 +63,12 @@ for(const [host,range] of [['query1.finance.yahoo.com','1d'],['query2.finance.ya
     low:regular.length?((metaDay?safe(meta.regularMarketDayLow):null)??Math.min(...regular.map(p=>p.low??p.close))):null,
     volume:regular.length?((metaDay?safe(meta.regularMarketVolume):null)??(regular.some(p=>p.volume!==null)?regular.reduce((sum,p)=>sum+(p.volume??0),0):null)):null},
    points:pts.slice(-500)};
-  snapshotDay=day;
-  break;
+  if(!payload||Date.parse(candidate.quote.quoteTime)>Date.parse(payload.quote.quoteTime)||
+    (candidate.quote.quoteTime===payload.quote.quoteTime&&candidate.points.length>payload.points.length)){
+    payload=candidate;snapshotDay=day;
+  }
+  if(day===date&&now.getTime()-Date.parse(candidate.quote.quoteTime)<15*60000&&
+    (min<570||candidate.quote.session==='regular'))break;
  }catch(e){console.warn(host+': '+e.message);}
 }
 
@@ -120,7 +124,42 @@ try{
  }
 }catch(e){console.warn('Nasdaq public quote unavailable; using timestamped Yahoo backup: '+e.message);}
 
-if(!payload){console.log('No real INJC prints yet. Preserve previous verified snapshot.');process.exit(0);}
+// Independent public Nasdaq chart fallback. Chart observations have provider timestamps,
+ // but must not be described as individual exchange trades or used to infer share volume.
+try{
+ const response=await fetch('https://api.nasdaq.com/api/quote/INJC/chart?assetclass=etf',{
+   signal:AbortSignal.timeout(10000),headers:{accept:'application/json, text/plain, */*','user-agent':'Mozilla/5.0 (compatible; INJNodeETFQuote/2.1)','referer':'https://www.nasdaq.com/'}
+ });
+ if(!response.ok)throw Error('HTTP '+response.status);
+ const raw=await response.json(),d=raw?.data;
+ if(!Array.isArray(d?.chart)||(d.symbol&&String(d.symbol).toUpperCase()!=='INJC'))throw Error('Invalid Nasdaq chart');
+ const rows=new Map();
+ for(const p of d.chart){
+   const t=Number(p.x),close=quoteValue(p.y??p.z?.value);
+   if(!Number.isFinite(t)||t<Date.UTC(2026,10,5)||t>now.getTime()||
+      nyKey(new Date(t))!==date||!['pre','regular'].includes(session(t))||!(close>0))continue;
+   rows.set(t,{time:new Date(t).toISOString(),session:session(t),close,open:null,high:null,low:null,volume:null,chartSample:true});
+ }
+ const points=[...rows.values()].sort((a,b)=>Date.parse(a.time)-Date.parse(b.time));
+ if(!points.length)throw Error('No current Nasdaq chart observations');
+ const last=points.at(-1),latest=Date.parse(last.time),oldTime=Date.parse(payload?.quote?.quoteTime||'');
+ const sameDay=payload&&snapshotDay===date;
+ const merged=new Map(points.map(p=>[Date.parse(p.time),p]));
+ if(sameDay)for(const p of payload.points||[])merged.set(Date.parse(p.time),p);
+ if(!Number.isFinite(oldTime)||latest>oldTime){
+   const prev=sameDay?payload.quote.previous:null;
+   const regular=sameDay&&payload.quote.session==='regular'&&last.session==='regular';
+   payload={schemaVersion:1,ticker:'INJC',generatedAt:now.toISOString(),
+    source:'Nasdaq.com public chart prices · not individual trades · may be delayed',
+    quote:{price:last.close,quoteTime:last.time,session:last.session,chartOnly:true,
+      previous:prev,change:prev>0?(last.close-prev)/prev*100:null,
+      open:regular?payload.quote.open:null,high:regular?payload.quote.high:null,
+      low:regular?payload.quote.low:null,volume:regular?payload.quote.volume:null},
+    points:[...merged.values()]};
+   snapshotDay=date;
+ }else if(sameDay)payload.points=[...merged.values()];
+}catch(e){console.warn('Nasdaq chart fallback: '+e.message);}
+if(!payload){console.log('No reported INJC price observations yet. Preserve previous verified snapshot.');process.exit(0);}
 // Preserve same-session verified bars and fill missing metrics without inventing volume.
 const currentSession=payload.quote.session;
 const sameDay=previous.quote?.quoteTime&&nyKey(new Date(previous.quote.quoteTime))===snapshotDay;
@@ -128,11 +167,11 @@ const oldRows=sameDay?(previous.points||[]):[];
 const rows=new Map(oldRows.map(p=>[Date.parse(p.time),p]));
 for(const p of payload.points||[]){
  const t=Date.parse(p.time),old=rows.get(t);
- rows.set(t,old?{...old,...Object.fromEntries(Object.entries(p).filter(([,v])=>v!==null&&v!==undefined))}:p);
+ rows.set(t,old?{...old,...Object.fromEntries(Object.entries(p).filter(([,v])=>v!==null&&v!==undefined)),chartSample:p.chartSample===true&&old.chartSample===true}:p);
 }
 const latestTime=Date.parse(payload.quote.quoteTime);
 if(['pre','regular'].includes(currentSession)&&!rows.has(latestTime))
- rows.set(latestTime,{time:payload.quote.quoteTime,session:currentSession,close:payload.quote.price,open:null,high:null,low:null,volume:null});
+ rows.set(latestTime,{time:payload.quote.quoteTime,session:currentSession,close:payload.quote.price,open:null,high:null,low:null,volume:null,chartSample:payload.quote.chartOnly===true});
 payload.points=[...rows.values()].filter(p=>nyKey(new Date(p.time))===snapshotDay).sort((a,b)=>Date.parse(a.time)-Date.parse(b.time)).slice(-600);
 if(sameDay&&previous.quote.session==='regular'&&currentSession==='regular'){
  for(const k of ['open','high','low','volume','previous']){
