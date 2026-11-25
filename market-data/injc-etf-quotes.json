@@ -1,39 +1,64 @@
 {
   "schemaVersion": 1,
   "ticker": "INJC",
-  "generatedAt": "2026-11-25T15:29:17.659Z",
+  "generatedAt": "2026-11-25T18:18:31.646Z",
   "source": "Yahoo Finance · quotes may be delayed",
   "quote": {
-    "price": 19.22,
-    "quoteTime": "2026-11-24T14:29:00.000Z",
-    "session": "pre",
-    "previous": 20.790000915527344,
-    "change": -7.551711622844445,
-    "open": null,
-    "high": null,
-    "low": null,
-    "volume": null
+    "price": 18.8799991607666,
+    "quoteTime": "2026-11-25T17:58:00.000Z",
+    "session": "regular",
+    "previous": 20.79,
+    "change": -9.187113223825866,
+    "open": 18.235000610351562,
+    "high": 18.98,
+    "low": 18.155,
+    "volume": 1339
   },
   "points": [
     {
-      "time": "2026-11-24T14:28:00.000Z",
-      "session": "pre",
-      "open": 19.53,
-      "high": 19.53,
-      "low": 19.53,
-      "close": 19.53,
-      "volume": 0,
-      "chartSample": false
+      "time": "2026-11-25T15:56:00.000Z",
+      "session": "regular",
+      "open": 18.235000610351562,
+      "high": 18.235000610351562,
+      "low": 18.235000610351562,
+      "close": 18.235000610351562,
+      "volume": 0
     },
     {
-      "time": "2026-11-24T14:29:00.000Z",
-      "session": "pre",
-      "open": 19.22,
-      "high": 19.22,
-      "low": 19.22,
-      "close": 19.22,
-      "volume": 0,
-      "chartSample": false
+      "time": "2026-11-25T16:47:00.000Z",
+      "session": "regular",
+      "open": 18.155000686645508,
+      "high": 18.155000686645508,
+      "low": 18.155000686645508,
+      "close": 18.155000686645508,
+      "volume": 162
+    },
+    {
+      "time": "2026-11-25T17:33:00.000Z",
+      "session": "regular",
+      "open": 18.735000610351562,
+      "high": 18.735000610351562,
+      "low": 18.735000610351562,
+      "close": 18.735000610351562,
+      "volume": 293
+    },
+    {
+      "time": "2026-11-25T17:43:00.000Z",
+      "session": "regular",
+      "open": 18.979999542236328,
+      "high": 18.979999542236328,
+      "low": 18.979999542236328,
+      "close": 18.979999542236328,
+      "volume": 105
+    },
+    {
+      "time": "2026-11-25T17:58:00.000Z",
+      "session": "regular",
+      "open": 18.8799991607666,
+      "high": 18.8799991607666,
+      "low": 18.8799991607666,
+      "close": 18.8799991607666,
+      "volume": 105
     }
   ]
 }
