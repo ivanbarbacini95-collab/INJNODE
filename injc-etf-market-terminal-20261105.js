@@ -114,6 +114,7 @@
  let lastChartPhase=null, lastFeedSuccessAt=0, lastFeedFailureAt=0, fastQuoteBusy=false;
  let observedPrePrints=[], observedPreDay='';
  let currentDisplayedSession=nyKey(new Date());
+ let volumeHistorySession=null;
  const ranges={ '1d':['1d','1m'],'5d':['5d','5m'],'1mo':['1mo','30m'],'3mo':['3mo','1d'],'1y':['1y','1d'] };
  // Price-range rail is independent from the main chart timeframe.
  const priceRangeConfig={
@@ -210,14 +211,19 @@
    raw.sort((a,b)=>a.time-b.time);
    if(!raw.length)throw Error('No confirmed ETF trades');
    const nowKey=nyKey(new Date()),dayRaw=raw.filter(p=>nyKey(new Date(p.time))===nowKey);
-   const dayRegular=dayRaw.filter(p=>p.session==='regular'),dayPre=dayRaw.filter(p=>p.session==='pre');
+   const eligible=raw.filter(p=>p.session==='regular'||p.session==='pre');
+    const activeDay=dayRaw.some(p=>p.session==='regular'||p.session==='pre')?nowKey:
+      eligible.length?nyKey(new Date(eligible.at(-1).time)):nowKey;
+    const activeRows=eligible.filter(p=>nyKey(new Date(p.time))===activeDay);
+    const dayRegular=activeRows.filter(p=>p.session==='regular'),dayPre=activeRows.filter(p=>p.session==='pre');
+    const metaSameDay=Number.isFinite(Number(meta.regularMarketTime))&&nyKey(new Date(Number(meta.regularMarketTime)*1000))===activeDay;
    const session=dayRegular.length?'regular':dayPre.length?'pre':'regular';
    // The prior close is a verified historical price, never a fabricated overnight trade.
    const allRegular=raw.filter(p=>p.session==='regular');
    const priorClose=allRegular.filter(p=>nyKey(new Date(p.time))<nowKey).at(-1);
    const lastRegularDay=allRegular.length?nyKey(new Date(allRegular.at(-1).time)):null;
    const points=period==='1d'
-     ?dayRaw.filter(p=>p.session==='regular'||p.session==='pre')
+     ?activeRows.slice()
      :allRegular;
    const selected=(session==='pre'?dayPre.at(-1):dayRegular.at(-1))??raw.filter(p=>p.session==='regular').at(-1)??raw.at(-1);
    // A real extended-hours trade is required: never substitute a regular-market close for a fictitious pre-market quote.
@@ -236,12 +242,13 @@
      }
    }
    if(!Number.isFinite(price)||price<=0||!Number.isFinite(quoteTime))throw Error('No valid ETF prints');
-   const previous=numeric(meta.chartPreviousClose)??numeric(meta.previousClose);
-   const volume=dayRegular.length?(numeric(meta.regularMarketVolume)??(dayRegular.some(p=>Number.isFinite(p.volume))?dayRegular.reduce((sum,p)=>sum+(p.volume??0),0):null)):null;
-   const dayHigh=dayRegular.length?(numeric(meta.regularMarketDayHigh)??Math.max(...dayRegular.map(p=>p.high??p.close))):null;
-   const dayLow=dayRegular.length?(numeric(meta.regularMarketDayLow)??Math.min(...dayRegular.map(p=>p.low??p.close))):null;
+   const priorDayClose=allRegular.filter(p=>nyKey(new Date(p.time))<activeDay).at(-1)?.close;
+    const previous=priorDayClose??(metaSameDay?numeric(meta.previousClose):null)??(period==='1d'&&raw.every(p=>nyKey(new Date(p.time))===activeDay)?numeric(meta.chartPreviousClose):null);
+   const volume=dayRegular.length?((metaSameDay?numeric(meta.regularMarketVolume):null)??(dayRegular.some(p=>Number.isFinite(p.volume))?dayRegular.reduce((sum,p)=>sum+(p.volume??0),0):null)):null;
+   const dayHigh=dayRegular.length?((metaSameDay?numeric(meta.regularMarketDayHigh):null)??Math.max(...dayRegular.map(p=>p.high??p.close))):null;
+   const dayLow=dayRegular.length?((metaSameDay?numeric(meta.regularMarketDayLow):null)??Math.min(...dayRegular.map(p=>p.low??p.close))):null;
    return {price,previous,change:Number.isFinite(previous)&&previous>0?(price-previous)/previous*100:null,quoteTime,
-     open:dayRegular.length?(numeric(meta.regularMarketOpen)??dayRegular.find(p=>Number.isFinite(p.open))?.open??null):null,high:dayHigh,low:dayLow,volume,points,
+     open:dayRegular.length?((metaSameDay?numeric(meta.regularMarketOpen):null)??dayRegular.find(p=>Number.isFinite(p.open))?.open??null):null,high:dayHigh,low:dayLow,volume,points,
      session:dayPre.length&&!dayRegular.length?'pre':'regular',currency:meta.currency||'USD',isDelayed:true,updatedAt:Date.now()};
  }
 
@@ -308,7 +315,7 @@
  }
  function withChart(quote,reference){
    const quoteDay=nyKey(new Date(quote.quoteTime));
-   const sameDay=Boolean(reference&&quoteDay===nyKey(new Date(reference.quoteTime)));
+   const sameDay=Boolean(reference&&quoteDay===nyKey(new Date(reference.quoteTime))&&quote.session===reference.session);
    let points=Array.isArray(reference?.points)?reference.points.slice():[];
    if(timeframe==='1d'){
      const fallbackPoints=points;
@@ -318,9 +325,9 @@
        points.push({time:quote.quoteTime,close:quote.price,open:null,high:null,low:null,volume:null,
          session:pointSession(quote.quoteTime)});
      const unique=new Map();
-     for(const p of points)unique.set(p.time,p);
+     for(const p of points){const old=unique.get(p.time);unique.set(p.time,old?{...old,...Object.fromEntries(Object.entries(p).filter(([,v])=>v!=null))}:p);}
      points=[...unique.values()].sort((a,b)=>a.time-b.time);
-     if(!points.length)points=fallbackPoints;
+     if(!points.length)points=fallbackPoints.filter(p=>nyKey(new Date(p.time))===quoteDay);
    }
    return {...quote,points,
      open:sameDay?reference.open:null,high:sameDay?reference.high:null,
@@ -346,7 +353,18 @@
      return results.filter(x=>x.status==='fulfilled').map(x=>x.value).sort((a,b)=>b.quoteTime-a.quoteTime||b.points.length-a.points.length)[0]||null;
    }
    const chart=fetchChart(range,interval,requestedPeriod);
-   const intraday=requestedPeriod==='1d'?chart:fetchChart('1d','1m','1d');
+   const intraday=(async()=>{
+      const minute=await (requestedPeriod==='1d'?chart:fetchChart('1d','1m','1d'));
+      const today=nyKey(new Date());
+      if(minute&&minute.points.length>1&&nyKey(new Date(minute.quoteTime))===today&&
+         (marketState()!=='open'||minute.session==='regular'))return minute;
+      const recovery=await fetchChart('5d','5m','1d');
+      if(!minute)return recovery;
+      if(!recovery)return minute;
+      const same=nyKey(new Date(minute.quoteTime))===nyKey(new Date(recovery.quoteTime));
+      if(same&&minute.points.length>1&&recovery.quoteTime<=minute.quoteTime)return minute;
+      return recovery.quoteTime>=minute.quoteTime?recovery:minute;
+    })();
    const backup=(async()=>{
      try{
        const snap=await getJson('./market-data/injc-etf-quotes.json?t='+Date.now(),5000);
@@ -359,7 +377,7 @@
    const bestOther=[yahoo?{data:yahoo,source:'Yahoo Finance · '+tr('possibile ritardo','potential delay')}:null,snapshot]
      .filter(Boolean).sort((a,b)=>b.data.quoteTime-a.data.quoteTime)[0]||null;
    // A stale Nasdaq page must not displace a newer actual trade from another provider.
-   if(nasdaq&&(!bestOther||nasdaq.quoteTime>=bestOther.data.quoteTime-60000)){
+   if(nasdaq&&(!bestOther||nasdaq.quoteTime>=bestOther.data.quoteTime)){
      return {
        data:withChart(nasdaq,yahoo?.points?.length?yahoo:snapshot?.data||yahoo),
        source:nasdaq.providerRealTime?'Nasdaq.com · '+tr('quotazione dichiarata real-time','provider marks real-time'):
@@ -574,15 +592,22 @@
  }
  function renderPerformance(){
    const data=lastQuote, today=nyKey(new Date());
-   const sameDay=Boolean(data?.quoteTime&&nyKey(new Date(data.quoteTime))===today);
-   const regular=data?.session==='regular',dataDay=data?.quoteTime?nyKey(new Date(data.quoteTime)):today;
-   setText('etfVolume',regular?count(data.volume):'—');
-   setText('etfNotional',regular&&Number.isFinite(data.volume)?shortUsd(data.volume*data.price):'—');
+   const quoteDay=data?.quoteTime?nyKey(new Date(data.quoteTime)):'';
+   const history=volumeHistorySession;
+   const useHistory=history&&(!data||history.date>quoteDay||(history.date===quoteDay&&data.session!=='regular'));
+   const dataDay=useHistory?history.date:quoteDay||today;
+   const regular=!useHistory&&data?.session==='regular';
+   const sameDay=dataDay===today;
+   const shared=history?.date===dataDay?history:null;
+   const volume=regular&&Number.isFinite(data.volume)?Math.max(data.volume,shared?.volume??0):shared?.volume??null;
+   const price=regular?data.price:shared?.price;
+   setText('etfVolume',count(volume));
+   setText('etfNotional',Number.isFinite(volume)&&Number.isFinite(price)?shortUsd(volume*price):'—');
    setText('etfDayHigh',regular?usd(data.high):'—');
    setText('etfDayLow',regular?usd(data.low):'—');
    setText('etfDayOpen',regular?usd(data.open):'—');
    setText('etfPreviousClose',data?usd(data.previous):'—');
-   setText('etfPerformanceSessionLabel',regular
+   setText('etfPerformanceSessionLabel',regular||useHistory
      ?sameDay?tr('SEDUTA '+today+' · NASDAQ','SESSION '+today+' · NASDAQ'):tr('ULTIMA SEDUTA DISPONIBILE · '+dataDay,'LAST AVAILABLE SESSION · '+dataDay)
      :tr('SEDUTA '+today+' · IN ATTESA DI SCAMBI',
          'SESSION '+today+' · AWAITING TRADES'));
@@ -656,11 +681,11 @@
    if(timeframe==='1d'){
      const rows=[...graphPoints,...incomingRows,...observedPrePrints]
        .filter(p=>['pre','regular'].includes(pointSession(p.time)));
-     if(quoteDay===today&&['pre','regular'].includes(pointSession(data.quoteTime)))
+     if(['pre','regular'].includes(pointSession(data.quoteTime)))
        rows.push({time:data.quoteTime,close:data.price,session:pointSession(data.quoteTime),
          open:null,high:null,low:null,volume:null});
      const byTime=new Map();
-     for(const p of rows)byTime.set(p.time,p);
+     for(const p of rows){const old=byTime.get(p.time);byTime.set(p.time,old?{...old,...Object.fromEntries(Object.entries(p).filter(([,v])=>v!=null))}:p);}
      const sorted=[...byTime.values()].sort((a,b)=>a.time-b.time);
       const activeDay=sorted.some(p=>nyKey(new Date(p.time))===today)?today:sorted.length?nyKey(new Date(sorted.at(-1).time)):today;
       graphPoints=sorted.filter(p=>nyKey(new Date(p.time))===activeDay).slice(-600);
@@ -775,6 +800,13 @@
    if(expanded)panel.scrollTop=0;
  }
  function bind(){
+   window.addEventListener('injc:volume-session',event=>{
+     const p=event.detail;
+     if(!p||!/^\d{4}-\d{2}-\d{2}$/.test(p.date)||p.date>nyKey(new Date())||!Number.isSafeInteger(p.volume)||p.volume<0)return;
+     if(!volumeHistorySession||p.date>=volumeHistorySession.date){volumeHistorySession=p;renderPerformance();}
+   });
+   if(window.__injcVolumeSession){volumeHistorySession=window.__injcVolumeSession;renderPerformance();}
+   window.addEventListener('online',()=>{refreshMarket();refreshFastNasdaq();});
    document.querySelectorAll('[data-etf-range]').forEach(b=>b.addEventListener('click',()=>{
       timeframe=b.dataset.etfRange;
       document.querySelectorAll('[data-etf-range]').forEach(btn=>{btn.classList.toggle('active',btn===b);btn.setAttribute('aria-pressed',String(btn===b))});
@@ -817,7 +849,12 @@
    refreshFastNasdaq();refreshMarket();refreshFlows();refreshPriceRange();
    refreshTimer=setInterval(()=>{if(!document.hidden)refreshMarket()},15000);
    setInterval(()=>{if(!document.hidden)refreshFastNasdaq()},10000);
-   marketPulseTimer=setInterval(()=>{if(!document.hidden){renderStatus();if(flowDayKey!==nyKey(new Date()))renderFlows()}},1000);
+   let previousMarketState=marketState();
+   marketPulseTimer=setInterval(()=>{if(!document.hidden){
+     const state=marketState();
+     if(state!==previousMarketState){previousMarketState=state;refreshFastNasdaq();refreshMarket();window.dispatchEvent(new Event('injc:refresh-volume'));drawGraph();}
+     renderStatus();if(flowDayKey!==nyKey(new Date()))renderFlows();
+   }},1000);
    setInterval(()=>{if(!document.hidden)refreshFlows()},300000);
    setInterval(()=>{if(!document.hidden)refreshPriceRange()},60000);
  }
