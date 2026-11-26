@@ -1,18 +1,18 @@
 {
   "schemaVersion": 1,
   "ticker": "INJC",
-  "generatedAt": "2026-11-25T18:18:31.646Z",
+  "generatedAt": "2026-11-26T17:59:24.732Z",
   "source": "Yahoo Finance · quotes may be delayed",
   "quote": {
     "price": 18.8799991607666,
     "quoteTime": "2026-11-25T17:58:00.000Z",
     "session": "regular",
-    "previous": 20.79,
-    "change": -9.187113223825866,
+    "previous": 20.790000915527344,
+    "change": -9.18711722294455,
     "open": 18.235000610351562,
-    "high": 18.98,
+    "high": 19.27,
     "low": 18.155,
-    "volume": 1339
+    "volume": 1521
   },
   "points": [
     {
@@ -22,7 +22,8 @@
       "high": 18.235000610351562,
       "low": 18.235000610351562,
       "close": 18.235000610351562,
-      "volume": 0
+      "volume": 143,
+      "chartSample": false
     },
     {
       "time": "2026-11-25T16:47:00.000Z",
@@ -31,7 +32,8 @@
       "high": 18.155000686645508,
       "low": 18.155000686645508,
       "close": 18.155000686645508,
-      "volume": 162
+      "volume": 162,
+      "chartSample": false
     },
     {
       "time": "2026-11-25T17:33:00.000Z",
@@ -40,7 +42,8 @@
       "high": 18.735000610351562,
       "low": 18.735000610351562,
       "close": 18.735000610351562,
-      "volume": 293
+      "volume": 293,
+      "chartSample": false
     },
     {
       "time": "2026-11-25T17:43:00.000Z",
@@ -49,7 +52,8 @@
       "high": 18.979999542236328,
       "low": 18.979999542236328,
       "close": 18.979999542236328,
-      "volume": 105
+      "volume": 105,
+      "chartSample": false
     },
     {
       "time": "2026-11-25T17:58:00.000Z",
@@ -58,7 +62,8 @@
       "high": 18.8799991607666,
       "low": 18.8799991607666,
       "close": 18.8799991607666,
-      "volume": 105
+      "volume": 287,
+      "chartSample": false
     }
   ]
 }
