@@ -324,6 +324,7 @@ function protoFields(bytes){
 function protoFirst(fields,id){var f=fields.find(function(v){return v[0]===id;});return f?f[1]:null;}
 function protoText(fields,id){var b=protoFirst(fields,id);return b?new TextDecoder().decode(b):'';}
 function decodeStakingValue(type,bytes){
+ if(!/Msg(?:Delegate|CancelUnbondingDelegation|WithdrawDelegatorReward)$/.test(type))return {};
  var fields=protoFields(bytes),owner=protoText(fields,1),validator=protoText(fields,2);
  if(/Msg(?:Delegate|CancelUnbondingDelegation)$/.test(type)){
   var coin=protoFields(protoFirst(fields,3));
@@ -336,7 +337,7 @@ function decodeAny(bytes,depth){
  if(depth>5)throw Error('Nested messages too deep');
  var fields=protoFields(bytes),type=protoText(fields,1),value=protoFirst(fields,2);
  if(!type||!value)throw Error('Invalid Any');
- if(/MsgExec$/.test(type))return fields.filter(function(v){return v[0]===2;}).flatMap(function(v){return decodeAny(v[1],depth+1);});
+ if(/MsgExec$/.test(type))return protoFields(value).filter(function(v){return v[0]===2;}).flatMap(function(v){return decodeAny(v[1],depth+1);});
  return [Object.assign({'@type':type},decodeStakingValue(type,value))];
 }
 function decodeRawTx(value){
