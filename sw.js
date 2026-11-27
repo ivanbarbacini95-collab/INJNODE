@@ -1,7 +1,7 @@
 /* INJ Node PWA | Cross-platform lean cache (2026-11-06)
    One cache entry per asset path: query-string build aliases no longer
    occupy multiple CacheStorage slots. Auth/API requests are never cached. */
-const CACHE_NAME = 'inj-node-v20261127-staking-rpc1';
+const CACHE_NAME = 'inj-node-v20261127-staking-rpc3';
 const BOOT_ASSETS = [
   './index.html',
   './inj-rubik-unified-20261110.css?v=rubik-ui1',
@@ -16,7 +16,7 @@ const BOOT_ASSETS = [
   './staking-apr-source.js?v=20261109-shared2',
   './app.js?v=20261111-digits-only1',
   './navigation.js?v=20261109-tools-return-motion1',
-  './home-bottom-tabs-20261030.js?v=20261110-liveview-one-layout3',
+  './home-bottom-tabs-20261030.js?v=20261127-staking-rpc3',
   './validators-launcher.js?v=20261111e',
   './validators.html?v=20261111e',
   './validators.css?v=20261111e',
@@ -25,7 +25,7 @@ const BOOT_ASSETS = [
   './network-history.js?v=20261110-uptime-history1',
   './network-live-ws.js?v=20261109-uptime-ws1',
   './network-history.css?v=20261110-uptime-history1',
-  './all-transactions.html?v=20261127-staking-rpc1',
+  './all-transactions.html?v=20261127-staking-rpc3',
   './night-view.html?v=20261111-digits-only1',
   './night-view.js?v=20261111-digits-only1'
 ];
@@ -96,11 +96,12 @@ self.addEventListener('fetch', event => {
 
   const navigation = request.mode === 'navigate';
   const etfAsset = /\/injc-etf-[^/]+\.js$/i.test(url.pathname);
+  const transactionAsset = /\/(?:all-transactions(?:-movements)?\.(?:html|js)|home-bottom-tabs-20261030\.js)$/i.test(url.pathname);
   // Documents must be revalidated; regular static files use
   // HTTP caching and a single offline fallback, without duplicated variants.
   event.respondWith((async () => {
     try {
-      const response = await fetch(request, navigation || etfAsset ? { cache: 'no-store' } : undefined);
+      const response = await fetch(request, navigation || etfAsset || transactionAsset ? { cache: 'no-store' } : undefined);
       schedulePut(event, url, response);
       return response;
     } catch (_) {
