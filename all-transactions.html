@@ -207,7 +207,7 @@ function stateText(status,message){
  setText('atStateText',message);
 }
 function initializeTranslations(){
- setText('atSubtitle',lang('Deposit, Withdraw, Reward e Staking','Deposits, Withdrawals, Rewards and Staking'));
+ setText('atSubtitle',lang('Deposit, Withdraw, Reward e Staking','Deposits, Withdrawals, Rewards and Staking')+' · v27.11.3');
  setText('atWalletLabel',lang('Wallet salvato','Saved wallet'));
  setText('atPeriodLabel',lang('Periodo','Period'));
  setText('atTypeLabel',lang('Tipo','Type'));
@@ -862,6 +862,7 @@ async function retrieve(more){
  if(succeeded||rows.length)void enrichInjectiveRows(run);
 }
 function start(){
+ if('serviceWorker' in navigator)navigator.serviceWorker.getRegistration().then(function(reg){if(reg)return reg.update();}).catch(function(){});
  initializeTranslations();renderFilters();renderPeriods();loadWallets();
  if(current)changeWallet(current);else{canLoad=false;stateText('idle',lang('Nessun wallet salvato','No saved wallet'));render();}
  $('atWallet').addEventListener('change',function(){changeWallet(this.value);});
