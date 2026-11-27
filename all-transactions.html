@@ -300,12 +300,20 @@ function cacheRead(address){
 function cacheWrite(){
  try{var all=JSON.parse(localStorage.getItem(CACHE_KEY)||'{}');if(!all||typeof all!=='object')all={};all[current]={saved:Date.now(),rows:rows.slice(0,120)};var keys=Object.keys(all);keys.slice(0,Math.max(0,keys.length-8)).forEach(function(key){delete all[key];});localStorage.setItem(CACHE_KEY,JSON.stringify(all));}catch(_){}
 }
-function getMessageList(tx){return Array.isArray(tx&&tx.body&&tx.body.messages)?tx.body.messages:[];}
+function unpackMessage(m){
+ if(typeof m==='string')return {'@type':m};
+ if(!m||typeof m!=='object')return {};
+ var v=m.value;
+ if(typeof v==='string'){try{v=JSON.parse(v);}catch(_){try{v=JSON.parse(atob(v));}catch(_){v=null;}}}
+ return Object.assign({},m,v&&typeof v==='object'&&!Array.isArray(v)?v:{},
+  {'@type':m['@type']||m.type||m.typeUrl||m.type_url||(v&&(v['@type']||v.type))||''});
+}
+function getMessageList(tx){return Array.isArray(tx&&tx.body&&tx.body.messages)?tx.body.messages.map(unpackMessage):[];}
 function flattenEvents(response){
  var result=[];
  function add(value){
   if(!value)return;
-  if(typeof value==='string'){try{value=JSON.parse(value);}catch(_){return;}}
+  if(typeof value==='string'){try{value=JSON.parse(value);}catch(_){try{value=JSON.parse(atob(value));}catch(_){return;}}}
   if(Array.isArray(value)){value.forEach(add);return;}
   if(value.events){add(value.events);return;}
   if(value.type&&value.attributes)result.push(value);
@@ -363,12 +371,12 @@ function nativeInjAtoms(raw){
 function formatNativeInj(atoms){
  if(atoms===null||atoms===undefined)return '';
  var n=typeof atoms==='bigint'?atoms:BigInt(atoms),whole=n/1000000000000000000n;
- var fraction=(n%1000000000000000000n).toString().padStart(18,'0').slice(0,12).replace(/0+$/,'');
+ var fraction=(n%1000000000000000000n).toString().padStart(18,'0').replace(/0+$/,'');
  var integer=whole.toString().replace(/\B(?=(\d{3})+(?!\d))/g,en?',':'.');
  return integer+(fraction?(en?'.':',')+fraction:'')+' INJ';
 }
 function extractStakingActions(messages,events,addr){
- var claim=false,stakeSeen=false,stakeAtoms=0n,stakeKnown=true,restaking=false;
+ var claim=false,stakeSeen=false,stakeAtoms=0n,stakeKnown=true,restaking=false,stakePeers=[];
  messages.forEach(function(m){
   var type=String(m&& (m['@type']||m.type)||'').toLowerCase();
   var sender=String(m.delegator_address||m.delegatorAddress||'').toLowerCase();
@@ -379,8 +387,10 @@ function extractStakingActions(messages,events,addr){
    stakeSeen=true;
    if(/cancelunbonding/.test(type))restaking=true;
    var atoms=nativeInjAtoms(m.amount);
-   if(atoms===null)stakeKnown=false;
+   if(!sender||atoms===null||atoms<=0n)stakeKnown=false;
    else stakeAtoms+=atoms;
+   var validator=m.validator_address||m.validatorAddress;
+   if(sender===addr&&validator&&!stakePeers.includes(validator))stakePeers.push(validator);
   }
  });
  var actions=[];
@@ -393,10 +403,31 @@ function extractStakingActions(messages,events,addr){
   });
   actions.push({cat:'reward',action:'claim',denom:'inj',asset:'INJ',atoms:rewardKnown?String(rewardTotal):'',amount:rewardKnown?formatNativeInj(rewardTotal):''});
  }
+ if(stakeSeen&&!stakeKnown){
+  // Event fallback is valid only when every relevant delegation is attributable to the wallet.
+  var eventTotal=0n,eventCount=0,allOwned=true;
+  events.forEach(function(event){
+   var kind=String(event.type||'').toLowerCase();
+   if(kind!=='delegate'&&kind!=='cancel_unbonding_delegation')return;
+   var a=attrs(event),owner=String(a.delegator||a.delegator_address||'').toLowerCase();
+   if(!owner){allOwned=false;return;}
+   if(owner!==addr)return;
+   var atoms=nativeInjAtoms(a.amount);
+   if(atoms===null||atoms<=0n){allOwned=false;return;}
+   eventTotal+=atoms;eventCount++;
+   if(a.validator&&!stakePeers.includes(a.validator))stakePeers.push(a.validator);
+  });
+  var expected=messages.filter(function(m){
+   var type=String(m['@type']||m.type||'').toLowerCase();
+   var owner=String(m.delegator_address||m.delegatorAddress||'').toLowerCase();
+   return /msg(?:delegate|cancelunbondingdelegation)$/.test(type)&&(!owner||owner===addr);
+  }).length;
+  if(allOwned&&eventCount>0&&eventCount===expected){stakeAtoms=eventTotal;stakeKnown=true;}
+ }
  if(stakeSeen){
   var valid=stakeKnown&&stakeAtoms>0n;
   actions.push({cat:'staking',action:restaking?'restake':'delegate',denom:'inj',asset:'INJ',atoms:valid?String(stakeAtoms):'',
-   amount:valid?formatNativeInj(stakeAtoms):''});
+   amount:valid?formatNativeInj(stakeAtoms):'',peers:stakePeers});
  }
  return actions;
 }
@@ -531,7 +562,7 @@ async function requestJSON(url,timeoutMs){
 }
 
 function parseIndexedMessages(row){
- var raw=row.messages, types=row.tx_msg_types||row.txMsgTypes||'';
+ var raw=row.messages||(row.body&&row.body.messages), types=row.tx_msg_types||row.txMsgTypes||'';
  function decode(value){
   if(Array.isArray(value))return value;
   if(value&&typeof value==='object')return Array.isArray(value.messages)?value.messages:[value];
@@ -541,7 +572,7 @@ function parseIndexedMessages(row){
   return [];
  }
  var messages=decode(raw);
- if(messages.length)return messages;
+ if(messages.length)return messages.map(unpackMessage);
  var typeNames=decode(types);
  if(!typeNames.length&&typeof types==='string'){
   var value=types;
@@ -556,7 +587,7 @@ function normalizeIndexed(row,address){
  var messages=parseIndexedMessages(row);
  var tx={
   body:{messages:messages},
-  auth_info:{fee:{amount:Array.isArray(row.gas_fee&&row.gas_fee.amount)?row.gas_fee.amount:Array.isArray(row.fee&&row.fee.amount)?row.fee.amount:[]}}
+  auth_info:{fee:{amount:Array.isArray(row.gas_fee&&row.gas_fee.amount)?row.gas_fee.amount:Array.isArray(row.gasFee&&row.gasFee.amount)?row.gasFee.amount:Array.isArray(row.fee&&row.fee.amount)?row.fee.amount:[]}}
  };
  var response={
   txhash:row.hash||row.tx_hash||row.txHash||'',
@@ -570,17 +601,19 @@ function normalizeIndexed(row,address){
  return output;
 }
 async function queryIndexer(page){
- var url='https://sentry.exchange.grpc-web.injective.network/api/explorer/v1/accountTxs/'+encodeURIComponent(current)+'?limit='+PAGE_SIZE+'&skip='+((page-1)*PAGE_SIZE);
+ var wallet=current;
+ var url='https://sentry.exchange.grpc-web.injective.network/api/explorer/v1/accountTxs/'+encodeURIComponent(wallet)+'?limit='+PAGE_SIZE+'&skip='+((page-1)*PAGE_SIZE);
  var data=await requestJSON(url);
  var items=Array.isArray(data.data)?data.data:(Array.isArray(data.txs)?data.txs:null);
  if(!items)throw new Error('Invalid account history response');
  var total=Number(data.paging&&data.paging.total||0);
- return {items:items.map(function(item){return normalizeIndexed(item,current);}).filter(Boolean),done:items.length<PAGE_SIZE||(total>0&&page*PAGE_SIZE>=total)};
+ return {items:items.map(function(item){return normalizeIndexed(item,wallet);}).filter(Boolean),done:items.length<PAGE_SIZE||(total>0&&page*PAGE_SIZE>=total)};
 }
 
 async function querySource(source,page){
  if(source==='indexer')return queryIndexer(page);
- var expr=source+"='"+current+"'";
+ var wallet=current;
+ var expr=source+"='"+wallet+"'";
  var errors=[];
  for(var i=0;i<ENDPOINTS.length;i++){
   for(var j=0;j<2;j++){
@@ -588,7 +621,7 @@ async function querySource(source,page){
    try{
     var data=await requestJSON(ENDPOINTS[i]+path);
     if(!Array.isArray(data.tx_responses))throw new Error('invalid response');
-    var normalized=data.tx_responses.map(function(r,index){return normalize((data.txs||[])[index]||{},r,current);}).filter(Boolean);
+    var normalized=data.tx_responses.map(function(r,index){return normalize((data.txs||[])[index]||{},r,wallet);}).filter(Boolean);
     var total=Number(data.total||(data.pagination&&data.pagination.total)||0);
     return {items:normalized,done:!data.tx_responses.length||data.tx_responses.length<PAGE_SIZE||(total>0&&page*PAGE_SIZE>=total)};
    }catch(error){if(error&&error.name==='AbortError')throw error;errors.push(error);}
@@ -638,21 +671,33 @@ async function blockTimeFromHeight(height){
  }
  return '';
 }
-async function queryFullInjectiveTx(item){
- var full='';
- for(var i=0;i<2;i++){
-  try {
-   var data=await requestJSON(ENDPOINTS[i]+'/cosmos/tx/v1beta1/txs/'+encodeURIComponent(item.hash),6500);
-   var response=data.tx_response||data.txResponse||{};
-   response.txhash=response.txhash||item.hash;
-   var parsed=normalize(data.tx||{},response,current);
-   if(parsed){full=parsed;break;}
+async function queryFullInjectiveTx(item,run,wallet){
+ var full=null;
+ var urls=['https://sentry.exchange.grpc-web.injective.network/api/explorer/v1/txs/'+encodeURIComponent(item.hash)]
+  .concat(ENDPOINTS.map(function(base){return base+'/cosmos/tx/v1beta1/txs/'+encodeURIComponent(item.hash);}));
+ for(var i=0;i<urls.length&&run===generation;i++){
+  try{
+   var data=await requestJSON(urls[i],6500);
+   if(run!==generation)return null;
+   var parsed=null;
+   if(i===0){
+    var row=data.data||data;
+    if(Array.isArray(row))row=row[0];
+    if(row&&typeof row==='object')parsed=normalizeIndexed(row,wallet);
+   }else{
+    var response=data.tx_response||data.txResponse;
+    if(response&&data.tx)parsed=normalize(data.tx,response,wallet);
+   }
+   if(!parsed||parsed.hash!==item.hash)continue;
+   full=full?mergeIndexedDetails(full,parsed):parsed;
+   if(!needsHydration(mergeIndexedDetails(item,full)))break;
   }catch(_){}
  }
+ if(run!==generation)return null;
  if(!full)full={};
  if(!firstTimestamp(full.time,item.time)&&item.height){
   var time=await blockTimeFromHeight(item.height);
-  if(time)full.time=time;
+  if(time&&run===generation)full.time=time;
  }
  return full;
 }
@@ -662,7 +707,8 @@ function needsHydration(item){
 }
 async function enrichInjectiveRows(run){
  if(hydrating)return;
- var incomplete=rows.filter(function(item){return needsHydration(item)&&!hydratedHashKeys.has(item.hash)&&!hydrationFailures.has(item.hash);}).slice(0,45);
+ var wallet=current;
+ var incomplete=rows.filter(function(item){return needsHydration(item)&&!hydratedHashKeys.has(item.hash)&&!hydrationFailures.has(item.hash);});
  if(!incomplete.length)return;
  hydrating=true;
  var cursor=0,updates=0;
@@ -671,7 +717,7 @@ async function enrichInjectiveRows(run){
    var original=incomplete[cursor++];
    if(!original)break;
    try{
-    var details=await queryFullInjectiveTx(original);
+    var details=await queryFullInjectiveTx(original,run,wallet);
     if(run!==generation)break;
     var idx=rows.findIndex(function(x){return x.hash===original.hash;});
     if(idx>=0){
@@ -681,7 +727,7 @@ async function enrichInjectiveRows(run){
      updates++;
      if(updates%4===0){cacheWrite();render();}
     }
-   }catch(_){hydrationFailures.add(original.hash);}
+   }catch(_){if(run===generation)hydrationFailures.add(original.hash);}
   }
  }
  await Promise.all([worker(),worker(),worker()]);
@@ -693,12 +739,13 @@ async function enrichInjectiveRows(run){
   var partial=rows.some(needsHydration);
   stateText(partial?'partial':'ok',partial?lang('Dettagli parziali','Partial details'):lang('On-chain · aggiornato','On-chain · updated'));
  }
- hydrating=false;
+ if(run===generation)hydrating=false;
 }
 async function retrieve(more){
  if(!current){rows=[];canLoad=false;stateText('idle',lang('Nessun wallet','No wallet'));render();return;}
  if(busy)return;
  var run=++generation;
+ hydrating=false;hydrationFailures.clear();hydratedHashKeys.clear();
  if(!more){
   cancelled();hydrating=false;rows=[];offsetBySource={};doneBySource={};canLoad=true;
   var fromCache=cacheRead(current);
@@ -742,7 +789,7 @@ async function retrieve(more){
  }
  canLoad=sources.some(function(s){return !doneBySource[s];});
  busy=false;render();
- if(succeeded)void enrichInjectiveRows(run);
+ if(succeeded||rows.length)void enrichInjectiveRows(run);
 }
 function start(){
  initializeTranslations();renderFilters();renderPeriods();loadWallets();
@@ -766,8 +813,8 @@ function start(){
  }
  $('atBack').addEventListener('click',exitToTools);
  window.addEventListener('pageshow',function(){var next=readSaved();if(next.length!==saved.length){loadWallets();if(current)changeWallet(current);}});
- document.addEventListener('visibilitychange',function(){if(!document.hidden&&current&&!busy&&dataQuality!=='idle')retrieve(false);});
- window.setInterval(function(){if(!document.hidden&&navigator.onLine&&current&&!busy)retrieve(false);},60000);
+ document.addEventListener('visibilitychange',function(){if(!document.hidden&&current&&!busy&&!hydrating&&dataQuality!=='idle')retrieve(false);});
+ window.setInterval(function(){if(!document.hidden&&navigator.onLine&&current&&!busy&&!hydrating)retrieve(false);},60000);
 }
 start();
 })();
