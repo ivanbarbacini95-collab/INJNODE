@@ -1,7 +1,7 @@
 /* INJ Node PWA | Cross-platform lean cache (2026-11-06)
    One cache entry per asset path: query-string build aliases no longer
    occupy multiple CacheStorage slots. Auth/API requests are never cached. */
-const CACHE_NAME = 'inj-node-v20261125-etf-market3';
+const CACHE_NAME = 'inj-node-v20261127-staking-rpc1';
 const BOOT_ASSETS = [
   './index.html',
   './inj-rubik-unified-20261110.css?v=rubik-ui1',
@@ -25,7 +25,7 @@ const BOOT_ASSETS = [
   './network-history.js?v=20261110-uptime-history1',
   './network-live-ws.js?v=20261109-uptime-ws1',
   './network-history.css?v=20261110-uptime-history1',
-  './all-transactions.html?v=20261109-tools-return-motion1',
+  './all-transactions.html?v=20261127-staking-rpc1',
   './night-view.html?v=20261111-digits-only1',
   './night-view.js?v=20261111-digits-only1'
 ];
